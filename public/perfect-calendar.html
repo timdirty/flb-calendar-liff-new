@@ -910,6 +910,10 @@
                         </select>
                     </div>
                     <div class="control-group">
+                        <label for="dateFilter">指定日期</label>
+                        <input type="date" id="dateFilter" />
+                    </div>
+                    <div class="control-group">
                         <label for="sortOrder">排序方式</label>
                         <select id="sortOrder">
                             <option value="time">按時間排序</option>
@@ -1077,6 +1081,12 @@
             
             // 時段篩選事件監聽器
             document.getElementById('timeFilter').addEventListener('change', function() {
+                updateStats();
+                renderEvents();
+            });
+            
+            // 日期篩選事件監聽器
+            document.getElementById('dateFilter').addEventListener('change', function() {
                 updateStats();
                 renderEvents();
             });
@@ -1321,6 +1331,7 @@
             const container = document.getElementById('eventsContainer');
             const instructorFilter = document.getElementById('instructorSelect').value;
             const timeFilter = document.getElementById('timeFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
             const sortOrder = document.getElementById('sortOrder').value;
             
             let filteredEvents = allEvents.filter(event => {
@@ -1348,6 +1359,24 @@
                     }
                     
                     if (!timeMatch) {
+                        return false;
+                    }
+                }
+                
+                // 指定日期篩選
+                if (dateFilter) {
+                    const eventDate = new Date(event.start);
+                    const filterDate = new Date(dateFilter);
+                    
+                    // 使用UTC時間進行日期比較
+                    const eventYear = eventDate.getUTCFullYear();
+                    const eventMonth = eventDate.getUTCMonth();
+                    const eventDay = eventDate.getUTCDate();
+                    const filterYear = filterDate.getUTCFullYear();
+                    const filterMonth = filterDate.getUTCMonth();
+                    const filterDay = filterDate.getUTCDate();
+                    
+                    if (eventYear !== filterYear || eventMonth !== filterMonth || eventDay !== filterDay) {
                         return false;
                     }
                 }
@@ -1416,9 +1445,6 @@
                 `;
                 return;
             }
-            
-            // 按日期排序
-            filteredEvents.sort((a, b) => new Date(a.start) - new Date(b.start));
             
             container.innerHTML = filteredEvents.map(event => createEventCard(event)).join('');
         }
@@ -1527,6 +1553,7 @@
             // 獲取當前篩選後的事件
             const instructorFilter = document.getElementById('instructorSelect').value;
             const timeFilter = document.getElementById('timeFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
             const filteredEvents = allEvents.filter(event => {
                 // 講師篩選
                 if (instructorFilter && event.instructor !== instructorFilter) {
@@ -1552,6 +1579,24 @@
                     }
                     
                     if (!timeMatch) {
+                        return false;
+                    }
+                }
+                
+                // 指定日期篩選
+                if (dateFilter) {
+                    const eventDate = new Date(event.start);
+                    const filterDate = new Date(dateFilter);
+                    
+                    // 使用UTC時間進行日期比較
+                    const eventYear = eventDate.getUTCFullYear();
+                    const eventMonth = eventDate.getUTCMonth();
+                    const eventDay = eventDate.getUTCDate();
+                    const filterYear = filterDate.getUTCFullYear();
+                    const filterMonth = filterDate.getUTCMonth();
+                    const filterDay = filterDate.getUTCDate();
+                    
+                    if (eventYear !== filterYear || eventMonth !== filterMonth || eventDay !== filterDay) {
                         return false;
                     }
                 }
