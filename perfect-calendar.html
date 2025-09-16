@@ -1479,23 +1479,29 @@
                     new Promise(resolve => setTimeout(resolve, 8000))
                 ]);
                 
+                console.log('所有初始化任務完成，準備隱藏載入動畫...');
+                
                 // 隱藏載入動畫
                 setTimeout(() => {
-                    hideLoadingAnimation();
-                    console.log('系統初始化完成');
-                    
-                    // 在系統初始化完成後執行自動比對
-                    if (currentUser && currentUser.userId && currentUser.displayName) {
-                        console.log('=== 系統初始化完成，開始自動比對講師 ===');
-                        console.log('用戶資料:', currentUser);
+                    try {
+                        hideLoadingAnimation();
+                        console.log('系統初始化完成');
                         
-                        try {
-                            autoMatchTeacher(currentUser.userId, currentUser.displayName);
-                        } catch (error) {
-                            console.error('自動比對講師失敗:', error);
+                        // 在系統初始化完成後執行自動比對
+                        if (currentUser && currentUser.userId && currentUser.displayName) {
+                            console.log('=== 系統初始化完成，開始自動比對講師 ===');
+                            console.log('用戶資料:', currentUser);
+                            
+                            try {
+                                autoMatchTeacher(currentUser.userId, currentUser.displayName);
+                            } catch (error) {
+                                console.error('自動比對講師失敗:', error);
+                            }
+                        } else {
+                            console.log('沒有用戶資料，跳過自動比對');
                         }
-                    } else {
-                        console.log('沒有用戶資料，跳過自動比對');
+                    } catch (error) {
+                        console.error('隱藏載入動畫或自動比對失敗:', error);
                     }
                 }, 1000); // 至少顯示1秒載入動畫
                 
@@ -1503,7 +1509,12 @@
                 console.error('系統初始化失敗:', error);
                 // 即使失敗也要隱藏載入動畫
                 setTimeout(() => {
-                    hideLoadingAnimation();
+                    try {
+                        hideLoadingAnimation();
+                        console.log('系統初始化失敗，但已隱藏載入動畫');
+                    } catch (hideError) {
+                        console.error('隱藏載入動畫失敗:', hideError);
+                    }
                 }, 1000);
             }
         }
@@ -1587,16 +1598,6 @@
                                 
                                 // 將自動比對移到系統初始化完成後執行
                                 console.log('準備在系統初始化完成後執行自動比對');
-                                
-                                // 先測試函數是否存在
-                                if (typeof autoMatchTeacher === 'function') {
-                                    console.log('autoMatchTeacher函數存在，開始調用...');
-                                    autoMatchTeacher(profile.userId, profile.displayName).catch(error => {
-                                        console.error('自動比對講師失敗:', error);
-                                    });
-                                } else {
-                                    console.error('autoMatchTeacher函數不存在！');
-                                }
                                 
                                 resolve();
                             }).catch(error => {
