@@ -1568,10 +1568,16 @@
                                 updateUserDisplay();
                                 console.log('updateUserDisplay() 執行完成');
                                 
+                                // 強制執行後續代碼，不管updateUserDisplay是否成功
+                                console.log('=== 強制執行後續代碼 ===');
+                                
                                 // 測試基本日誌
                                 console.log('=== 開始測試自動比對 ===');
                                 console.log('準備執行自動比對講師...');
                                 console.log('測試：直接調用autoMatchTeacher函數');
+                                
+                                // 添加手動測試按鈕
+                                addManualTestButton(profile.userId, profile.displayName);
                                 
                                 // 簡單測試
                                 try {
@@ -1581,9 +1587,6 @@
                                 } catch (error) {
                                     console.error('調用autoMatchTeacher時發生錯誤:', error);
                                 }
-                                
-                                // 添加手動測試按鈕
-                                addManualTestButton(profile.userId, profile.displayName);
                                 
                                 // 先測試函數是否存在
                                 if (typeof autoMatchTeacher === 'function') {
