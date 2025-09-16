@@ -2376,16 +2376,69 @@
             container.innerHTML = filteredEvents.map(event => createEventCard(event)).join('');
         }
 
+        // 從標題解析時間
+        function parseTimeFromTitle(title) {
+            // 匹配格式如 "18:30-20:30", "14:30-15:30", "16:30-17:30" 等
+            const timeMatch = title.match(/(\d{1,2}:\d{2})-(\d{1,2}:\d{2})/);
+            if (timeMatch) {
+                return {
+                    startTime: timeMatch[1],
+                    endTime: timeMatch[2],
+                    timeString: `${timeMatch[1]} - ${timeMatch[2]}`
+                };
+            }
+            return null;
+        }
+
+        // 從標題解析日期（根據星期幾）
+        function parseDateFromTitle(title, baseDate = new Date()) {
+            const dayMap = {
+                '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '日': 0
+            };
+            
+            // 匹配格式如 "SPIKE 三 18:30-20:30", "ESM SPM二 14:30-15:30" 等
+            const dayMatch = title.match(/([一二三四五六日])/);
+            if (dayMatch) {
+                const targetDay = dayMap[dayMatch[1]];
+                const currentDay = baseDate.getDay();
+                const daysUntilTarget = (targetDay - currentDay + 7) % 7;
+                
+                const targetDate = new Date(baseDate);
+                targetDate.setDate(baseDate.getDate() + daysUntilTarget);
+                
+                return targetDate;
+            }
+            return baseDate;
+        }
+
         // 創建事件卡片
         function createEventCard(event) {
             const startDate = new Date(event.start);
             const endDate = new Date(event.end);
             
-            // 格式化日期 - 使用本地時區的日期
-            const displayDate = startDate.toLocaleDateString('zh-TW');
+            // 從標題解析時間
+            const titleTime = parseTimeFromTitle(event.title);
+            const titleDate = parseDateFromTitle(event.title, startDate);
             
-            // 格式化時間 - 使用本地時間
-            const timeString = `${startDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${endDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
+            // 使用標題解析的時間，如果解析失敗則使用CalDAV時間
+            let displayDate, timeString;
+            
+            if (titleTime) {
+                // 使用標題解析的日期和時間
+                displayDate = titleDate.toLocaleDateString('zh-TW');
+                timeString = titleTime.timeString;
+                
+                console.log(`標題解析 - ${event.title}:`);
+                console.log(`  解析日期: ${displayDate}`);
+                console.log(`  解析時間: ${timeString}`);
+                console.log(`  CalDAV日期: ${startDate.toLocaleDateString('zh-TW')}`);
+                console.log(`  CalDAV時間: ${startDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${endDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`);
+            } else {
+                // 回退到CalDAV時間
+                displayDate = startDate.toLocaleDateString('zh-TW');
+                timeString = `${startDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${endDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
+                console.log(`無法解析標題時間，使用CalDAV時間 - ${event.title}: ${displayDate} ${timeString}`);
+            }
             
             // 清理描述內容
             let cleanDescription = event.description || '';
