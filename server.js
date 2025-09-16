@@ -496,7 +496,10 @@ app.get('/api/events', async (req, res) => {
                 }
                 
                 console.log(`總共獲取到 ${allEvents.length} 個事件`);
-                res.json(allEvents);
+                res.json({
+                    success: true,
+                    data: allEvents
+                });
                 return;
             } catch (caldavError) {
                 console.error('CalDAV連接失敗，使用模擬數據:', caldavError.message);
@@ -505,7 +508,10 @@ app.get('/api/events', async (req, res) => {
         
         // 如果CalDAV不可用，使用模擬數據
         console.log('使用模擬事件數據');
-        res.json(mockEvents);
+        res.json({
+            success: true,
+            data: mockEvents
+        });
     } catch (error) {
         console.error('獲取行事曆事件失敗:', error);
         res.status(500).json({
