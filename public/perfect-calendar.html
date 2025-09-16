@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>講師行事曆檢視</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         * {
             margin: 0;
@@ -34,9 +35,10 @@
 
         .header-content {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
             margin-bottom: 20px;
+            position: relative;
         }
 
         .header h1 {
@@ -56,6 +58,8 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            justify-content: center;
+            flex: 1;
         }
 
         .header-logo {
@@ -68,6 +72,10 @@
         .header-actions {
             display: flex;
             align-items: center;
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
         }
 
         .btn-settings-small {
@@ -89,6 +97,22 @@
             background: rgba(255, 235, 120, 0.9);
             border-color: rgba(255, 235, 120, 0.9);
             transform: scale(1.1);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 8px 12px;
+            background: rgba(248, 249, 250, 0.9);
+            border-radius: 6px;
+            border: 1px solid rgba(233, 236, 239, 0.9);
+        }
+
+        .user-info span {
+            color: rgba(51, 51, 51, 0.9);
+            font-weight: 500;
         }
 
         /* 日期時間顯示區域 */
@@ -1131,6 +1155,13 @@
                             <button class="btn btn-primary" data-view="all">全部</button>
                         </div>
                     </div>
+                    <div class="control-group" id="userInfoGroup" style="display: none;">
+                        <label>LINE 用戶資訊</label>
+                        <div class="user-info">
+                            <span id="userDisplayName">未綁定</span>
+                            <button class="btn btn-secondary" id="bindUserBtn">綁定帳號</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1221,6 +1252,7 @@
         let allEvents = [];
         let allInstructors = [];
         let currentView = 'today';
+        let currentUser = null;
         let colorSettings = {
             esm: 'rgba(255, 182, 193, 0.8)',
             spm: 'rgba(116, 185, 255, 0.8)',
@@ -1236,6 +1268,7 @@
             loadSettings();
             loadEvents();
             setupEventListeners();
+            initLineUser();
             updateDateTime();
             setInterval(updateDateTime, 1000); // 每秒更新時間
         });
@@ -1274,6 +1307,64 @@
             return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
         }
 
+        // LINE UserID 相關函數
+        function initLineUser() {
+            // 檢查是否在LINE環境中
+            if (typeof liff !== 'undefined' && liff.isInClient()) {
+                liff.ready.then(() => {
+                    if (liff.isLoggedIn()) {
+                        liff.getProfile().then(profile => {
+                            currentUser = {
+                                userId: profile.userId,
+                                displayName: profile.displayName,
+                                pictureUrl: profile.pictureUrl
+                            };
+                            updateUserDisplay();
+                        }).catch(error => {
+                            console.error('獲取用戶資料失敗:', error);
+                        });
+                    } else {
+                        showBindButton();
+                    }
+                });
+            } else {
+                // 不在LINE環境中，顯示綁定按鈕
+                showBindButton();
+            }
+        }
+
+        function updateUserDisplay() {
+            const userInfoGroup = document.getElementById('userInfoGroup');
+            const userDisplayName = document.getElementById('userDisplayName');
+            const bindUserBtn = document.getElementById('bindUserBtn');
+            
+            if (currentUser) {
+                userDisplayName.textContent = currentUser.displayName;
+                bindUserBtn.textContent = '重新綁定';
+                userInfoGroup.style.display = 'block';
+            } else {
+                userDisplayName.textContent = '未綁定';
+                bindUserBtn.textContent = '綁定帳號';
+                userInfoGroup.style.display = 'block';
+            }
+        }
+
+        function showBindButton() {
+            updateUserDisplay();
+        }
+
+        function bindUser() {
+            if (typeof liff !== 'undefined') {
+                if (liff.isLoggedIn()) {
+                    liff.logout();
+                } else {
+                    liff.login();
+                }
+            } else {
+                alert('請在LINE應用程式中開啟此頁面');
+            }
+        }
+
         // 設置事件監聽器
         function setupEventListeners() {
             document.getElementById('instructorSelect').addEventListener('change', function() {
@@ -1305,6 +1396,9 @@
                     switchView(view);
                 });
             });
+            
+            // 綁定用戶按鈕事件監聽器
+            document.getElementById('bindUserBtn').addEventListener('click', bindUser);
         }
 
         // 生成隨機馬卡龍顏色
