@@ -1053,7 +1053,10 @@
 
         // 設置事件監聽器
         function setupEventListeners() {
-            document.getElementById('instructorSelect').addEventListener('change', renderEvents);
+            document.getElementById('instructorSelect').addEventListener('change', function() {
+                updateStats();
+                renderEvents();
+            });
             
             // 為視圖按鈕添加事件監聽器
             document.querySelectorAll('.view-buttons .btn-primary').forEach(button => {
@@ -1442,8 +1445,45 @@
 
         // 更新統計資訊
         function updateStats() {
-            const totalEvents = allEvents.length;
-            const instructorCount = allInstructors.length;
+            // 獲取當前篩選後的事件
+            const instructorFilter = document.getElementById('instructorSelect').value;
+            const filteredEvents = allEvents.filter(event => {
+                // 講師篩選
+                if (instructorFilter && event.instructor !== instructorFilter) {
+                    return false;
+                }
+                
+                // 日期篩選
+                const eventDate = new Date(event.start);
+                const now = new Date();
+                
+                let shouldShow = false;
+                switch (currentView) {
+                    case 'today':
+                        shouldShow = eventDate.toDateString() === now.toDateString();
+                        break;
+                    case 'week':
+                        const weekStart = new Date(now);
+                        weekStart.setDate(now.getDate() - now.getDay());
+                        const weekEnd = new Date(weekStart);
+                        weekEnd.setDate(weekStart.getDate() + 6);
+                        shouldShow = eventDate >= weekStart && eventDate <= weekEnd;
+                        break;
+                    case 'month':
+                        shouldShow = eventDate.getMonth() === now.getMonth() && eventDate.getFullYear() === now.getFullYear();
+                        break;
+                    case 'all':
+                    default:
+                        shouldShow = true;
+                        break;
+                }
+                
+                return shouldShow;
+            });
+            
+            // 計算篩選後的講師數量
+            const uniqueInstructors = new Set(filteredEvents.map(event => event.instructor));
+            const instructorCount = uniqueInstructors.size;
             
             // 根據當前篩選模式計算日期範圍
             let dateRange = '-';
@@ -1477,7 +1517,7 @@
             }
             
             document.getElementById('dateRange').textContent = dateRange;
-            document.getElementById('totalEvents').textContent = totalEvents;
+            document.getElementById('totalEvents').textContent = filteredEvents.length;
             document.getElementById('instructorCount').textContent = instructorCount;
         }
 
