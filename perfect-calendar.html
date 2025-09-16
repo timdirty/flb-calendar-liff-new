@@ -1306,7 +1306,10 @@
                 let shouldShow = false;
                 switch (currentView) {
                     case 'today':
-                        shouldShow = eventDate.toDateString() === now.toDateString();
+                        // 使用本地日期字符串比較，避免時區問題
+                        const eventDateStr = eventDate.toLocaleDateString('zh-TW');
+                        const nowDateStr = now.toLocaleDateString('zh-TW');
+                        shouldShow = eventDateStr === nowDateStr;
                         break;
                     case 'week':
                         const weekStart = new Date(now);
@@ -1460,7 +1463,10 @@
                 let shouldShow = false;
                 switch (currentView) {
                     case 'today':
-                        shouldShow = eventDate.toDateString() === now.toDateString();
+                        // 使用本地日期字符串比較，避免時區問題
+                        const eventDateStr = eventDate.toLocaleDateString('zh-TW');
+                        const nowDateStr = now.toLocaleDateString('zh-TW');
+                        shouldShow = eventDateStr === nowDateStr;
                         break;
                     case 'week':
                         const weekStart = new Date(now);
