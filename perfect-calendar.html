@@ -1483,6 +1483,20 @@
                 setTimeout(() => {
                     hideLoadingAnimation();
                     console.log('系統初始化完成');
+                    
+                    // 在系統初始化完成後執行自動比對
+                    if (currentUser && currentUser.userId && currentUser.displayName) {
+                        console.log('=== 系統初始化完成，開始自動比對講師 ===');
+                        console.log('用戶資料:', currentUser);
+                        
+                        try {
+                            autoMatchTeacher(currentUser.userId, currentUser.displayName);
+                        } catch (error) {
+                            console.error('自動比對講師失敗:', error);
+                        }
+                    } else {
+                        console.log('沒有用戶資料，跳過自動比對');
+                    }
                 }, 1000); // 至少顯示1秒載入動畫
                 
             } catch (error) {
@@ -1568,25 +1582,11 @@
                                 updateUserDisplay();
                                 console.log('updateUserDisplay() 執行完成');
                                 
-                                // 強制執行後續代碼，不管updateUserDisplay是否成功
-                                console.log('=== 強制執行後續代碼 ===');
-                                
-                                // 測試基本日誌
-                                console.log('=== 開始測試自動比對 ===');
-                                console.log('準備執行自動比對講師...');
-                                console.log('測試：直接調用autoMatchTeacher函數');
-                                
                                 // 添加手動測試按鈕
                                 addManualTestButton(profile.userId, profile.displayName);
                                 
-                                // 簡單測試
-                                try {
-                                    console.log('嘗試調用autoMatchTeacher...');
-                                    autoMatchTeacher(profile.userId, profile.displayName);
-                                    console.log('autoMatchTeacher調用完成');
-                                } catch (error) {
-                                    console.error('調用autoMatchTeacher時發生錯誤:', error);
-                                }
+                                // 將自動比對移到系統初始化完成後執行
+                                console.log('準備在系統初始化完成後執行自動比對');
                                 
                                 // 先測試函數是否存在
                                 if (typeof autoMatchTeacher === 'function') {
