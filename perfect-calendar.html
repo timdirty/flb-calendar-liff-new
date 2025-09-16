@@ -133,6 +133,16 @@
                 padding: 2px 4px;
             }
 
+            .user-info-section {
+                margin-top: 20px;
+                padding: 15px;
+            }
+
+            .user-info-container h3 {
+                font-size: 1rem;
+                margin-bottom: 12px;
+            }
+
 
         .user-details {
             display: flex;
@@ -157,6 +167,23 @@
             padding: 2px 6px;
             border-radius: 4px;
             word-break: break-all;
+        }
+
+        /* 用戶資訊區域 */
+        .user-info-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(248, 249, 250, 0.9);
+            border-radius: 12px;
+            border: 1px solid rgba(233, 236, 239, 0.9);
+        }
+
+        .user-info-container h3 {
+            color: rgba(51, 51, 51, 0.9);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0 0 15px 0;
+            text-align: center;
         }
 
         /* 日期時間顯示區域 */
@@ -1091,6 +1118,16 @@
                 font-size: 0.65rem;
                 padding: 4px 6px;
             }
+
+            .user-info-section {
+                margin-top: 15px;
+                padding: 12px;
+            }
+
+            .user-info-container h3 {
+                font-size: 0.9rem;
+                margin-bottom: 10px;
+            }
         }
 
         /* 馬卡龍配色變數 */
@@ -1232,16 +1269,6 @@
                             <button class="btn btn-primary" data-view="all">全部</button>
                         </div>
                     </div>
-                    <div class="control-group" id="userInfoGroup" style="display: block;">
-                        <label>LINE 用戶資訊</label>
-                        <div class="user-info">
-                            <div class="user-details">
-                                <div class="user-name" id="userDisplayName">未綁定</div>
-                                <div class="user-id" id="userDisplayId" style="display: none;"></div>
-                            </div>
-                            <button class="btn btn-secondary" id="bindUserBtn">綁定帳號</button>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -1269,6 +1296,20 @@
                     <i class="fas fa-calendar-times"></i>
                     <h3>載入中...</h3>
                     <p>正在獲取行事曆資料</p>
+                </div>
+            </div>
+
+            <!-- 用戶資訊區域 -->
+            <div class="user-info-section" id="userInfoGroup" style="display: block;">
+                <div class="user-info-container">
+                    <h3>LINE 用戶資訊</h3>
+                    <div class="user-info">
+                        <div class="user-details">
+                            <div class="user-name" id="userDisplayName">未綁定</div>
+                            <div class="user-id" id="userDisplayId" style="display: none;"></div>
+                        </div>
+                        <button class="btn btn-secondary" id="bindUserBtn">綁定帳號</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1389,11 +1430,21 @@
 
         // LINE UserID 相關函數
         function initLineUser() {
+            console.log('開始初始化LINE用戶...');
+            
             // 檢查是否在LINE環境中
-            if (typeof liff !== 'undefined' && liff.isInClient()) {
+            if (typeof liff !== 'undefined') {
+                console.log('LIFF SDK 已載入');
+                
                 liff.ready.then(() => {
+                    console.log('LIFF 已準備就緒');
+                    console.log('是否在LINE客戶端:', liff.isInClient());
+                    console.log('是否已登入:', liff.isLoggedIn());
+                    
                     if (liff.isLoggedIn()) {
+                        console.log('用戶已登入，獲取用戶資料...');
                         liff.getProfile().then(profile => {
+                            console.log('獲取到用戶資料:', profile);
                             currentUser = {
                                 userId: profile.userId,
                                 displayName: profile.displayName,
@@ -1402,30 +1453,45 @@
                             updateUserDisplay();
                         }).catch(error => {
                             console.error('獲取用戶資料失敗:', error);
+                            showBindButton();
                         });
                     } else {
+                        console.log('用戶未登入，顯示綁定按鈕');
                         showBindButton();
                     }
+                }).catch(error => {
+                    console.error('LIFF 初始化失敗:', error);
+                    showBindButton();
                 });
             } else {
+                console.log('LIFF SDK 未載入，顯示綁定按鈕');
                 // 不在LINE環境中，顯示綁定按鈕
                 showBindButton();
             }
         }
 
         function updateUserDisplay() {
+            console.log('更新用戶顯示，當前用戶:', currentUser);
+            
             const userInfoGroup = document.getElementById('userInfoGroup');
             const userDisplayName = document.getElementById('userDisplayName');
             const userDisplayId = document.getElementById('userDisplayId');
             const bindUserBtn = document.getElementById('bindUserBtn');
             
+            if (!userInfoGroup || !userDisplayName || !userDisplayId || !bindUserBtn) {
+                console.error('找不到用戶資訊元素');
+                return;
+            }
+            
             if (currentUser) {
+                console.log('顯示用戶資訊:', currentUser.displayName, currentUser.userId);
                 userDisplayName.textContent = currentUser.displayName;
                 userDisplayId.textContent = `ID: ${currentUser.userId}`;
                 userDisplayId.style.display = 'block';
                 bindUserBtn.textContent = '重新綁定';
                 userInfoGroup.style.display = 'block';
             } else {
+                console.log('顯示未綁定狀態');
                 userDisplayName.textContent = '未綁定';
                 userDisplayId.style.display = 'none';
                 bindUserBtn.textContent = '綁定帳號';
@@ -1438,13 +1504,23 @@
         }
 
         function bindUser() {
+            console.log('用戶點擊綁定按鈕');
+            
             if (typeof liff !== 'undefined') {
-                if (liff.isLoggedIn()) {
-                    liff.logout();
-                } else {
-                    liff.login();
-                }
+                liff.ready.then(() => {
+                    if (liff.isLoggedIn()) {
+                        console.log('用戶已登入，執行登出');
+                        liff.logout();
+                    } else {
+                        console.log('用戶未登入，執行登入');
+                        liff.login();
+                    }
+                }).catch(error => {
+                    console.error('LIFF 操作失敗:', error);
+                    alert('LINE 登入失敗，請重試');
+                });
             } else {
+                console.log('LIFF SDK 未載入');
                 alert('請在LINE應用程式中開啟此頁面');
             }
         }
