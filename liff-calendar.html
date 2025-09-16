@@ -668,7 +668,7 @@
                         </div>
                     </div>
                     <div class="header-actions">
-                        <button class="btn btn-settings-small" onclick="openSettings()" title="設置">
+                        <button class="btn btn-settings-small" id="settingsBtn" title="設置">
                             <i class="fas fa-cog"></i>
                         </button>
                     </div>
@@ -694,10 +694,10 @@
                     </div>
                     <div class="control-group">
                         <div class="view-buttons">
-                            <button class="btn btn-primary active" onclick="switchView('today')">今日</button>
-                            <button class="btn btn-primary" onclick="switchView('week')">本週</button>
-                            <button class="btn btn-primary" onclick="switchView('month')">本月</button>
-                            <button class="btn btn-primary" onclick="switchView('all')">全部</button>
+                            <button class="btn btn-primary active" data-view="today">今日</button>
+                            <button class="btn btn-primary" data-view="week">本週</button>
+                            <button class="btn btn-primary" data-view="month">本月</button>
+                            <button class="btn btn-primary" data-view="all">全部</button>
                         </div>
                     </div>
                 </div>
@@ -736,7 +736,7 @@
             <div class="settings-modal">
                 <div class="settings-header">
                     <h2>設置</h2>
-                    <button class="close-settings" onclick="closeSettings()">
+                    <button class="close-settings" id="closeSettingsBtn">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -755,7 +755,7 @@
                     </div>
                 </div>
                 
-                <button class="save-settings" onclick="saveSettings()">保存設置</button>
+                <button class="save-settings" id="saveSettingsBtn">保存設置</button>
             </div>
         </div>
     </div>
@@ -776,6 +776,32 @@
             minecraft: 'rgba(0, 184, 148, 0.8)'
         };
         let instructorColors = {};
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Settings button
+            document.getElementById('settingsBtn').addEventListener('click', openSettings);
+            
+            // Close settings button
+            document.getElementById('closeSettingsBtn').addEventListener('click', closeSettings);
+            
+            // Save settings button
+            document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
+            
+            // View buttons
+            document.querySelectorAll('[data-view]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const view = e.target.getAttribute('data-view');
+                    switchView(view);
+                });
+            });
+            
+            // Instructor select
+            document.getElementById('instructorSelect').addEventListener('change', () => {
+                renderEvents();
+                updateStats();
+            });
+        }
 
         // Initialize LIFF
         async function initializeLiff() {
@@ -799,6 +825,9 @@
                     document.getElementById('displayName').textContent = '測試用戶';
                     document.getElementById('matchedTeacher').textContent = '未匹配';
                     
+                    // 設置事件監聽器
+                    setupEventListeners();
+                    
                     // 直接載入講師列表和行事曆數據，跳過LIFF功能
                     await loadTeacherList();
                     await loadCalendarData();
@@ -818,6 +847,9 @@
                 document.getElementById('userId').textContent = profile.userId;
                 document.getElementById('displayName').textContent = profile.displayName;
 
+                // 設置事件監聽器
+                setupEventListeners();
+                
                 // Load teacher list and match
                 await loadTeacherList();
                 await matchTeacher(profile.displayName);
@@ -860,11 +892,16 @@
         async function loadInstructorsFromCalendar() {
             try {
                 const response = await fetch('/api/events');
-                const events = await response.json();
+                const data = await response.json();
                 
-                const instructors = [...new Set(events.map(event => event.instructor))];
-                allInstructors = instructors.map(name => ({ name, id: name }));
-                populateInstructorDropdown();
+                if (data.success) {
+                    const events = data.data || [];
+                    const instructors = [...new Set(events.map(event => event.instructor))];
+                    allInstructors = instructors.map(name => ({ name, id: name }));
+                    populateInstructorDropdown();
+                } else {
+                    throw new Error(data.error || 'Failed to load events');
+                }
             } catch (error) {
                 console.error('Error loading instructors from calendar:', error);
             }
