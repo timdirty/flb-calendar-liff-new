@@ -1130,6 +1130,54 @@
             }
         }
 
+        /* 載入動畫樣式 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(44, 44, 44, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(10px);
+        }
+
+        .loading-container {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 223, 102, 0.3);
+            border-top: 4px solid rgba(255, 223, 102, 0.9);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text h3 {
+            color: rgba(255, 223, 102, 0.9);
+            font-size: 1.5rem;
+            margin: 0 0 10px 0;
+            font-weight: 600;
+        }
+
+        .loading-text p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1rem;
+            margin: 0;
+        }
+
         /* 馬卡龍配色變數 */
         :root {
             --esm-color: #ff6b9d;
@@ -1173,7 +1221,18 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- 載入動畫 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">
+                <h3>載入中...</h3>
+                <p>正在初始化系統，請稍候</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="mainContainer" style="display: none;">
         <!-- 頂部標題區域 -->
         <div class="header">
             <div class="header-content">
@@ -1386,13 +1445,76 @@
 
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
-            loadSettings();
-            loadEvents();
+            console.log('頁面載入完成，開始初始化...');
+            
+            // 顯示載入動畫
+            showLoadingAnimation();
+            
+            // 設置事件監聽器
             setupEventListeners();
-            initLineUser();
-            updateDateTime();
-            setInterval(updateDateTime, 1000); // 每秒更新時間
+            
+            // 初始化系統
+            initializeSystem();
         });
+
+        // 顯示載入動畫
+        function showLoadingAnimation() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const mainContainer = document.getElementById('mainContainer');
+            
+            if (loadingOverlay) {
+                loadingOverlay.style.display = 'flex';
+            }
+            if (mainContainer) {
+                mainContainer.style.display = 'none';
+            }
+        }
+
+        // 隱藏載入動畫
+        function hideLoadingAnimation() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const mainContainer = document.getElementById('mainContainer');
+            
+            if (loadingOverlay) {
+                loadingOverlay.style.display = 'none';
+            }
+            if (mainContainer) {
+                mainContainer.style.display = 'block';
+            }
+        }
+
+        // 初始化系統
+        async function initializeSystem() {
+            try {
+                console.log('開始初始化系統...');
+                
+                // 載入設定
+                loadSettings();
+                
+                // 初始化LINE用戶
+                await initLineUser();
+                
+                // 更新日期時間
+                updateDateTime();
+                setInterval(updateDateTime, 1000);
+                
+                // 載入行事曆資料
+                await loadEvents();
+                
+                // 隱藏載入動畫
+                setTimeout(() => {
+                    hideLoadingAnimation();
+                    console.log('系統初始化完成');
+                }, 2000); // 至少顯示2秒載入動畫
+                
+            } catch (error) {
+                console.error('系統初始化失敗:', error);
+                // 即使失敗也要隱藏載入動畫
+                setTimeout(() => {
+                    hideLoadingAnimation();
+                }, 2000);
+            }
+        }
 
         // 更新日期時間顯示
         function updateDateTime() {
@@ -1429,45 +1551,52 @@
         }
 
         // LINE UserID 相關函數
-        function initLineUser() {
+        async function initLineUser() {
             console.log('開始初始化LINE用戶...');
             
-            // 檢查是否在LINE環境中
-            if (typeof liff !== 'undefined') {
-                console.log('LIFF SDK 已載入');
-                
-                liff.ready.then(() => {
-                    console.log('LIFF 已準備就緒');
-                    console.log('是否在LINE客戶端:', liff.isInClient());
-                    console.log('是否已登入:', liff.isLoggedIn());
+            return new Promise((resolve) => {
+                // 檢查是否在LINE環境中
+                if (typeof liff !== 'undefined') {
+                    console.log('LIFF SDK 已載入');
                     
-                    if (liff.isLoggedIn()) {
-                        console.log('用戶已登入，獲取用戶資料...');
-                        liff.getProfile().then(profile => {
-                            console.log('獲取到用戶資料:', profile);
-                            currentUser = {
-                                userId: profile.userId,
-                                displayName: profile.displayName,
-                                pictureUrl: profile.pictureUrl
-                            };
-                            updateUserDisplay();
-                        }).catch(error => {
-                            console.error('獲取用戶資料失敗:', error);
+                    liff.ready.then(() => {
+                        console.log('LIFF 已準備就緒');
+                        console.log('是否在LINE客戶端:', liff.isInClient());
+                        console.log('是否已登入:', liff.isLoggedIn());
+                        
+                        if (liff.isLoggedIn()) {
+                            console.log('用戶已登入，獲取用戶資料...');
+                            liff.getProfile().then(profile => {
+                                console.log('獲取到用戶資料:', profile);
+                                currentUser = {
+                                    userId: profile.userId,
+                                    displayName: profile.displayName,
+                                    pictureUrl: profile.pictureUrl
+                                };
+                                updateUserDisplay();
+                                resolve();
+                            }).catch(error => {
+                                console.error('獲取用戶資料失敗:', error);
+                                showBindButton();
+                                resolve();
+                            });
+                        } else {
+                            console.log('用戶未登入，顯示綁定按鈕');
                             showBindButton();
-                        });
-                    } else {
-                        console.log('用戶未登入，顯示綁定按鈕');
+                            resolve();
+                        }
+                    }).catch(error => {
+                        console.error('LIFF 初始化失敗:', error);
                         showBindButton();
-                    }
-                }).catch(error => {
-                    console.error('LIFF 初始化失敗:', error);
+                        resolve();
+                    });
+                } else {
+                    console.log('LIFF SDK 未載入，顯示綁定按鈕');
+                    // 不在LINE環境中，顯示綁定按鈕
                     showBindButton();
-                });
-            } else {
-                console.log('LIFF SDK 未載入，顯示綁定按鈕');
-                // 不在LINE環境中，顯示綁定按鈕
-                showBindButton();
-            }
+                    resolve();
+                }
+            });
         }
 
         function updateUserDisplay() {
