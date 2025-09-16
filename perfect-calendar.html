@@ -2381,7 +2381,11 @@
             const startDate = new Date(event.start);
             const endDate = new Date(event.end);
             
-            // 格式化時間
+            // 格式化日期 - 使用本地日期，避免時區問題
+            const eventDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+            const displayDate = eventDate.toLocaleDateString('zh-TW');
+            
+            // 格式化時間 - 使用本地時間
             const timeString = `${startDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${endDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
             
             // 清理描述內容
@@ -2453,7 +2457,7 @@
                     <div class="event-details">
                         <div class="event-detail">
                             <i class="fas fa-calendar"></i>
-                            <span>${startDate.toLocaleDateString('zh-TW')}</span>
+                            <span>${displayDate}</span>
                         </div>
                         <div class="event-detail">
                             <i class="fas fa-clock"></i>

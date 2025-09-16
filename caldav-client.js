@@ -248,8 +248,32 @@ class CalDAVClient {
 
             vevents.forEach(vevent => {
                 const event = new ICAL.Event(vevent);
-                const start = event.startDate.toJSDate();
-                const end = event.endDate.toJSDate();
+                
+                // 獲取原始日期時間資訊
+                const startDate = event.startDate;
+                const endDate = event.endDate;
+                
+                // 檢查是否為全天事件
+                const isAllDay = startDate.isDate;
+                
+                let start, end;
+                
+                if (isAllDay) {
+                    // 全天事件：使用本地日期，不考慮時區
+                    start = new Date(startDate.year, startDate.month - 1, startDate.day);
+                    end = new Date(endDate.year, endDate.month - 1, endDate.day);
+                } else {
+                    // 非全天事件：檢查是否有時區資訊
+                    if (startDate.zone && startDate.zone.tzid) {
+                        // 有時區資訊，直接轉換
+                        start = startDate.toJSDate();
+                        end = endDate.toJSDate();
+                    } else {
+                        // 無時區資訊，假設為本地時間
+                        start = new Date(startDate.year, startDate.month - 1, startDate.day, startDate.hour, startDate.minute, startDate.second);
+                        end = new Date(endDate.year, endDate.month - 1, endDate.day, endDate.hour, endDate.minute, endDate.second);
+                    }
+                }
                 
                 events.push({
                     id: event.uid || Math.random().toString(36).substr(2, 9),
@@ -261,7 +285,7 @@ class CalDAVClient {
                     time: this.formatTimeRange(start, end),
                     date: start,
                     type: this.determineEventType(event.summary),
-                    allDay: event.startDate.isDate
+                    allDay: isAllDay
                 });
             });
         } catch (error) {
