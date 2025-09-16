@@ -247,22 +247,39 @@ class CalDAVClient {
             const vevents = comp.getAllSubcomponents('vevent');
 
             vevents.forEach(vevent => {
-                const event = new ICAL.Event(vevent);
-                const start = event.startDate.toJSDate();
-                const end = event.endDate.toJSDate();
-                
-                events.push({
-                    id: event.uid || Math.random().toString(36).substr(2, 9),
-                    title: event.summary || '無標題',
-                    description: event.description || '',
-                    location: event.location || '',
-                    start: start,
-                    end: end,
-                    time: this.formatTimeRange(start, end),
-                    date: start,
-                    type: this.determineEventType(event.summary),
-                    allDay: event.startDate.isDate
-                });
+                try {
+                    const event = new ICAL.Event(vevent);
+                    
+                    // 檢查日期屬性是否存在
+                    if (!event.startDate || !event.endDate) {
+                        console.log('事件缺少日期資訊，跳過:', event.summary || '無標題');
+                        return;
+                    }
+                    
+                    const start = event.startDate.toJSDate();
+                    const end = event.endDate.toJSDate();
+                    
+                    // 檢查日期是否有效
+                    if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) {
+                        console.log('事件日期無效，跳過:', event.summary || '無標題');
+                        return;
+                    }
+                    
+                    events.push({
+                        id: event.uid || Math.random().toString(36).substr(2, 9),
+                        title: event.summary || '無標題',
+                        description: event.description || '',
+                        location: event.location || '',
+                        start: start,
+                        end: end,
+                        time: this.formatTimeRange(start, end),
+                        date: start,
+                        type: this.determineEventType(event.summary),
+                        allDay: event.startDate.isDate
+                    });
+                } catch (eventError) {
+                    console.error('處理單個事件失敗:', eventError.message);
+                }
             });
         } catch (error) {
             console.error('解析 iCal 資料失敗:', error.message);
