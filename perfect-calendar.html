@@ -1721,7 +1721,8 @@
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    redirect: 'follow'  // 自動跟隨重定向
                 });
                 
                 console.log('API回應狀態:', response.status);
