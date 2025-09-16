@@ -1567,9 +1567,19 @@
                                 };
                                 updateUserDisplay();
                                 
-                                // 自動比對講師
+                                // 測試基本日誌
+                                console.log('=== 開始測試自動比對 ===');
                                 console.log('準備執行自動比對講師...');
                                 console.log('測試：直接調用autoMatchTeacher函數');
+                                
+                                // 簡單測試
+                                try {
+                                    console.log('嘗試調用autoMatchTeacher...');
+                                    autoMatchTeacher(profile.userId, profile.displayName);
+                                    console.log('autoMatchTeacher調用完成');
+                                } catch (error) {
+                                    console.error('調用autoMatchTeacher時發生錯誤:', error);
+                                }
                                 
                                 // 先測試函數是否存在
                                 if (typeof autoMatchTeacher === 'function') {
