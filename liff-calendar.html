@@ -1019,7 +1019,14 @@
             try {
                 console.log('開始載入行事曆數據...');
                 const response = await fetch('/api/events');
-                allEvents = await response.json();
+                const data = await response.json();
+                
+                if (data.success) {
+                    allEvents = data.data;
+                } else {
+                    allEvents = [];
+                }
+                
                 console.log('載入的行事曆數據:', allEvents);
                 renderEvents();
                 updateStats();
