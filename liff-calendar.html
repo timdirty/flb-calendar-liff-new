@@ -789,6 +789,17 @@
                 }
                 
                 console.log('使用LIFF ID:', liffId);
+                
+                // 檢查是否為測試用的LIFF ID
+                if (liffId === '2000000000-XXXXXXXX') {
+                    console.log('檢測到測試LIFF ID，跳過LIFF初始化');
+                    // 直接載入講師列表，跳過LIFF功能
+                    await loadTeacherList();
+                    document.getElementById('loadingScreen').style.display = 'none';
+                    document.getElementById('mainContent').style.display = 'block';
+                    return;
+                }
+                
                 await liff.init({ liffId: liffId });
                 
                 if (!liff.isLoggedIn()) {
