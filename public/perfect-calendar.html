@@ -701,6 +701,197 @@
         /* 響應式設計 */
         @media (max-width: 768px) {
             .container {
+                padding: 8px;
+                max-width: 100%;
+                overflow-x: hidden;
+            }
+
+            .header {
+                padding: 12px;
+                margin-bottom: 12px;
+            }
+
+            .header h1 {
+                font-size: 1.1rem;
+                line-height: 1.2;
+            }
+
+            .header-logo {
+                height: 35px;
+            }
+
+            .header-left {
+                gap: 8px;
+            }
+
+            .btn-settings-small {
+                width: 32px;
+                height: 32px;
+                font-size: 0.8rem;
+            }
+
+            .control-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+
+            .control-group {
+                width: 100%;
+            }
+
+            .control-group label {
+                font-size: 0.85rem;
+                margin-bottom: 4px;
+            }
+
+            .control-group select,
+            .control-group input {
+                padding: 8px;
+                font-size: 0.9rem;
+                border-radius: 6px;
+            }
+
+            .view-buttons {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 6px;
+                width: 100%;
+            }
+
+            .btn-primary {
+                padding: 8px 4px;
+                font-size: 0.75rem;
+                text-align: center;
+                min-height: 36px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .event-card {
+                padding: 12px;
+                margin-bottom: 8px;
+                border-radius: 8px;
+            }
+
+            .event-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+                margin-bottom: 12px;
+            }
+
+            .event-title {
+                font-size: 1rem;
+                line-height: 1.3;
+                word-wrap: break-word;
+            }
+
+            .event-instructor {
+                padding: 4px 8px;
+                font-size: 0.8rem;
+                align-self: flex-start;
+            }
+
+            .event-details {
+                grid-template-columns: 1fr;
+                gap: 6px;
+                margin-bottom: 12px;
+            }
+
+            .event-detail {
+                font-size: 0.8rem;
+                padding: 4px 0;
+            }
+
+            .event-detail i {
+                margin-right: 6px;
+                width: 14px;
+            }
+
+            .event-description {
+                padding: 10px;
+                margin-bottom: 10px;
+                border-radius: 6px;
+            }
+
+            .event-description h4 {
+                font-size: 0.9rem;
+                margin-bottom: 6px;
+            }
+
+            .event-description p {
+                font-size: 0.8rem;
+                line-height: 1.4;
+                word-wrap: break-word;
+            }
+
+            .lesson-button {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+                border-radius: 6px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 6px;
+            }
+
+            .stat-item {
+                padding: 8px 6px;
+                border-radius: 6px;
+            }
+
+            .stat-item h3 {
+                font-size: 1.1rem;
+                margin-bottom: 4px;
+            }
+
+            .stat-item p {
+                font-size: 0.7rem;
+                line-height: 1.2;
+            }
+
+            .settings-modal {
+                width: 95%;
+                padding: 16px;
+                margin: 10px auto;
+            }
+
+            .color-picker-group {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .instructor-color-group {
+                grid-template-columns: 1fr;
+            }
+
+            .datetime-display {
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .datetime-item {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+            }
+
+            .progress-steps {
+                gap: 8px;
+                margin: 12px 0;
+            }
+
+            .progress-step {
+                font-size: 0.7rem;
+                padding: 6px 8px;
+            }
+        }
+
+        /* 超小屏幕響應式設計 */
+        @media (max-width: 480px) {
+            .container {
                 padding: 6px;
             }
 
@@ -710,83 +901,94 @@
             }
 
             .header h1 {
-                font-size: 1.2rem;
+                font-size: 1rem;
             }
 
             .header-logo {
-                height: 40px;
-            }
-
-            .header-left {
-                gap: 10px;
+                height: 30px;
             }
 
             .btn-settings-small {
-                width: 35px;
-                height: 35px;
-                font-size: 0.9rem;
+                width: 28px;
+                height: 28px;
+                font-size: 0.7rem;
             }
 
-            .control-row {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 6px;
-            }
-
-            .control-group {
-                width: 100%;
-            }
-
-            .view-buttons {
-                display: flex;
-                gap: 4px;
-                flex-wrap: nowrap;
-            }
-
-            .btn-primary {
-                padding: 6px 8px;
+            .control-group label {
                 font-size: 0.8rem;
             }
 
-            .event-header {
-                flex-direction: column;
-                align-items: stretch;
+            .control-group select,
+            .control-group input {
+                padding: 6px;
+                font-size: 0.85rem;
             }
 
-            .event-details {
-                grid-template-columns: 1fr;
+            .view-buttons {
                 gap: 4px;
             }
 
-            .stats-grid {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 4px;
+            .btn-primary {
+                padding: 6px 2px;
+                font-size: 0.7rem;
+                min-height: 32px;
             }
 
-            .stat-item {
-                padding: 8px;
+            .event-card {
+                padding: 10px;
+                margin-bottom: 6px;
             }
 
-            .stat-item h3 {
-                font-size: 1.2rem;
+            .event-title {
+                font-size: 0.9rem;
             }
 
-            .stat-item p {
+            .event-instructor {
+                padding: 3px 6px;
                 font-size: 0.75rem;
             }
 
-            .settings-modal {
-                width: 95%;
-                padding: 12px;
+            .event-detail {
+                font-size: 0.75rem;
             }
 
-            .color-picker-group {
-                grid-template-columns: 1fr;
-                gap: 6px;
+            .event-description {
+                padding: 8px;
             }
 
-            .instructor-color-group {
-                grid-template-columns: 1fr;
+            .event-description h4 {
+                font-size: 0.85rem;
+            }
+
+            .event-description p {
+                font-size: 0.75rem;
+            }
+
+            .lesson-button {
+                padding: 5px 10px;
+                font-size: 0.75rem;
+            }
+
+            .stat-item {
+                padding: 6px 4px;
+            }
+
+            .stat-item h3 {
+                font-size: 1rem;
+            }
+
+            .stat-item p {
+                font-size: 0.65rem;
+            }
+
+            .datetime-item {
+                padding: 6px 10px;
+                font-size: 0.75rem;
+            }
+
+            .progress-step {
+                font-size: 0.65rem;
+                padding: 4px 6px;
             }
         }
 
