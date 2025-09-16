@@ -1569,9 +1569,17 @@
                                 
                                 // 自動比對講師
                                 console.log('準備執行自動比對講師...');
-                                autoMatchTeacher(profile.userId, profile.displayName).catch(error => {
-                                    console.error('自動比對講師失敗:', error);
-                                });
+                                console.log('測試：直接調用autoMatchTeacher函數');
+                                
+                                // 先測試函數是否存在
+                                if (typeof autoMatchTeacher === 'function') {
+                                    console.log('autoMatchTeacher函數存在，開始調用...');
+                                    autoMatchTeacher(profile.userId, profile.displayName).catch(error => {
+                                        console.error('自動比對講師失敗:', error);
+                                    });
+                                } else {
+                                    console.error('autoMatchTeacher函數不存在！');
+                                }
                                 
                                 resolve();
                             }).catch(error => {
