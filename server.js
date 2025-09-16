@@ -25,7 +25,13 @@ app.use(helmet({
 app.use(compression());
 app.use(cors());
 app.use(express.json());
+// 提供靜態文件
 app.use(express.static('public'));
+
+// 提供LIFF應用
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'liff-calendar.html'));
+});
 
 // 初始化SQLite資料庫
 const db = new sqlite3.Database('./teacher_cache.db');
