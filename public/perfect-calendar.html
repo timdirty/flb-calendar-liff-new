@@ -1324,6 +1324,7 @@
                             <div class="user-id" id="userDisplayId" style="display: none;"></div>
                         </div>
                         <button class="btn btn-secondary" id="bindUserBtn">綁定帳號</button>
+                        <button class="btn btn-primary" id="testUserBtn" style="margin-left: 10px;">測試用戶</button>
                     </div>
                 </div>
             </div>
@@ -1530,22 +1531,27 @@
         // LINE UserID 相關函數
         async function initLineUser() {
             console.log('開始初始化LINE用戶...');
+            console.log('當前URL:', window.location.href);
+            console.log('User Agent:', navigator.userAgent);
             
             return new Promise((resolve) => {
-                // 設置超時保護（2秒）
+                // 設置超時保護（3秒）
                 const timeout = setTimeout(() => {
                     console.warn('LIFF 初始化超時，跳過用戶認證');
                     showBindButton();
                     resolve();
-                }, 2000);
+                }, 3000);
                 
                 // 檢查是否在LINE環境中
                 if (typeof liff !== 'undefined') {
                     console.log('LIFF SDK 已載入');
+                    console.log('LIFF 版本:', liff.getVersion ? liff.getVersion() : '未知');
+                    console.log('是否在LINE客戶端:', liff.isInClient ? liff.isInClient() : '未知');
                     
                     // 嘗試多種方式獲取用戶資料
                     const tryGetUserData = () => {
                         try {
+                            console.log('檢查登入狀態...');
                             if (liff.isLoggedIn && liff.isLoggedIn()) {
                                 console.log('用戶已登入，獲取用戶資料...');
                                 liff.getProfile().then(profile => {
@@ -1580,6 +1586,8 @@
                             const userId = urlParams.get('userId');
                             const displayName = urlParams.get('displayName');
                             
+                            console.log('URL參數:', { userId, displayName });
+                            
                             if (userId && displayName) {
                                 clearTimeout(timeout);
                                 console.log('從URL獲取到用戶資料:', { userId, displayName });
@@ -1602,7 +1610,7 @@
                     };
                     
                     // 延遲一點時間再嘗試，確保LIFF完全載入
-                    setTimeout(tryGetUserData, 500);
+                    setTimeout(tryGetUserData, 1000);
                     
                 } else {
                     clearTimeout(timeout);
@@ -1650,21 +1658,54 @@
             console.log('用戶點擊綁定按鈕');
             
             if (typeof liff !== 'undefined') {
-                liff.ready.then(() => {
-                    if (liff.isLoggedIn()) {
-                        console.log('用戶已登入，執行登出');
-                        liff.logout();
+                try {
+                    if (liff.isLoggedIn && liff.isLoggedIn()) {
+                        console.log('用戶已登入，獲取用戶資料');
+                        liff.getProfile().then(profile => {
+                            console.log('獲取到用戶資料:', profile);
+                            currentUser = {
+                                userId: profile.userId,
+                                displayName: profile.displayName,
+                                pictureUrl: profile.pictureUrl
+                            };
+                            updateUserDisplay();
+                            alert('綁定成功！');
+                        }).catch(error => {
+                            console.error('獲取用戶資料失敗:', error);
+                            alert('獲取用戶資料失敗，請重試');
+                        });
                     } else {
-                        console.log('用戶未登入，執行登入');
-                        liff.login();
+                        console.log('用戶未登入，嘗試登入');
+                        // 在LINE環境中，直接嘗試登入
+                        liff.login().catch(error => {
+                            console.error('登入失敗:', error);
+                            alert('登入失敗，請重試');
+                        });
                     }
-                }).catch(error => {
-                    console.error('LIFF 操作失敗:', error);
-                    alert('LINE 登入失敗，請重試');
-                });
+                } catch (error) {
+                    console.error('LIFF 操作異常:', error);
+                    alert('綁定失敗，請重試');
+                }
             } else {
                 console.log('LIFF SDK 未載入');
                 alert('請在LINE應用程式中開啟此頁面');
+            }
+        }
+
+        function testUser() {
+            console.log('用戶點擊測試按鈕');
+            
+            const testUserId = prompt('請輸入測試用戶ID:', 'U1234567890abcdef');
+            const testDisplayName = prompt('請輸入測試用戶名稱:', '測試用戶');
+            
+            if (testUserId && testDisplayName) {
+                currentUser = {
+                    userId: testUserId,
+                    displayName: testDisplayName,
+                    pictureUrl: null
+                };
+                updateUserDisplay();
+                alert('測試用戶設定成功！');
             }
         }
 
@@ -1702,6 +1743,9 @@
             
             // 綁定用戶按鈕事件監聽器
             document.getElementById('bindUserBtn').addEventListener('click', bindUser);
+            
+            // 測試用戶按鈕事件監聽器
+            document.getElementById('testUserBtn').addEventListener('click', testUser);
         }
 
         // 生成隨機馬卡龍顏色
