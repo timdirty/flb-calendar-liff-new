@@ -39,6 +39,15 @@ app.get('/liff-calendar.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'liff-calendar.html'));
 });
 
+// 獲取LIFF配置
+app.get('/api/liff-config', (req, res) => {
+    res.json({
+        success: true,
+        liffId: process.env.LIFF_ID || '2000000000-XXXXXXXX',
+        googleScriptUrl: process.env.GOOGLE_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/exec'
+    });
+});
+
 // 初始化SQLite資料庫
 const db = new sqlite3.Database('./teacher_cache.db');
 

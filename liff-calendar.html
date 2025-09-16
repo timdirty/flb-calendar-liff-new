@@ -762,7 +762,7 @@
 
     <script>
         // Global variables
-        let liffId = 'YOUR_LIFF_ID'; // 請替換為您的LIFF ID
+        let liffId = '2000000000-XXXXXXXX'; // 預設LIFF ID，將從服務器獲取實際ID
         let allEvents = [];
         let allInstructors = [];
         let matchedTeacher = null;
@@ -780,6 +780,15 @@
         // Initialize LIFF
         async function initializeLiff() {
             try {
+                // 先從服務器獲取LIFF配置
+                const configResponse = await fetch('/api/liff-config');
+                const config = await configResponse.json();
+                
+                if (config.success) {
+                    liffId = config.liffId;
+                }
+                
+                console.log('使用LIFF ID:', liffId);
                 await liff.init({ liffId: liffId });
                 
                 if (!liff.isLoggedIn()) {
