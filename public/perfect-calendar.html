@@ -1306,13 +1306,13 @@
                 let shouldShow = false;
                 switch (currentView) {
                     case 'today':
-                        // 使用更可靠的日期比較方法
-                        const eventYear = eventDate.getFullYear();
-                        const eventMonth = eventDate.getMonth();
-                        const eventDay = eventDate.getDate();
-                        const nowYear = now.getFullYear();
-                        const nowMonth = now.getMonth();
-                        const nowDay = now.getDate();
+                        // 使用UTC時間進行日期比較，避免時區問題
+                        const eventYear = eventDate.getUTCFullYear();
+                        const eventMonth = eventDate.getUTCMonth();
+                        const eventDay = eventDate.getUTCDate();
+                        const nowYear = now.getUTCFullYear();
+                        const nowMonth = now.getUTCMonth();
+                        const nowDay = now.getUTCDate();
                         shouldShow = eventYear === nowYear && eventMonth === nowMonth && eventDay === nowDay;
                         console.log(`事件篩選 - 標題: ${event.title}, 事件日期: ${eventYear}-${eventMonth+1}-${eventDay}, 今天: ${nowYear}-${nowMonth+1}-${nowDay}, 顯示: ${shouldShow}`);
                         break;
@@ -1468,13 +1468,13 @@
                 let shouldShow = false;
                 switch (currentView) {
                     case 'today':
-                        // 使用更可靠的日期比較方法
-                        const eventYear = eventDate.getFullYear();
-                        const eventMonth = eventDate.getMonth();
-                        const eventDay = eventDate.getDate();
-                        const nowYear = now.getFullYear();
-                        const nowMonth = now.getMonth();
-                        const nowDay = now.getDate();
+                        // 使用UTC時間進行日期比較，避免時區問題
+                        const eventYear = eventDate.getUTCFullYear();
+                        const eventMonth = eventDate.getUTCMonth();
+                        const eventDay = eventDate.getUTCDate();
+                        const nowYear = now.getUTCFullYear();
+                        const nowMonth = now.getUTCMonth();
+                        const nowDay = now.getUTCDate();
                         shouldShow = eventYear === nowYear && eventMonth === nowMonth && eventDay === nowDay;
                         break;
                     case 'week':
