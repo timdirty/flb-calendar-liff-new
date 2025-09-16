@@ -27,9 +27,15 @@ app.use(cors());
 app.use(express.json());
 // 提供靜態文件
 app.use(express.static('public'));
+app.use(express.static('.')); // 提供根目錄的靜態文件
 
 // 提供LIFF應用
 app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'liff-calendar.html'));
+});
+
+// 直接提供LIFF應用文件
+app.get('/liff-calendar.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'liff-calendar.html'));
 });
 
