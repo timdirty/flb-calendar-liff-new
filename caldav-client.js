@@ -280,10 +280,10 @@ class CalDAVClient {
                     title: event.summary || '無標題',
                     description: event.description || '',
                     location: event.location || '',
-                    start: start,
-                    end: end,
+                    start: start.toISOString(),
+                    end: end.toISOString(),
                     time: this.formatTimeRange(start, end),
-                    date: start,
+                    date: start.toISOString(),
                     type: this.determineEventType(event.summary),
                     allDay: isAllDay
                 });
