@@ -901,6 +901,23 @@
                         </select>
                     </div>
                     <div class="control-group">
+                        <label for="timeFilter">時段篩選</label>
+                        <select id="timeFilter">
+                            <option value="">全部時段</option>
+                            <option value="morning">早上 (06:00-12:00)</option>
+                            <option value="afternoon">下午 (12:00-18:00)</option>
+                            <option value="evening">晚上 (18:00-24:00)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="sortOrder">排序方式</label>
+                        <select id="sortOrder">
+                            <option value="time">按時間排序</option>
+                            <option value="instructor">按講師排序</option>
+                            <option value="title">按標題排序</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
                         <div class="view-buttons">
                             <button class="btn btn-primary active" data-view="today">今日</button>
                             <button class="btn btn-primary" data-view="week">本週</button>
@@ -1055,6 +1072,17 @@
         function setupEventListeners() {
             document.getElementById('instructorSelect').addEventListener('change', function() {
                 updateStats();
+                renderEvents();
+            });
+            
+            // 時段篩選事件監聽器
+            document.getElementById('timeFilter').addEventListener('change', function() {
+                updateStats();
+                renderEvents();
+            });
+            
+            // 排序方式事件監聽器
+            document.getElementById('sortOrder').addEventListener('change', function() {
                 renderEvents();
             });
             
@@ -1292,11 +1320,36 @@
         function renderEvents() {
             const container = document.getElementById('eventsContainer');
             const instructorFilter = document.getElementById('instructorSelect').value;
+            const timeFilter = document.getElementById('timeFilter').value;
+            const sortOrder = document.getElementById('sortOrder').value;
             
             let filteredEvents = allEvents.filter(event => {
                 // 講師篩選
                 if (instructorFilter && event.instructor !== instructorFilter) {
                     return false;
+                }
+                
+                // 時段篩選
+                if (timeFilter) {
+                    const eventDate = new Date(event.start);
+                    const hour = eventDate.getUTCHours();
+                    let timeMatch = false;
+                    
+                    switch (timeFilter) {
+                        case 'morning':
+                            timeMatch = hour >= 6 && hour < 12;
+                            break;
+                        case 'afternoon':
+                            timeMatch = hour >= 12 && hour < 18;
+                            break;
+                        case 'evening':
+                            timeMatch = hour >= 18 && hour < 24;
+                            break;
+                    }
+                    
+                    if (!timeMatch) {
+                        return false;
+                    }
                 }
                 
                 // 日期篩選
@@ -1337,6 +1390,20 @@
                 }
                 
                 return shouldShow;
+            });
+            
+            // 排序事件
+            filteredEvents.sort((a, b) => {
+                switch (sortOrder) {
+                    case 'time':
+                        return new Date(a.start) - new Date(b.start);
+                    case 'instructor':
+                        return a.instructor.localeCompare(b.instructor);
+                    case 'title':
+                        return a.title.localeCompare(b.title);
+                    default:
+                        return new Date(a.start) - new Date(b.start);
+                }
             });
             
             if (filteredEvents.length === 0) {
@@ -1459,10 +1526,34 @@
         function updateStats() {
             // 獲取當前篩選後的事件
             const instructorFilter = document.getElementById('instructorSelect').value;
+            const timeFilter = document.getElementById('timeFilter').value;
             const filteredEvents = allEvents.filter(event => {
                 // 講師篩選
                 if (instructorFilter && event.instructor !== instructorFilter) {
                     return false;
+                }
+                
+                // 時段篩選
+                if (timeFilter) {
+                    const eventDate = new Date(event.start);
+                    const hour = eventDate.getUTCHours();
+                    let timeMatch = false;
+                    
+                    switch (timeFilter) {
+                        case 'morning':
+                            timeMatch = hour >= 6 && hour < 12;
+                            break;
+                        case 'afternoon':
+                            timeMatch = hour >= 12 && hour < 18;
+                            break;
+                        case 'evening':
+                            timeMatch = hour >= 18 && hour < 24;
+                            break;
+                    }
+                    
+                    if (!timeMatch) {
+                        return false;
+                    }
                 }
                 
                 // 日期篩選
