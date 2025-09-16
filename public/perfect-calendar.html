@@ -113,9 +113,50 @@
             border: 1px solid rgba(233, 236, 239, 0.9);
         }
 
-        .user-info span {
+            .user-info span {
+                color: rgba(51, 51, 51, 0.9);
+                font-weight: 500;
+            }
+
+            .user-details {
+                align-items: center;
+                text-align: center;
+            }
+
+            .user-name {
+                font-size: 0.9rem;
+                margin-bottom: 3px;
+            }
+
+            .user-id {
+                font-size: 0.7rem;
+                padding: 2px 4px;
+            }
+
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            flex: 1;
+        }
+
+        .user-name {
             color: rgba(51, 51, 51, 0.9);
-            font-weight: 500;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .user-id {
+            color: rgba(102, 102, 102, 0.8);
+            font-size: 0.8rem;
+            font-family: monospace;
+            background: rgba(248, 249, 250, 0.9);
+            padding: 2px 6px;
+            border-radius: 4px;
+            word-break: break-all;
         }
 
         /* 日期時間顯示區域 */
@@ -1186,7 +1227,10 @@
                     <div class="control-group" id="userInfoGroup" style="display: none;">
                         <label>LINE 用戶資訊</label>
                         <div class="user-info">
-                            <span id="userDisplayName">未綁定</span>
+                            <div class="user-details">
+                                <div class="user-name" id="userDisplayName">未綁定</div>
+                                <div class="user-id" id="userDisplayId" style="display: none;"></div>
+                            </div>
                             <button class="btn btn-secondary" id="bindUserBtn">綁定帳號</button>
                         </div>
                     </div>
@@ -1364,14 +1408,18 @@
         function updateUserDisplay() {
             const userInfoGroup = document.getElementById('userInfoGroup');
             const userDisplayName = document.getElementById('userDisplayName');
+            const userDisplayId = document.getElementById('userDisplayId');
             const bindUserBtn = document.getElementById('bindUserBtn');
             
             if (currentUser) {
                 userDisplayName.textContent = currentUser.displayName;
+                userDisplayId.textContent = `ID: ${currentUser.userId}`;
+                userDisplayId.style.display = 'block';
                 bindUserBtn.textContent = '重新綁定';
                 userInfoGroup.style.display = 'block';
             } else {
                 userDisplayName.textContent = '未綁定';
+                userDisplayId.style.display = 'none';
                 bindUserBtn.textContent = '綁定帳號';
                 userInfoGroup.style.display = 'block';
             }
