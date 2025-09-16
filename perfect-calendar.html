@@ -1566,6 +1566,11 @@
                                     pictureUrl: profile.pictureUrl
                                 };
                                 updateUserDisplay();
+                                
+                                // 自動比對講師
+                                console.log('準備執行自動比對講師...');
+                                autoMatchTeacher(profile.userId, profile.displayName);
+                                
                                 resolve();
                             }).catch(error => {
                                 console.error('獲取用戶資料失敗:', error);
