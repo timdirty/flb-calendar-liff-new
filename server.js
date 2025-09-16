@@ -310,10 +310,22 @@ const CALDAV_CONFIG = {
 // 初始化 CalDAV 客戶端
 let caldavClient = null;
 if (CALDAV_CONFIG.baseUrl && CALDAV_CONFIG.username && CALDAV_CONFIG.password) {
-    caldavClient = new CalDAVClient(CALDAV_CONFIG.baseUrl, CALDAV_CONFIG.username, CALDAV_CONFIG.password);
-    console.log('CalDAV 客戶端已初始化');
+    try {
+        caldavClient = new CalDAVClient(CALDAV_CONFIG.baseUrl, CALDAV_CONFIG.username, CALDAV_CONFIG.password);
+        console.log('CalDAV 客戶端已初始化');
+        console.log('CalDAV URL:', CALDAV_CONFIG.baseUrl);
+        console.log('CalDAV 用戶名:', CALDAV_CONFIG.username);
+    } catch (error) {
+        console.error('CalDAV 客戶端初始化失敗:', error.message);
+        caldavClient = null;
+    }
 } else {
     console.log('CalDAV 配置不完整，使用模擬數據');
+    console.log('缺少配置:', {
+        baseUrl: !!CALDAV_CONFIG.baseUrl,
+        username: !!CALDAV_CONFIG.username,
+        password: !!CALDAV_CONFIG.password
+    });
 }
 
 // 模擬行事曆事件數據（當CalDAV不可用時使用）
