@@ -18,7 +18,7 @@ app.use(helmet({
             styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
             scriptSrc: ["'self'", "'unsafe-inline'", "https://static.line-scdn.net"],
             imgSrc: ["'self'", "data:", "https:"],
-            connectSrc: ["'self'", "https://script.google.com", "https://api.line.me", "https://api.line.biz"],
+            connectSrc: ["'self'", "https://script.google.com"],
             fontSrc: ["'self'", "https://cdnjs.cloudflare.com"]
         }
     }
@@ -26,28 +26,7 @@ app.use(helmet({
 app.use(compression());
 app.use(cors());
 app.use(express.json());
-// 提供靜態文件
 app.use(express.static('public'));
-app.use(express.static('.')); // 提供根目錄的靜態文件
-
-// 提供LIFF應用
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'liff-calendar.html'));
-});
-
-// 直接提供LIFF應用文件
-app.get('/liff-calendar.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'liff-calendar.html'));
-});
-
-// 獲取LIFF配置
-app.get('/api/liff-config', (req, res) => {
-    res.json({
-        success: true,
-        liffId: process.env.LIFF_ID || '2000000000-XXXXXXXX',
-        googleScriptUrl: process.env.GOOGLE_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/exec'
-    });
-});
 
 // 初始化SQLite資料庫
 const db = new sqlite3.Database('./teacher_cache.db');
@@ -74,6 +53,22 @@ db.serialize(() => {
 
 // Google Apps Script API 配置
 const GOOGLE_SCRIPT_URL = process.env.GOOGLE_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/exec';
+
+// CalDAV 配置
+const CALDAV_CONFIG = {
+    baseUrl: process.env.CALDAV_URL || 'https://funlearnbar.synology.me:9102/caldav.php',
+    username: process.env.CALDAV_USERNAME || 'testacount',
+    password: process.env.CALDAV_PASSWORD || 'testacount'
+};
+
+// 初始化 CalDAV 客戶端
+let caldavClient = null;
+try {
+    caldavClient = new CalDAVClient(CALDAV_CONFIG.baseUrl, CALDAV_CONFIG.username, CALDAV_CONFIG.password);
+    console.log('CalDAV 客戶端初始化成功');
+} catch (error) {
+    console.error('CalDAV 客戶端初始化失敗:', error.message);
+}
 
 // 快取設定
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24小時
@@ -300,35 +295,7 @@ function getTeacherMatchHistory(userId) {
     });
 }
 
-// CalDAV 配置
-const CALDAV_CONFIG = {
-    baseUrl: process.env.CALDAV_URL || 'https://funlearnbar.synology.me:9102/caldav.php/',
-    username: process.env.CALDAV_USERNAME || 'testacount',
-    password: process.env.CALDAV_PASSWORD || 'testpassword'
-};
-
-// 初始化 CalDAV 客戶端
-let caldavClient = null;
-if (CALDAV_CONFIG.baseUrl && CALDAV_CONFIG.username && CALDAV_CONFIG.password) {
-    try {
-        caldavClient = new CalDAVClient(CALDAV_CONFIG.baseUrl, CALDAV_CONFIG.username, CALDAV_CONFIG.password);
-        console.log('CalDAV 客戶端已初始化');
-        console.log('CalDAV URL:', CALDAV_CONFIG.baseUrl);
-        console.log('CalDAV 用戶名:', CALDAV_CONFIG.username);
-    } catch (error) {
-        console.error('CalDAV 客戶端初始化失敗:', error.message);
-        caldavClient = null;
-    }
-} else {
-    console.log('CalDAV 配置不完整，使用模擬數據');
-    console.log('缺少配置:', {
-        baseUrl: !!CALDAV_CONFIG.baseUrl,
-        username: !!CALDAV_CONFIG.username,
-        password: !!CALDAV_CONFIG.password
-    });
-}
-
-// 模擬行事曆事件數據（當CalDAV不可用時使用）
+// 模擬行事曆事件數據（實際部署時應該連接到真實的CalDAV服務器）
 let mockEvents = [
     {
         id: 1,
@@ -472,51 +439,84 @@ app.post('/api/refresh-teachers', async (req, res) => {
 // 獲取行事曆事件
 app.get('/api/events', async (req, res) => {
     try {
-        if (caldavClient) {
-            console.log('嘗試從CalDAV獲取事件...');
-            try {
-                // 獲取所有講師的行事曆
-                const calendars = await caldavClient.getCalendars();
-                console.log('找到行事曆:', calendars.length);
-                
-                let allEvents = [];
-                for (const calendar of calendars) {
-                    try {
-                        // 設定查詢時間範圍（過去30天到未來30天）
-                        const now = new Date();
-                        const startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // 30天前
-                        const endDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);   // 30天後
-                        
-                        const events = await caldavClient.getEvents(calendar.path, startDate, endDate);
-                        console.log(`行事曆 ${calendar.displayName} 有 ${events.length} 個事件`);
-                        allEvents = allEvents.concat(events);
-                    } catch (error) {
-                        console.error(`獲取行事曆 ${calendar.displayName} 事件失敗:`, error.message);
-                    }
-                }
-                
-                console.log(`總共獲取到 ${allEvents.length} 個事件`);
-                res.json({
-                    success: true,
-                    data: allEvents
-                });
-                return;
-            } catch (caldavError) {
-                console.error('CalDAV連接失敗，使用模擬數據:', caldavError.message);
-            }
+        if (!caldavClient) {
+            console.log('CalDAV 客戶端未初始化，使用模擬數據');
+            return res.json({
+                success: true,
+                data: mockEvents,
+                source: 'mock'
+            });
         }
+
+        // 獲取日期範圍（預設為未來30天）
+        const startDate = new Date();
+        const endDate = new Date();
+        endDate.setDate(startDate.getDate() + 30);
+
+        console.log('正在從 CalDAV 獲取事件...');
+        const events = await caldavClient.getAllInstructorEvents(startDate, endDate);
         
-        // 如果CalDAV不可用，使用模擬數據
-        console.log('使用模擬事件數據');
+        // 轉換事件格式以符合前端需求
+        const formattedEvents = events.map(event => ({
+            id: event.id,
+            title: event.title,
+            instructor: event.instructor,
+            start: event.start,
+            end: event.end,
+            type: event.type || 'other',
+            description: event.description || '',
+            location: event.location || '',
+            time: event.time || '',
+            lessonUrl: event.lessonUrl || ''
+        }));
+
+        console.log(`成功獲取 ${formattedEvents.length} 個事件`);
         res.json({
             success: true,
-            data: mockEvents
+            data: formattedEvents,
+            source: 'caldav'
         });
     } catch (error) {
-        console.error('獲取行事曆事件失敗:', error);
-        res.status(500).json({
+        console.error('獲取行事曆事件失敗:', error.message);
+        console.log('回退到模擬數據');
+        
+        // 如果 CalDAV 失敗，回退到模擬數據
+        res.json({
+            success: true,
+            data: mockEvents,
+            source: 'mock',
+            error: error.message
+        });
+    }
+});
+
+// 測試 CalDAV 連接
+app.get('/api/test-caldav', async (req, res) => {
+    try {
+        if (!caldavClient) {
+            return res.json({
+                success: false,
+                error: 'CalDAV 客戶端未初始化',
+                caldav_configured: false
+            });
+        }
+
+        console.log('測試 CalDAV 連接...');
+        const calendars = await caldavClient.getCalendars();
+        
+        res.json({
+            success: true,
+            calendars: calendars,
+            caldav_configured: true,
+            message: `成功連接到 CalDAV，找到 ${calendars.length} 個行事曆`
+        });
+    } catch (error) {
+        console.error('CalDAV 連接測試失敗:', error.message);
+        res.json({
             success: false,
-            error: '無法獲取行事曆事件'
+            error: error.message,
+            caldav_configured: true,
+            message: 'CalDAV 配置正確但連接失敗'
         });
     }
 });
@@ -528,7 +528,8 @@ app.get('/api/health', (req, res) => {
         status: 'healthy',
         timestamp: new Date().toISOString(),
         cache_age: Date.now() - teacherCache.timestamp,
-        environment: process.env.NODE_ENV || 'development'
+        environment: process.env.NODE_ENV || 'development',
+        caldav_configured: caldavClient !== null
     });
 });
 

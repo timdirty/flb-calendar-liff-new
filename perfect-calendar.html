@@ -39,19 +39,6 @@
             margin-bottom: 20px;
         }
 
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .header-logo {
-            height: 50px;
-            width: auto;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
         .header h1 {
             color: rgba(255, 193, 7, 1);
             font-size: 1.5rem;
@@ -63,6 +50,19 @@
             color: rgba(255, 255, 255, 0.9);
             font-size: 1rem;
             margin: 0;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-logo {
+            height: 50px;
+            width: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .header-actions {
@@ -281,6 +281,23 @@
             font-weight: 700;
         }
 
+        .btn-primary.active::after {
+            content: '✓';
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: rgba(255, 255, 255, 1);
+            color: rgba(255, 193, 7, 1);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            border: 2px solid rgba(255, 193, 7, 1);
+        }
 
         .btn-secondary {
             background: rgba(108, 117, 125, 0.9);
@@ -696,18 +713,18 @@
                 font-size: 1.2rem;
             }
 
-            .btn-settings-small {
-                width: 35px;
-                height: 35px;
-                font-size: 0.9rem;
-            }
-
             .header-logo {
                 height: 40px;
             }
 
             .header-left {
                 gap: 10px;
+            }
+
+            .btn-settings-small {
+                width: 35px;
+                height: 35px;
+                font-size: 0.9rem;
             }
 
             .control-row {
@@ -885,10 +902,10 @@
                     </div>
                     <div class="control-group">
                         <div class="view-buttons">
-                            <button class="btn btn-primary active" onclick="switchView('today')">今日</button>
-                            <button class="btn btn-primary" onclick="switchView('week')">本週</button>
-                            <button class="btn btn-primary" onclick="switchView('month')">本月</button>
-                            <button class="btn btn-primary" onclick="switchView('all')">全部</button>
+                            <button class="btn btn-primary active" data-view="today">今日</button>
+                            <button class="btn btn-primary" data-view="week">本週</button>
+                            <button class="btn btn-primary" data-view="month">本月</button>
+                            <button class="btn btn-primary" data-view="all">全部</button>
                         </div>
                     </div>
                 </div>
@@ -1037,6 +1054,14 @@
         // 設置事件監聽器
         function setupEventListeners() {
             document.getElementById('instructorSelect').addEventListener('change', renderEvents);
+            
+            // 為視圖按鈕添加事件監聽器
+            document.querySelectorAll('.view-buttons .btn-primary').forEach(button => {
+                button.addEventListener('click', function() {
+                    const view = this.getAttribute('data-view');
+                    switchView(view);
+                });
+            });
         }
 
         // 生成隨機馬卡龍顏色
@@ -1242,19 +1267,21 @@
         function switchView(view) {
             currentView = view;
             
-            // 更新按鈕狀態
-            document.querySelectorAll('.btn-primary').forEach(btn => {
+            // 更新按鈕狀態 - 只針對視圖按鈕
+            const viewButtons = document.querySelectorAll('.view-buttons .btn-primary');
+            viewButtons.forEach(btn => {
                 btn.classList.remove('active');
             });
             
             // 找到對應的按鈕並設為活躍
-            const buttons = document.querySelectorAll('.btn-primary');
-            buttons.forEach(btn => {
-                if (btn.onclick && btn.onclick.toString().includes(`'${view}'`)) {
+            viewButtons.forEach(btn => {
+                if (btn.getAttribute('data-view') === view) {
                     btn.classList.add('active');
                 }
             });
             
+            // 更新統計資訊（包括日期範圍）
+            updateStats();
             renderEvents();
         }
 
@@ -1273,21 +1300,28 @@
                 const eventDate = new Date(event.start);
                 const now = new Date();
                 
+                let shouldShow = false;
                 switch (currentView) {
                     case 'today':
-                        return eventDate.toDateString() === now.toDateString();
+                        shouldShow = eventDate.toDateString() === now.toDateString();
+                        break;
                     case 'week':
                         const weekStart = new Date(now);
                         weekStart.setDate(now.getDate() - now.getDay());
                         const weekEnd = new Date(weekStart);
                         weekEnd.setDate(weekStart.getDate() + 6);
-                        return eventDate >= weekStart && eventDate <= weekEnd;
+                        shouldShow = eventDate >= weekStart && eventDate <= weekEnd;
+                        break;
                     case 'month':
-                        return eventDate.getMonth() === now.getMonth() && eventDate.getFullYear() === now.getFullYear();
+                        shouldShow = eventDate.getMonth() === now.getMonth() && eventDate.getFullYear() === now.getFullYear();
+                        break;
                     case 'all':
                     default:
-                        return true;
+                        shouldShow = true;
+                        break;
                 }
+                
+                return shouldShow;
             });
             
             if (filteredEvents.length === 0) {
@@ -1411,15 +1445,38 @@
             const totalEvents = allEvents.length;
             const instructorCount = allInstructors.length;
             
-            // 計算日期範圍
-            if (allEvents.length > 0) {
-                const dates = allEvents.map(event => new Date(event.start));
-                const minDate = new Date(Math.min(...dates));
-                const maxDate = new Date(Math.max(...dates));
-                const dateRange = `${minDate.toLocaleDateString('zh-TW')} - ${maxDate.toLocaleDateString('zh-TW')}`;
-                document.getElementById('dateRange').textContent = dateRange;
+            // 根據當前篩選模式計算日期範圍
+            let dateRange = '-';
+            const now = new Date();
+            
+            switch (currentView) {
+                case 'today':
+                    dateRange = now.toLocaleDateString('zh-TW');
+                    break;
+                case 'week':
+                    const weekStart = new Date(now);
+                    weekStart.setDate(now.getDate() - now.getDay());
+                    const weekEnd = new Date(weekStart);
+                    weekEnd.setDate(weekStart.getDate() + 6);
+                    dateRange = `${weekStart.toLocaleDateString('zh-TW')} - ${weekEnd.toLocaleDateString('zh-TW')}`;
+                    break;
+                case 'month':
+                    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                    dateRange = `${monthStart.toLocaleDateString('zh-TW')} - ${monthEnd.toLocaleDateString('zh-TW')}`;
+                    break;
+                case 'all':
+                default:
+                    if (allEvents.length > 0) {
+                        const dates = allEvents.map(event => new Date(event.start));
+                        const minDate = new Date(Math.min(...dates));
+                        const maxDate = new Date(Math.max(...dates));
+                        dateRange = `${minDate.toLocaleDateString('zh-TW')} - ${maxDate.toLocaleDateString('zh-TW')}`;
+                    }
+                    break;
             }
             
+            document.getElementById('dateRange').textContent = dateRange;
             document.getElementById('totalEvents').textContent = totalEvents;
             document.getElementById('instructorCount').textContent = instructorCount;
         }
