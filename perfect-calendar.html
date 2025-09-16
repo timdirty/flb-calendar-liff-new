@@ -1643,7 +1643,9 @@
                                 pictureUrl: profile.pictureUrl
                             };
                             updateUserDisplay();
-                            alert('綁定成功！');
+                            
+                            // 自動比對講師
+                            autoMatchTeacher(profile.userId, profile.displayName);
                         }).catch(error => {
                             console.error('獲取用戶資料失敗:', error);
                             alert('獲取用戶資料失敗，請重試');
@@ -1666,6 +1668,133 @@
             }
         }
 
+        // 自動比對講師
+        async function autoMatchTeacher(userId, displayName) {
+            console.log('開始自動比對講師...', { userId, displayName });
+            
+            try {
+                // 調用Google Apps Script API
+                const response = await fetch('https://script.google.com/macros/s/AKfycbyDKCdRNc7oulsTOfvb9v2xW242stGb1Ckl4TmsrZHfp8JJQU7ZP6dUmi8ty_M1WSxboQ/exec?action=listBindings&limit=50&offset=0', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API請求失敗: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('API回應:', data);
+                
+                if (data.success && data.data && Array.isArray(data.data)) {
+                    // 尋找匹配的講師
+                    const matchedTeacher = data.data.find(teacher => {
+                        // 精確比對userId
+                        if (teacher.userId === userId) {
+                            return true;
+                        }
+                        // 模糊比對teacherName與displayName
+                        if (teacher.teacherName && displayName) {
+                            const teacherName = teacher.teacherName.toLowerCase().trim();
+                            const userName = displayName.toLowerCase().trim();
+                            
+                            // 完全匹配
+                            if (teacherName === userName) {
+                                return true;
+                            }
+                            
+                            // 包含匹配
+                            if (teacherName.includes(userName) || userName.includes(teacherName)) {
+                                return true;
+                            }
+                            
+                            // 部分匹配（至少3個字符）
+                            if (teacherName.length >= 3 && userName.length >= 3) {
+                                const commonChars = [...teacherName].filter(char => userName.includes(char)).length;
+                                const similarity = commonChars / Math.max(teacherName.length, userName.length);
+                                if (similarity >= 0.6) { // 60%相似度
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
+                    });
+                    
+                    if (matchedTeacher) {
+                        console.log('找到匹配的講師:', matchedTeacher);
+                        
+                        // 自動選擇講師
+                        const instructorSelect = document.getElementById('instructorFilter');
+                        if (instructorSelect) {
+                            // 尋找對應的選項
+                            for (let option of instructorSelect.options) {
+                                if (option.value === matchedTeacher.teacherName) {
+                                    instructorSelect.value = matchedTeacher.teacherName;
+                                    console.log('自動選擇講師:', matchedTeacher.teacherName);
+                                    
+                                    // 觸發篩選更新
+                                    instructorSelect.dispatchEvent(new Event('change'));
+                                    
+                                    // 跳轉到第二步驟
+                                    showStep(2);
+                                    
+                                    alert(`自動匹配成功！\n講師: ${matchedTeacher.teacherName}\nUser ID: ${matchedTeacher.userId}`);
+                                    return;
+                                }
+                            }
+                        }
+                        
+                        console.log('未找到對應的講師選項');
+                        alert(`找到匹配的講師: ${matchedTeacher.teacherName}，但未在講師列表中`);
+                    } else {
+                        console.log('未找到匹配的講師');
+                        alert('未找到匹配的講師，請手動選擇');
+                    }
+                } else {
+                    console.error('API回應格式錯誤:', data);
+                    alert('獲取講師資料失敗');
+                }
+            } catch (error) {
+                console.error('自動比對講師失敗:', error);
+                alert('自動比對講師失敗，請手動選擇');
+            }
+        }
+
+        // 顯示指定步驟
+        function showStep(stepNumber) {
+            console.log('跳轉到步驟:', stepNumber);
+            
+            // 更新步驟狀態
+            const steps = document.querySelectorAll('.step');
+            steps.forEach((step, index) => {
+                step.classList.remove('active', 'completed', 'pending');
+                
+                if (index + 1 < stepNumber) {
+                    step.classList.add('completed');
+                } else if (index + 1 === stepNumber) {
+                    step.classList.add('active');
+                } else {
+                    step.classList.add('pending');
+                }
+            });
+            
+            // 根據步驟顯示/隱藏相關內容
+            if (stepNumber === 2) {
+                // 第二步：查看行事曆 - 確保行事曆區域可見
+                const calendarSection = document.querySelector('.calendar-section');
+                if (calendarSection) {
+                    calendarSection.style.display = 'block';
+                }
+                
+                // 滾動到行事曆區域
+                setTimeout(() => {
+                    calendarSection?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+            }
+        }
+
         function testUser() {
             console.log('用戶點擊測試按鈕');
             
@@ -1679,7 +1808,9 @@
                     pictureUrl: null
                 };
                 updateUserDisplay();
-                alert('測試用戶設定成功！');
+                
+                // 自動比對講師
+                autoMatchTeacher(testUserId, testDisplayName);
             }
         }
 
