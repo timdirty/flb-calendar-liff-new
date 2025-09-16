@@ -1537,47 +1537,17 @@
             return new Promise((resolve) => {
                 // 設置超時保護（3秒）
                 const timeout = setTimeout(() => {
-                    console.warn('LIFF 初始化超時，跳過用戶認證');
+                    console.warn('用戶初始化超時，顯示綁定按鈕');
                     showBindButton();
                     resolve();
                 }, 3000);
                 
                 // 檢查是否在LINE環境中
-                if (typeof liff !== 'undefined') {
-                    console.log('LIFF SDK 已載入');
-                    console.log('LIFF 版本:', liff.getVersion ? liff.getVersion() : '未知');
-                    console.log('是否在LINE客戶端:', liff.isInClient ? liff.isInClient() : '未知');
-                    
-                    // 嘗試多種方式獲取用戶資料
-                    const tryGetUserData = () => {
-                        try {
-                            console.log('檢查登入狀態...');
-                            if (liff.isLoggedIn && liff.isLoggedIn()) {
-                                console.log('用戶已登入，獲取用戶資料...');
-                                liff.getProfile().then(profile => {
-                                    clearTimeout(timeout);
-                                    console.log('獲取到用戶資料:', profile);
-                                    currentUser = {
-                                        userId: profile.userId,
-                                        displayName: profile.displayName,
-                                        pictureUrl: profile.pictureUrl
-                                    };
-                                    updateUserDisplay();
-                                    resolve();
-                                }).catch(error => {
-                                    console.error('獲取用戶資料失敗:', error);
-                                    // 嘗試直接從URL參數獲取
-                                    tryGetUserFromUrl();
-                                });
-                            } else {
-                                console.log('用戶未登入，嘗試從URL獲取');
-                                tryGetUserFromUrl();
-                            }
-                        } catch (error) {
-                            console.error('LIFF 狀態檢查失敗:', error);
-                            tryGetUserFromUrl();
-                        }
-                    };
+                const isLineApp = navigator.userAgent.includes('Line');
+                console.log('是否在LINE應用中:', isLineApp);
+                
+                if (isLineApp) {
+                    console.log('檢測到LINE應用環境');
                     
                     // 嘗試從URL參數獲取用戶資料
                     const tryGetUserFromUrl = () => {
@@ -1609,12 +1579,12 @@
                         resolve();
                     };
                     
-                    // 延遲一點時間再嘗試，確保LIFF完全載入
-                    setTimeout(tryGetUserData, 1000);
+                    // 延遲一點時間再嘗試
+                    setTimeout(tryGetUserFromUrl, 1000);
                     
                 } else {
                     clearTimeout(timeout);
-                    console.log('LIFF SDK 未載入，顯示綁定按鈕');
+                    console.log('不在LINE應用中，顯示綁定按鈕');
                     showBindButton();
                     resolve();
                 }
@@ -1657,38 +1627,15 @@
         function bindUser() {
             console.log('用戶點擊綁定按鈕');
             
-            if (typeof liff !== 'undefined') {
-                try {
-                    if (liff.isLoggedIn && liff.isLoggedIn()) {
-                        console.log('用戶已登入，獲取用戶資料');
-                        liff.getProfile().then(profile => {
-                            console.log('獲取到用戶資料:', profile);
-                            currentUser = {
-                                userId: profile.userId,
-                                displayName: profile.displayName,
-                                pictureUrl: profile.pictureUrl
-                            };
-                            updateUserDisplay();
-                            alert('綁定成功！');
-                        }).catch(error => {
-                            console.error('獲取用戶資料失敗:', error);
-                            alert('獲取用戶資料失敗，請重試');
-                        });
-                    } else {
-                        console.log('用戶未登入，嘗試登入');
-                        // 在LINE環境中，直接嘗試登入
-                        liff.login().catch(error => {
-                            console.error('登入失敗:', error);
-                            alert('登入失敗，請重試');
-                        });
-                    }
-                } catch (error) {
-                    console.error('LIFF 操作異常:', error);
-                    alert('綁定失敗，請重試');
-                }
+            // 檢查是否在LINE環境中
+            const isLineApp = navigator.userAgent.includes('Line');
+            console.log('是否在LINE應用中:', isLineApp);
+            
+            if (isLineApp) {
+                // 在LINE環境中，提示用戶如何獲取用戶資料
+                alert('請聯繫管理員獲取您的LINE用戶ID和名稱，然後使用「測試用戶」按鈕進行綁定。');
             } else {
-                console.log('LIFF SDK 未載入');
-                alert('請在LINE應用程式中開啟此頁面');
+                alert('請在LINE應用程式中開啟此頁面，或使用「測試用戶」按鈕進行測試。');
             }
         }
 
