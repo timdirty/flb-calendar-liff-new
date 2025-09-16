@@ -5,6 +5,7 @@ const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
+const CalDAVClient = require('./caldav-client');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -299,7 +300,23 @@ function getTeacherMatchHistory(userId) {
     });
 }
 
-// 模擬行事曆事件數據（實際部署時應該連接到真實的CalDAV服務器）
+// CalDAV 配置
+const CALDAV_CONFIG = {
+    baseUrl: process.env.CALDAV_URL || 'https://funlearnbar.synology.me:9102/caldav.php/',
+    username: process.env.CALDAV_USERNAME || 'testacount',
+    password: process.env.CALDAV_PASSWORD || 'testpassword'
+};
+
+// 初始化 CalDAV 客戶端
+let caldavClient = null;
+if (CALDAV_CONFIG.baseUrl && CALDAV_CONFIG.username && CALDAV_CONFIG.password) {
+    caldavClient = new CalDAVClient(CALDAV_CONFIG.baseUrl, CALDAV_CONFIG.username, CALDAV_CONFIG.password);
+    console.log('CalDAV 客戶端已初始化');
+} else {
+    console.log('CalDAV 配置不完整，使用模擬數據');
+}
+
+// 模擬行事曆事件數據（當CalDAV不可用時使用）
 let mockEvents = [
     {
         id: 1,
@@ -441,9 +458,36 @@ app.post('/api/refresh-teachers', async (req, res) => {
 });
 
 // 獲取行事曆事件
-app.get('/api/events', (req, res) => {
+app.get('/api/events', async (req, res) => {
     try {
-        // 實際部署時，這裡應該連接到CalDAV服務器
+        if (caldavClient) {
+            console.log('嘗試從CalDAV獲取事件...');
+            try {
+                // 獲取所有講師的行事曆
+                const calendars = await caldavClient.getCalendars();
+                console.log('找到行事曆:', calendars.length);
+                
+                let allEvents = [];
+                for (const calendar of calendars) {
+                    try {
+                        const events = await caldavClient.getEvents(calendar.path);
+                        console.log(`行事曆 ${calendar.displayName} 有 ${events.length} 個事件`);
+                        allEvents = allEvents.concat(events);
+                    } catch (error) {
+                        console.error(`獲取行事曆 ${calendar.displayName} 事件失敗:`, error.message);
+                    }
+                }
+                
+                console.log(`總共獲取到 ${allEvents.length} 個事件`);
+                res.json(allEvents);
+                return;
+            } catch (caldavError) {
+                console.error('CalDAV連接失敗，使用模擬數據:', caldavError.message);
+            }
+        }
+        
+        // 如果CalDAV不可用，使用模擬數據
+        console.log('使用模擬事件數據');
         res.json(mockEvents);
     } catch (error) {
         console.error('獲取行事曆事件失敗:', error);
