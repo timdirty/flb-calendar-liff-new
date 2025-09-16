@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前端測試</title>
+</head>
+<body>
+    <h1>前端測試</h1>
+    <div id="test-results"></div>
+
+    <script>
+        // 測試位置處理
+        function testLocation() {
+            const testLocation = "nan";
+            const result = testLocation && testLocation !== 'nan' && testLocation !== 'null' && testLocation !== '' && testLocation.trim() !== '' ? testLocation : 'FLB工作室';
+            console.log('位置測試結果:', result);
+            return result;
+        }
+
+        // 測試教案連結匹配
+        function testLessonMatch() {
+            const testDescription = "SPM教案: SPM教案: 拳擊機器人 (https://www.notion.so/2470a4c0ed8480dc930bf2d8383e93fc?pvs=21)";
+            const notionUrlRegex = /https:\/\/www\.notion\.so\/([^)\s]+)/;
+            const notionMatch = testDescription.match(notionUrlRegex);
+            
+            console.log('Notion 連結匹配:', notionMatch);
+            
+            if (notionMatch) {
+                const lessonUrl = `https://www.notion.so/${notionMatch[1]}`;
+                
+                // 測試教案名稱提取
+                const duplicateMatch = testDescription.match(/(ESM教案|SPM教案|SPIKE教案|BOOST教案)[:\s]*(ESM教案|SPM教案|SPIKE教案|BOOST教案)[:\s]*([^(]+?)(?:\s*\(https:\/\/www\.notion\.so)/);
+                console.log('重複教案匹配:', duplicateMatch);
+                
+                if (duplicateMatch && duplicateMatch[3]) {
+                    const lessonName = duplicateMatch[3].trim();
+                    const lessonType = duplicateMatch[1];
+                    console.log('教案資訊:', { lessonName, lessonType, lessonUrl });
+                    return { lessonName, lessonType, lessonUrl };
+                }
+            }
+            
+            return null;
+        }
+
+        // 執行測試
+        document.addEventListener('DOMContentLoaded', function() {
+            const locationResult = testLocation();
+            const lessonResult = testLessonMatch();
+            
+            document.getElementById('test-results').innerHTML = `
+                <h2>測試結果</h2>
+                <p><strong>位置處理:</strong> ${locationResult}</p>
+                <p><strong>教案匹配:</strong> ${lessonResult ? JSON.stringify(lessonResult) : '無匹配'}</p>
+            `;
+        });
+    </script>
+</body>
+</html>
