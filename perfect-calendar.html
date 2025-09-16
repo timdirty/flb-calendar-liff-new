@@ -1643,16 +1643,41 @@
                 
                 if (currentUser) {
                     console.log('顯示用戶資訊:', currentUser.displayName, currentUser.userId);
-                    userDisplayName.textContent = currentUser.displayName;
-                    console.log('設置用戶名稱完成');
-                    userDisplayId.textContent = `ID: ${currentUser.userId}`;
-                    console.log('設置用戶ID完成');
-                    userDisplayId.style.display = 'block';
-                    console.log('設置ID顯示完成');
-                    bindUserBtn.textContent = '重新綁定';
-                    console.log('設置按鈕文字完成');
-                    userInfoGroup.style.display = 'block';
-                    console.log('設置用戶資訊組顯示完成');
+                    
+                    try {
+                        userDisplayName.textContent = currentUser.displayName;
+                        console.log('設置用戶名稱完成');
+                    } catch (error) {
+                        console.error('設置用戶名稱失敗:', error);
+                    }
+                    
+                    try {
+                        userDisplayId.textContent = `ID: ${currentUser.userId}`;
+                        console.log('設置用戶ID完成');
+                    } catch (error) {
+                        console.error('設置用戶ID失敗:', error);
+                    }
+                    
+                    try {
+                        userDisplayId.style.display = 'block';
+                        console.log('設置ID顯示完成');
+                    } catch (error) {
+                        console.error('設置ID顯示失敗:', error);
+                    }
+                    
+                    try {
+                        bindUserBtn.textContent = '重新綁定';
+                        console.log('設置按鈕文字完成');
+                    } catch (error) {
+                        console.error('設置按鈕文字失敗:', error);
+                    }
+                    
+                    try {
+                        userInfoGroup.style.display = 'block';
+                        console.log('設置用戶資訊組顯示完成');
+                    } catch (error) {
+                        console.error('設置用戶資訊組顯示失敗:', error);
+                    }
                 } else {
                     console.log('顯示未綁定狀態');
                     userDisplayName.textContent = '未綁定';
