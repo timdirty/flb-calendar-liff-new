@@ -793,8 +793,15 @@
                 // 檢查是否為測試用的LIFF ID
                 if (liffId === '2000000000-XXXXXXXX') {
                     console.log('檢測到測試LIFF ID，跳過LIFF初始化');
-                    // 直接載入講師列表，跳過LIFF功能
+                    
+                    // 顯示測試用戶資訊
+                    document.getElementById('userId').textContent = '測試用戶ID';
+                    document.getElementById('displayName').textContent = '測試用戶';
+                    document.getElementById('matchedTeacher').textContent = '未匹配';
+                    
+                    // 直接載入講師列表和行事曆數據，跳過LIFF功能
                     await loadTeacherList();
+                    await loadCalendarData();
                     document.getElementById('loadingScreen').style.display = 'none';
                     document.getElementById('mainContent').style.display = 'block';
                     return;
@@ -1010,10 +1017,13 @@
         // Load calendar data
         async function loadCalendarData() {
             try {
+                console.log('開始載入行事曆數據...');
                 const response = await fetch('/api/events');
                 allEvents = await response.json();
+                console.log('載入的行事曆數據:', allEvents);
                 renderEvents();
                 updateStats();
+                console.log('行事曆數據載入完成');
             } catch (error) {
                 console.error('Error loading calendar data:', error);
                 showNoEvents('無法載入行事曆資料');
