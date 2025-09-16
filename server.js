@@ -482,7 +482,12 @@ app.get('/api/events', async (req, res) => {
                 let allEvents = [];
                 for (const calendar of calendars) {
                     try {
-                        const events = await caldavClient.getEvents(calendar.path);
+                        // 設定查詢時間範圍（過去30天到未來30天）
+                        const now = new Date();
+                        const startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // 30天前
+                        const endDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);   // 30天後
+                        
+                        const events = await caldavClient.getEvents(calendar.path, startDate, endDate);
                         console.log(`行事曆 ${calendar.displayName} 有 ${events.length} 個事件`);
                         allEvents = allEvents.concat(events);
                     } catch (error) {
