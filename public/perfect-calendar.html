@@ -1306,11 +1306,15 @@
                 let shouldShow = false;
                 switch (currentView) {
                     case 'today':
-                        // 使用本地日期字符串比較，避免時區問題
-                        const eventDateStr = eventDate.toLocaleDateString('zh-TW');
-                        const nowDateStr = now.toLocaleDateString('zh-TW');
-                        shouldShow = eventDateStr === nowDateStr;
-                        console.log(`事件篩選 - 標題: ${event.title}, 事件日期: ${eventDateStr}, 今天: ${nowDateStr}, 顯示: ${shouldShow}`);
+                        // 使用更可靠的日期比較方法
+                        const eventYear = eventDate.getFullYear();
+                        const eventMonth = eventDate.getMonth();
+                        const eventDay = eventDate.getDate();
+                        const nowYear = now.getFullYear();
+                        const nowMonth = now.getMonth();
+                        const nowDay = now.getDate();
+                        shouldShow = eventYear === nowYear && eventMonth === nowMonth && eventDay === nowDay;
+                        console.log(`事件篩選 - 標題: ${event.title}, 事件日期: ${eventYear}-${eventMonth+1}-${eventDay}, 今天: ${nowYear}-${nowMonth+1}-${nowDay}, 顯示: ${shouldShow}`);
                         break;
                     case 'week':
                         const weekStart = new Date(now);
@@ -1464,10 +1468,14 @@
                 let shouldShow = false;
                 switch (currentView) {
                     case 'today':
-                        // 使用本地日期字符串比較，避免時區問題
-                        const eventDateStr = eventDate.toLocaleDateString('zh-TW');
-                        const nowDateStr = now.toLocaleDateString('zh-TW');
-                        shouldShow = eventDateStr === nowDateStr;
+                        // 使用更可靠的日期比較方法
+                        const eventYear = eventDate.getFullYear();
+                        const eventMonth = eventDate.getMonth();
+                        const eventDay = eventDate.getDate();
+                        const nowYear = now.getFullYear();
+                        const nowMonth = now.getMonth();
+                        const nowDay = now.getDate();
+                        shouldShow = eventYear === nowYear && eventMonth === nowMonth && eventDay === nowDay;
                         break;
                     case 'week':
                         const weekStart = new Date(now);
