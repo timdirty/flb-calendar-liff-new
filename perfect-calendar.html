@@ -1645,6 +1645,7 @@
                             updateUserDisplay();
                             
                             // 自動比對講師
+                            console.log('準備執行自動比對講師...');
                             autoMatchTeacher(profile.userId, profile.displayName);
                         }).catch(error => {
                             console.error('獲取用戶資料失敗:', error);
@@ -1671,6 +1672,7 @@
         // 自動比對講師
         async function autoMatchTeacher(userId, displayName) {
             console.log('開始自動比對講師...', { userId, displayName });
+            console.log('函數被調用，參數:', { userId, displayName });
             
             try {
                 // 調用Google Apps Script API
