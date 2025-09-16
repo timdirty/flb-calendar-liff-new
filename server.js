@@ -17,7 +17,7 @@ app.use(helmet({
             styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
             scriptSrc: ["'self'", "'unsafe-inline'", "https://static.line-scdn.net"],
             imgSrc: ["'self'", "data:", "https:"],
-            connectSrc: ["'self'", "https://script.google.com"],
+            connectSrc: ["'self'", "https://script.google.com", "https://api.line.me", "https://api.line.biz"],
             fontSrc: ["'self'", "https://cdnjs.cloudflare.com"]
         }
     }
