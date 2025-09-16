@@ -1310,6 +1310,7 @@
                         const eventDateStr = eventDate.toLocaleDateString('zh-TW');
                         const nowDateStr = now.toLocaleDateString('zh-TW');
                         shouldShow = eventDateStr === nowDateStr;
+                        console.log(`事件篩選 - 標題: ${event.title}, 事件日期: ${eventDateStr}, 今天: ${nowDateStr}, 顯示: ${shouldShow}`);
                         break;
                     case 'week':
                         const weekStart = new Date(now);
