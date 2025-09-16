@@ -1627,36 +1627,40 @@
         function updateUserDisplay() {
             console.log('更新用戶顯示，當前用戶:', currentUser);
             
-            const userInfoGroup = document.getElementById('userInfoGroup');
-            const userDisplayName = document.getElementById('userDisplayName');
-            const userDisplayId = document.getElementById('userDisplayId');
-            const bindUserBtn = document.getElementById('bindUserBtn');
-            
-            if (!userInfoGroup || !userDisplayName || !userDisplayId || !bindUserBtn) {
-                console.error('找不到用戶資訊元素');
-                return;
+            try {
+                const userInfoGroup = document.getElementById('userInfoGroup');
+                const userDisplayName = document.getElementById('userDisplayName');
+                const userDisplayId = document.getElementById('userDisplayId');
+                const bindUserBtn = document.getElementById('bindUserBtn');
+                
+                if (!userInfoGroup || !userDisplayName || !userDisplayId || !bindUserBtn) {
+                    console.error('找不到用戶資訊元素');
+                    return;
+                }
+                
+                if (currentUser) {
+                    console.log('顯示用戶資訊:', currentUser.displayName, currentUser.userId);
+                    userDisplayName.textContent = currentUser.displayName;
+                    console.log('設置用戶名稱完成');
+                    userDisplayId.textContent = `ID: ${currentUser.userId}`;
+                    console.log('設置用戶ID完成');
+                    userDisplayId.style.display = 'block';
+                    console.log('設置ID顯示完成');
+                    bindUserBtn.textContent = '重新綁定';
+                    console.log('設置按鈕文字完成');
+                    userInfoGroup.style.display = 'block';
+                    console.log('設置用戶資訊組顯示完成');
+                } else {
+                    console.log('顯示未綁定狀態');
+                    userDisplayName.textContent = '未綁定';
+                    userDisplayId.style.display = 'none';
+                    bindUserBtn.textContent = '綁定帳號';
+                    userInfoGroup.style.display = 'block';
+                }
+                console.log('updateUserDisplay 函數執行完成');
+            } catch (error) {
+                console.error('updateUserDisplay 函數執行錯誤:', error);
             }
-            
-            if (currentUser) {
-                console.log('顯示用戶資訊:', currentUser.displayName, currentUser.userId);
-                userDisplayName.textContent = currentUser.displayName;
-                console.log('設置用戶名稱完成');
-                userDisplayId.textContent = `ID: ${currentUser.userId}`;
-                console.log('設置用戶ID完成');
-                userDisplayId.style.display = 'block';
-                console.log('設置ID顯示完成');
-                bindUserBtn.textContent = '重新綁定';
-                console.log('設置按鈕文字完成');
-                userInfoGroup.style.display = 'block';
-                console.log('設置用戶資訊組顯示完成');
-            } else {
-                console.log('顯示未綁定狀態');
-                userDisplayName.textContent = '未綁定';
-                userDisplayId.style.display = 'none';
-                bindUserBtn.textContent = '綁定帳號';
-                userInfoGroup.style.display = 'block';
-            }
-            console.log('updateUserDisplay 函數執行完成');
         }
 
         function showBindButton() {
