@@ -1248,8 +1248,8 @@
                         <i class="fas fa-cog"></i>
                     </button>
                 </div>
-            </div>
-            
+        </div>
+
             <!-- 日期時間顯示 -->
             <div class="datetime-display">
                 <div class="datetime-item">
@@ -1291,28 +1291,28 @@
             </div>
 
             <!-- 控制面板 -->
-            <div class="controls">
-                <div class="control-row">
-                    <div class="control-group">
-                        <label for="instructorSelect">選擇講師</label>
-                        <select id="instructorSelect">
-                            <option value="">全部講師</option>
-                        </select>
-                    </div>
-                    <div class="control-group">
+        <div class="controls">
+            <div class="control-row">
+                <div class="control-group">
+                    <label for="instructorSelect">選擇講師</label>
+                    <select id="instructorSelect">
+                        <option value="">全部講師</option>
+                    </select>
+                </div>
+                <div class="control-group">
                         <label for="timeFilter">時段篩選</label>
                         <select id="timeFilter">
                             <option value="">全部時段</option>
                             <option value="morning">早上 (06:00-12:00)</option>
                             <option value="afternoon">下午 (12:00-18:00)</option>
                             <option value="evening">晚上 (18:00-24:00)</option>
-                        </select>
-                    </div>
-                    <div class="control-group">
+                    </select>
+                </div>
+                <div class="control-group">
                         <label for="dateFilter">指定日期</label>
                         <input type="date" id="dateFilter" />
-                    </div>
-                    <div class="control-group">
+                </div>
+                <div class="control-group">
                         <label for="sortOrder">排序方式</label>
                         <select id="sortOrder">
                             <option value="time">按時間排序</option>
@@ -1327,34 +1327,34 @@
                             <button class="btn btn-primary" data-view="month">本月</button>
                             <button class="btn btn-primary" data-view="all">全部</button>
                         </div>
-                    </div>
                 </div>
             </div>
+        </div>
 
             <!-- 統計區域 -->
-            <div class="stats" id="statsContainer">
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <h3 id="totalEvents">0</h3>
-                        <p>總事件數</p>
-                    </div>
-                    <div class="stat-item">
-                        <h3 id="instructorCount">0</h3>
-                        <p>講師數量</p>
-                    </div>
-                    <div class="stat-item">
-                        <h3 id="dateRange">-</h3>
-                        <p>日期範圍</p>
-                    </div>
+        <div class="stats" id="statsContainer">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <h3 id="totalEvents">0</h3>
+                    <p>總事件數</p>
+                </div>
+                <div class="stat-item">
+                    <h3 id="instructorCount">0</h3>
+                    <p>講師數量</p>
+                </div>
+                <div class="stat-item">
+                    <h3 id="dateRange">-</h3>
+                    <p>日期範圍</p>
                 </div>
             </div>
+        </div>
 
             <!-- 事件列表 -->
-            <div class="events-container" id="eventsContainer">
-                <div class="no-events">
-                    <i class="fas fa-calendar-times"></i>
-                    <h3>載入中...</h3>
-                    <p>正在獲取行事曆資料</p>
+        <div class="events-container" id="eventsContainer">
+            <div class="no-events">
+                <i class="fas fa-calendar-times"></i>
+                <h3>載入中...</h3>
+                <p>正在獲取行事曆資料</p>
                 </div>
             </div>
 
@@ -1455,6 +1455,15 @@
             
             // 初始化系統
             initializeSystem();
+            
+            // 備用初始化機制（10秒後強制完成）
+            setTimeout(() => {
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                if (loadingOverlay && loadingOverlay.style.display !== 'none') {
+                    console.warn('強制完成初始化，避免載入動畫卡住');
+                    hideLoadingAnimation();
+                }
+            }, 10000);
         });
 
         // 顯示載入動畫
@@ -1491,28 +1500,40 @@
                 // 載入設定
                 loadSettings();
                 
-                // 初始化LINE用戶
-                await initLineUser();
-                
                 // 更新日期時間
                 updateDateTime();
                 setInterval(updateDateTime, 1000);
                 
-                // 載入行事曆資料
-                await loadEvents();
+                // 並行執行LIFF初始化和載入行事曆資料
+                const initPromises = [
+                    initLineUser().catch(error => {
+                        console.error('LIFF 初始化失敗:', error);
+                        return Promise.resolve();
+                    }),
+                    loadEvents().catch(error => {
+                        console.error('載入行事曆資料失敗:', error);
+                        return Promise.resolve();
+                    })
+                ];
+                
+                // 等待所有初始化完成，最多等待8秒
+                await Promise.race([
+                    Promise.all(initPromises),
+                    new Promise(resolve => setTimeout(resolve, 8000))
+                ]);
                 
                 // 隱藏載入動畫
                 setTimeout(() => {
                     hideLoadingAnimation();
                     console.log('系統初始化完成');
-                }, 2000); // 至少顯示2秒載入動畫
+                }, 1000); // 至少顯示1秒載入動畫
                 
             } catch (error) {
                 console.error('系統初始化失敗:', error);
                 // 即使失敗也要隱藏載入動畫
                 setTimeout(() => {
                     hideLoadingAnimation();
-                }, 2000);
+                }, 1000);
             }
         }
 
@@ -1555,42 +1576,59 @@
             console.log('開始初始化LINE用戶...');
             
             return new Promise((resolve) => {
+                // 設置超時保護（5秒）
+                const timeout = setTimeout(() => {
+                    console.warn('LIFF 初始化超時，跳過用戶認證');
+                    showBindButton();
+                    resolve();
+                }, 5000);
+                
                 // 檢查是否在LINE環境中
                 if (typeof liff !== 'undefined') {
                     console.log('LIFF SDK 已載入');
                     
-                    liff.ready.then(() => {
-                        console.log('LIFF 已準備就緒');
-                        console.log('是否在LINE客戶端:', liff.isInClient());
-                        console.log('是否已登入:', liff.isLoggedIn());
-                        
-                        if (liff.isLoggedIn()) {
-                            console.log('用戶已登入，獲取用戶資料...');
-                            liff.getProfile().then(profile => {
-                                console.log('獲取到用戶資料:', profile);
-                                currentUser = {
-                                    userId: profile.userId,
-                                    displayName: profile.displayName,
-                                    pictureUrl: profile.pictureUrl
-                                };
-                                updateUserDisplay();
-                                resolve();
-                            }).catch(error => {
-                                console.error('獲取用戶資料失敗:', error);
+                    try {
+                        liff.ready.then(() => {
+                            clearTimeout(timeout);
+                            console.log('LIFF 已準備就緒');
+                            console.log('是否在LINE客戶端:', liff.isInClient());
+                            console.log('是否已登入:', liff.isLoggedIn());
+                            
+                            if (liff.isLoggedIn()) {
+                                console.log('用戶已登入，獲取用戶資料...');
+                                liff.getProfile().then(profile => {
+                                    console.log('獲取到用戶資料:', profile);
+                                    currentUser = {
+                                        userId: profile.userId,
+                                        displayName: profile.displayName,
+                                        pictureUrl: profile.pictureUrl
+                                    };
+                                    updateUserDisplay();
+                                    resolve();
+                                }).catch(error => {
+                                    console.error('獲取用戶資料失敗:', error);
+                                    showBindButton();
+                                    resolve();
+                                });
+                            } else {
+                                console.log('用戶未登入，顯示綁定按鈕');
                                 showBindButton();
                                 resolve();
-                            });
-                        } else {
-                            console.log('用戶未登入，顯示綁定按鈕');
+                            }
+                        }).catch(error => {
+                            clearTimeout(timeout);
+                            console.error('LIFF 初始化失敗:', error);
                             showBindButton();
                             resolve();
-                        }
-                    }).catch(error => {
-                        console.error('LIFF 初始化失敗:', error);
+                        });
+                    } catch (error) {
+                        clearTimeout(timeout);
+                        console.error('LIFF 初始化異常:', error);
                         showBindButton();
                         resolve();
-                    });
+                    }
                 } else {
+                    clearTimeout(timeout);
                     console.log('LIFF SDK 未載入，顯示綁定按鈕');
                     // 不在LINE環境中，顯示綁定按鈕
                     showBindButton();
@@ -1944,7 +1982,7 @@
                     }
                     
                     if (!timeMatch) {
-                        return false;
+                    return false;
                     }
                 }
                 
@@ -2251,10 +2289,10 @@
                     break;
                 case 'all':
                 default:
-                    if (allEvents.length > 0) {
-                        const dates = allEvents.map(event => new Date(event.start));
-                        const minDate = new Date(Math.min(...dates));
-                        const maxDate = new Date(Math.max(...dates));
+            if (allEvents.length > 0) {
+                const dates = allEvents.map(event => new Date(event.start));
+                const minDate = new Date(Math.min(...dates));
+                const maxDate = new Date(Math.max(...dates));
                         dateRange = `${minDate.toLocaleDateString('zh-TW')} - ${maxDate.toLocaleDateString('zh-TW')}`;
                     }
                     break;
