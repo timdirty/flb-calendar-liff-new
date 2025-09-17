@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  flb-calendar:
+    image: flb-calendar:latest
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - CALDAV_URL=${CALDAV_URL}
+      - CALDAV_USERNAME=${CALDAV_USERNAME}
+      - CALDAV_PASSWORD=${CALDAV_PASSWORD}
+      - LIFF_ID=${LIFF_ID}
+      - LIFF_REDIRECT_URI=${LIFF_REDIRECT_URI}
+    restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
+      - ./teacher_cache.db:/app/teacher_cache.db
+    networks:
+      - flb-network
+
+networks:
+  flb-network:
+    driver: bridge
