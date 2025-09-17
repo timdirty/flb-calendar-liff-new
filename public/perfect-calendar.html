@@ -1144,7 +1144,31 @@
         .loading-text p {
             color: rgba(255, 255, 255, 0.8);
             font-size: 1rem;
-            margin: 0;
+            margin: 0 0 15px 0;
+        }
+
+        .loading-progress {
+            width: 200px;
+            height: 4px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        .loading-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, rgba(255, 223, 102, 0.9), rgba(255, 193, 7, 0.9));
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .loading-percentage {
+            color: rgba(255, 223, 102, 0.9);
+            font-size: 0.9rem;
+            margin-top: 8px;
+            font-weight: 500;
         }
 
         /* 馬卡龍配色變數 */
@@ -1197,6 +1221,10 @@
             <div class="loading-text">
                 <h3>載入中...</h3>
                 <p>正在初始化系統，請稍候</p>
+                <div class="loading-progress">
+                    <div class="loading-progress-bar" id="loadingProgressBar"></div>
+                </div>
+                <div class="loading-percentage" id="loadingPercentage">0%</div>
             </div>
         </div>
     </div>
@@ -1442,6 +1470,22 @@
             if (mainContainer) {
                 mainContainer.style.display = 'none';
             }
+            
+            // 重置進度條
+            updateLoadingProgress(0);
+        }
+
+        // 更新載入進度
+        function updateLoadingProgress(percentage) {
+            const progressBar = document.getElementById('loadingProgressBar');
+            const percentageText = document.getElementById('loadingPercentage');
+            
+            if (progressBar) {
+                progressBar.style.width = percentage + '%';
+            }
+            if (percentageText) {
+                percentageText.textContent = Math.round(percentage) + '%';
+            }
         }
 
         // 隱藏載入動畫
@@ -1461,25 +1505,30 @@
         async function initializeSystem() {
             try {
                 console.log('開始初始化系統...');
+                updateLoadingProgress(10);
                 
                 // 載入設定
                 loadSettings();
+                updateLoadingProgress(20);
                 
                 // 更新日期時間
                 updateDateTime();
                 setInterval(updateDateTime, 1000);
+                updateLoadingProgress(30);
                 
-                // 並行執行LIFF初始化和載入行事曆資料
                 // 先載入行事曆資料，再初始化LIFF
                 await loadEvents().catch(error => {
                     console.error('載入行事曆資料失敗:', error);
                 });
+                updateLoadingProgress(60);
                 
                 await initLineUser().catch(error => {
                     console.error('LIFF 初始化失敗:', error);
                 });
+                updateLoadingProgress(80);
                 
                 console.log('所有初始化任務完成，準備隱藏載入動畫...');
+                updateLoadingProgress(100);
                 
                 // 隱藏載入動畫
                 setTimeout(() => {
