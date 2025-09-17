@@ -1749,8 +1749,8 @@
                 console.log('準備調用Google Apps Script API...');
                 showMatchingProcess('正在調用Google Apps Script API...', 'info');
                 
-                // 調用代理 API（避免 CORS 問題）
-                const response = await fetch('/api/google-script?action=listBindings&limit=50&offset=0', {
+                // 暫時使用現有的講師 API（避免 404 問題）
+                const response = await fetch('/api/teachers', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1770,33 +1770,34 @@
                 console.log('API回應:', data);
                 showMatchingProcess('API回應成功，開始比對講師...', 'success');
                 
-                if (data.success && data.data && Array.isArray(data.data)) {
-                    showMatchingProcess(`找到 ${data.data.length} 個講師，開始比對...`, 'info');
+                // 處理 /api/teachers 的回應格式
+                if (data.success && data.teachers && Array.isArray(data.teachers)) {
+                    showMatchingProcess(`找到 ${data.teachers.length} 個講師，開始比對...`, 'info');
                     
                     // 顯示比對過程
                     showMatchingProcess(`比對條件: UserID=${userId}, DisplayName=${displayName}`, 'info');
                     
                     // 尋找匹配的講師
-                    const matchedTeacher = data.data.find(teacher => {
+                    const matchedTeacher = data.teachers.find(teacher => {
                         // 精確比對userId（不區分大小寫）
                         if (teacher.userId && userId && teacher.userId.toLowerCase() === userId.toLowerCase()) {
                             showMatchingProcess(`✅ 精確匹配UserID: ${teacher.userId}`, 'success');
                             return true;
                         }
-                        // 模糊比對teacherName與displayName（不區分大小寫）
-                        if (teacher.teacherName && displayName) {
-                            const teacherName = teacher.teacherName.toLowerCase().trim();
+                        // 模糊比對name與displayName（不區分大小寫）
+                        if (teacher.name && displayName) {
+                            const teacherName = teacher.name.toLowerCase().trim();
                             const userName = displayName.toLowerCase().trim();
                             
                             // 完全匹配（不區分大小寫）
                             if (teacherName === userName) {
-                                showMatchingProcess(`✅ 完全匹配名稱: ${teacher.teacherName}`, 'success');
+                                showMatchingProcess(`✅ 完全匹配名稱: ${teacher.name}`, 'success');
                                 return true;
                             }
                             
                             // 包含匹配（不區分大小寫）
                             if (teacherName.includes(userName) || userName.includes(teacherName)) {
-                                showMatchingProcess(`✅ 包含匹配: ${teacher.teacherName}`, 'success');
+                                showMatchingProcess(`✅ 包含匹配: ${teacher.name}`, 'success');
                                 return true;
                             }
                             
