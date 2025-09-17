@@ -2885,24 +2885,21 @@
             
             // 從標題解析時間
             const titleTime = parseTimeFromTitle(event.title);
-            const titleDate = parseDateFromTitle(event.title, startDate);
             
-            // 使用標題解析的時間，如果解析失敗則使用CalDAV時間
-            let displayDate, timeString;
+            // 統一使用 CalDAV 的日期，確保日期正確
+            const displayDate = startDate.toLocaleDateString('zh-TW');
+            let timeString;
             
             if (titleTime) {
-                // 使用標題解析的日期和時間
-                displayDate = titleDate.toLocaleDateString('zh-TW');
+                // 使用標題解析的時間，但日期使用 CalDAV
                 timeString = titleTime.timeString;
                 
                 console.log(`標題解析 - ${event.title}:`);
-                console.log(`  解析日期: ${displayDate}`);
+                console.log(`  CalDAV日期: ${displayDate}`);
                 console.log(`  解析時間: ${timeString}`);
-                console.log(`  CalDAV日期: ${startDate.toLocaleDateString('zh-TW')}`);
                 console.log(`  CalDAV時間: ${startDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })} - ${endDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })}`);
             } else {
                 // 回退到CalDAV時間
-                displayDate = startDate.toLocaleDateString('zh-TW');
                 timeString = `${startDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })} - ${endDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })}`;
                 console.log(`無法解析標題時間，使用CalDAV時間 - ${event.title}: ${displayDate} ${timeString}`);
             }
