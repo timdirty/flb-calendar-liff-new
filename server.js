@@ -453,6 +453,12 @@ app.get('/api/events', async (req, res) => {
         const endDate = new Date();
         endDate.setDate(startDate.getDate() + 30);
 
+        // 強制重新載入 CalDAV 客戶端
+        delete require.cache[require.resolve('./caldav-client.js')];
+        const CalDAVClient = require('./caldav-client.js');
+        caldavClient = new CalDAVClient(CALDAV_CONFIG.baseUrl, CALDAV_CONFIG.username, CALDAV_CONFIG.password);
+        console.log('CalDAV 客戶端已重新載入');
+        
         console.log('正在從 CalDAV 獲取事件...');
         const events = await caldavClient.getAllInstructorEvents(startDate, endDate);
         

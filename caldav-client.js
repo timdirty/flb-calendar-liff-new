@@ -269,22 +269,32 @@ class CalDAVClient {
                         start = startDate.toJSDate();
                         end = endDate.toJSDate();
                     } else {
-                        // 無時區資訊，使用 iCal.js 的 toJSDate() 方法
-                        // 這會正確處理 floating 時區（本地時間）
-                        start = startDate.toJSDate();
-                        end = endDate.toJSDate();
+                        // 無時區資訊，直接使用本地時間創建 Date 物件
+                        // 避免 UTC 轉換導致的日期偏移
+                        start = new Date(startDate.year, startDate.month - 1, startDate.day, startDate.hour, startDate.minute, startDate.second);
+                        end = new Date(endDate.year, endDate.month - 1, endDate.day, endDate.hour, endDate.minute, endDate.second);
                     }
                 }
+                
+                // 處理站前教室地址
+                let location = event.location || '';
+                if (location === '站前教室') {
+                    location = '台北市中正區開封街1段2號9樓';
+                }
+                
+                // 創建本地時間的 ISO 格式（不加 Z 後綴，避免被當作 UTC 時間）
+                const startISO = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}T${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}:${String(start.getSeconds()).padStart(2, '0')}.000`;
+                const endISO = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}T${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}:${String(end.getSeconds()).padStart(2, '0')}.000`;
                 
                 events.push({
                     id: event.uid || Math.random().toString(36).substr(2, 9),
                     title: event.summary || '無標題',
                     description: event.description || '',
-                    location: event.location || '',
-                    start: start.toISOString(),
-                    end: end.toISOString(),
+                    location: location,
+                    start: startISO,
+                    end: endISO,
                     time: this.formatTimeRange(start, end),
-                    date: start.toISOString(),
+                    date: startISO,
                     type: this.determineEventType(event.summary),
                     allDay: isAllDay
                 });
@@ -326,3 +336,4 @@ class CalDAVClient {
 }
 
 module.exports = CalDAVClient;
+
