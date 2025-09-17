@@ -61,7 +61,7 @@ typings/
 .yarn-integrity
 
 # dotenv environment variables file
-.env
+# .env  # 註解掉，讓 Railway 可以讀取環境變數
 .env.test
 .env.local
 .env.production

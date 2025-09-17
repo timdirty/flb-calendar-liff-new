@@ -3,7 +3,7 @@ npm-debug.log
 .git
 .gitignore
 README.md
-.env
+# .env  # 註解掉，讓 Docker 可以複製環境變數檔案
 .nyc_output
 coverage
 .DS_Store
