@@ -606,6 +606,46 @@
             transform: scale(1.1);
         }
 
+        .countdown-timer {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-top: 8px;
+            text-align: center;
+            font-weight: 600;
+            color: rgba(255, 193, 7, 1);
+            transition: all 0.3s ease;
+        }
+
+        .countdown-timer.upcoming {
+            background: rgba(76, 175, 80, 0.1);
+            border-color: rgba(76, 175, 80, 0.3);
+            color: rgba(76, 175, 80, 1);
+        }
+
+        .countdown-timer.ongoing {
+            background: rgba(33, 150, 243, 0.1);
+            border-color: rgba(33, 150, 243, 0.3);
+            color: rgba(33, 150, 243, 1);
+        }
+
+        .countdown-timer.overdue {
+            background: rgba(244, 67, 54, 0.1);
+            border-color: rgba(244, 67, 54, 0.3);
+            color: rgba(244, 67, 54, 1);
+        }
+
+        .countdown-text {
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .countdown-icon {
+            margin-right: 6px;
+            font-size: 0.8rem;
+        }
+
         .event-description {
             background: rgba(248, 249, 250, 0.9);
             padding: 15px;
@@ -1733,6 +1773,89 @@
             });
         }
 
+        // 計算倒數計時
+        function calculateCountdown(startTime, endTime) {
+            const now = new Date();
+            const start = new Date(startTime);
+            const end = new Date(endTime);
+            
+            const timeDiff = start.getTime() - now.getTime();
+            const endDiff = end.getTime() - now.getTime();
+            
+            // 如果課程已結束
+            if (endDiff <= 0) {
+                return {
+                    text: '課程已結束',
+                    status: 'overdue',
+                    icon: 'fas fa-check-circle'
+                };
+            }
+            
+            // 如果課程正在進行中
+            if (timeDiff <= 0 && endDiff > 0) {
+                const remainingMinutes = Math.floor(endDiff / (1000 * 60));
+                const remainingHours = Math.floor(remainingMinutes / 60);
+                const remainingMins = remainingMinutes % 60;
+                
+                if (remainingHours > 0) {
+                    return {
+                        text: `進行中，剩餘 ${remainingHours}小時${remainingMins}分鐘`,
+                        status: 'ongoing',
+                        icon: 'fas fa-play-circle'
+                    };
+                } else {
+                    return {
+                        text: `進行中，剩餘 ${remainingMins}分鐘`,
+                        status: 'ongoing',
+                        icon: 'fas fa-play-circle'
+                    };
+                }
+            }
+            
+            // 如果課程尚未開始
+            const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+            
+            if (days > 0) {
+                return {
+                    text: `還有 ${days}天${hours}小時`,
+                    status: 'upcoming',
+                    icon: 'fas fa-clock'
+                };
+            } else if (hours > 0) {
+                return {
+                    text: `還有 ${hours}小時${minutes}分鐘`,
+                    status: 'upcoming',
+                    icon: 'fas fa-clock'
+                };
+            } else {
+                return {
+                    text: `還有 ${minutes}分鐘`,
+                    status: 'upcoming',
+                    icon: 'fas fa-clock'
+                };
+            }
+        }
+
+        // 更新所有倒數計時
+        function updateAllCountdowns() {
+            const countdownElements = document.querySelectorAll('.countdown-timer');
+            countdownElements.forEach(element => {
+                const startTime = element.dataset.startTime;
+                const endTime = element.dataset.endTime;
+                
+                if (startTime && endTime) {
+                    const countdown = calculateCountdown(startTime, endTime);
+                    element.className = `countdown-timer ${countdown.status}`;
+                    element.innerHTML = `
+                        <i class="${countdown.icon} countdown-icon"></i>
+                        <span class="countdown-text">${countdown.text}</span>
+                    `;
+                }
+            });
+        }
+
         // 初始化系統
         async function initializeSystem() {
             try {
@@ -1746,6 +1869,9 @@
                 // 更新日期時間
                 updateDateTime();
                 setInterval(updateDateTime, 1000);
+                
+                // 設置倒數計時更新
+                setInterval(updateAllCountdowns, 60000); // 每分鐘更新一次
                 updateLoadingProgress(30);
                 
                 // 先載入行事曆資料，再初始化LIFF
@@ -2662,6 +2788,8 @@
             // 觸發事件卡片動畫
             setTimeout(() => {
                 animateEventCards();
+                // 更新倒數計時
+                updateAllCountdowns();
             }, 100);
         }
 
@@ -2810,6 +2938,13 @@
                                 <i class="fas fa-external-link-alt location-external-icon"></i>
                             </a>
                         </div>
+                    </div>
+                    
+                    <div class="countdown-timer" 
+                         data-start-time="${event.start}" 
+                         data-end-time="${event.end}">
+                        <i class="fas fa-clock countdown-icon"></i>
+                        <span class="countdown-text">計算中...</span>
                     </div>
                     
                     <div class="event-description">
