@@ -2327,12 +2327,15 @@
                         console.log(`事件篩選 - 標題: ${event.title}, 事件日期: ${eventYear}-${eventMonth+1}-${eventDay}, 今天: ${nowYear}-${nowMonth+1}-${nowDay}, 顯示: ${shouldShow}`);
                         break;
                     case 'week':
-                        // 使用UTC時間進行本週篩選
+                        // 使用UTC時間進行本週篩選（週一到週日）
                         const weekStart = new Date(now);
-                        weekStart.setUTCDate(now.getUTCDate() - now.getUTCDay());
+                        // 計算本週一的日期（getUTCDay() 返回 0-6，0是週日，1是週一）
+                        const dayOfWeek = now.getUTCDay();
+                        const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 週日時回到上週一，其他天回到本週一
+                        weekStart.setUTCDate(now.getUTCDate() + daysToMonday);
                         weekStart.setUTCHours(0, 0, 0, 0);
                         const weekEnd = new Date(weekStart);
-                        weekEnd.setUTCDate(weekStart.getUTCDate() + 6);
+                        weekEnd.setUTCDate(weekStart.getUTCDate() + 6); // 週日
                         weekEnd.setUTCHours(23, 59, 59, 999);
                         shouldShow = eventDate >= weekStart && eventDate <= weekEnd;
                         break;
@@ -2597,12 +2600,15 @@
                         shouldShow = eventYear === nowYear && eventMonth === nowMonth && eventDay === nowDay;
                         break;
                     case 'week':
-                        // 使用UTC時間進行本週篩選
+                        // 使用UTC時間進行本週篩選（週一到週日）
                         const weekStart = new Date(now);
-                        weekStart.setUTCDate(now.getUTCDate() - now.getUTCDay());
+                        // 計算本週一的日期（getUTCDay() 返回 0-6，0是週日，1是週一）
+                        const dayOfWeek = now.getUTCDay();
+                        const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 週日時回到上週一，其他天回到本週一
+                        weekStart.setUTCDate(now.getUTCDate() + daysToMonday);
                         weekStart.setUTCHours(0, 0, 0, 0);
                         const weekEnd = new Date(weekStart);
-                        weekEnd.setUTCDate(weekStart.getUTCDate() + 6);
+                        weekEnd.setUTCDate(weekStart.getUTCDate() + 6); // 週日
                         weekEnd.setUTCHours(23, 59, 59, 999);
                         shouldShow = eventDate >= weekStart && eventDate <= weekEnd;
                         break;
@@ -2633,9 +2639,12 @@
                     break;
                 case 'week':
                     const weekStart = new Date(now);
-                    weekStart.setDate(now.getDate() - now.getDay());
+                    // 計算本週一的日期（getDay() 返回 0-6，0是週日，1是週一）
+                    const dayOfWeek = now.getDay();
+                    const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 週日時回到上週一，其他天回到本週一
+                    weekStart.setDate(now.getDate() + daysToMonday);
                     const weekEnd = new Date(weekStart);
-                    weekEnd.setDate(weekStart.getDate() + 6);
+                    weekEnd.setDate(weekStart.getDate() + 6); // 週日
                     dateRange = `${weekStart.toLocaleDateString('zh-TW')} - ${weekEnd.toLocaleDateString('zh-TW')}`;
                     break;
                 case 'month':
