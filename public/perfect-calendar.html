@@ -2777,13 +2777,13 @@
                 let shouldShow = false;
                 switch (currentView) {
                     case 'today':
-                        // 使用UTC時間進行日期比較，避免時區問題
-                        const eventYear = eventDate.getUTCFullYear();
-                        const eventMonth = eventDate.getUTCMonth();
-                        const eventDay = eventDate.getUTCDate();
-                        const nowYear = now.getUTCFullYear();
-                        const nowMonth = now.getUTCMonth();
-                        const nowDay = now.getUTCDate();
+                        // 使用本地時間進行日期比較，確保與顯示一致
+                        const eventYear = eventDate.getFullYear();
+                        const eventMonth = eventDate.getMonth();
+                        const eventDay = eventDate.getDate();
+                        const nowYear = now.getFullYear();
+                        const nowMonth = now.getMonth();
+                        const nowDay = now.getDate();
                         shouldShow = eventYear === nowYear && eventMonth === nowMonth && eventDay === nowDay;
                         console.log(`事件篩選 - 標題: ${event.title}, 事件日期: ${eventYear}-${eventMonth+1}-${eventDay}, 今天: ${nowYear}-${nowMonth+1}-${nowDay}, 顯示: ${shouldShow}`);
                         break;
@@ -3011,10 +3011,11 @@
 
         // 更新統計資訊
         function updateStats() {
-            // 獲取當前篩選後的事件
+            // 使用與 renderEvents 相同的篩選邏輯
             const instructorFilter = document.getElementById('instructorSelect').value;
             const timeFilter = document.getElementById('timeFilter').value;
             const dateFilter = document.getElementById('dateFilter').value;
+            
             const filteredEvents = allEvents.filter(event => {
                 // 講師篩選
                 if (instructorFilter && event.instructor !== instructorFilter) {
@@ -3024,7 +3025,7 @@
                 // 時段篩選
                 if (timeFilter) {
                     const eventDate = new Date(event.start);
-                    const hour = eventDate.getUTCHours();
+                    const hour = eventDate.getHours(); // 使用本地時間
                     let timeMatch = false;
                     
                     switch (timeFilter) {
@@ -3049,51 +3050,50 @@
                     const eventDate = new Date(event.start);
                     const filterDate = new Date(dateFilter);
                     
-                    // 使用UTC時間進行日期比較
-                    const eventYear = eventDate.getUTCFullYear();
-                    const eventMonth = eventDate.getUTCMonth();
-                    const eventDay = eventDate.getUTCDate();
-                    const filterYear = filterDate.getUTCFullYear();
-                    const filterMonth = filterDate.getUTCMonth();
-                    const filterDay = filterDate.getUTCDate();
+                    // 使用本地時間進行日期比較
+                    const eventYear = eventDate.getFullYear();
+                    const eventMonth = eventDate.getMonth();
+                    const eventDay = eventDate.getDate();
+                    const filterYear = filterDate.getFullYear();
+                    const filterMonth = filterDate.getMonth();
+                    const filterDay = filterDate.getDate();
                     
                     if (eventYear !== filterYear || eventMonth !== filterMonth || eventDay !== filterDay) {
                         return false;
                     }
                 }
                 
-                // 日期篩選
+                // 檢視模式篩選
                 const eventDate = new Date(event.start);
                 const now = new Date();
                 
                 let shouldShow = false;
                 switch (currentView) {
                     case 'today':
-                        // 使用UTC時間進行日期比較，避免時區問題
-                        const eventYear = eventDate.getUTCFullYear();
-                        const eventMonth = eventDate.getUTCMonth();
-                        const eventDay = eventDate.getUTCDate();
-                        const nowYear = now.getUTCFullYear();
-                        const nowMonth = now.getUTCMonth();
-                        const nowDay = now.getUTCDate();
+                        // 使用本地時間進行日期比較，確保與顯示一致
+                        const eventYear = eventDate.getFullYear();
+                        const eventMonth = eventDate.getMonth();
+                        const eventDay = eventDate.getDate();
+                        const nowYear = now.getFullYear();
+                        const nowMonth = now.getMonth();
+                        const nowDay = now.getDate();
                         shouldShow = eventYear === nowYear && eventMonth === nowMonth && eventDay === nowDay;
                         break;
                     case 'week':
-                        // 使用UTC時間進行本週篩選（週一到週日）
+                        // 使用本地時間進行本週篩選（週一到週日）
                         const weekStart = new Date(now);
-                        // 計算本週一的日期（getUTCDay() 返回 0-6，0是週日，1是週一）
-                        const dayOfWeek = now.getUTCDay();
-                        const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 週日時回到上週一，其他天回到本週一
-                        weekStart.setUTCDate(now.getUTCDate() + daysToMonday);
-                        weekStart.setUTCHours(0, 0, 0, 0);
+                        const dayOfWeek = now.getDay();
+                        const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+                        weekStart.setDate(now.getDate() + daysToMonday);
+                        weekStart.setHours(0, 0, 0, 0);
                         const weekEnd = new Date(weekStart);
-                        weekEnd.setUTCDate(weekStart.getUTCDate() + 6); // 週日
-                        weekEnd.setUTCHours(23, 59, 59, 999);
+                        weekEnd.setDate(weekStart.getDate() + 6);
+                        weekEnd.setHours(23, 59, 59, 999);
                         shouldShow = eventDate >= weekStart && eventDate <= weekEnd;
                         break;
                     case 'month':
-                        // 使用UTC時間進行本月篩選
-                        shouldShow = eventDate.getUTCMonth() === now.getUTCMonth() && eventDate.getUTCFullYear() === now.getUTCFullYear();
+                        // 使用本地時間進行本月篩選
+                        shouldShow = eventDate.getMonth() === now.getMonth() && eventDate.getFullYear() === now.getFullYear();
                         break;
                     case 'all':
                     default:
