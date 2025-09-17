@@ -555,6 +555,7 @@ app.listen(PORT, () => {
     console.log(`🚀 FLB講師行事曆LIFF應用運行在端口 ${PORT}`);
     console.log(`🌐 主頁面: http://localhost:${PORT}`);
     console.log(`🔧 API端點: http://localhost:${PORT}/api/teachers`);
+    console.log(`🔗 代理端點: http://localhost:${PORT}/api/google-script`);
     console.log(`📊 健康檢查: http://localhost:${PORT}/api/health`);
     console.log(`🌍 環境: ${process.env.NODE_ENV || 'development'}`);
 });
