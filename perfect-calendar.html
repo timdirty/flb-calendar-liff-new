@@ -1813,31 +1813,31 @@
                     
                     if (matchedTeacher) {
                         console.log('找到匹配的講師:', matchedTeacher);
-                        showMatchingProcess(`🎉 找到匹配講師: ${matchedTeacher.teacherName}`, 'success');
+                        showMatchingProcess(`🎉 找到匹配講師: ${matchedTeacher.name}`, 'success');
                         
                         // 自動選擇講師
                         const instructorSelect = document.getElementById('instructorFilter');
                         if (instructorSelect) {
-                            // 尋找對應的選項
-                            for (let option of instructorSelect.options) {
-                                if (option.value === matchedTeacher.teacherName) {
-                                    instructorSelect.value = matchedTeacher.teacherName;
-                                    console.log('自動選擇講師:', matchedTeacher.teacherName);
-                                    
-                                    // 觸發篩選更新
-                                    instructorSelect.dispatchEvent(new Event('change'));
-                                    
-                                    // 跳轉到第二步驟
-                                    showStep(2);
-                                    
-                                    showMatchingProcess(`✅ 自動選擇講師成功: ${matchedTeacher.teacherName}`, 'success');
-                                    return;
-                                }
+                            // 模糊比對講師選項
+                            const matchedOption = findBestMatchingOption(instructorSelect, matchedTeacher.name);
+                            
+                            if (matchedOption) {
+                                instructorSelect.value = matchedOption.value;
+                                console.log('自動選擇講師:', matchedOption.value);
+                                
+                                // 觸發篩選更新
+                                instructorSelect.dispatchEvent(new Event('change'));
+                                
+                                // 跳轉到第二步驟
+                                showStep(2);
+                                
+                                showMatchingProcess(`✅ 自動選擇講師成功: ${matchedOption.value}`, 'success');
+                                return;
                             }
                         }
                         
                         console.log('未找到對應的講師選項');
-                        showMatchingProcess(`⚠️ 找到匹配講師但未在列表中: ${matchedTeacher.teacherName}`, 'warning');
+                        showMatchingProcess(`⚠️ 找到匹配講師但未在列表中: ${matchedTeacher.name}`, 'warning');
                     } else {
                         console.log('未找到匹配的講師');
                         showMatchingProcess('❌ 未找到匹配的講師，請手動選擇', 'error');
@@ -1855,6 +1855,93 @@
         // 顯示比對過程
         function showMatchingProcess(message, type = 'info') {
             console.log(`[比對過程] ${message}`);
+        }
+
+        // 模糊比對講師選項
+        function findBestMatchingOption(selectElement, targetName) {
+            if (!selectElement || !targetName) return null;
+            
+            const options = Array.from(selectElement.options);
+            const target = targetName.toLowerCase().trim();
+            
+            console.log(`開始模糊比對講師選項，目標名稱: "${targetName}"`);
+            
+            // 1. 精確匹配
+            for (let option of options) {
+                if (option.value.toLowerCase().trim() === target) {
+                    console.log(`✅ 精確匹配: ${option.value}`);
+                    return option;
+                }
+            }
+            
+            // 2. 包含匹配
+            for (let option of options) {
+                const optionValue = option.value.toLowerCase().trim();
+                if (optionValue.includes(target) || target.includes(optionValue)) {
+                    console.log(`✅ 包含匹配: ${option.value}`);
+                    return option;
+                }
+            }
+            
+            // 3. 相似度匹配
+            let bestMatch = null;
+            let bestSimilarity = 0;
+            
+            for (let option of options) {
+                const optionValue = option.value.toLowerCase().trim();
+                const similarity = calculateSimilarity(target, optionValue);
+                
+                console.log(`比對 "${option.value}": 相似度 ${Math.round(similarity * 100)}%`);
+                
+                if (similarity > bestSimilarity && similarity >= 0.5) { // 50% 相似度閾值
+                    bestMatch = option;
+                    bestSimilarity = similarity;
+                }
+            }
+            
+            if (bestMatch) {
+                console.log(`✅ 相似度匹配: ${bestMatch.value} (${Math.round(bestSimilarity * 100)}%)`);
+                return bestMatch;
+            }
+            
+            console.log('❌ 未找到匹配的講師選項');
+            return null;
+        }
+
+        // 計算字串相似度
+        function calculateSimilarity(str1, str2) {
+            if (str1 === str2) return 1;
+            if (str1.length === 0 || str2.length === 0) return 0;
+            
+            // 使用 Levenshtein 距離計算相似度
+            const matrix = [];
+            const len1 = str1.length;
+            const len2 = str2.length;
+            
+            for (let i = 0; i <= len2; i++) {
+                matrix[i] = [i];
+            }
+            
+            for (let j = 0; j <= len1; j++) {
+                matrix[0][j] = j;
+            }
+            
+            for (let i = 1; i <= len2; i++) {
+                for (let j = 1; j <= len1; j++) {
+                    if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+            
+            const maxLen = Math.max(len1, len2);
+            return (maxLen - matrix[len2][len1]) / maxLen;
         }
 
 
