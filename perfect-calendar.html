@@ -1461,22 +1461,14 @@
                 setInterval(updateDateTime, 1000);
                 
                 // 並行執行LIFF初始化和載入行事曆資料
-                const initPromises = [
-                    initLineUser().catch(error => {
-                        console.error('LIFF 初始化失敗:', error);
-                        return Promise.resolve();
-                    }),
-                    loadEvents().catch(error => {
-                        console.error('載入行事曆資料失敗:', error);
-                        return Promise.resolve();
-                    })
-                ];
+                // 先載入行事曆資料，再初始化LIFF
+                await loadEvents().catch(error => {
+                    console.error('載入行事曆資料失敗:', error);
+                });
                 
-                // 等待所有初始化完成，最多等待8秒
-                await Promise.race([
-                    Promise.all(initPromises),
-                    new Promise(resolve => setTimeout(resolve, 8000))
-                ]);
+                await initLineUser().catch(error => {
+                    console.error('LIFF 初始化失敗:', error);
+                });
                 
                 console.log('所有初始化任務完成，準備隱藏載入動畫...');
                 
@@ -1816,7 +1808,7 @@
                         showMatchingProcess(`🎉 找到匹配講師: ${matchedTeacher.name}`, 'success');
                         
                         // 自動選擇講師
-                        const instructorSelect = document.getElementById('instructorFilter');
+                        const instructorSelect = document.getElementById('instructorSelect');
                         if (instructorSelect) {
                             // 模糊比對講師選項
                             const matchedOption = findBestMatchingOption(instructorSelect, matchedTeacher.name);
