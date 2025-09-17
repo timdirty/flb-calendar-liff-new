@@ -478,6 +478,11 @@
             animation: slideUp 0.6s ease-out forwards;
         }
 
+        .event-card.animated {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         .event-card:nth-child(1) { animation-delay: 0.1s; }
         .event-card:nth-child(2) { animation-delay: 0.2s; }
         .event-card:nth-child(3) { animation-delay: 0.3s; }
@@ -1248,11 +1253,11 @@
         }
 
         @keyframes slideUp {
-            from { 
+            0% { 
                 opacity: 0;
                 transform: translateY(30px);
             }
-            to { 
+            100% { 
                 opacity: 1;
                 transform: translateY(0);
             }
@@ -1662,8 +1667,17 @@
         function animateEventCards() {
             const eventCards = document.querySelectorAll('.event-card');
             eventCards.forEach((card, index) => {
+                // 重置動畫狀態
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.animation = 'none';
+                
+                // 強制重排
+                card.offsetHeight;
+                
+                // 重新啟動動畫
+                card.style.animation = `slideUp 0.6s ease-out forwards`;
                 card.style.animationDelay = `${index * 0.1}s`;
-                card.classList.add('slide-up');
             });
         }
 
