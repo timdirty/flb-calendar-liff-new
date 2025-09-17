@@ -2269,22 +2269,16 @@
                         
                         // 比對失敗，顯示全部講師
                         console.log('比對失敗，將顯示全部講師');
-                        const instructorSelect = document.getElementById('instructorSelect');
-                        if (instructorSelect) {
-                            instructorSelect.value = ''; // 選擇全部講師
-                            instructorSelect.dispatchEvent(new Event('change'));
-                        }
+                        instructorSelect.value = ''; // 選擇全部講師
+                        instructorSelect.dispatchEvent(new Event('change'));
                     } else {
                         console.log('未找到匹配的講師');
                         showMatchingProcess('❌ 未找到匹配的講師，請手動選擇', 'error');
                         
                         // 比對失敗，顯示全部講師
                         console.log('比對失敗，將顯示全部講師');
-                        const instructorSelect = document.getElementById('instructorSelect');
-                        if (instructorSelect) {
-                            instructorSelect.value = ''; // 選擇全部講師
-                            instructorSelect.dispatchEvent(new Event('change'));
-                        }
+                        instructorSelect.value = ''; // 選擇全部講師
+                        instructorSelect.dispatchEvent(new Event('change'));
                     }
                 } else {
                     console.error('API回應格式錯誤:', data);
