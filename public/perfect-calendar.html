@@ -1479,17 +1479,42 @@
                     new Promise(resolve => setTimeout(resolve, 8000))
                 ]);
                 
+                console.log('所有初始化任務完成，準備隱藏載入動畫...');
+                
                 // 隱藏載入動畫
                 setTimeout(() => {
-                    hideLoadingAnimation();
-                    console.log('系統初始化完成');
+                    try {
+                        hideLoadingAnimation();
+                        console.log('系統初始化完成');
+                        
+                        // 在系統初始化完成後執行自動比對
+                        if (currentUser && currentUser.userId && currentUser.displayName) {
+                            console.log('=== 系統初始化完成，開始自動比對講師 ===');
+                            console.log('用戶資料:', currentUser);
+                            
+                            try {
+                                autoMatchTeacher(currentUser.userId, currentUser.displayName);
+                            } catch (error) {
+                                console.error('自動比對講師失敗:', error);
+                            }
+                        } else {
+                            console.log('沒有用戶資料，跳過自動比對');
+                        }
+                    } catch (error) {
+                        console.error('隱藏載入動畫或自動比對失敗:', error);
+                    }
                 }, 1000); // 至少顯示1秒載入動畫
                 
             } catch (error) {
                 console.error('系統初始化失敗:', error);
                 // 即使失敗也要隱藏載入動畫
                 setTimeout(() => {
-                    hideLoadingAnimation();
+                    try {
+                        hideLoadingAnimation();
+                        console.log('系統初始化失敗，但已隱藏載入動畫');
+                    } catch (hideError) {
+                        console.error('隱藏載入動畫失敗:', hideError);
+                    }
                 }, 1000);
             }
         }
@@ -1566,6 +1591,14 @@
                                     pictureUrl: profile.pictureUrl
                                 };
                                 updateUserDisplay();
+                                console.log('updateUserDisplay() 執行完成');
+                                
+                                // 添加手動測試按鈕
+                                addManualTestButton(profile.userId, profile.displayName);
+                                
+                                // 將自動比對移到系統初始化完成後執行
+                                console.log('準備在系統初始化完成後執行自動比對');
+                                
                                 resolve();
                             }).catch(error => {
                                 console.error('獲取用戶資料失敗:', error);
@@ -1598,29 +1631,64 @@
         function updateUserDisplay() {
             console.log('更新用戶顯示，當前用戶:', currentUser);
             
-            const userInfoGroup = document.getElementById('userInfoGroup');
-            const userDisplayName = document.getElementById('userDisplayName');
-            const userDisplayId = document.getElementById('userDisplayId');
-            const bindUserBtn = document.getElementById('bindUserBtn');
-            
-            if (!userInfoGroup || !userDisplayName || !userDisplayId || !bindUserBtn) {
-                console.error('找不到用戶資訊元素');
-                return;
-            }
-            
-            if (currentUser) {
-                console.log('顯示用戶資訊:', currentUser.displayName, currentUser.userId);
-                userDisplayName.textContent = currentUser.displayName;
-                userDisplayId.textContent = `ID: ${currentUser.userId}`;
-                userDisplayId.style.display = 'block';
-                bindUserBtn.textContent = '重新綁定';
-                userInfoGroup.style.display = 'block';
-            } else {
-                console.log('顯示未綁定狀態');
-                userDisplayName.textContent = '未綁定';
-                userDisplayId.style.display = 'none';
-                bindUserBtn.textContent = '綁定帳號';
-                userInfoGroup.style.display = 'block';
+            try {
+                const userInfoGroup = document.getElementById('userInfoGroup');
+                const userDisplayName = document.getElementById('userDisplayName');
+                const userDisplayId = document.getElementById('userDisplayId');
+                const bindUserBtn = document.getElementById('bindUserBtn');
+                
+                if (!userInfoGroup || !userDisplayName || !userDisplayId || !bindUserBtn) {
+                    console.error('找不到用戶資訊元素');
+                    return;
+                }
+                
+                if (currentUser) {
+                    console.log('顯示用戶資訊:', currentUser.displayName, currentUser.userId);
+                    
+                    try {
+                        userDisplayName.textContent = currentUser.displayName;
+                        console.log('設置用戶名稱完成');
+                    } catch (error) {
+                        console.error('設置用戶名稱失敗:', error);
+                    }
+                    
+                    try {
+                        userDisplayId.textContent = `ID: ${currentUser.userId}`;
+                        console.log('設置用戶ID完成');
+                    } catch (error) {
+                        console.error('設置用戶ID失敗:', error);
+                    }
+                    
+                    try {
+                        userDisplayId.style.display = 'block';
+                        console.log('設置ID顯示完成');
+                    } catch (error) {
+                        console.error('設置ID顯示失敗:', error);
+                    }
+                    
+                    try {
+                        bindUserBtn.textContent = '重新綁定';
+                        console.log('設置按鈕文字完成');
+                    } catch (error) {
+                        console.error('設置按鈕文字失敗:', error);
+                    }
+                    
+                    try {
+                        userInfoGroup.style.display = 'block';
+                        console.log('設置用戶資訊組顯示完成');
+                    } catch (error) {
+                        console.error('設置用戶資訊組顯示失敗:', error);
+                    }
+                } else {
+                    console.log('顯示未綁定狀態');
+                    userDisplayName.textContent = '未綁定';
+                    userDisplayId.style.display = 'none';
+                    bindUserBtn.textContent = '綁定帳號';
+                    userInfoGroup.style.display = 'block';
+                }
+                console.log('updateUserDisplay 函數執行完成');
+            } catch (error) {
+                console.error('updateUserDisplay 函數執行錯誤:', error);
             }
         }
 
@@ -1643,7 +1711,10 @@
                                 pictureUrl: profile.pictureUrl
                             };
                             updateUserDisplay();
-                            alert('綁定成功！');
+                            
+                            // 自動比對講師
+                            console.log('準備執行自動比對講師...');
+                            autoMatchTeacher(profile.userId, profile.displayName);
                         }).catch(error => {
                             console.error('獲取用戶資料失敗:', error);
                             alert('獲取用戶資料失敗，請重試');
@@ -1666,6 +1737,243 @@
             }
         }
 
+        // 自動比對講師
+        async function autoMatchTeacher(userId, displayName) {
+            console.log('開始自動比對講師...', { userId, displayName });
+            console.log('函數被調用，參數:', { userId, displayName });
+            
+            // 在頁面上顯示比對過程
+            showMatchingProcess('開始比對講師...', 'info');
+            
+            try {
+                console.log('準備調用Google Apps Script API...');
+                showMatchingProcess('正在調用Google Apps Script API...', 'info');
+                
+                // 調用Google Apps Script API
+                const response = await fetch('https://script.google.com/macros/s/AKfycbyDKCdRNc7oulsTOfvb9v2xW242stGb1Ckl4TmsrZHfp8JJQU7ZP6dUmi8ty_M1WSxboQ/exec?action=listBindings&limit=50&offset=0', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    redirect: 'follow'  // 自動跟隨重定向
+                });
+                
+                console.log('API回應狀態:', response.status);
+                console.log('API回應OK:', response.ok);
+                showMatchingProcess(`API回應狀態: ${response.status}`, response.ok ? 'success' : 'error');
+                
+                if (!response.ok) {
+                    throw new Error(`API請求失敗: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('API回應:', data);
+                showMatchingProcess('API回應成功，開始比對講師...', 'success');
+                
+                if (data.success && data.data && Array.isArray(data.data)) {
+                    showMatchingProcess(`找到 ${data.data.length} 個講師，開始比對...`, 'info');
+                    
+                    // 顯示比對過程
+                    showMatchingProcess(`比對條件: UserID=${userId}, DisplayName=${displayName}`, 'info');
+                    
+                    // 尋找匹配的講師
+                    const matchedTeacher = data.data.find(teacher => {
+                        // 精確比對userId（不區分大小寫）
+                        if (teacher.userId && userId && teacher.userId.toLowerCase() === userId.toLowerCase()) {
+                            showMatchingProcess(`✅ 精確匹配UserID: ${teacher.userId}`, 'success');
+                            return true;
+                        }
+                        // 模糊比對teacherName與displayName（不區分大小寫）
+                        if (teacher.teacherName && displayName) {
+                            const teacherName = teacher.teacherName.toLowerCase().trim();
+                            const userName = displayName.toLowerCase().trim();
+                            
+                            // 完全匹配（不區分大小寫）
+                            if (teacherName === userName) {
+                                showMatchingProcess(`✅ 完全匹配名稱: ${teacher.teacherName}`, 'success');
+                                return true;
+                            }
+                            
+                            // 包含匹配（不區分大小寫）
+                            if (teacherName.includes(userName) || userName.includes(teacherName)) {
+                                showMatchingProcess(`✅ 包含匹配: ${teacher.teacherName}`, 'success');
+                                return true;
+                            }
+                            
+                            // 部分匹配（至少3個字符，不區分大小寫）
+                            if (teacherName.length >= 3 && userName.length >= 3) {
+                                const commonChars = [...teacherName].filter(char => userName.includes(char)).length;
+                                const similarity = commonChars / Math.max(teacherName.length, userName.length);
+                                if (similarity >= 0.6) { // 60%相似度
+                                    showMatchingProcess(`✅ 相似度匹配: ${teacher.teacherName} (${Math.round(similarity * 100)}%)`, 'success');
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
+                    });
+                    
+                    if (matchedTeacher) {
+                        console.log('找到匹配的講師:', matchedTeacher);
+                        showMatchingProcess(`🎉 找到匹配講師: ${matchedTeacher.teacherName}`, 'success');
+                        
+                        // 自動選擇講師
+                        const instructorSelect = document.getElementById('instructorFilter');
+                        if (instructorSelect) {
+                            // 尋找對應的選項
+                            for (let option of instructorSelect.options) {
+                                if (option.value === matchedTeacher.teacherName) {
+                                    instructorSelect.value = matchedTeacher.teacherName;
+                                    console.log('自動選擇講師:', matchedTeacher.teacherName);
+                                    
+                                    // 觸發篩選更新
+                                    instructorSelect.dispatchEvent(new Event('change'));
+                                    
+                                    // 跳轉到第二步驟
+                                    showStep(2);
+                                    
+                                    showMatchingProcess(`✅ 自動選擇講師成功: ${matchedTeacher.teacherName}`, 'success');
+                                    return;
+                                }
+                            }
+                        }
+                        
+                        console.log('未找到對應的講師選項');
+                        showMatchingProcess(`⚠️ 找到匹配講師但未在列表中: ${matchedTeacher.teacherName}`, 'warning');
+                    } else {
+                        console.log('未找到匹配的講師');
+                        showMatchingProcess('❌ 未找到匹配的講師，請手動選擇', 'error');
+                    }
+                } else {
+                    console.error('API回應格式錯誤:', data);
+                    showMatchingProcess('❌ API回應格式錯誤', 'error');
+                }
+            } catch (error) {
+                console.error('自動比對講師失敗:', error);
+                showMatchingProcess(`❌ 自動比對失敗: ${error.message}`, 'error');
+            }
+        }
+
+        // 顯示比對過程
+        function showMatchingProcess(message, type = 'info') {
+            console.log(`[比對過程] ${message}`);
+            
+            // 創建或更新比對過程顯示區域
+            let processDiv = document.getElementById('matchingProcess');
+            if (!processDiv) {
+                processDiv = document.createElement('div');
+                processDiv.id = 'matchingProcess';
+                processDiv.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    width: 300px;
+                    max-height: 400px;
+                    overflow-y: auto;
+                    background: rgba(0, 0, 0, 0.9);
+                    color: white;
+                    padding: 15px;
+                    border-radius: 8px;
+                    font-size: 12px;
+                    z-index: 10000;
+                    border: 2px solid #333;
+                `;
+                document.body.appendChild(processDiv);
+            }
+            
+            // 添加新消息
+            const messageDiv = document.createElement('div');
+            messageDiv.style.cssText = `
+                margin: 5px 0;
+                padding: 5px;
+                border-radius: 4px;
+                background: ${type === 'success' ? 'rgba(0, 255, 0, 0.2)' : 
+                           type === 'error' ? 'rgba(255, 0, 0, 0.2)' : 
+                           type === 'warning' ? 'rgba(255, 255, 0, 0.2)' : 
+                           'rgba(0, 100, 255, 0.2)'};
+                border-left: 3px solid ${type === 'success' ? '#0f0' : 
+                                    type === 'error' ? '#f00' : 
+                                    type === 'warning' ? '#ff0' : 
+                                    '#00f'};
+            `;
+            messageDiv.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            processDiv.appendChild(messageDiv);
+            
+            // 滾動到底部
+            processDiv.scrollTop = processDiv.scrollHeight;
+            
+            // 限制顯示的消息數量
+            const messages = processDiv.querySelectorAll('div');
+            if (messages.length > 20) {
+                messages[0].remove();
+            }
+        }
+
+        // 添加手動測試按鈕
+        function addManualTestButton(userId, displayName) {
+            // 檢查是否已經有測試按鈕
+            if (document.getElementById('manualTestBtn')) {
+                return;
+            }
+            
+            const testBtn = document.createElement('button');
+            testBtn.id = 'manualTestBtn';
+            testBtn.textContent = '手動測試比對';
+            testBtn.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                padding: 10px 15px;
+                background: #007bff;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                z-index: 10001;
+                font-size: 14px;
+            `;
+            
+            testBtn.addEventListener('click', () => {
+                showMatchingProcess('手動觸發比對測試...', 'info');
+                autoMatchTeacher(userId, displayName);
+            });
+            
+            document.body.appendChild(testBtn);
+        }
+
+        // 顯示指定步驟
+        function showStep(stepNumber) {
+            console.log('跳轉到步驟:', stepNumber);
+            
+            // 更新步驟狀態
+            const steps = document.querySelectorAll('.step');
+            steps.forEach((step, index) => {
+                step.classList.remove('active', 'completed', 'pending');
+                
+                if (index + 1 < stepNumber) {
+                    step.classList.add('completed');
+                } else if (index + 1 === stepNumber) {
+                    step.classList.add('active');
+                } else {
+                    step.classList.add('pending');
+                }
+            });
+            
+            // 根據步驟顯示/隱藏相關內容
+            if (stepNumber === 2) {
+                // 第二步：查看行事曆 - 確保行事曆區域可見
+                const calendarSection = document.querySelector('.calendar-section');
+                if (calendarSection) {
+                    calendarSection.style.display = 'block';
+                }
+                
+                // 滾動到行事曆區域
+                setTimeout(() => {
+                    calendarSection?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+            }
+        }
+
         function testUser() {
             console.log('用戶點擊測試按鈕');
             
@@ -1679,7 +1987,9 @@
                     pictureUrl: null
                 };
                 updateUserDisplay();
-                alert('測試用戶設定成功！');
+                
+                // 自動比對講師
+                autoMatchTeacher(testUserId, testDisplayName);
             }
         }
 
@@ -2066,13 +2376,64 @@
             container.innerHTML = filteredEvents.map(event => createEventCard(event)).join('');
         }
 
+        // 從標題解析時間
+        function parseTimeFromTitle(title) {
+            // 匹配格式如 "18:30-20:30", "14:30-15:30", "16:30-17:30", "1630-1730" 等
+            const timeMatch = title.match(/(\d{1,2}):?(\d{2})-(\d{1,2}):?(\d{2})/);
+            if (timeMatch) {
+                const startHour = timeMatch[1];
+                const startMin = timeMatch[2];
+                const endHour = timeMatch[3];
+                const endMin = timeMatch[4];
+                
+                // 格式化時間為 HH:MM 格式
+                const startTime = `${startHour.padStart(2, '0')}:${startMin}`;
+                const endTime = `${endHour.padStart(2, '0')}:${endMin}`;
+                
+                return {
+                    startTime: startTime,
+                    endTime: endTime,
+                    timeString: `${startTime} - ${endTime}`
+                };
+            }
+            return null;
+        }
+
+        // 從標題解析日期（根據星期幾）
+        function parseDateFromTitle(title, baseDate = new Date()) {
+            // 直接使用 CalDAV 的日期，不重新計算
+            // 因為 CalDAV 已經提供了正確的日期
+            return baseDate;
+        }
+
         // 創建事件卡片
         function createEventCard(event) {
             const startDate = new Date(event.start);
             const endDate = new Date(event.end);
             
-            // 格式化時間
-            const timeString = `${startDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${endDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
+            // 從標題解析時間
+            const titleTime = parseTimeFromTitle(event.title);
+            const titleDate = parseDateFromTitle(event.title, startDate);
+            
+            // 使用標題解析的時間，如果解析失敗則使用CalDAV時間
+            let displayDate, timeString;
+            
+            if (titleTime) {
+                // 使用標題解析的日期和時間
+                displayDate = titleDate.toLocaleDateString('zh-TW');
+                timeString = titleTime.timeString;
+                
+                console.log(`標題解析 - ${event.title}:`);
+                console.log(`  解析日期: ${displayDate}`);
+                console.log(`  解析時間: ${timeString}`);
+                console.log(`  CalDAV日期: ${startDate.toLocaleDateString('zh-TW')}`);
+                console.log(`  CalDAV時間: ${startDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })} - ${endDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })}`);
+            } else {
+                // 回退到CalDAV時間
+                displayDate = startDate.toLocaleDateString('zh-TW');
+                timeString = `${startDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })} - ${endDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })}`;
+                console.log(`無法解析標題時間，使用CalDAV時間 - ${event.title}: ${displayDate} ${timeString}`);
+            }
             
             // 清理描述內容
             let cleanDescription = event.description || '';
@@ -2143,7 +2504,7 @@
                     <div class="event-details">
                         <div class="event-detail">
                             <i class="fas fa-calendar"></i>
-                            <span>${startDate.toLocaleDateString('zh-TW')}</span>
+                            <span>${displayDate}</span>
                         </div>
                         <div class="event-detail">
                             <i class="fas fa-clock"></i>
@@ -2317,4 +2678,7 @@
         });
     </script>
 </body>
-</html>
+</html>// Railway 強制重新部署 - Wed Sep 17 10:03:13 CST 2025
+// 強制 Railway 重新部署 - Wed Sep 17 12:07:01 CST 2025
+// 修復時間顯示問題 - 強制重新部署 - Wed Jan 16 2025
+// 緊急修復 - 時間顯示問題 - 2025-01-16 15:30
