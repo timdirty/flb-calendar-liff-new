@@ -555,31 +555,55 @@
         }
 
         .location-link {
-            color: rgba(51, 51, 51, 0.9);
+            color: rgba(255, 193, 7, 1);
             text-decoration: none;
             transition: all 0.3s ease;
-            border-bottom: 1px solid transparent;
+            border-bottom: 1px solid rgba(255, 193, 7, 0.3);
+            background: rgba(255, 193, 7, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            position: relative;
         }
 
         .location-link:hover {
-            color: rgba(255, 193, 7, 1);
-            border-bottom: 1px solid rgba(255, 193, 7, 0.5);
+            color: rgba(255, 255, 255, 1);
+            background: rgba(255, 193, 7, 0.9);
+            border-bottom: 1px solid rgba(255, 193, 7, 1);
             text-decoration: none;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
         }
 
         .location-link:active {
-            color: rgba(255, 193, 7, 0.8);
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 193, 7, 0.8);
+            transform: translateY(0);
         }
 
         .location-external-icon {
             font-size: 0.7rem;
-            margin-left: 4px;
-            opacity: 0.7;
-            transition: opacity 0.3s ease;
+            opacity: 0.8;
+            transition: all 0.3s ease;
         }
 
         .location-link:hover .location-external-icon {
             opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .location-map-icon {
+            font-size: 0.8rem;
+            opacity: 0.9;
+            transition: all 0.3s ease;
+        }
+
+        .location-link:hover .location-map-icon {
+            opacity: 1;
+            transform: scale(1.1);
         }
 
         .event-description {
@@ -2781,6 +2805,7 @@
                                target="_blank" 
                                class="location-link"
                                title="點擊查看地圖">
+                                <i class="fas fa-map-marked-alt location-map-icon"></i>
                                 <span>${location}</span>
                                 <i class="fas fa-external-link-alt location-external-icon"></i>
                             </a>
