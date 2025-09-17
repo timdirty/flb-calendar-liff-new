@@ -554,6 +554,34 @@
             text-align: center;
         }
 
+        .location-link {
+            color: rgba(51, 51, 51, 0.9);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid transparent;
+        }
+
+        .location-link:hover {
+            color: rgba(255, 193, 7, 1);
+            border-bottom: 1px solid rgba(255, 193, 7, 0.5);
+            text-decoration: none;
+        }
+
+        .location-link:active {
+            color: rgba(255, 193, 7, 0.8);
+        }
+
+        .location-external-icon {
+            font-size: 0.7rem;
+            margin-left: 4px;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+
+        .location-link:hover .location-external-icon {
+            opacity: 1;
+        }
+
         .event-description {
             background: rgba(248, 249, 250, 0.9);
             padding: 15px;
@@ -2749,7 +2777,13 @@
                         </div>
                         <div class="event-detail">
                             <i class="fas fa-map-marker-alt"></i>
-                            <span>${location}</span>
+                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}" 
+                               target="_blank" 
+                               class="location-link"
+                               title="點擊查看地圖">
+                                <span>${location}</span>
+                                <i class="fas fa-external-link-alt location-external-icon"></i>
+                            </a>
                         </div>
                     </div>
                     
