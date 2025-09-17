@@ -2401,22 +2401,8 @@
 
         // 從標題解析日期（根據星期幾）
         function parseDateFromTitle(title, baseDate = new Date()) {
-            const dayMap = {
-                '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '日': 0
-            };
-            
-            // 匹配格式如 "SPIKE 三 18:30-20:30", "ESM SPM二 14:30-15:30" 等
-            const dayMatch = title.match(/([一二三四五六日])/);
-            if (dayMatch) {
-                const targetDay = dayMap[dayMatch[1]];
-                const currentDay = baseDate.getDay();
-                const daysUntilTarget = (targetDay - currentDay + 7) % 7;
-                
-                const targetDate = new Date(baseDate);
-                targetDate.setDate(baseDate.getDate() + daysUntilTarget);
-                
-                return targetDate;
-            }
+            // 直接使用 CalDAV 的日期，不重新計算
+            // 因為 CalDAV 已經提供了正確的日期
             return baseDate;
         }
 
