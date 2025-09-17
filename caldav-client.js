@@ -269,9 +269,14 @@ class CalDAVClient {
                         start = startDate.toJSDate();
                         end = endDate.toJSDate();
                     } else {
-                        // 無時區資訊，假設為本地時間
-                        start = new Date(startDate.year, startDate.month - 1, startDate.day, startDate.hour, startDate.minute, startDate.second);
-                        end = new Date(endDate.year, endDate.month - 1, endDate.day, endDate.hour, endDate.minute, endDate.second);
+                        // 無時區資訊，假設為本地時間（台灣時區 UTC+8）
+                        // 如果 CalDAV 返回的是 UTC 時間，需要加上 8 小時
+                        const utcStart = new Date(Date.UTC(startDate.year, startDate.month - 1, startDate.day, startDate.hour, startDate.minute, startDate.second));
+                        const utcEnd = new Date(Date.UTC(endDate.year, endDate.month - 1, endDate.day, endDate.hour, endDate.minute, endDate.second));
+                        
+                        // 轉換為台灣時區 (UTC+8)
+                        start = new Date(utcStart.getTime() + 8 * 60 * 60 * 1000);
+                        end = new Date(utcEnd.getTime() + 8 * 60 * 60 * 1000);
                     }
                 }
                 
