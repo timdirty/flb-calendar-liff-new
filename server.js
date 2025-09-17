@@ -584,4 +584,30 @@ process.on('SIGTERM', () => {
     });
 });
 
+// 代理 Google Apps Script API 請求
+app.get('/api/google-script', async (req, res) => {
+    try {
+        const { action, limit, offset } = req.query;
+        const url = `${GOOGLE_SCRIPT_URL}?action=${action}&limit=${limit}&offset=${offset}`;
+        
+        console.log('代理請求 Google Apps Script:', url);
+        
+        const response = await axios.get(url, {
+            headers: {
+                'User-Agent': 'FLB-Calendar-Server/1.0'
+            }
+        });
+        
+        // 設定 CORS 標頭
+        res.header('Access-Control-Allow-Origin', '*');
+        res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        res.header('Access-Control-Allow-Headers', 'Content-Type');
+        
+        res.json(response.data);
+    } catch (error) {
+        console.error('代理 Google Apps Script 請求失敗:', error);
+        res.status(500).json({ error: '代理請求失敗' });
+    }
+});
+
 module.exports = app;

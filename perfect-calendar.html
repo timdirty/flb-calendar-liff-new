@@ -1749,8 +1749,8 @@
                 console.log('準備調用Google Apps Script API...');
                 showMatchingProcess('正在調用Google Apps Script API...', 'info');
                 
-                // 調用Google Apps Script API
-                const response = await fetch('https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/exec?action=listBindings&limit=50&offset=0', {
+                // 調用代理 API（避免 CORS 問題）
+                const response = await fetch('/api/google-script?action=listBindings&limit=50&offset=0', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
