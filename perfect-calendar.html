@@ -2441,7 +2441,7 @@
                 console.log(`  解析日期: ${displayDate}`);
                 console.log(`  解析時間: ${timeString}`);
                 console.log(`  CalDAV日期: ${startDate.toLocaleDateString('zh-TW')}`);
-                console.log(`  CalDAV時間: ${startDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${endDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`);
+                console.log(`  CalDAV時間: ${startDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })} - ${endDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })}`);
             } else {
                 // 回退到CalDAV時間
                 displayDate = startDate.toLocaleDateString('zh-TW');
