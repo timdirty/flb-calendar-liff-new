@@ -2895,6 +2895,8 @@
                 timeString = titleTime.timeString;
                 
                 console.log(`標題解析 - ${event.title}:`);
+                console.log(`  原始 start: ${event.start}`);
+                console.log(`  startDate 物件:`, startDate);
                 console.log(`  CalDAV日期: ${displayDate}`);
                 console.log(`  解析時間: ${timeString}`);
                 console.log(`  CalDAV時間: ${startDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })} - ${endDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })}`);
@@ -2949,11 +2951,16 @@
                 `;
             }
             
-            // 處理位置資訊
-            let location = event.location;
-            if (!location || location === 'nan' || location === 'null' || location === '' || location.trim() === '') {
-                location = 'FLB工作室';
-            }
+        // 處理位置資訊
+        let location = event.location;
+        if (!location || location === 'nan' || location === 'null' || location === '' || location.trim() === '') {
+            location = 'FLB工作室';
+        }
+        
+        // 如果是站前教室，設定預設地址
+        if (location === '站前教室') {
+            location = '台北市中正區開封街1段2號9樓';
+        }
             
             // 講師底色
             const instructorColor = instructorColors[event.instructor] || '#667eea';

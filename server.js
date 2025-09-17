@@ -471,6 +471,7 @@ app.get('/api/events', async (req, res) => {
         }));
 
         console.log(`成功獲取 ${formattedEvents.length} 個事件`);
+        console.log('事件資料範例:', formattedEvents[0]);
         res.json({
             success: true,
             data: formattedEvents,
@@ -492,6 +493,43 @@ app.get('/api/events', async (req, res) => {
 
 // 測試 CalDAV 連接
 app.get('/api/test-caldav', async (req, res) => {
+    try {
+        if (!caldavClient) {
+            return res.json({
+                success: false,
+                message: 'CalDAV 客戶端未初始化',
+                caldavConfig: CALDAV_CONFIG
+            });
+        }
+        
+        const calendars = await caldavClient.getCalendars();
+        res.json({
+            success: true,
+            message: 'CalDAV 連接成功',
+            calendars: calendars,
+            caldavConfig: CALDAV_CONFIG
+        });
+    } catch (error) {
+        res.json({
+            success: false,
+            message: 'CalDAV 連接失敗',
+            error: error.message,
+            caldavConfig: CALDAV_CONFIG
+        });
+    }
+});
+
+// 檢查事件來源
+app.get('/api/event-source', (req, res) => {
+    res.json({
+        caldavClient: caldavClient ? '已初始化' : '未初始化',
+        caldavConfig: CALDAV_CONFIG,
+        mockEvents: mockEvents.length
+    });
+});
+
+// 測試 CalDAV 連接
+app.get('/api/test-caldav-old', async (req, res) => {
     try {
         if (!caldavClient) {
             return res.json({
