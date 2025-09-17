@@ -2680,11 +2680,14 @@
         }
 
         // 點擊外部關閉設置畫面
-        document.getElementById('settingsOverlay').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeSettings();
-            }
-        });
+        const settingsOverlay = document.getElementById('settingsOverlay');
+        if (settingsOverlay) {
+            settingsOverlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeSettings();
+                }
+            });
+        }
     </script>
 </body>
 </html>// Railway 強制重新部署 - Wed Sep 17 10:03:13 CST 2025
