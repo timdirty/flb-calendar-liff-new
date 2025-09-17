@@ -1324,7 +1324,6 @@
                             <div class="user-id" id="userDisplayId" style="display: none;"></div>
                         </div>
                         <button class="btn btn-secondary" id="bindUserBtn">綁定帳號</button>
-                        <button class="btn btn-primary" id="testUserBtn" style="margin-left: 10px;">測試用戶</button>
                     </div>
                 </div>
             </div>
@@ -1593,8 +1592,6 @@
                                 updateUserDisplay();
                                 console.log('updateUserDisplay() 執行完成');
                                 
-                                // 添加手動測試按鈕
-                                addManualTestButton(profile.userId, profile.displayName);
                                 
                                 // 將自動比對移到系統初始化完成後執行
                                 console.log('準備在系統初始化完成後執行自動比對');
@@ -1858,89 +1855,8 @@
         // 顯示比對過程
         function showMatchingProcess(message, type = 'info') {
             console.log(`[比對過程] ${message}`);
-            
-            // 創建或更新比對過程顯示區域
-            let processDiv = document.getElementById('matchingProcess');
-            if (!processDiv) {
-                processDiv = document.createElement('div');
-                processDiv.id = 'matchingProcess';
-                processDiv.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    width: 300px;
-                    max-height: 400px;
-                    overflow-y: auto;
-                    background: rgba(0, 0, 0, 0.9);
-                    color: white;
-                    padding: 15px;
-                    border-radius: 8px;
-                    font-size: 12px;
-                    z-index: 10000;
-                    border: 2px solid #333;
-                `;
-                document.body.appendChild(processDiv);
-            }
-            
-            // 添加新消息
-            const messageDiv = document.createElement('div');
-            messageDiv.style.cssText = `
-                margin: 5px 0;
-                padding: 5px;
-                border-radius: 4px;
-                background: ${type === 'success' ? 'rgba(0, 255, 0, 0.2)' : 
-                           type === 'error' ? 'rgba(255, 0, 0, 0.2)' : 
-                           type === 'warning' ? 'rgba(255, 255, 0, 0.2)' : 
-                           'rgba(0, 100, 255, 0.2)'};
-                border-left: 3px solid ${type === 'success' ? '#0f0' : 
-                                    type === 'error' ? '#f00' : 
-                                    type === 'warning' ? '#ff0' : 
-                                    '#00f'};
-            `;
-            messageDiv.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-            processDiv.appendChild(messageDiv);
-            
-            // 滾動到底部
-            processDiv.scrollTop = processDiv.scrollHeight;
-            
-            // 限制顯示的消息數量
-            const messages = processDiv.querySelectorAll('div');
-            if (messages.length > 20) {
-                messages[0].remove();
-            }
         }
 
-        // 添加手動測試按鈕
-        function addManualTestButton(userId, displayName) {
-            // 檢查是否已經有測試按鈕
-            if (document.getElementById('manualTestBtn')) {
-                return;
-            }
-            
-            const testBtn = document.createElement('button');
-            testBtn.id = 'manualTestBtn';
-            testBtn.textContent = '手動測試比對';
-            testBtn.style.cssText = `
-                position: fixed;
-                top: 20px;
-                left: 20px;
-                padding: 10px 15px;
-                background: #007bff;
-                color: white;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-                z-index: 10001;
-                font-size: 14px;
-            `;
-            
-            testBtn.addEventListener('click', () => {
-                showMatchingProcess('手動觸發比對測試...', 'info');
-                autoMatchTeacher(userId, displayName);
-            });
-            
-            document.body.appendChild(testBtn);
-        }
 
         // 顯示指定步驟
         function showStep(stepNumber) {
