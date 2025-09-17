@@ -1891,48 +1891,43 @@
             }
         }
 
-        function testUser() {
-            console.log('用戶點擊測試按鈕');
-            
-            const testUserId = prompt('請輸入測試用戶ID:', 'U1234567890abcdef');
-            const testDisplayName = prompt('請輸入測試用戶名稱:', '測試用戶');
-            
-            if (testUserId && testDisplayName) {
-                currentUser = {
-                    userId: testUserId,
-                    displayName: testDisplayName,
-                    pictureUrl: null
-                };
-                updateUserDisplay();
-                
-                // 自動比對講師
-                autoMatchTeacher(testUserId, testDisplayName);
-            }
-        }
 
         // 設置事件監聽器
         function setupEventListeners() {
-            document.getElementById('instructorSelect').addEventListener('change', function() {
-                updateStats();
-                renderEvents();
-            });
+            // 講師篩選事件監聽器
+            const instructorSelect = document.getElementById('instructorSelect');
+            if (instructorSelect) {
+                instructorSelect.addEventListener('change', function() {
+                    updateStats();
+                    renderEvents();
+                });
+            }
             
             // 時段篩選事件監聽器
-            document.getElementById('timeFilter').addEventListener('change', function() {
-                updateStats();
-                renderEvents();
-            });
+            const timeFilter = document.getElementById('timeFilter');
+            if (timeFilter) {
+                timeFilter.addEventListener('change', function() {
+                    updateStats();
+                    renderEvents();
+                });
+            }
             
             // 日期篩選事件監聽器
-            document.getElementById('dateFilter').addEventListener('change', function() {
-                updateStats();
-                renderEvents();
-            });
+            const dateFilter = document.getElementById('dateFilter');
+            if (dateFilter) {
+                dateFilter.addEventListener('change', function() {
+                    updateStats();
+                    renderEvents();
+                });
+            }
             
             // 排序方式事件監聽器
-            document.getElementById('sortOrder').addEventListener('change', function() {
-                renderEvents();
-            });
+            const sortOrder = document.getElementById('sortOrder');
+            if (sortOrder) {
+                sortOrder.addEventListener('change', function() {
+                    renderEvents();
+                });
+            }
             
             // 為視圖按鈕添加事件監聽器
             document.querySelectorAll('.view-buttons .btn-primary').forEach(button => {
@@ -1943,10 +1938,10 @@
             });
             
             // 綁定用戶按鈕事件監聽器
-            document.getElementById('bindUserBtn').addEventListener('click', bindUser);
-            
-            // 測試用戶按鈕事件監聽器
-            document.getElementById('testUserBtn').addEventListener('click', testUser);
+            const bindUserBtn = document.getElementById('bindUserBtn');
+            if (bindUserBtn) {
+                bindUserBtn.addEventListener('click', bindUser);
+            }
         }
 
         // 生成隨機馬卡龍顏色
