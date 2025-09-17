@@ -1894,32 +1894,38 @@
                 });
                 updateLoadingProgress(80);
                 
-                console.log('所有初始化任務完成，準備隱藏載入動畫...');
+                console.log('所有初始化任務完成，開始講師比對...');
+                updateLoadingProgress(90);
+                
+                // 執行講師比對
+                if (currentUser && currentUser.userId && currentUser.displayName) {
+                    console.log('=== 開始自動比對講師 ===');
+                    console.log('用戶資料:', currentUser);
+                    
+                    try {
+                        await autoMatchTeacher(currentUser.userId, currentUser.displayName);
+                        console.log('講師比對完成');
+                    } catch (error) {
+                        console.error('自動比對講師失敗:', error);
+                    }
+                } else {
+                    console.log('沒有用戶資料，跳過自動比對');
+                }
+                
                 updateLoadingProgress(100);
                 
-                // 隱藏載入動畫
+                // 比對完成後隱藏載入動畫
                 setTimeout(() => {
                     try {
                         hideLoadingAnimation();
                         console.log('系統初始化完成');
                         
-                        // 在系統初始化完成後執行自動比對
-                        if (currentUser && currentUser.userId && currentUser.displayName) {
-                            console.log('=== 系統初始化完成，開始自動比對講師 ===');
-                            console.log('用戶資料:', currentUser);
-                            
-                            try {
-                                autoMatchTeacher(currentUser.userId, currentUser.displayName);
-                            } catch (error) {
-                                console.error('自動比對講師失敗:', error);
-                            }
-                        } else {
-                            console.log('沒有用戶資料，跳過自動比對');
-                        }
+                        // 自動滑動到行事曆區域（僅行動裝置）
+                        autoScrollToCalendar();
                     } catch (error) {
-                        console.error('隱藏載入動畫或自動比對失敗:', error);
+                        console.error('隱藏載入動畫失敗:', error);
                     }
-                }, 1000); // 至少顯示1秒載入動畫
+                }, 500);
                 
             } catch (error) {
                 console.error('系統初始化失敗:', error);
@@ -2159,6 +2165,8 @@
             // 在頁面上顯示比對過程
             showMatchingProcess('開始比對講師...', 'info');
             
+            return new Promise(async (resolve) => {
+            
             try {
                 console.log('準備調用Google Apps Script API...');
                 showMatchingProcess('正在調用Google Apps Script API...', 'info');
@@ -2249,15 +2257,34 @@
                                 showStep(2);
                                 
                                 showMatchingProcess(`✅ 自動選擇講師成功: ${matchedOption.value}`, 'success');
+                                
+                                // 比對成功，顯示個人行事曆
+                                console.log('比對成功，將顯示個人行事曆');
                                 return;
                             }
                         }
                         
                         console.log('未找到對應的講師選項');
                         showMatchingProcess(`⚠️ 找到匹配講師但未在列表中: ${matchedTeacher.name}`, 'warning');
+                        
+                        // 比對失敗，顯示全部講師
+                        console.log('比對失敗，將顯示全部講師');
+                        const instructorSelect = document.getElementById('instructorSelect');
+                        if (instructorSelect) {
+                            instructorSelect.value = ''; // 選擇全部講師
+                            instructorSelect.dispatchEvent(new Event('change'));
+                        }
                     } else {
                         console.log('未找到匹配的講師');
                         showMatchingProcess('❌ 未找到匹配的講師，請手動選擇', 'error');
+                        
+                        // 比對失敗，顯示全部講師
+                        console.log('比對失敗，將顯示全部講師');
+                        const instructorSelect = document.getElementById('instructorSelect');
+                        if (instructorSelect) {
+                            instructorSelect.value = ''; // 選擇全部講師
+                            instructorSelect.dispatchEvent(new Event('change'));
+                        }
                     }
                 } else {
                     console.error('API回應格式錯誤:', data);
@@ -2266,12 +2293,37 @@
             } catch (error) {
                 console.error('自動比對講師失敗:', error);
                 showMatchingProcess(`❌ 自動比對失敗: ${error.message}`, 'error');
+            } finally {
+                // 無論比對成功與否，都解析 Promise
+                resolve();
             }
+            });
         }
 
         // 顯示比對過程
         function showMatchingProcess(message, type = 'info') {
             console.log(`[比對過程] ${message}`);
+        }
+
+        // 自動滑動到行事曆區域（僅行動裝置）
+        function autoScrollToCalendar() {
+            // 檢查是否為行動裝置
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+            
+            if (isMobile) {
+                // 延遲一點時間確保頁面完全載入
+                setTimeout(() => {
+                    const viewButtons = document.querySelector('.view-buttons');
+                    if (viewButtons) {
+                        viewButtons.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start',
+                            inline: 'end' // 讓按鈕切齊右面頂端
+                        });
+                        console.log('已自動滑動到行事曆區域');
+                    }
+                }, 1000);
+            }
         }
 
         // 模糊比對講師選項
