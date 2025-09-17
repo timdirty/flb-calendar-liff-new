@@ -269,10 +269,10 @@ class CalDAVClient {
                         start = startDate.toJSDate();
                         end = endDate.toJSDate();
                     } else {
-                        // 無時區資訊，直接使用本地時間（台灣時區）
-                        // 不進行 UTC 轉換，因為 CalDAV 已經提供正確的本地時間
-                        start = new Date(startDate.year, startDate.month - 1, startDate.day, startDate.hour, startDate.minute, startDate.second);
-                        end = new Date(endDate.year, endDate.month - 1, endDate.day, endDate.hour, endDate.minute, endDate.second);
+                        // 無時區資訊，使用 iCal.js 的 toJSDate() 方法
+                        // 這會正確處理 floating 時區（本地時間）
+                        start = startDate.toJSDate();
+                        end = endDate.toJSDate();
                     }
                 }
                 
