@@ -2378,13 +2378,22 @@
 
         // 從標題解析時間
         function parseTimeFromTitle(title) {
-            // 匹配格式如 "18:30-20:30", "14:30-15:30", "16:30-17:30" 等
-            const timeMatch = title.match(/(\d{1,2}:\d{2})-(\d{1,2}:\d{2})/);
+            // 匹配格式如 "18:30-20:30", "14:30-15:30", "16:30-17:30", "1630-1730" 等
+            const timeMatch = title.match(/(\d{1,2}):?(\d{2})-(\d{1,2}):?(\d{2})/);
             if (timeMatch) {
+                const startHour = timeMatch[1];
+                const startMin = timeMatch[2];
+                const endHour = timeMatch[3];
+                const endMin = timeMatch[4];
+                
+                // 格式化時間為 HH:MM 格式
+                const startTime = `${startHour.padStart(2, '0')}:${startMin}`;
+                const endTime = `${endHour.padStart(2, '0')}:${endMin}`;
+                
                 return {
-                    startTime: timeMatch[1],
-                    endTime: timeMatch[2],
-                    timeString: `${timeMatch[1]} - ${timeMatch[2]}`
+                    startTime: startTime,
+                    endTime: endTime,
+                    timeString: `${startTime} - ${endTime}`
                 };
             }
             return null;
@@ -2436,7 +2445,7 @@
             } else {
                 // 回退到CalDAV時間
                 displayDate = startDate.toLocaleDateString('zh-TW');
-                timeString = `${startDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${endDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
+                timeString = `${startDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })} - ${endDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })}`;
                 console.log(`無法解析標題時間，使用CalDAV時間 - ${event.title}: ${displayDate} ${timeString}`);
             }
             
