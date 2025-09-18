@@ -579,7 +579,7 @@
                 transform: translateY(-10px);
             }
             60% {
-                transform: translateY(-5px);
+            transform: translateY(-5px);
             }
         }
 
@@ -2474,13 +2474,15 @@
                                 instructorSelect.value = matchedOption.value;
                                 console.log('自動選擇講師:', matchedOption.value);
                                 
-                                // 觸發篩選更新
-                                instructorSelect.dispatchEvent(new Event('change'));
+                                // 立即更新統計和渲染事件（在跳轉前）
+                                updateStats();
+                                renderEvents();
                                 
                                 // 跳轉到第二步驟
                                 showStep(2);
                                 
                                 showMatchingProcess(`✅ 自動選擇講師成功: ${matchedOption.value}`, 'success');
+                                addLoadingLog(`🎯 自動選擇講師: ${matchedOption.value}`, 'success');
                                 
                                 // 比對成功，顯示個人行事曆
                                 console.log('比對成功，將顯示個人行事曆');
@@ -2490,19 +2492,25 @@
                         
                         console.log('未找到對應的講師選項');
                         showMatchingProcess(`⚠️ 找到匹配講師但未在列表中: ${matchedTeacher.name}`, 'warning');
+                        addLoadingLog(`⚠️ 找到匹配講師但未在列表中: ${matchedTeacher.name}`, 'warning');
                         
                         // 比對失敗，顯示全部講師
                         console.log('比對失敗，將顯示全部講師');
                         instructorSelect.value = ''; // 選擇全部講師
-                        instructorSelect.dispatchEvent(new Event('change'));
+                        // 立即更新統計和渲染事件
+                        updateStats();
+                        renderEvents();
                     } else {
                         console.log('未找到匹配的講師');
                         showMatchingProcess('❌ 未找到匹配的講師，請手動選擇', 'error');
+                        addLoadingLog('❌ 未找到匹配的講師，請手動選擇', 'error');
                         
                         // 比對失敗，顯示全部講師
                         console.log('比對失敗，將顯示全部講師');
                         instructorSelect.value = ''; // 選擇全部講師
-                        instructorSelect.dispatchEvent(new Event('change'));
+                        // 立即更新統計和渲染事件
+                        updateStats();
+                        renderEvents();
                     }
                 } else {
                     console.error('API回應格式錯誤:', data);
@@ -2667,10 +2675,10 @@
                     calendarSection.style.display = 'block';
                 }
                 
-                // 滾動到行事曆區域
-                setTimeout(() => {
-                    calendarSection?.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
+                // 立即滾動到行事曆區域（移除延遲）
+                if (calendarSection) {
+                    calendarSection.scrollIntoView({ behavior: 'smooth' });
+                }
             }
         }
 
@@ -2892,39 +2900,39 @@ async function loadTodayEvents() {
         console.log('🚀 開始載入完整事件數據...');
         addLoadingLog('🌐 正在連接 CalDAV 伺服器...', 'info');
         
-        const response = await fetch('/api/events');
+                const response = await fetch('/api/events');
         addLoadingLog('📡 正在獲取行事曆資料...', 'info');
         
-        const data = await response.json();
-        
-        if (data.success) {
+                const data = await response.json();
+                
+                if (data.success) {
             addLoadingLog(`📊 成功獲取 ${data.data.length} 個事件`, 'success');
             
-            allEvents = data.data;
-            allInstructors = [...new Set(allEvents.map(event => event.instructor).filter(Boolean))];
+                    allEvents = data.data;
+                    allInstructors = [...new Set(allEvents.map(event => event.instructor).filter(Boolean))];
             
             addLoadingLog(`👥 發現 ${allInstructors.length} 位講師`, 'info');
-            
-            // 為新講師生成隨機馬卡龍顏色（如果沒有保存的設置）
-            if (Object.keys(instructorColors).length === 0) {
+                    
+                    // 為新講師生成隨機馬卡龍顏色（如果沒有保存的設置）
+                    if (Object.keys(instructorColors).length === 0) {
                 addLoadingLog('🎨 正在生成講師顏色配置...', 'info');
-                generateRandomInstructorColors();
-            }
-            
+                        generateRandomInstructorColors();
+                    }
+                    
             addLoadingLog('🔄 正在渲染事件列表...', 'info');
-            populateInstructorDropdown();
-            renderEvents();
-            updateStats();
+                    populateInstructorDropdown();
+                    renderEvents();
+                    updateStats();
             
             console.log(`✅ 完整事件載入完成: ${allEvents.length} 個事件`);
             addLoadingLog(`✅ 載入完成！共 ${allEvents.length} 個事件`, 'success');
             hideLoadingMessage();
-        } else {
-            showError('載入事件失敗: ' + data.message);
-        }
-    } catch (error) {
-        console.error('載入事件錯誤:', error);
-        showError('無法連接到服務器');
+                } else {
+                    showError('載入事件失敗: ' + data.message);
+                }
+            } catch (error) {
+                console.error('載入事件錯誤:', error);
+                showError('無法連接到服務器');
     }
 }
 
@@ -3019,7 +3027,7 @@ async function loadTodayEvents() {
         function populateInstructorDropdown() {
             const select = document.getElementById('instructorSelect');
             select.innerHTML = '<option value="">全部講師</option>';
-
+            
             allInstructors.forEach(instructor => {
                 const option = document.createElement('option');
                 option.value = instructor;
@@ -3349,11 +3357,11 @@ async function loadTodayEvents() {
                 `;
             }
             
-        // 處理位置資訊
-        let location = event.location;
-        if (!location || location === 'nan' || location === 'null' || location === '' || location.trim() === '') {
-            location = 'FLB工作室';
-        }
+            // 處理位置資訊
+            let location = event.location;
+            if (!location || location === 'nan' || location === 'null' || location === '' || location.trim() === '') {
+                location = 'FLB工作室';
+            }
         
         // 如果是站前教室，設定預設地址
         if (location === '站前教室') {
@@ -3394,7 +3402,7 @@ async function loadTodayEvents() {
                                class="location-link"
                                title="點擊查看地圖">
                                 <i class="fas fa-map-marked-alt location-map-icon"></i>
-                                <span>${location}</span>
+                            <span>${location}</span>
                                 <i class="fas fa-external-link-alt location-external-icon"></i>
                             </a>
                         </div>
@@ -3583,10 +3591,10 @@ async function loadTodayEvents() {
         const settingsOverlay = document.getElementById('settingsOverlay');
         if (settingsOverlay) {
             settingsOverlay.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeSettings();
-                }
-            });
+            if (e.target === this) {
+                closeSettings();
+            }
+        });
         }
     </script>
 </body>

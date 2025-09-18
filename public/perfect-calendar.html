@@ -2521,13 +2521,15 @@
                                 instructorSelect.value = matchedOption.value;
                                 console.log('自動選擇講師:', matchedOption.value);
                                 
-                                // 觸發篩選更新
-                                instructorSelect.dispatchEvent(new Event('change'));
+                                // 立即更新統計和渲染事件（在跳轉前）
+                                updateStats();
+                                renderEvents();
                                 
                                 // 跳轉到第二步驟
                                 showStep(2);
                                 
                                 showMatchingProcess(`✅ 自動選擇講師成功: ${matchedOption.value}`, 'success');
+                                addLoadingLog(`🎯 自動選擇講師: ${matchedOption.value}`, 'success');
                                 
                                 // 比對成功，顯示個人行事曆
                                 console.log('比對成功，將顯示個人行事曆');
@@ -2537,19 +2539,25 @@
                         
                         console.log('未找到對應的講師選項');
                         showMatchingProcess(`⚠️ 找到匹配講師但未在列表中: ${matchedTeacher.name}`, 'warning');
+                        addLoadingLog(`⚠️ 找到匹配講師但未在列表中: ${matchedTeacher.name}`, 'warning');
                         
                         // 比對失敗，顯示全部講師
                         console.log('比對失敗，將顯示全部講師');
                         instructorSelect.value = ''; // 選擇全部講師
-                        instructorSelect.dispatchEvent(new Event('change'));
+                        // 立即更新統計和渲染事件
+                        updateStats();
+                        renderEvents();
                     } else {
                         console.log('未找到匹配的講師');
                         showMatchingProcess('❌ 未找到匹配的講師，請手動選擇', 'error');
+                        addLoadingLog('❌ 未找到匹配的講師，請手動選擇', 'error');
                         
                         // 比對失敗，顯示全部講師
                         console.log('比對失敗，將顯示全部講師');
                         instructorSelect.value = ''; // 選擇全部講師
-                        instructorSelect.dispatchEvent(new Event('change'));
+                        // 立即更新統計和渲染事件
+                        updateStats();
+                        renderEvents();
                     }
                 } else {
                     console.error('API回應格式錯誤:', data);
@@ -2714,10 +2722,10 @@
                     calendarSection.style.display = 'block';
                 }
                 
-                // 滾動到行事曆區域
-                setTimeout(() => {
-                    calendarSection?.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
+                // 立即滾動到行事曆區域（移除延遲）
+                if (calendarSection) {
+                    calendarSection.scrollIntoView({ behavior: 'smooth' });
+                }
             }
         }
 
