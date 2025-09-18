@@ -3097,7 +3097,7 @@ async function loadTodayEvents() {
                 // 時段篩選
                 if (timeFilter) {
                     const eventDate = new Date(event.start);
-                    const hour = eventDate.getUTCHours();
+                    const hour = eventDate.getHours(); // 使用本地時間
                     let timeMatch = false;
                     
                     switch (timeFilter) {
@@ -3122,13 +3122,13 @@ async function loadTodayEvents() {
                     const eventDate = new Date(event.start);
                     const filterDate = new Date(dateFilter);
                     
-                    // 使用UTC時間進行日期比較
-                    const eventYear = eventDate.getUTCFullYear();
-                    const eventMonth = eventDate.getUTCMonth();
-                    const eventDay = eventDate.getUTCDate();
-                    const filterYear = filterDate.getUTCFullYear();
-                    const filterMonth = filterDate.getUTCMonth();
-                    const filterDay = filterDate.getUTCDate();
+                    // 使用本地時間進行日期比較
+                    const eventYear = eventDate.getFullYear();
+                    const eventMonth = eventDate.getMonth();
+                    const eventDay = eventDate.getDate();
+                    const filterYear = filterDate.getFullYear();
+                    const filterMonth = filterDate.getMonth();
+                    const filterDay = filterDate.getDate();
                     
                     if (eventYear !== filterYear || eventMonth !== filterMonth || eventDay !== filterDay) {
                         return false;
@@ -3366,7 +3366,7 @@ async function loadTodayEvents() {
         // 如果是站前教室，設定預設地址
         if (location === '站前教室') {
             location = '台北市中正區開封街1段2號9樓';
-        }
+            }
             
             // 講師底色
             const instructorColor = instructorColors[event.instructor] || '#667eea';
