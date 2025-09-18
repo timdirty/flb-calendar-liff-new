@@ -20,7 +20,7 @@ CORS(app)  # 允許跨域請求
 
 # CalDAV 配置
 CALDAV_CONFIG = {
-    'url': 'https://caldav.icloud.com/',
+    'url': 'https://caldav.icloud.com',
     'username': 'timdirty@icloud.com',
     'password': 'TimDirty2024!',
     'calendar_path': '/calendars/timdirty@icloud.com/'
@@ -147,46 +147,68 @@ def fetch_caldav_events():
     </D:prop>
 </D:propfind>'''
         
-        # 發送請求
+        # 發送請求 - 使用 Basic Auth
+        from requests.auth import HTTPBasicAuth
         response = requests.request(
             'PROPFIND',
             caldav_url,
             data=propfind_body,
             headers=headers,
-            auth=(CALDAV_CONFIG['username'], CALDAV_CONFIG['password']),
+            auth=HTTPBasicAuth(CALDAV_CONFIG['username'], CALDAV_CONFIG['password']),
             timeout=30
         )
+        
+        print(f"📡 CalDAV 請求狀態: {response.status_code}")
+        print(f"📡 回應標頭: {dict(response.headers)}")
         
         if response.status_code == 207:  # Multi-Status
             print("✅ CalDAV 請求成功")
             
             # 解析 XML 回應
-            root = ET.fromstring(response.content)
-            
-            # 定義命名空間
-            namespaces = {
-                'D': 'DAV:',
-                'C': 'urn:ietf:params:xml:ns:caldav'
-            }
-            
-            events = []
-            
-            # 遍歷所有回應項目
-            for response_elem in root.findall('.//D:response', namespaces):
-                # 檢查是否有 calendar-data
-                calendar_data_elem = response_elem.find('.//C:calendar-data', namespaces)
+            try:
+                root = ET.fromstring(response.content)
                 
-                if calendar_data_elem is not None and calendar_data_elem.text:
-                    ical_content = calendar_data_elem.text
+                # 定義命名空間
+                namespaces = {
+                    'D': 'DAV:',
+                    'C': 'urn:ietf:params:xml:ns:caldav'
+                }
+                
+                events = []
+                
+                # 遍歷所有回應項目
+                for response_elem in root.findall('.//D:response', namespaces):
+                    # 檢查是否有 calendar-data
+                    calendar_data_elem = response_elem.find('.//C:calendar-data', namespaces)
                     
-                    # 解析 iCal 內容
-                    parsed_events = parse_ical_content(ical_content)
-                    events.extend(parsed_events)
+                    if calendar_data_elem is not None and calendar_data_elem.text:
+                        ical_content = calendar_data_elem.text
+                        print(f"📅 找到 iCal 內容: {len(ical_content)} 字元")
+                        
+                        # 解析 iCal 內容
+                        parsed_events = parse_ical_content(ical_content)
+                        events.extend(parsed_events)
+                        print(f"📅 解析出 {len(parsed_events)} 個事件")
+                
+                real_events = events
+                print(f"✅ 成功抓取 {len(real_events)} 個真實事件")
+                return True
+                
+            except ET.ParseError as e:
+                print(f"❌ XML 解析失敗: {str(e)}")
+                print(f"原始回應: {response.text[:500]}...")
+                return False
             
-            real_events = events
-            print(f"✅ 成功抓取 {len(real_events)} 個真實事件")
-            return True
-            
+        elif response.status_code == 401:
+            print("❌ CalDAV 認證失敗 (401)")
+            print("💡 請檢查用戶名和密碼是否正確")
+            print(f"回應內容: {response.text}")
+            return False
+        elif response.status_code == 404:
+            print("❌ CalDAV 日曆路徑不存在 (404)")
+            print("💡 請檢查日曆路徑是否正確")
+            print(f"回應內容: {response.text}")
+            return False
         else:
             print(f"❌ CalDAV 請求失敗: {response.status_code}")
             print(f"回應內容: {response.text}")
@@ -297,24 +319,44 @@ def parse_ical_datetime(dt_str):
 
 def extract_instructor_from_title(title):
     """從標題中提取講師名稱"""
-    # 簡單的講師名稱提取邏輯
-    # 這裡可以根據實際的標題格式來調整
+    print(f"🔍 解析標題: {title}")
     
-    # 檢查是否包含已知講師名稱
+    # 檢查是否包含已知講師名稱（不區分大小寫）
     for teacher in REAL_TEACHERS:
-        if teacher['name'].upper() in title.upper():
+        teacher_name = teacher['name'].upper()
+        if teacher_name in title.upper():
+            print(f"✅ 找到講師: {teacher['name']}")
             return teacher['name']
     
-    # 如果沒有找到，返回預設值
+    # 嘗試從標題中提取講師名稱（如果標題格式是 "講師名稱 課程名稱"）
+    # 這裡可以根據實際的標題格式來調整
+    words = title.split()
+    if len(words) > 0:
+        potential_instructor = words[0].upper()
+        # 檢查是否為已知講師
+        for teacher in REAL_TEACHERS:
+            if teacher['name'].upper() == potential_instructor:
+                print(f"✅ 從標題提取講師: {teacher['name']}")
+                return teacher['name']
+    
+    print(f"⚠️ 未找到講師，使用預設值: UNKNOWN")
     return 'UNKNOWN'
 
 # 嘗試抓取真實 CalDAV 資料
 caldav_success = fetch_caldav_events()
 
-# 如果 CalDAV 抓取失敗，使用模擬資料
+# 如果 CalDAV 抓取失敗，使用真實格式的模擬資料
 if not caldav_success:
-    print("⚠️ CalDAV 抓取失敗，使用模擬資料")
-    real_events = mock_events
+    print("⚠️ CalDAV 抓取失敗，使用真實格式的模擬資料")
+    from mock_caldav_data import generate_realistic_caldav_events, generate_realistic_teachers
+    real_events = generate_realistic_caldav_events()
+    REAL_TEACHERS = generate_realistic_teachers()
+    print(f"✅ 生成 {len(real_events)} 個真實格式事件")
+    print(f"✅ 生成 {len(REAL_TEACHERS)} 位真實講師")
+    
+    # 更新模擬資料為真實格式資料
+    mock_events = real_events
+    MOCK_TEACHERS = REAL_TEACHERS
 
 @app.route('/')
 def index():

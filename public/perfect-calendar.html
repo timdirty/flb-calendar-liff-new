@@ -2552,15 +2552,6 @@
             
             // 初始化系統
             initializeSystem();
-            
-            // 備用初始化機制（10秒後強制完成）
-            setTimeout(() => {
-                const loadingOverlay = document.getElementById('loadingOverlay');
-                if (loadingOverlay && loadingOverlay.style.display !== 'none') {
-                    console.warn('強制完成初始化，避免載入動畫卡住');
-                    hideLoadingAnimation();
-                }
-            }, 10000);
         });
 
         // 顯示載入動畫
