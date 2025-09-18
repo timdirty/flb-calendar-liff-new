@@ -1930,7 +1930,7 @@
             overflow-y: auto;
             color: rgba(255, 255, 255, 0.85);
             font-size: 13px;
-            text-align: left;
+            text-align: center;
             width: 320px;
             background: rgba(0, 0, 0, 0.4);
             padding: 20px;
@@ -1938,6 +1938,10 @@
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 215, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 120px;
             box-shadow: 
                 0 10px 25px rgba(0, 0, 0, 0.3),
                 inset 0 1px 0 rgba(255, 215, 0, 0.1);
@@ -2000,7 +2004,8 @@
         .loading-percentage {
             color: rgba(255, 215, 0, 0.9);
             font-size: 0.9rem;
-            margin-top: 8px;
+            margin-top: 20px;
+            margin-bottom: 20px;
             font-weight: 500;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 0 10px rgba(255, 215, 0, 0.3);
         }
@@ -3792,12 +3797,11 @@ async function loadTodayEvents() {
             }
         }
 
-        // 通用篩選函數，根據當前篩選條件篩選事件
+        // 通用篩選函數，根據當前篩選條件篩選事件（不包含視圖篩選）
         function getFilteredEvents() {
             const instructorFilter = document.getElementById('instructorSelect').value;
             const timeFilter = document.getElementById('timeFilter').value;
             const dateFilter = document.getElementById('dateFilter').value;
-            const currentView = document.querySelector('.btn-primary')?.textContent || '今日';
             
             return allEvents.filter(event => {
                 const eventDate = new Date(event.start);
@@ -3840,9 +3844,19 @@ async function loadTodayEvents() {
                     }
                 }
                 
-                // 視圖篩選
-                const now = new Date();
-                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                return true;
+            });
+        }
+
+        // 根據當前視圖篩選事件
+        function getViewFilteredEvents() {
+            const filteredEvents = getFilteredEvents();
+            const currentView = document.querySelector('.btn-primary')?.textContent || '今日';
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            return filteredEvents.filter(event => {
+                const eventDate = new Date(event.start);
                 const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
                 
                 switch (currentView) {
@@ -3875,7 +3889,7 @@ async function loadTodayEvents() {
                 { key: 'dayAfterTomorrow', name: '後天', days: 2 }
             ];
             
-            // 獲取已篩選的事件
+            // 獲取已篩選的事件（不包含視圖篩選）
             const filteredEvents = getFilteredEvents();
             
             // 檢查每個日期是否有課程並統計數量
@@ -3932,10 +3946,10 @@ async function loadTodayEvents() {
             const weekQuickFilters = document.getElementById('weekQuickFilters');
             if (!weekQuickFilters) return;
             
-            const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-            const weekdayNames = ['週一', '週二', '週三', '週四', '週五'];
+            const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            const weekdayNames = ['週一', '週二', '週三', '週四', '週五', '週六', '週日'];
             
-            // 獲取已篩選的事件
+            // 獲取已篩選的事件（不包含視圖篩選）
             const filteredEvents = getFilteredEvents();
             
             // 獲取本週的日期範圍
@@ -4004,7 +4018,7 @@ async function loadTodayEvents() {
                 { key: 'spm', name: 'SPM' }
             ];
             
-            // 獲取已篩選的事件
+            // 獲取已篩選的事件（不包含視圖篩選）
             const filteredEvents = getFilteredEvents();
             
             // 檢查每個課別是否有課程並統計數量
@@ -4136,120 +4150,30 @@ async function loadTodayEvents() {
         // 渲染事件
         function renderEvents() {
             const container = document.getElementById('eventsContainer');
-            const instructorFilter = document.getElementById('instructorSelect').value;
-            const timeFilter = document.getElementById('timeFilter').value;
-            const dateFilter = document.getElementById('dateFilter').value;
             const sortOrder = document.getElementById('sortOrder').value;
             
-            let filteredEvents = allEvents.filter(event => {
-                // 講師篩選
-                if (instructorFilter && event.instructor !== instructorFilter) {
-                    return false;
-                }
-                
-                // 快速篩選（優先於其他篩選）
-                if (currentQuickFilter) {
-                    // 處理日期範圍篩選
-                    const dateRange = getQuickFilterDateRange(currentQuickFilter);
-                    if (dateRange) {
+            // 使用新的篩選函數
+            let filteredEvents = getViewFilteredEvents();
+            
+            // 快速篩選（優先於其他篩選）
+            if (currentQuickFilter) {
+                // 處理日期範圍篩選
+                const dateRange = getQuickFilterDateRange(currentQuickFilter);
+                if (dateRange) {
+                    filteredEvents = filteredEvents.filter(event => {
                         const eventDate = new Date(event.start);
-                        if (eventDate < dateRange.start || eventDate > dateRange.end) {
-                    return false;
-                        }
-                    }
-                    
-                    // 處理課別篩選
-                    if (currentQuickFilter === 'esm' || currentQuickFilter === 'spm') {
+                        return eventDate >= dateRange.start && eventDate <= dateRange.end;
+                    });
+                }
+                
+                // 處理課別篩選
+                if (currentQuickFilter === 'esm' || currentQuickFilter === 'spm') {
+                    filteredEvents = filteredEvents.filter(event => {
                         const title = event.title.toLowerCase();
-                        if (!title.includes(currentQuickFilter.toLowerCase())) {
-                            return false;
-                        }
-                    }
+                        return title.includes(currentQuickFilter.toLowerCase());
+                    });
                 }
-                
-                // 時段篩選
-                if (timeFilter) {
-                    const eventDate = new Date(event.start);
-                    const hour = eventDate.getHours(); // 使用本地時間
-                    let timeMatch = false;
-                    
-                    switch (timeFilter) {
-                        case 'morning':
-                            timeMatch = hour >= 6 && hour < 12;
-                            break;
-                        case 'afternoon':
-                            timeMatch = hour >= 12 && hour < 18;
-                            break;
-                        case 'evening':
-                            timeMatch = hour >= 18 && hour < 24;
-                            break;
-                    }
-                    
-                    if (!timeMatch) {
-                        return false;
-                    }
-                }
-                
-                // 指定日期篩選
-                if (dateFilter) {
-                    const eventDate = new Date(event.start);
-                    const filterDate = new Date(dateFilter);
-                    
-                    // 使用本地時間進行日期比較
-                    const eventYear = eventDate.getFullYear();
-                    const eventMonth = eventDate.getMonth();
-                    const eventDay = eventDate.getDate();
-                    const filterYear = filterDate.getFullYear();
-                    const filterMonth = filterDate.getMonth();
-                    const filterDay = filterDate.getDate();
-                    
-                    if (eventYear !== filterYear || eventMonth !== filterMonth || eventDay !== filterDay) {
-                        return false;
-                    }
-                }
-                
-                // 日期篩選
-                const eventDate = new Date(event.start);
-                const now = new Date();
-                
-                let shouldShow = false;
-                switch (currentView) {
-                    case 'today':
-                        // 使用本地時間進行日期比較，確保與顯示一致
-                        const eventYear = eventDate.getFullYear();
-                        const eventMonth = eventDate.getMonth();
-                        const eventDay = eventDate.getDate();
-                        const nowYear = now.getFullYear();
-                        const nowMonth = now.getMonth();
-                        const nowDay = now.getDate();
-                        shouldShow = eventYear === nowYear && eventMonth === nowMonth && eventDay === nowDay;
-                        console.log(`事件篩選 - 標題: ${event.title}, 事件日期: ${eventYear}-${eventMonth+1}-${eventDay}, 今天: ${nowYear}-${nowMonth+1}-${nowDay}, 顯示: ${shouldShow}`);
-                        break;
-                    case 'week':
-                        // 使用本地時間進行本週篩選（週一到週日）
-                        const weekStart = new Date(now);
-                        const dayOfWeek = now.getDay();
-                        const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 週日時回到上週一，其他天回到本週一
-                        weekStart.setDate(now.getDate() + daysToMonday);
-                        weekStart.setHours(0, 0, 0, 0);
-                        const weekEnd = new Date(weekStart);
-                        weekEnd.setDate(weekStart.getDate() + 6); // 週日
-                        weekEnd.setHours(23, 59, 59, 999);
-                        shouldShow = eventDate >= weekStart && eventDate <= weekEnd;
-                        break;
-                    case 'month':
-                        // 使用本地時間進行本月篩選
-                        shouldShow = eventDate.getMonth() === now.getMonth() && eventDate.getFullYear() === now.getFullYear();
-                        console.log(`📅 本月篩選 - 標題: ${event.title}, 事件日期: ${eventDate.getFullYear()}-${eventDate.getMonth()+1}-${eventDate.getDate()}, 當前: ${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}, 顯示: ${shouldShow}`);
-                        break;
-                    case 'all':
-                    default:
-                        shouldShow = true;
-                        break;
-                }
-                
-                return shouldShow;
-            });
+            }
             
             // 排序事件 - 優化排序邏輯
             filteredEvents.sort((a, b) => {
