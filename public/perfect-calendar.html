@@ -359,6 +359,53 @@
             left: 100%;
         }
 
+        /* 快速篩選樣式 */
+        .quick-filters {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .quick-filter-group h4 {
+            color: rgba(255, 255, 255, 0.9);
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .quick-filter-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .quick-filter-btn {
+            padding: 6px 12px;
+            font-size: 13px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .quick-filter-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .quick-filter-btn.active {
+            background: rgba(255, 223, 102, 0.9);
+            border-color: rgba(255, 223, 102, 1);
+            color: #333;
+            font-weight: 600;
+        }
+
         .btn-primary {
             background: rgba(255, 223, 102, 0.9);
             color: rgba(44, 44, 44, 0.9);
@@ -2799,6 +2846,14 @@
                 });
             });
             
+            // 為快速篩選按鈕添加事件監聽器
+            document.querySelectorAll('.quick-filter-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const quickFilter = this.getAttribute('data-quick');
+                    handleQuickFilter(quickFilter);
+                });
+            });
+            
             // 綁定用戶按鈕事件監聽器
             const bindUserBtn = document.getElementById('bindUserBtn');
             if (bindUserBtn) {
@@ -3146,9 +3201,112 @@ async function loadTodayEvents() {
                 }
             });
             
+            // 顯示/隱藏快速篩選選項
+            showQuickFilters(view);
+            
             // 更新統計資訊（包括日期範圍）
             updateStats();
             renderEvents();
+        }
+
+        // 顯示快速篩選選項
+        function showQuickFilters(view) {
+            const quickFilters = document.getElementById('quickFilters');
+            const todayQuickFilters = document.getElementById('todayQuickFilters');
+            const weekQuickFilters = document.getElementById('weekQuickFilters');
+            
+            // 隱藏所有快速篩選
+            if (todayQuickFilters) todayQuickFilters.style.display = 'none';
+            if (weekQuickFilters) weekQuickFilters.style.display = 'none';
+            
+            if (view === 'today') {
+                if (quickFilters) quickFilters.style.display = 'block';
+                if (todayQuickFilters) todayQuickFilters.style.display = 'block';
+            } else if (view === 'week') {
+                if (quickFilters) quickFilters.style.display = 'block';
+                if (weekQuickFilters) weekQuickFilters.style.display = 'block';
+            } else {
+                if (quickFilters) quickFilters.style.display = 'none';
+            }
+        }
+
+        // 處理快速篩選
+        function handleQuickFilter(quickFilter) {
+            currentQuickFilter = quickFilter;
+            
+            // 更新快速篩選按鈕狀態
+            const quickFilterBtns = document.querySelectorAll('.quick-filter-btn');
+            quickFilterBtns.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-quick') === quickFilter) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // 更新統計和渲染
+            updateStats();
+            renderEvents();
+        }
+
+        // 獲取快速篩選的日期範圍
+        function getQuickFilterDateRange(quickFilter) {
+            const now = new Date();
+            
+            switch (quickFilter) {
+                case 'today':
+                    return {
+                        start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0),
+                        end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59)
+                    };
+                case 'tomorrow':
+                    const tomorrow = new Date(now);
+                    tomorrow.setDate(now.getDate() + 1);
+                    return {
+                        start: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 0, 0, 0),
+                        end: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 23, 59, 59)
+                    };
+                case 'dayAfterTomorrow':
+                    const dayAfterTomorrow = new Date(now);
+                    dayAfterTomorrow.setDate(now.getDate() + 2);
+                    return {
+                        start: new Date(dayAfterTomorrow.getFullYear(), dayAfterTomorrow.getMonth(), dayAfterTomorrow.getDate(), 0, 0, 0),
+                        end: new Date(dayAfterTomorrow.getFullYear(), dayAfterTomorrow.getMonth(), dayAfterTomorrow.getDate(), 23, 59, 59)
+                    };
+                case 'monday':
+                case 'tuesday':
+                case 'wednesday':
+                case 'thursday':
+                case 'friday':
+                    return getWeekdayRange(quickFilter);
+                default:
+                    return null;
+            }
+        }
+
+        // 獲取週幾的日期範圍
+        function getWeekdayRange(weekday) {
+            const now = new Date();
+            const dayOfWeek = now.getDay();
+            const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+            const weekStart = new Date(now);
+            weekStart.setDate(now.getDate() + daysToMonday);
+            
+            const weekdayMap = {
+                'monday': 0,
+                'tuesday': 1,
+                'wednesday': 2,
+                'thursday': 3,
+                'friday': 4
+            };
+            
+            const targetDay = weekdayMap[weekday];
+            const targetDate = new Date(weekStart);
+            targetDate.setDate(weekStart.getDate() + targetDay);
+            
+            return {
+                start: new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 0, 0, 0),
+                end: new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 23, 59, 59)
+            };
         }
 
         // 渲染事件
@@ -3163,6 +3321,17 @@ async function loadTodayEvents() {
                 // 講師篩選
                 if (instructorFilter && event.instructor !== instructorFilter) {
                     return false;
+                }
+                
+                // 快速篩選（優先於其他篩選）
+                if (currentQuickFilter) {
+                    const dateRange = getQuickFilterDateRange(currentQuickFilter);
+                    if (dateRange) {
+                        const eventDate = new Date(event.start);
+                        if (eventDate < dateRange.start || eventDate > dateRange.end) {
+                            return false;
+                        }
+                    }
                 }
                 
                 // 時段篩選
