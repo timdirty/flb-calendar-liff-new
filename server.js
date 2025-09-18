@@ -440,15 +440,12 @@ app.post('/api/refresh-teachers', async (req, res) => {
 app.get('/api/events/today', async (req, res) => {
     try {
         if (!caldavClient) {
-            console.log('CalDAV 客戶端未初始化，使用模擬數據');
+            console.log('CalDAV 客戶端未初始化');
             return res.json({
-                success: true,
-                data: mockEvents.filter(event => {
-                    const eventDate = new Date(event.start);
-                    const today = new Date();
-                    return eventDate.toDateString() === today.toDateString();
-                }),
-                source: 'mock',
+                success: false,
+                message: 'CalDAV 客戶端未初始化',
+                data: [],
+                source: 'error',
                 type: 'today'
             });
         }
@@ -513,23 +510,12 @@ app.get('/api/events/today', async (req, res) => {
 app.get('/api/events/week', async (req, res) => {
     try {
         if (!caldavClient) {
-            console.log('CalDAV 客戶端未初始化，使用模擬數據');
+            console.log('CalDAV 客戶端未初始化');
             return res.json({
-                success: true,
-                data: mockEvents.filter(event => {
-                    const eventDate = new Date(event.start);
-                    const today = new Date();
-                    const weekStart = new Date(today);
-                    const dayOfWeek = today.getDay();
-                    const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-                    weekStart.setDate(today.getDate() + daysToMonday);
-                    weekStart.setHours(0, 0, 0, 0);
-                    const weekEnd = new Date(weekStart);
-                    weekEnd.setDate(weekStart.getDate() + 6);
-                    weekEnd.setHours(23, 59, 59, 999);
-                    return eventDate >= weekStart && eventDate <= weekEnd;
-                }),
-                source: 'mock',
+                success: false,
+                message: 'CalDAV 客戶端未初始化',
+                data: [],
+                source: 'error',
                 type: 'week'
             });
         }

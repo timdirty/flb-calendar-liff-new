@@ -2992,15 +2992,23 @@
                 const now = new Date();
                 const eventA = new Date(a.start);
                 const eventB = new Date(b.start);
+                const endA = new Date(a.end);
+                const endB = new Date(b.end);
                 
-                // 判斷是否已上課
-                const isEventAPast = eventA < now;
-                const isEventBPast = eventB < now;
+                // 判斷事件狀態
+                const isEventAOngoing = eventA <= now && endA > now;
+                const isEventBOngoing = eventB <= now && endB > now;
+                const isEventAPast = endA < now;
+                const isEventBPast = endB < now;
+                const isEventAUpcoming = eventA > now;
+                const isEventBUpcoming = eventB > now;
                 
-                // 優先排序：未上課的課程在前，已上課的課程在後
-                if (isEventAPast !== isEventBPast) {
-                    return isEventAPast ? 1 : -1; // 未上課的在前（false在前）
-                }
+                // 優先排序：正在進行中 > 即將開始 > 已結束
+                if (isEventAOngoing && !isEventBOngoing) return -1;
+                if (!isEventAOngoing && isEventBOngoing) return 1;
+                
+                if (isEventAUpcoming && isEventBPast) return -1;
+                if (isEventAPast && isEventBUpcoming) return 1;
                 
                 // 在相同狀態下，按時間排序
                 switch (sortOrder) {
@@ -3310,6 +3318,17 @@
             // 計算篩選後的講師數量
             const uniqueInstructors = new Set(filteredEvents.map(event => event.instructor));
             const instructorCount = uniqueInstructors.size;
+            
+            // 調試日誌：顯示篩選結果
+            console.log(`📊 篩選結果 - 模式: ${currentView}, 總事件: ${allEvents.length}, 篩選後: ${filteredEvents.length}`);
+            if (currentView === 'week' || currentView === 'month') {
+                console.log(`📅 ${currentView === 'week' ? '本週' : '本月'}事件詳情:`, filteredEvents.map(e => ({
+                    title: e.title,
+                    instructor: e.instructor,
+                    start: e.start,
+                    date: new Date(e.start).toLocaleDateString('zh-TW')
+                })));
+            }
             
             // 根據當前篩選模式計算日期範圍
             let dateRange = '-';
