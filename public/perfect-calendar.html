@@ -2755,14 +2755,16 @@
                     // 保存當前選中的講師
                     const currentInstructor = document.getElementById('instructorSelect').value;
                     
-                    populateInstructorDropdown();
-                    renderEvents();
-                    updateStats();
+                    // 只更新講師選單，不重新渲染事件
+                    updateInstructorDropdown();
                     
                     // 恢復之前選中的講師
                     if (currentInstructor) {
                         document.getElementById('instructorSelect').value = currentInstructor;
                     }
+                    
+                    // 只更新統計資訊，不重新渲染事件
+                    updateStats();
                     
                     console.log(`✅ 本週事件載入完成: ${allEvents.length} 個事件`);
                     
@@ -2804,17 +2806,16 @@
                         generateRandomInstructorColors();
                     }
                     
-                    // 只更新講師選單，不重新渲染整個畫面
+                    // 只更新講師選單，不重新渲染事件
                     updateInstructorDropdown();
-                    
-                    // 重新渲染事件（保持當前篩選條件）
-                    renderEvents();
-                    updateStats();
                     
                     // 恢復之前選中的講師
                     if (currentInstructor) {
                         document.getElementById('instructorSelect').value = currentInstructor;
                     }
+                    
+                    // 只更新統計資訊，不重新渲染事件
+                    updateStats();
                     
                     console.log(`✅ 完整事件載入完成: ${allEvents.length} 個事件`);
                     hideLoadingMessage();
