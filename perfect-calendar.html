@@ -2920,8 +2920,15 @@
                 .trim();
             
             // 尋找教案連結 - 從原始描述中提取
-            const notionUrlRegex = /https:\/\/www\.notion\.so\/([^)\s]+)/;
-            const notionMatch = event.description.match(notionUrlRegex);
+            // 優先匹配括號內的完整 Notion 連結（包含 ?pvs=21 等參數）
+            const notionUrlRegex = /\(https:\/\/www\.notion\.so\/([^)]+)\)/;
+            let notionMatch = event.description.match(notionUrlRegex);
+            
+            // 如果沒有找到括號內的連結，則匹配一般的 Notion 連結
+            if (!notionMatch) {
+                const generalNotionRegex = /https:\/\/www\.notion\.so\/([^)\s]+)/;
+                notionMatch = event.description.match(generalNotionRegex);
+            }
             
             let lessonButton = '';
             if (notionMatch) {
@@ -2934,7 +2941,7 @@
                 // 從原始描述中提取教案資訊
                 const originalDescription = event.description;
                 
-                // 匹配各種教案格式
+                // 匹配各種教案格式，優先匹配括號前的教案名稱
                 const lessonMatch = originalDescription.match(/(ESM教案|SPM教案|SPIKE教案|BOOST教案|EV3教案|MINECRAFT教案)[:\s]*([^(]+?)(?:\s*\(https:\/\/www\.notion\.so)/);
                 if (lessonMatch && lessonMatch[2]) {
                     lessonName = lessonMatch[2].trim();
