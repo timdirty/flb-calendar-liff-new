@@ -20,10 +20,10 @@ CORS(app)  # 允許跨域請求
 
 # CalDAV 配置
 CALDAV_CONFIG = {
-    'url': 'https://caldav.icloud.com',
-    'username': 'timdirty@icloud.com',
-    'password': 'TimDirty2024!',
-    'calendar_path': '/calendars/timdirty@icloud.com/'
+    'url': 'https://funlearnbar.synology.me:9102/caldav/',
+    'username': 'testacount',
+    'password': 'testacount',
+    'calendar_path': 'testacount/'
 }
 
 # 真實講師資料（從原系統獲取）
@@ -130,7 +130,10 @@ def fetch_caldav_events():
         print("🔄 開始從 CalDAV 抓取真實事件資料...")
         
         # 構建 CalDAV 請求 URL
-        caldav_url = f"{CALDAV_CONFIG['url']}{CALDAV_CONFIG['calendar_path']}"
+        if CALDAV_CONFIG['calendar_path']:
+            caldav_url = f"{CALDAV_CONFIG['url']}{CALDAV_CONFIG['calendar_path']}"
+        else:
+            caldav_url = CALDAV_CONFIG['url']
         
         # 構建 PROPFIND 請求
         headers = {
