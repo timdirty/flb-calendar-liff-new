@@ -3745,6 +3745,9 @@ async function loadTodayEvents() {
             const select = document.getElementById('instructorSelect');
             const currentValue = select.value; // 保存當前選擇
             
+            console.log('🔄 填充講師下拉選單，當前選擇:', currentValue);
+            console.log('🔄 可用講師列表:', allInstructors);
+            
             select.innerHTML = '<option value="">全部講師</option>';
             
             allInstructors.forEach(instructor => {
@@ -3757,6 +3760,9 @@ async function loadTodayEvents() {
             // 恢復之前的選擇
             if (currentValue) {
                 select.value = currentValue;
+                console.log('🔄 恢復講師選擇:', currentValue);
+            } else {
+                console.log('🔄 沒有需要恢復的講師選擇');
             }
         }
 
