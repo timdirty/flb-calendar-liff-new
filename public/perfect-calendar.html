@@ -3884,7 +3884,16 @@ async function loadTodayEvents() {
                     const filterDay = filterDate.getDate();
                     
                     if (eventYear !== filterYear || eventMonth !== filterMonth || eventDay !== filterDay) {
-                    return false;
+                        return false;
+                    }
+                }
+                
+                // 快速篩選日期範圍
+                if (window.currentQuickFilterRange) {
+                    const range = window.currentQuickFilterRange;
+                    const eventTime = eventDate.getTime();
+                    if (eventTime < range.start.getTime() || eventTime > range.end.getTime()) {
+                        return false;
                     }
                 }
                 
@@ -3904,14 +3913,19 @@ async function loadTodayEvents() {
             // 獲取當前視圖
             const currentView = document.querySelector('.btn-primary')?.textContent || '今日';
             console.log('🔍 getViewFilteredEvents - 當前視圖:', currentView);
+            console.log('🔍 getViewFilteredEvents - 輸入事件數量:', filteredEvents.length);
             
-            return filteredEvents.filter(event => {
+            const result = filteredEvents.filter(event => {
                 const eventDate = new Date(event.start);
                 const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
                 
                 switch (currentView) {
                     case '今日':
-                        return eventDay.getTime() === today.getTime();
+                        const isToday = eventDay.getTime() === today.getTime();
+                        if (isToday) {
+                            console.log('📅 今日事件:', event.title, event.start);
+                        }
+                        return isToday;
                     case '本週':
                         const weekStart = new Date(today);
                         weekStart.setDate(today.getDate() - today.getDay() + 1); // 週一
@@ -3926,6 +3940,9 @@ async function loadTodayEvents() {
                         return true;
                 }
             });
+            
+            console.log('🔍 getViewFilteredEvents - 輸出事件數量:', result.length);
+            return result;
         }
 
         // 更新今日快速篩選，只顯示有課的日期
@@ -4115,7 +4132,26 @@ async function loadTodayEvents() {
                 }
             });
             
-            // 更新統計和渲染
+            // 應用快速篩選的日期範圍
+            if (quickFilter && quickFilter !== 'all') {
+                const dateRange = getQuickFilterDateRange(quickFilter);
+                if (dateRange) {
+                    // 設置日期篩選
+                    const dateInput = document.getElementById('dateFilter');
+                    if (dateInput) {
+                        // 清除日期篩選，改用自定義範圍
+                        dateInput.value = '';
+                    }
+                    
+                    // 設置自定義日期範圍（這裡我們需要修改篩選邏輯）
+                    window.currentQuickFilterRange = dateRange;
+                }
+            } else {
+                // 清除快速篩選
+                window.currentQuickFilterRange = null;
+            }
+            
+            // 更新統計和渲染（只調用一次）
             updateStats();
             renderEvents();
         }
@@ -4194,29 +4230,9 @@ async function loadTodayEvents() {
             const container = document.getElementById('eventsContainer');
             const sortOrder = document.getElementById('sortOrder').value;
             
-            // 使用新的篩選函數
+            // 使用新的篩選函數（已經包含快速篩選邏輯）
             let filteredEvents = getViewFilteredEvents();
             console.log('🎨 renderEvents - 篩選後事件數量:', filteredEvents.length);
-            
-            // 快速篩選（優先於其他篩選）
-            if (currentQuickFilter) {
-                // 處理日期範圍篩選
-                const dateRange = getQuickFilterDateRange(currentQuickFilter);
-                if (dateRange) {
-                    filteredEvents = filteredEvents.filter(event => {
-                        const eventDate = new Date(event.start);
-                        return eventDate >= dateRange.start && eventDate <= dateRange.end;
-                    });
-                }
-                
-                // 處理課別篩選
-                if (currentQuickFilter === 'esm' || currentQuickFilter === 'spm') {
-                    filteredEvents = filteredEvents.filter(event => {
-                        const title = event.title.toLowerCase();
-                        return title.includes(currentQuickFilter.toLowerCase());
-                    });
-                }
-            }
             
             // 排序事件 - 優化排序邏輯
             filteredEvents.sort((a, b) => {
