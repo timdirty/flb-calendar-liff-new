@@ -2724,6 +2724,9 @@
                 addLoadingLog('🚀 開始初始化系統...', 'info');
                 updateLoadingProgress(10);
                 
+                // 初始化全局變量
+                window.currentView = '今日';
+                
                 // 載入設定
                 addLoadingLog('⚙️ 載入系統設定...', 'info');
                 loadSettings();
@@ -3784,6 +3787,7 @@ async function loadTodayEvents() {
             
             const chineseView = viewMap[view] || view;
             currentView = chineseView;
+            window.currentView = chineseView; // 設置全局變量
             
             // 更新按鈕狀態 - 只針對視圖按鈕
             const viewButtons = document.querySelectorAll('.view-buttons .btn-primary');
@@ -3925,8 +3929,8 @@ async function loadTodayEvents() {
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             
-            // 獲取當前視圖
-            const currentView = document.querySelector('.btn-primary')?.textContent || '今日';
+            // 獲取當前視圖 - 使用全局變量而不是 DOM 查詢
+            const currentView = window.currentView || '今日';
             console.log('🔍 getViewFilteredEvents - 當前視圖:', currentView);
             console.log('🔍 getViewFilteredEvents - 輸入事件數量:', filteredEvents.length);
             
@@ -3946,12 +3950,21 @@ async function loadTodayEvents() {
                         weekStart.setDate(today.getDate() - today.getDay() + 1); // 週一
                         const weekEnd = new Date(weekStart);
                         weekEnd.setDate(weekStart.getDate() + 6); // 週日
-                        return eventDay >= weekStart && eventDay <= weekEnd;
+                        const isInWeek = eventDay >= weekStart && eventDay <= weekEnd;
+                        if (isInWeek) {
+                            console.log('📅 本週事件:', event.title, event.start, '週期範圍:', weekStart.toLocaleDateString(), '-', weekEnd.toLocaleDateString());
+                        }
+                        return isInWeek;
                     case '本月':
-                        return eventDate.getFullYear() === now.getFullYear() && 
+                        const isInMonth = eventDate.getFullYear() === now.getFullYear() && 
                                eventDate.getMonth() === now.getMonth();
+                        if (isInMonth) {
+                            console.log('📅 本月事件:', event.title, event.start);
+                        }
+                        return isInMonth;
                     case '全部':
                     default:
+                        console.log('📅 全部事件:', event.title, event.start);
                         return true;
                 }
             });
@@ -4498,8 +4511,8 @@ async function loadTodayEvents() {
 
         // 更新統計資訊
         function updateStats() {
-            // 獲取當前視圖
-            const currentView = document.querySelector('.btn-primary')?.textContent || '今日';
+            // 獲取當前視圖 - 使用全局變量
+            const currentView = window.currentView || '今日';
             
             // 使用新的篩選函數確保一致性
             const filteredEvents = getViewFilteredEvents();
