@@ -3743,6 +3743,8 @@ async function loadTodayEvents() {
         // 填充講師下拉選單
         function populateInstructorDropdown() {
             const select = document.getElementById('instructorSelect');
+            const currentValue = select.value; // 保存當前選擇
+            
             select.innerHTML = '<option value="">全部講師</option>';
             
             allInstructors.forEach(instructor => {
@@ -3751,6 +3753,11 @@ async function loadTodayEvents() {
                 option.textContent = instructor;
                 select.appendChild(option);
             });
+            
+            // 恢復之前的選擇
+            if (currentValue) {
+                select.value = currentValue;
+            }
         }
 
         // 更新講師下拉選單（不重新渲染整個畫面）
