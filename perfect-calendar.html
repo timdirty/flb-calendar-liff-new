@@ -81,19 +81,19 @@
         /* 頂部標題區域 */
         .header {
             background: linear-gradient(135deg, 
-                rgba(255, 255, 255, 0.1) 0%, 
-                rgba(255, 255, 255, 0.05) 50%,
-                rgba(255, 255, 255, 0.1) 100%);
+                rgba(0, 0, 0, 0.8) 0%, 
+                rgba(20, 20, 20, 0.9) 50%,
+                rgba(0, 0, 0, 0.8) 100%);
             backdrop-filter: blur(30px);
             -webkit-backdrop-filter: blur(30px);
             padding: 30px;
             margin-bottom: 25px;
             border-radius: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 215, 0, 0.4);
             box-shadow: 
-                0 20px 40px rgba(0, 0, 0, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.3),
-                0 0 0 1px rgba(255, 215, 0, 0.1);
+                0 20px 40px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 215, 0, 0.3),
+                0 0 0 1px rgba(255, 215, 0, 0.2);
             position: relative;
             overflow: hidden;
             animation: headerFloat 6s ease-in-out infinite;
@@ -312,29 +312,70 @@
         }
 
         .step-circle {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            box-shadow: 
+                0 8px 25px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .step-circle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                rgba(255, 255, 255, 0.1) 0%, 
+                transparent 50%,
+                rgba(255, 255, 255, 0.1) 100%);
+            animation: stepShimmer 3s ease-in-out infinite;
+            z-index: 1;
         }
 
         .step.active .step-circle {
-            background: rgba(255, 223, 102, 0.9);
-            color: rgba(44, 44, 44, 0.9);
+            background: linear-gradient(135deg, 
+                rgba(255, 215, 0, 0.9) 0%, 
+                rgba(255, 193, 7, 0.8) 100%);
+            color: rgba(0, 0, 0, 0.9);
+            box-shadow: 
+                0 8px 25px rgba(255, 215, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            z-index: 2;
         }
 
         .step.completed .step-circle {
-            background: rgba(255, 223, 102, 0.9);
-            color: rgba(44, 44, 44, 0.9);
+            background: linear-gradient(135deg, 
+                rgba(255, 215, 0, 0.9) 0%, 
+                rgba(255, 193, 7, 0.8) 100%);
+            color: rgba(0, 0, 0, 0.9);
+            box-shadow: 
+                0 8px 25px rgba(255, 215, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            z-index: 2;
         }
 
         .step.pending .step-circle {
-            background: rgba(85, 85, 85, 0.9);
+            background: linear-gradient(135deg, 
+                rgba(85, 85, 85, 0.6) 0%, 
+                rgba(60, 60, 60, 0.8) 100%);
             color: rgba(255, 255, 255, 0.9);
+            box-shadow: 
+                0 8px 25px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            z-index: 2;
         }
 
         .step-label {
@@ -654,11 +695,53 @@
 
         /* 統計區域 */
         .stats {
-            background: rgba(248, 249, 250, 0.9);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(233, 236, 239, 0.9);
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.15) 0%, 
+                rgba(255, 255, 255, 0.05) 50%,
+                rgba(255, 255, 255, 0.15) 100%);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                0 0 0 1px rgba(255, 215, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            animation: statsFloat 7s ease-in-out infinite;
+        }
+
+        .stats::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                rgba(255, 215, 0, 0.08) 0%, 
+                transparent 30%,
+                transparent 70%,
+                rgba(255, 215, 0, 0.08) 100%);
+            animation: statsShimmer 5s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        .stats::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, 
+                rgba(255, 215, 0, 0.03) 0%, 
+                transparent 70%);
+            animation: statsRotate 30s linear infinite;
+            z-index: 0;
         }
 
         .stats-grid {
@@ -2096,6 +2179,26 @@
             100% { transform: rotate(360deg); }
         }
 
+        @keyframes statsFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-2px); }
+        }
+
+        @keyframes statsShimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes statsRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes stepShimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
         /* 馬卡龍配色變數 */
         :root {
             --esm-color: #ff6b9d;
@@ -3228,6 +3331,10 @@
                 instructorSelect.addEventListener('change', function() {
                     updateStats();
                     renderEvents();
+                    // 更新快速篩選
+                    updateTodayQuickFilters();
+                    updateWeekQuickFilters();
+                    updateCourseTypeQuickFilters();
                 });
             }
             
@@ -3237,6 +3344,10 @@
                 timeFilter.addEventListener('change', function() {
                     updateStats();
                     renderEvents();
+                    // 更新快速篩選
+                    updateTodayQuickFilters();
+                    updateWeekQuickFilters();
+                    updateCourseTypeQuickFilters();
                 });
             }
             
@@ -3246,6 +3357,10 @@
                 dateFilter.addEventListener('change', function() {
                     updateStats();
                     renderEvents();
+                    // 更新快速篩選
+                    updateTodayQuickFilters();
+                    updateWeekQuickFilters();
+                    updateCourseTypeQuickFilters();
                 });
             }
             
@@ -3623,6 +3738,11 @@ async function loadTodayEvents() {
             // 顯示/隱藏快速篩選選項
             showQuickFilters(view);
             
+            // 更新快速篩選統計
+            updateTodayQuickFilters();
+            updateWeekQuickFilters();
+            updateCourseTypeQuickFilters();
+            
             // 如果是今日視圖，預設選中「今天」快速篩選
             if (view === 'today') {
                 handleQuickFilter('today');
@@ -3672,6 +3792,78 @@ async function loadTodayEvents() {
             }
         }
 
+        // 通用篩選函數，根據當前篩選條件篩選事件
+        function getFilteredEvents() {
+            const instructorFilter = document.getElementById('instructorSelect').value;
+            const timeFilter = document.getElementById('timeFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            const currentView = document.querySelector('.btn-primary')?.textContent || '今日';
+            
+            return allEvents.filter(event => {
+                const eventDate = new Date(event.start);
+                
+                // 講師篩選
+                if (instructorFilter && event.instructor !== instructorFilter) {
+                    return false;
+                }
+                
+                // 時段篩選
+                if (timeFilter) {
+                    const hour = eventDate.getHours();
+                    let timeMatch = false;
+                    switch (timeFilter) {
+                        case 'morning':
+                            timeMatch = hour >= 6 && hour < 12;
+                            break;
+                        case 'afternoon':
+                            timeMatch = hour >= 12 && hour < 18;
+                            break;
+                        case 'evening':
+                            timeMatch = hour >= 18 && hour < 24;
+                            break;
+                    }
+                    if (!timeMatch) return false;
+                }
+                
+                // 指定日期篩選
+                if (dateFilter) {
+                    const filterDate = new Date(dateFilter);
+                    const eventYear = eventDate.getFullYear();
+                    const eventMonth = eventDate.getMonth();
+                    const eventDay = eventDate.getDate();
+                    const filterYear = filterDate.getFullYear();
+                    const filterMonth = filterDate.getMonth();
+                    const filterDay = filterDate.getDate();
+                    
+                    if (eventYear !== filterYear || eventMonth !== filterMonth || eventDay !== filterDay) {
+                        return false;
+                    }
+                }
+                
+                // 視圖篩選
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+                
+                switch (currentView) {
+                    case '今日':
+                        return eventDay.getTime() === today.getTime();
+                    case '本週':
+                        const weekStart = new Date(today);
+                        weekStart.setDate(today.getDate() - today.getDay() + 1); // 週一
+                        const weekEnd = new Date(weekStart);
+                        weekEnd.setDate(weekStart.getDate() + 6); // 週日
+                        return eventDay >= weekStart && eventDay <= weekEnd;
+                    case '本月':
+                        return eventDate.getFullYear() === now.getFullYear() && 
+                               eventDate.getMonth() === now.getMonth();
+                    case '全部':
+                    default:
+                        return true;
+                }
+            });
+        }
+
         // 更新今日快速篩選，只顯示有課的日期
         function updateTodayQuickFilters() {
             const todayQuickFilters = document.getElementById('todayQuickFilters');
@@ -3683,10 +3875,8 @@ async function loadTodayEvents() {
                 { key: 'dayAfterTomorrow', name: '後天', days: 2 }
             ];
             
-            // 獲取目前的篩選條件
-            const instructorFilter = document.getElementById('instructorSelect').value;
-            const timeFilter = document.getElementById('timeFilter').value;
-            const dateFilter = document.getElementById('dateFilter').value;
+            // 獲取已篩選的事件
+            const filteredEvents = getFilteredEvents();
             
             // 檢查每個日期是否有課程並統計數量
             const buttonsToShow = [];
@@ -3695,53 +3885,12 @@ async function loadTodayEvents() {
                 targetDate.setDate(targetDate.getDate() + option.days);
                 
                 // 統計這一天符合目前篩選條件的課程數量
-                const classesOnThisDay = allEvents.filter(event => {
+                const classesOnThisDay = filteredEvents.filter(event => {
                     const eventDate = new Date(event.start);
-                    const isSameDate = eventDate.getFullYear() === targetDate.getFullYear() &&
-                                     eventDate.getMonth() === targetDate.getMonth() &&
-                                     eventDate.getDate() === targetDate.getDate();
+                    const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+                    const targetDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
                     
-                    if (!isSameDate) return false;
-                    
-                    // 講師篩選
-                    if (instructorFilter && event.instructor !== instructorFilter) {
-                        return false;
-                    }
-                    
-                    // 時段篩選
-                    if (timeFilter) {
-                        const hour = eventDate.getHours();
-                        let timeMatch = false;
-                        switch (timeFilter) {
-                            case 'morning':
-                                timeMatch = hour >= 6 && hour < 12;
-                                break;
-                            case 'afternoon':
-                                timeMatch = hour >= 12 && hour < 18;
-                                break;
-                            case 'evening':
-                                timeMatch = hour >= 18 && hour < 24;
-                                break;
-                        }
-                        if (!timeMatch) return false;
-                    }
-                    
-                    // 指定日期篩選
-                    if (dateFilter) {
-                        const filterDate = new Date(dateFilter);
-                        const eventYear = eventDate.getFullYear();
-                        const eventMonth = eventDate.getMonth();
-                        const eventDay = eventDate.getDate();
-                        const filterYear = filterDate.getFullYear();
-                        const filterMonth = filterDate.getMonth();
-                        const filterDay = filterDate.getDate();
-                        
-                        if (eventYear !== filterYear || eventMonth !== filterMonth || eventDay !== filterDay) {
-                            return false;
-                        }
-                    }
-                    
-                    return true;
+                    return eventDay.getTime() === targetDay.getTime();
                 });
                 
                 // 只有有課程的日期才顯示按鈕
@@ -3786,10 +3935,8 @@ async function loadTodayEvents() {
             const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
             const weekdayNames = ['週一', '週二', '週三', '週四', '週五'];
             
-            // 獲取目前的篩選條件
-            const instructorFilter = document.getElementById('instructorSelect').value;
-            const timeFilter = document.getElementById('timeFilter').value;
-            const dateFilter = document.getElementById('dateFilter').value;
+            // 獲取已篩選的事件
+            const filteredEvents = getFilteredEvents();
             
             // 獲取本週的日期範圍
             const now = new Date();
@@ -3805,53 +3952,12 @@ async function loadTodayEvents() {
                 targetDate.setDate(weekStart.getDate() + index);
                 
                 // 統計這一天符合目前篩選條件的課程數量
-                const classesOnThisDay = allEvents.filter(event => {
+                const classesOnThisDay = filteredEvents.filter(event => {
                     const eventDate = new Date(event.start);
-                    const isSameDate = eventDate.getFullYear() === targetDate.getFullYear() &&
-                                     eventDate.getMonth() === targetDate.getMonth() &&
-                                     eventDate.getDate() === targetDate.getDate();
+                    const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+                    const targetDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
                     
-                    if (!isSameDate) return false;
-                    
-                    // 講師篩選
-                    if (instructorFilter && event.instructor !== instructorFilter) {
-                        return false;
-                    }
-                    
-                    // 時段篩選
-                    if (timeFilter) {
-                        const hour = eventDate.getHours();
-                        let timeMatch = false;
-                        switch (timeFilter) {
-                            case 'morning':
-                                timeMatch = hour >= 6 && hour < 12;
-                                break;
-                            case 'afternoon':
-                                timeMatch = hour >= 12 && hour < 18;
-                                break;
-                            case 'evening':
-                                timeMatch = hour >= 18 && hour < 24;
-                                break;
-                        }
-                        if (!timeMatch) return false;
-                    }
-                    
-                    // 指定日期篩選
-                    if (dateFilter) {
-                        const filterDate = new Date(dateFilter);
-                        const eventYear = eventDate.getFullYear();
-                        const eventMonth = eventDate.getMonth();
-                        const eventDay = eventDate.getDate();
-                        const filterYear = filterDate.getFullYear();
-                        const filterMonth = filterDate.getMonth();
-                        const filterDay = filterDate.getDate();
-                        
-                        if (eventYear !== filterYear || eventMonth !== filterMonth || eventDay !== filterDay) {
-                            return false;
-                        }
-                    }
-                    
-                    return true;
+                    return eventDay.getTime() === targetDay.getTime();
                 });
                 
                 // 只有有課程的週次才顯示按鈕
@@ -3898,63 +4004,17 @@ async function loadTodayEvents() {
                 { key: 'spm', name: 'SPM' }
             ];
             
-            // 獲取目前的篩選條件
-            const instructorFilter = document.getElementById('instructorSelect').value;
-            const timeFilter = document.getElementById('timeFilter').value;
-            const dateFilter = document.getElementById('dateFilter').value;
+            // 獲取已篩選的事件
+            const filteredEvents = getFilteredEvents();
             
             // 檢查每個課別是否有課程並統計數量
             const buttonsToShow = [];
             courseTypes.forEach(courseType => {
                 // 統計這個課別符合目前篩選條件的課程數量
-                const classesOfThisType = allEvents.filter(event => {
+                const classesOfThisType = filteredEvents.filter(event => {
                     // 檢查課別
                     const title = event.title.toLowerCase();
-                    const isCourseType = title.includes(courseType.key.toLowerCase());
-                    
-                    if (!isCourseType) return false;
-                    
-                    // 講師篩選
-                    if (instructorFilter && event.instructor !== instructorFilter) {
-                        return false;
-                    }
-                    
-                    // 時段篩選
-                    if (timeFilter) {
-                        const eventDate = new Date(event.start);
-                        const hour = eventDate.getHours();
-                        let timeMatch = false;
-                        switch (timeFilter) {
-                            case 'morning':
-                                timeMatch = hour >= 6 && hour < 12;
-                                break;
-                            case 'afternoon':
-                                timeMatch = hour >= 12 && hour < 18;
-                                break;
-                            case 'evening':
-                                timeMatch = hour >= 18 && hour < 24;
-                                break;
-                        }
-                        if (!timeMatch) return false;
-                    }
-                    
-                    // 指定日期篩選
-                    if (dateFilter) {
-                        const eventDate = new Date(event.start);
-                        const filterDate = new Date(dateFilter);
-                        const eventYear = eventDate.getFullYear();
-                        const eventMonth = eventDate.getMonth();
-                        const eventDay = eventDate.getDate();
-                        const filterYear = filterDate.getFullYear();
-                        const filterMonth = filterDate.getMonth();
-                        const filterDay = filterDate.getDate();
-                        
-                        if (eventYear !== filterYear || eventMonth !== filterMonth || eventDay !== filterDay) {
-                            return false;
-                        }
-                    }
-                    
-                    return true;
+                    return title.includes(courseType.key.toLowerCase());
                 });
                 
                 // 只有有課程的課別才顯示按鈕
