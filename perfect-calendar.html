@@ -364,7 +364,7 @@
         }
 
         .quick-filter-group h4 {
-            color: rgba(255, 255, 255, 0.9);
+            color: rgba(0, 0, 0, 0.8);
             margin: 0 0 8px 0;
             font-size: 14px;
             font-weight: 600;
@@ -3193,6 +3193,8 @@ async function loadTodayEvents() {
             if (view === 'today') {
                 if (quickFilters) quickFilters.style.display = 'block';
                 if (todayQuickFilters) todayQuickFilters.style.display = 'block';
+                // 只顯示有課的日期
+                updateTodayQuickFilters();
             } else if (view === 'week') {
                 if (quickFilters) quickFilters.style.display = 'block';
                 if (weekQuickFilters) weekQuickFilters.style.display = 'block';
@@ -3200,6 +3202,63 @@ async function loadTodayEvents() {
                 updateWeekQuickFilters();
             } else {
                 if (quickFilters) quickFilters.style.display = 'none';
+            }
+        }
+
+        // 更新今日快速篩選，只顯示有課的日期
+        function updateTodayQuickFilters() {
+            const todayQuickFilters = document.getElementById('todayQuickFilters');
+            if (!todayQuickFilters) return;
+            
+            const todayOptions = [
+                { key: 'today', name: '今天', days: 0 },
+                { key: 'tomorrow', name: '明天', days: 1 },
+                { key: 'dayAfterTomorrow', name: '後天', days: 2 }
+            ];
+            
+            // 檢查每個日期是否有課程
+            const buttonsToShow = [];
+            todayOptions.forEach(option => {
+                const targetDate = new Date();
+                targetDate.setDate(targetDate.getDate() + option.days);
+                
+                // 檢查這一天是否有課程
+                const hasClasses = allEvents.some(event => {
+                    const eventDate = new Date(event.start);
+                    return eventDate.getFullYear() === targetDate.getFullYear() &&
+                           eventDate.getMonth() === targetDate.getMonth() &&
+                           eventDate.getDate() === targetDate.getDate();
+                });
+                
+                if (hasClasses) {
+                    buttonsToShow.push({
+                        key: option.key,
+                        name: option.name,
+                        days: option.days
+                    });
+                }
+            });
+            
+            // 更新按鈕顯示
+            const quickFilterButtons = todayQuickFilters.querySelector('.quick-filter-buttons');
+            if (quickFilterButtons) {
+                quickFilterButtons.innerHTML = '';
+                
+                buttonsToShow.forEach(buttonInfo => {
+                    const button = document.createElement('button');
+                    button.className = 'btn btn-outline-primary quick-filter-btn';
+                    button.setAttribute('data-quick', buttonInfo.key);
+                    button.textContent = buttonInfo.name;
+                    quickFilterButtons.appendChild(button);
+                });
+                
+                // 重新綁定事件監聽器
+                quickFilterButtons.querySelectorAll('.quick-filter-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const quickFilter = this.getAttribute('data-quick');
+                        handleQuickFilter(quickFilter);
+                    });
+                });
             }
         }
 
