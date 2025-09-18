@@ -65,14 +65,17 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             border-radius: 20px;
-            border: 1px solid rgba(255, 215, 0, 0.2);
+            border: 1px solid rgba(255, 215, 0, 0.3);
             box-shadow: 
-                0 25px 50px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 215, 0, 0.1);
+                0 25px 50px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 215, 0, 0.2),
+                0 0 0 1px rgba(255, 215, 0, 0.1);
+            position: relative;
+            z-index: 2;
         }
 
         /* 頂部標題區域 */
@@ -137,26 +140,29 @@
 
         .header h1 {
             color: rgba(255, 215, 0, 0.95);
-            font-size: 2rem;
-            font-weight: 700;
+            font-size: 2.5rem;
+            font-weight: 800;
             margin: 0;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 215, 0, 0.3);
-            animation: glow 3s ease-in-out infinite alternate, titleFloat 4s ease-in-out infinite;
-            transform: translateY(0);
+            text-shadow: 
+                0 2px 10px rgba(0, 0, 0, 0.3), 
+                0 0 30px rgba(255, 215, 0, 0.4),
+                0 0 60px rgba(255, 215, 0, 0.2);
+            animation: titleGlow 4s ease-in-out infinite alternate;
+            position: relative;
+            z-index: 2;
         }
 
         .header-subtitle {
             color: rgba(255, 255, 255, 0.9);
-            font-size: 1rem;
-            margin: 0;
+            font-size: 1.1rem;
+            margin: 8px 0 0 0;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 2;
         }
 
         .header-tim-note {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.8rem;
-            margin: 5px 0 0 0;
-            font-style: italic;
-            animation: gratitudePulse 2s ease-in-out infinite;
+            display: none; /* 隱藏底下的字 */
         }
 
         .header-left {
@@ -228,10 +234,11 @@
         }
 
         .user-name {
-            color: rgba(51, 51, 51, 0.9);
+            color: rgba(255, 255, 255, 0.9);
             font-weight: 600;
             font-size: 1rem;
             margin-bottom: 4px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
         }
 
         .user-id {
@@ -305,29 +312,70 @@
         }
 
         .step-circle {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            box-shadow: 
+                0 8px 25px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .step-circle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                rgba(255, 255, 255, 0.1) 0%, 
+                transparent 50%,
+                rgba(255, 255, 255, 0.1) 100%);
+            animation: stepShimmer 3s ease-in-out infinite;
+            z-index: 1;
         }
 
         .step.active .step-circle {
-            background: rgba(255, 223, 102, 0.9);
-            color: rgba(44, 44, 44, 0.9);
+            background: linear-gradient(135deg, 
+                rgba(255, 215, 0, 0.9) 0%, 
+                rgba(255, 193, 7, 0.8) 100%);
+            color: rgba(0, 0, 0, 0.9);
+            box-shadow: 
+                0 8px 25px rgba(255, 215, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            z-index: 2;
         }
 
         .step.completed .step-circle {
-            background: rgba(255, 223, 102, 0.9);
-            color: rgba(44, 44, 44, 0.9);
+            background: linear-gradient(135deg, 
+                rgba(255, 215, 0, 0.9) 0%, 
+                rgba(255, 193, 7, 0.8) 100%);
+            color: rgba(0, 0, 0, 0.9);
+            box-shadow: 
+                0 8px 25px rgba(255, 215, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            z-index: 2;
         }
 
         .step.pending .step-circle {
-            background: rgba(85, 85, 85, 0.9);
+            background: linear-gradient(135deg, 
+                rgba(85, 85, 85, 0.6) 0%, 
+                rgba(60, 60, 60, 0.8) 100%);
             color: rgba(255, 255, 255, 0.9);
+            box-shadow: 
+                0 8px 25px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            z-index: 2;
         }
 
         .step-label {
@@ -372,12 +420,53 @@
 
         /* 控制面板 */
         .controls {
-            background: rgba(248, 249, 250, 0.9);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(233, 236, 239, 0.9);
-            animation: slideUp 0.8s ease-out;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.15) 0%, 
+                rgba(255, 255, 255, 0.05) 50%,
+                rgba(255, 255, 255, 0.15) 100%);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                0 0 0 1px rgba(255, 215, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            animation: controlsFloat 8s ease-in-out infinite;
+        }
+
+        .controls::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                rgba(255, 215, 0, 0.08) 0%, 
+                transparent 30%,
+                transparent 70%,
+                rgba(255, 215, 0, 0.08) 100%);
+            animation: controlsShimmer 4s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        .controls::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, 
+                rgba(255, 215, 0, 0.03) 0%, 
+                transparent 70%);
+            animation: controlsRotate 25s linear infinite;
+            z-index: 0;
         }
 
         .control-row {
@@ -395,26 +484,40 @@
         }
 
         .control-group label {
-            font-weight: 600;
-            color: rgba(51, 51, 51, 0.9);
-            font-size: 0.9rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.95rem;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 2;
         }
 
         select, input {
-            padding: 10px 12px;
-            border: 2px solid rgba(221, 221, 221, 0.9);
-            border-radius: 8px;
+            padding: 12px 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
             font-size: 1rem;
             transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.9);
-            color: rgba(51, 51, 51, 0.9);
+            background: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 
+                0 4px 15px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            position: relative;
+            z-index: 2;
         }
 
         select:focus, input:focus {
             outline: none;
-            border-color: rgba(255, 223, 102, 0.9);
-            box-shadow: 0 0 0 3px rgba(255, 223, 102, 0.2);
+            border-color: rgba(255, 215, 0, 0.6);
+            box-shadow: 
+                0 0 0 3px rgba(255, 215, 0, 0.2),
+                0 4px 20px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
+
 
         /* 視圖按鈕組 */
         .view-buttons {
@@ -424,11 +527,11 @@
         }
 
         .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
+            padding: 12px 24px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-decoration: none;
@@ -436,6 +539,14 @@
             text-align: center;
             position: relative;
             overflow: hidden;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            color: rgba(255, 255, 255, 0.9);
+            box-shadow: 
+                0 6px 20px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            z-index: 2;
         }
 
         .btn::before {
@@ -457,16 +568,22 @@
         .quick-filters {
             margin-top: 10px;
             padding: 10px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            box-shadow: 
+                0 5px 15px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 215, 0, 0.1);
         }
 
         .quick-filter-group h4 {
-            color: rgba(0, 0, 0, 0.8);
+            color: rgba(255, 215, 0, 0.9);
             margin: 0 0 8px 0;
             font-size: 14px;
             font-weight: 600;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
         }
 
         .quick-filter-buttons {
@@ -478,27 +595,32 @@
         .quick-filter-btn {
             padding: 4px 8px;
             font-size: 12px;
-            border: 1px solid rgba(0, 0, 0, 0.2);
-            background: rgba(255, 255, 255, 0.9);
-            color: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: rgba(255, 255, 255, 0.9);
             transition: all 0.3s ease;
             border-radius: 4px;
             cursor: pointer;
             font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
         .quick-filter-btn:hover {
-            background: rgba(255, 255, 255, 1);
-            border-color: rgba(0, 0, 0, 0.3);
-            color: rgba(0, 0, 0, 0.9);
+            background: rgba(255, 215, 0, 0.2);
+            border-color: rgba(255, 215, 0, 0.6);
+            color: rgba(255, 215, 0, 1);
             transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
         }
 
         .quick-filter-btn.active {
-            background: rgba(255, 223, 102, 0.9);
-            border-color: rgba(255, 223, 102, 1);
-            color: #333;
+            background: rgba(255, 215, 0, 0.3);
+            border-color: rgba(255, 215, 0, 0.8);
+            color: rgba(255, 215, 0, 1);
             font-weight: 600;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
         }
 
         .btn-primary {
@@ -508,9 +630,11 @@
         }
 
         .btn-primary:hover {
-            background: rgba(255, 235, 120, 0.9);
+            background: rgba(255, 215, 0, 0.2);
+            border-color: rgba(255, 215, 0, 0.6);
             transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 25px rgba(255, 223, 102, 0.4);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+            color: rgba(255, 215, 0, 1);
         }
 
         .btn-primary:active {
@@ -551,9 +675,10 @@
         }
 
         .btn-secondary:hover {
-            background: rgba(90, 98, 104, 0.9);
-            border-color: rgba(90, 98, 104, 0.9);
+            background: rgba(255, 215, 0, 0.1);
+            border-color: rgba(255, 215, 0, 0.5);
             transform: translateY(-1px);
+            color: rgba(255, 215, 0, 0.9);
         }
 
         .btn-settings {
@@ -570,11 +695,53 @@
 
         /* 統計區域 */
         .stats {
-            background: rgba(248, 249, 250, 0.9);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(233, 236, 239, 0.9);
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.15) 0%, 
+                rgba(255, 255, 255, 0.05) 50%,
+                rgba(255, 255, 255, 0.15) 100%);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                0 0 0 1px rgba(255, 215, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            animation: statsFloat 7s ease-in-out infinite;
+        }
+
+        .stats::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                rgba(255, 215, 0, 0.08) 0%, 
+                transparent 30%,
+                transparent 70%,
+                rgba(255, 215, 0, 0.08) 100%);
+            animation: statsShimmer 5s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        .stats::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, 
+                rgba(255, 215, 0, 0.03) 0%, 
+                transparent 70%);
+            animation: statsRotate 30s linear infinite;
+            z-index: 0;
         }
 
         .stats-grid {
@@ -751,13 +918,16 @@
                 transform: translateY(-10px);
             }
             60% {
-                transform: translateY(-5px);
+            transform: translateY(-5px);
             }
         }
 
         .event-card:hover {
             transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.4),
+                0 0 20px rgba(255, 215, 0, 0.2);
+            border-color: rgba(255, 215, 0, 0.4);
         }
 
         .event-card::before {
@@ -781,22 +951,32 @@
         }
 
         .event-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: rgba(51, 51, 51, 0.9);
-            margin-bottom: 5px;
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: rgba(0, 0, 0, 0.9);
+            margin-bottom: 12px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            line-height: 1.4;
+            letter-spacing: 0.5px;
         }
 
         .event-instructor {
-            background: rgba(255, 223, 102, 0.9);
-            color: rgba(255, 255, 255, 0.95);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
+            background: linear-gradient(135deg, 
+                rgba(255, 215, 0, 0.9) 0%, 
+                rgba(255, 193, 7, 0.8) 100%);
+            color: rgba(0, 0, 0, 0.9);
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 700;
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
+            box-shadow: 
+                0 4px 12px rgba(255, 215, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
         }
 
         .event-details {
@@ -809,15 +989,29 @@
         .event-detail {
             display: flex;
             align-items: center;
-            gap: 8px;
-            color: rgba(102, 102, 102, 0.9);
-            font-size: 0.9rem;
+            gap: 10px;
+            color: rgba(0, 0, 0, 0.8);
+            font-size: 0.95rem;
+            font-weight: 500;
+            padding: 8px 12px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .event-detail:hover {
+            background: rgba(255, 215, 0, 0.15);
+            border-color: rgba(255, 215, 0, 0.3);
+            transform: translateY(-1px);
         }
 
         .event-detail i {
-            width: 20px;
-            color: rgba(255, 223, 102, 0.9);
+            width: 22px;
+            color: rgba(255, 215, 0, 0.8);
             text-align: center;
+            font-size: 1.1rem;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
 
         .location-link {
@@ -873,33 +1067,47 @@
         }
 
         .countdown-timer {
-            background: rgba(255, 193, 7, 0.1);
-            border: 1px solid rgba(255, 193, 7, 0.3);
-            border-radius: 6px;
-            padding: 8px 12px;
-            margin-top: 8px;
+            background: rgba(255, 193, 7, 0.15);
+            border: 2px solid rgba(255, 193, 7, 0.4);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-top: 12px;
             text-align: center;
-            font-weight: 600;
+            font-weight: 700;
             color: rgba(255, 193, 7, 1);
             transition: all 0.3s ease;
+            box-shadow: 
+                0 4px 12px rgba(255, 193, 7, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
 
         .countdown-timer.upcoming {
-            background: rgba(76, 175, 80, 0.1);
-            border-color: rgba(76, 175, 80, 0.3);
+            background: rgba(76, 175, 80, 0.15);
+            border-color: rgba(76, 175, 80, 0.4);
             color: rgba(76, 175, 80, 1);
+            box-shadow: 
+                0 4px 12px rgba(76, 175, 80, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
         .countdown-timer.ongoing {
-            background: rgba(33, 150, 243, 0.1);
-            border-color: rgba(33, 150, 243, 0.3);
+            background: rgba(33, 150, 243, 0.15);
+            border-color: rgba(33, 150, 243, 0.4);
             color: rgba(33, 150, 243, 1);
+            box-shadow: 
+                0 4px 12px rgba(33, 150, 243, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
         .countdown-timer.overdue {
-            background: rgba(244, 67, 54, 0.1);
-            border-color: rgba(244, 67, 54, 0.3);
+            background: rgba(244, 67, 54, 0.15);
+            border-color: rgba(244, 67, 54, 0.4);
             color: rgba(244, 67, 54, 1);
+            box-shadow: 
+                0 4px 12px rgba(244, 67, 54, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
         .countdown-text {
@@ -1931,46 +2139,69 @@
             }
         }
 
-        @keyframes titleFloat {
-            0%, 100% {
-                transform: translateY(0px);
+        @keyframes headerFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        @keyframes titleGlow {
+            0% { 
+                text-shadow: 
+                    0 2px 10px rgba(0, 0, 0, 0.3), 
+                    0 0 30px rgba(255, 215, 0, 0.4),
+                    0 0 60px rgba(255, 215, 0, 0.2);
             }
-            50% {
-                transform: translateY(-8px);
+            100% { 
+                text-shadow: 
+                    0 2px 15px rgba(0, 0, 0, 0.4), 
+                    0 0 40px rgba(255, 215, 0, 0.6),
+                    0 0 80px rgba(255, 215, 0, 0.3);
             }
         }
 
-        @keyframes gratitudePulse {
-            0%, 100% {
-                opacity: 0.7;
-                transform: scale(1);
-            }
-            50% {
-                opacity: 1;
-                transform: scale(1.05);
-            }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
 
-        @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        @keyframes slideOutRight {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(100%);
-                opacity: 0;
-            }
+        @keyframes controlsFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-3px); }
+        }
+
+        @keyframes controlsShimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes controlsRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes statsFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-2px); }
+        }
+
+        @keyframes statsShimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes statsRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes stepShimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
 
         /* 馬卡龍配色變數 */
@@ -2122,16 +2353,16 @@
                             <option value="instructor">按講師排序</option>
                             <option value="title">按標題排序</option>
                         </select>
-                    </div>
+                </div>
                     <div class="control-group">
                         <div class="view-buttons">
                             <button class="btn btn-primary active" data-view="today">今日</button>
                             <button class="btn btn-primary" data-view="week">本週</button>
                             <button class="btn btn-primary" data-view="month">本月</button>
                             <button class="btn btn-primary" data-view="all">全部</button>
-                        </div>
-                    </div>
-                    
+            </div>
+        </div>
+
                     <!-- 快速篩選選項 -->
                     <div class="quick-filters" id="quickFilters" style="display: none;">
                         <div class="quick-filter-group" id="todayQuickFilters" style="display: none;">
@@ -3105,6 +3336,10 @@
                 instructorSelect.addEventListener('change', function() {
                     updateStats();
                     renderEvents();
+                    // 更新快速篩選
+                    updateTodayQuickFilters();
+                    updateWeekQuickFilters();
+                    updateCourseTypeQuickFilters();
                 });
             }
             
@@ -3114,6 +3349,10 @@
                 timeFilter.addEventListener('change', function() {
                     updateStats();
                     renderEvents();
+                    // 更新快速篩選
+                    updateTodayQuickFilters();
+                    updateWeekQuickFilters();
+                    updateCourseTypeQuickFilters();
                 });
             }
             
@@ -3123,6 +3362,10 @@
                 dateFilter.addEventListener('change', function() {
                     updateStats();
                     renderEvents();
+                    // 更新快速篩選
+                    updateTodayQuickFilters();
+                    updateWeekQuickFilters();
+                    updateCourseTypeQuickFilters();
                 });
             }
             
@@ -3322,39 +3565,39 @@ async function loadTodayEvents() {
         console.log('🚀 開始載入完整事件數據...');
         addLoadingLog('🌐 正在連接 CalDAV 伺服器...', 'info');
         
-        const response = await fetch('/api/events');
+                const response = await fetch('/api/events');
         addLoadingLog('📡 正在獲取行事曆資料...', 'info');
         
-        const data = await response.json();
-        
-        if (data.success) {
+                const data = await response.json();
+                
+                if (data.success) {
             addLoadingLog(`📊 成功獲取 ${data.data.length} 個事件`, 'success');
             
-            allEvents = data.data;
-            allInstructors = [...new Set(allEvents.map(event => event.instructor).filter(Boolean))];
+                    allEvents = data.data;
+                    allInstructors = [...new Set(allEvents.map(event => event.instructor).filter(Boolean))];
             
             addLoadingLog(`👥 發現 ${allInstructors.length} 位講師`, 'info');
-            
-            // 為新講師生成隨機馬卡龍顏色（如果沒有保存的設置）
-            if (Object.keys(instructorColors).length === 0) {
+                    
+                    // 為新講師生成隨機馬卡龍顏色（如果沒有保存的設置）
+                    if (Object.keys(instructorColors).length === 0) {
                 addLoadingLog('🎨 正在生成講師顏色配置...', 'info');
-                generateRandomInstructorColors();
-            }
-            
+                        generateRandomInstructorColors();
+                    }
+                    
             addLoadingLog('🔄 正在渲染事件列表...', 'info');
-            populateInstructorDropdown();
-            renderEvents();
-            updateStats();
+                    populateInstructorDropdown();
+                    renderEvents();
+                    updateStats();
             
             console.log(`✅ 完整事件載入完成: ${allEvents.length} 個事件`);
             addLoadingLog(`✅ 載入完成！共 ${allEvents.length} 個事件`, 'success');
             hideLoadingMessage();
-        } else {
-            showError('載入事件失敗: ' + data.message);
-        }
-    } catch (error) {
-        console.error('載入事件錯誤:', error);
-        showError('無法連接到服務器');
+                } else {
+                    showError('載入事件失敗: ' + data.message);
+                }
+            } catch (error) {
+                console.error('載入事件錯誤:', error);
+                showError('無法連接到服務器');
     }
 }
 
@@ -3449,7 +3692,7 @@ async function loadTodayEvents() {
         function populateInstructorDropdown() {
             const select = document.getElementById('instructorSelect');
             select.innerHTML = '<option value="">全部講師</option>';
-
+            
             allInstructors.forEach(instructor => {
                 const option = document.createElement('option');
                 option.value = instructor;
@@ -3500,6 +3743,11 @@ async function loadTodayEvents() {
             // 顯示/隱藏快速篩選選項
             showQuickFilters(view);
             
+            // 更新快速篩選統計
+            updateTodayQuickFilters();
+            updateWeekQuickFilters();
+            updateCourseTypeQuickFilters();
+            
             // 如果是今日視圖，預設選中「今天」快速篩選
             if (view === 'today') {
                 handleQuickFilter('today');
@@ -3522,24 +3770,115 @@ async function loadTodayEvents() {
             const quickFilters = document.getElementById('quickFilters');
             const todayQuickFilters = document.getElementById('todayQuickFilters');
             const weekQuickFilters = document.getElementById('weekQuickFilters');
+            const courseTypeQuickFilters = document.getElementById('courseTypeQuickFilters');
             
             // 隱藏所有快速篩選
             if (todayQuickFilters) todayQuickFilters.style.display = 'none';
             if (weekQuickFilters) weekQuickFilters.style.display = 'none';
+            if (courseTypeQuickFilters) courseTypeQuickFilters.style.display = 'none';
             
             if (view === 'today') {
                 if (quickFilters) quickFilters.style.display = 'block';
                 if (todayQuickFilters) todayQuickFilters.style.display = 'block';
-                // 只顯示有課的日期
-                updateTodayQuickFilters();
             } else if (view === 'week') {
                 if (quickFilters) quickFilters.style.display = 'block';
                 if (weekQuickFilters) weekQuickFilters.style.display = 'block';
-                // 只顯示有課的週次
-                updateWeekQuickFilters();
+            } else if (view === 'month' || view === 'all') {
+                if (quickFilters) quickFilters.style.display = 'block';
+                if (courseTypeQuickFilters) courseTypeQuickFilters.style.display = 'block';
             } else {
                 if (quickFilters) quickFilters.style.display = 'none';
             }
+        }
+
+        // 通用篩選函數，根據當前篩選條件篩選事件（不包含視圖篩選）
+        function getFilteredEvents() {
+            const instructorFilter = document.getElementById('instructorSelect').value;
+            const timeFilter = document.getElementById('timeFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            
+            console.log('🔍 getFilteredEvents - 篩選條件:', {
+                instructorFilter,
+                timeFilter,
+                dateFilter,
+                totalEvents: allEvents.length
+            });
+            
+            const filtered = allEvents.filter(event => {
+                const eventDate = new Date(event.start);
+                
+                // 講師篩選
+                if (instructorFilter && event.instructor !== instructorFilter) {
+                    return false;
+                }
+                
+                // 時段篩選
+                if (timeFilter) {
+                    const hour = eventDate.getHours();
+                    let timeMatch = false;
+                    switch (timeFilter) {
+                        case 'morning':
+                            timeMatch = hour >= 6 && hour < 12;
+                            break;
+                        case 'afternoon':
+                            timeMatch = hour >= 12 && hour < 18;
+                            break;
+                        case 'evening':
+                            timeMatch = hour >= 18 && hour < 24;
+                            break;
+                    }
+                    if (!timeMatch) return false;
+                }
+                
+                // 指定日期篩選
+                if (dateFilter) {
+                    const filterDate = new Date(dateFilter);
+                    const eventYear = eventDate.getFullYear();
+                    const eventMonth = eventDate.getMonth();
+                    const eventDay = eventDate.getDate();
+                    const filterYear = filterDate.getFullYear();
+                    const filterMonth = filterDate.getMonth();
+                    const filterDay = filterDate.getDate();
+                    
+                    if (eventYear !== filterYear || eventMonth !== filterMonth || eventDay !== filterDay) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
+            
+            console.log('🔍 getFilteredEvents - 篩選結果:', filtered.length);
+            return filtered;
+        }
+
+        // 根據當前視圖篩選事件
+        function getViewFilteredEvents() {
+            const filteredEvents = getFilteredEvents();
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            return filteredEvents.filter(event => {
+                const eventDate = new Date(event.start);
+                const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+                
+                switch (currentView) {
+                    case '今日':
+                        return eventDay.getTime() === today.getTime();
+                    case '本週':
+                        const weekStart = new Date(today);
+                        weekStart.setDate(today.getDate() - today.getDay() + 1); // 週一
+                        const weekEnd = new Date(weekStart);
+                        weekEnd.setDate(weekStart.getDate() + 6); // 週日
+                        return eventDay >= weekStart && eventDay <= weekEnd;
+                    case '本月':
+                        return eventDate.getFullYear() === now.getFullYear() && 
+                               eventDate.getMonth() === now.getMonth();
+                    case '全部':
+                    default:
+                        return true;
+                }
+            });
         }
 
         // 更新今日快速篩選，只顯示有課的日期
@@ -3553,18 +3892,23 @@ async function loadTodayEvents() {
                 { key: 'dayAfterTomorrow', name: '後天', days: 2 }
             ];
             
+            // 獲取已篩選的事件（不包含視圖篩選）
+            const filteredEvents = getFilteredEvents();
+            console.log('🔍 更新今日快速篩選 - 已篩選事件數量:', filteredEvents.length);
+            
             // 檢查每個日期是否有課程並統計數量
             const buttonsToShow = [];
             todayOptions.forEach(option => {
                 const targetDate = new Date();
                 targetDate.setDate(targetDate.getDate() + option.days);
                 
-                // 統計這一天的課程數量
-                const classesOnThisDay = allEvents.filter(event => {
+                // 統計這一天符合目前篩選條件的課程數量
+                const classesOnThisDay = filteredEvents.filter(event => {
                     const eventDate = new Date(event.start);
-                    return eventDate.getFullYear() === targetDate.getFullYear() &&
-                           eventDate.getMonth() === targetDate.getMonth() &&
-                           eventDate.getDate() === targetDate.getDate();
+                    const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+                    const targetDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+                    
+                    return eventDay.getTime() === targetDay.getTime();
                 });
                 
                 // 只有有課程的日期才顯示按鈕
@@ -3606,8 +3950,12 @@ async function loadTodayEvents() {
             const weekQuickFilters = document.getElementById('weekQuickFilters');
             if (!weekQuickFilters) return;
             
-            const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-            const weekdayNames = ['週一', '週二', '週三', '週四', '週五'];
+            const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            const weekdayNames = ['週一', '週二', '週三', '週四', '週五', '週六', '週日'];
+            
+            // 獲取已篩選的事件（不包含視圖篩選）
+            const filteredEvents = getFilteredEvents();
+            console.log('🔍 更新本週快速篩選 - 已篩選事件數量:', filteredEvents.length);
             
             // 獲取本週的日期範圍
             const now = new Date();
@@ -3622,12 +3970,13 @@ async function loadTodayEvents() {
                 const targetDate = new Date(weekStart);
                 targetDate.setDate(weekStart.getDate() + index);
                 
-                // 統計這一天的課程數量
-                const classesOnThisDay = allEvents.filter(event => {
+                // 統計這一天符合目前篩選條件的課程數量
+                const classesOnThisDay = filteredEvents.filter(event => {
                     const eventDate = new Date(event.start);
-                    return eventDate.getFullYear() === targetDate.getFullYear() &&
-                           eventDate.getMonth() === targetDate.getMonth() &&
-                           eventDate.getDate() === targetDate.getDate();
+                    const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+                    const targetDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+                    
+                    return eventDay.getTime() === targetDay.getTime();
                 });
                 
                 // 只有有課程的週次才顯示按鈕
@@ -3650,6 +3999,63 @@ async function loadTodayEvents() {
                     const button = document.createElement('button');
                     button.className = 'btn btn-outline-primary quick-filter-btn';
                     button.setAttribute('data-quick', buttonInfo.weekday);
+                    button.textContent = `${buttonInfo.name} (${buttonInfo.count})`;
+                    quickFilterButtons.appendChild(button);
+                });
+                
+                // 重新綁定事件監聽器
+                quickFilterButtons.querySelectorAll('.quick-filter-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const quickFilter = this.getAttribute('data-quick');
+                        handleQuickFilter(quickFilter);
+                    });
+                });
+            }
+        }
+
+        // 更新課別快速篩選，只顯示有課的課別
+        function updateCourseTypeQuickFilters() {
+            const courseTypeQuickFilters = document.getElementById('courseTypeQuickFilters');
+            if (!courseTypeQuickFilters) return;
+            
+            const courseTypes = [
+                { key: 'esm', name: 'ESM' },
+                { key: 'spm', name: 'SPM' }
+            ];
+            
+            // 獲取已篩選的事件（不包含視圖篩選）
+            const filteredEvents = getFilteredEvents();
+            console.log('🔍 更新課別快速篩選 - 已篩選事件數量:', filteredEvents.length);
+            
+            // 檢查每個課別是否有課程並統計數量
+            const buttonsToShow = [];
+            courseTypes.forEach(courseType => {
+                // 統計這個課別符合目前篩選條件的課程數量
+                const classesOfThisType = filteredEvents.filter(event => {
+                    // 檢查課別
+                    const title = event.title.toLowerCase();
+                    return title.includes(courseType.key.toLowerCase());
+                });
+                
+                // 只有有課程的課別才顯示按鈕
+                if (classesOfThisType.length > 0) {
+                    buttonsToShow.push({
+                        key: courseType.key,
+                        name: courseType.name,
+                        count: classesOfThisType.length
+                    });
+                }
+            });
+            
+            // 更新按鈕顯示
+            const quickFilterButtons = courseTypeQuickFilters.querySelector('.quick-filter-buttons');
+            if (quickFilterButtons) {
+                quickFilterButtons.innerHTML = '';
+                
+                buttonsToShow.forEach(buttonInfo => {
+                    const button = document.createElement('button');
+                    button.className = 'btn btn-outline-primary quick-filter-btn';
+                    button.setAttribute('data-quick', buttonInfo.key);
                     button.textContent = `${buttonInfo.name} (${buttonInfo.count})`;
                     quickFilterButtons.appendChild(button);
                 });
@@ -3714,6 +4120,10 @@ async function loadTodayEvents() {
                 case 'saturday':
                 case 'sunday':
                     return getWeekdayRange(quickFilter);
+                case 'esm':
+                case 'spm':
+                    // 課別篩選不需要日期範圍，返回 null
+                    return null;
                 default:
                     return null;
             }
@@ -3750,111 +4160,30 @@ async function loadTodayEvents() {
         // 渲染事件
         function renderEvents() {
             const container = document.getElementById('eventsContainer');
-            const instructorFilter = document.getElementById('instructorSelect').value;
-            const timeFilter = document.getElementById('timeFilter').value;
-            const dateFilter = document.getElementById('dateFilter').value;
             const sortOrder = document.getElementById('sortOrder').value;
             
-            let filteredEvents = allEvents.filter(event => {
-                // 講師篩選
-                if (instructorFilter && event.instructor !== instructorFilter) {
-                    return false;
-                }
-                
-                // 快速篩選（優先於其他篩選）
-                if (currentQuickFilter) {
-                    const dateRange = getQuickFilterDateRange(currentQuickFilter);
-                    if (dateRange) {
+            // 使用新的篩選函數
+            let filteredEvents = getViewFilteredEvents();
+            
+            // 快速篩選（優先於其他篩選）
+            if (currentQuickFilter) {
+                // 處理日期範圍篩選
+                const dateRange = getQuickFilterDateRange(currentQuickFilter);
+                if (dateRange) {
+                    filteredEvents = filteredEvents.filter(event => {
                         const eventDate = new Date(event.start);
-                        if (eventDate < dateRange.start || eventDate > dateRange.end) {
-                            return false;
-                        }
-                    }
+                        return eventDate >= dateRange.start && eventDate <= dateRange.end;
+                    });
                 }
                 
-                // 時段篩選
-                if (timeFilter) {
-                    const eventDate = new Date(event.start);
-                    const hour = eventDate.getHours(); // 使用本地時間
-                    let timeMatch = false;
-                    
-                    switch (timeFilter) {
-                        case 'morning':
-                            timeMatch = hour >= 6 && hour < 12;
-                            break;
-                        case 'afternoon':
-                            timeMatch = hour >= 12 && hour < 18;
-                            break;
-                        case 'evening':
-                            timeMatch = hour >= 18 && hour < 24;
-                            break;
-                    }
-                    
-                    if (!timeMatch) {
-                        return false;
-                    }
+                // 處理課別篩選
+                if (currentQuickFilter === 'esm' || currentQuickFilter === 'spm') {
+                    filteredEvents = filteredEvents.filter(event => {
+                        const title = event.title.toLowerCase();
+                        return title.includes(currentQuickFilter.toLowerCase());
+                    });
                 }
-                
-                // 指定日期篩選
-                if (dateFilter) {
-                    const eventDate = new Date(event.start);
-                    const filterDate = new Date(dateFilter);
-                    
-                    // 使用本地時間進行日期比較
-                    const eventYear = eventDate.getFullYear();
-                    const eventMonth = eventDate.getMonth();
-                    const eventDay = eventDate.getDate();
-                    const filterYear = filterDate.getFullYear();
-                    const filterMonth = filterDate.getMonth();
-                    const filterDay = filterDate.getDate();
-                    
-                    if (eventYear !== filterYear || eventMonth !== filterMonth || eventDay !== filterDay) {
-                        return false;
-                    }
-                }
-                
-                // 日期篩選
-                const eventDate = new Date(event.start);
-                const now = new Date();
-                
-                let shouldShow = false;
-                switch (currentView) {
-                    case 'today':
-                        // 使用本地時間進行日期比較，確保與顯示一致
-                        const eventYear = eventDate.getFullYear();
-                        const eventMonth = eventDate.getMonth();
-                        const eventDay = eventDate.getDate();
-                        const nowYear = now.getFullYear();
-                        const nowMonth = now.getMonth();
-                        const nowDay = now.getDate();
-                        shouldShow = eventYear === nowYear && eventMonth === nowMonth && eventDay === nowDay;
-                        console.log(`事件篩選 - 標題: ${event.title}, 事件日期: ${eventYear}-${eventMonth+1}-${eventDay}, 今天: ${nowYear}-${nowMonth+1}-${nowDay}, 顯示: ${shouldShow}`);
-                        break;
-                    case 'week':
-                        // 使用本地時間進行本週篩選（週一到週日）
-                        const weekStart = new Date(now);
-                        const dayOfWeek = now.getDay();
-                        const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 週日時回到上週一，其他天回到本週一
-                        weekStart.setDate(now.getDate() + daysToMonday);
-                        weekStart.setHours(0, 0, 0, 0);
-                        const weekEnd = new Date(weekStart);
-                        weekEnd.setDate(weekStart.getDate() + 6); // 週日
-                        weekEnd.setHours(23, 59, 59, 999);
-                        shouldShow = eventDate >= weekStart && eventDate <= weekEnd;
-                        break;
-                    case 'month':
-                        // 使用本地時間進行本月篩選
-                        shouldShow = eventDate.getMonth() === now.getMonth() && eventDate.getFullYear() === now.getFullYear();
-                        console.log(`📅 本月篩選 - 標題: ${event.title}, 事件日期: ${eventDate.getFullYear()}-${eventDate.getMonth()+1}-${eventDate.getDate()}, 當前: ${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}, 顯示: ${shouldShow}`);
-                        break;
-                    case 'all':
-                    default:
-                        shouldShow = true;
-                        break;
-                }
-                
-                return shouldShow;
-            });
+            }
             
             // 排序事件 - 優化排序邏輯
             filteredEvents.sort((a, b) => {
@@ -4035,16 +4364,16 @@ async function loadTodayEvents() {
                 `;
             }
             
-        // 處理位置資訊
-        let location = event.location;
-        if (!location || location === 'nan' || location === 'null' || location === '' || location.trim() === '') {
-            location = '樂程坊 Funlearnbar';
-        }
+            // 處理位置資訊
+            let location = event.location;
+            if (!location || location === 'nan' || location === 'null' || location === '' || location.trim() === '') {
+                location = '樂程坊 Funlearnbar';
+            }
         
         // 如果是站前教室，設定預設地址
         if (location === '站前教室') {
             location = '台北市中正區開封街1段2號9樓';
-        }
+            }
             
             // 講師底色
             const instructorColor = instructorColors[event.instructor] || '#667eea';
@@ -4080,7 +4409,7 @@ async function loadTodayEvents() {
                                class="location-link"
                                title="點擊查看地圖">
                                 <i class="fas fa-map-marked-alt location-map-icon"></i>
-                                <span>${location}</span>
+                            <span>${location}</span>
                                 <i class="fas fa-external-link-alt location-external-icon"></i>
                             </a>
                         </div>
@@ -4105,99 +4434,11 @@ async function loadTodayEvents() {
 
         // 更新統計資訊
         function updateStats() {
-            // 使用與 renderEvents 相同的篩選邏輯
-            const instructorFilter = document.getElementById('instructorSelect').value;
-            const timeFilter = document.getElementById('timeFilter').value;
-            const dateFilter = document.getElementById('dateFilter').value;
+            // 使用新的篩選函數確保一致性
+            const filteredEvents = getFilteredEvents();
             
-            const filteredEvents = allEvents.filter(event => {
-                // 講師篩選
-                if (instructorFilter && event.instructor !== instructorFilter) {
-                    return false;
-                }
-                
-                // 時段篩選
-                if (timeFilter) {
-                    const eventDate = new Date(event.start);
-                    const hour = eventDate.getHours(); // 使用本地時間
-                    let timeMatch = false;
-                    
-                    switch (timeFilter) {
-                        case 'morning':
-                            timeMatch = hour >= 6 && hour < 12;
-                            break;
-                        case 'afternoon':
-                            timeMatch = hour >= 12 && hour < 18;
-                            break;
-                        case 'evening':
-                            timeMatch = hour >= 18 && hour < 24;
-                            break;
-                    }
-                    
-                    if (!timeMatch) {
-                        return false;
-                    }
-                }
-                
-                // 指定日期篩選
-                if (dateFilter) {
-                    const eventDate = new Date(event.start);
-                    const filterDate = new Date(dateFilter);
-                    
-                    // 使用本地時間進行日期比較
-                    const eventYear = eventDate.getFullYear();
-                    const eventMonth = eventDate.getMonth();
-                    const eventDay = eventDate.getDate();
-                    const filterYear = filterDate.getFullYear();
-                    const filterMonth = filterDate.getMonth();
-                    const filterDay = filterDate.getDate();
-                    
-                    if (eventYear !== filterYear || eventMonth !== filterMonth || eventDay !== filterDay) {
-                        return false;
-                    }
-                }
-                
-                // 檢視模式篩選
-                const eventDate = new Date(event.start);
-                const now = new Date();
-                
-                let shouldShow = false;
-                switch (currentView) {
-                    case 'today':
-                        // 使用本地時間進行日期比較，確保與顯示一致
-                        const eventYear = eventDate.getFullYear();
-                        const eventMonth = eventDate.getMonth();
-                        const eventDay = eventDate.getDate();
-                        const nowYear = now.getFullYear();
-                        const nowMonth = now.getMonth();
-                        const nowDay = now.getDate();
-                        shouldShow = eventYear === nowYear && eventMonth === nowMonth && eventDay === nowDay;
-                        break;
-                    case 'week':
-                        // 使用本地時間進行本週篩選（週一到週日）
-                        const weekStart = new Date(now);
-                        const dayOfWeek = now.getDay();
-                        const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-                        weekStart.setDate(now.getDate() + daysToMonday);
-                        weekStart.setHours(0, 0, 0, 0);
-                        const weekEnd = new Date(weekStart);
-                        weekEnd.setDate(weekStart.getDate() + 6);
-                        weekEnd.setHours(23, 59, 59, 999);
-                        shouldShow = eventDate >= weekStart && eventDate <= weekEnd;
-                        break;
-                    case 'month':
-                        // 使用本地時間進行本月篩選
-                        shouldShow = eventDate.getMonth() === now.getMonth() && eventDate.getFullYear() === now.getFullYear();
-                        console.log(`📅 本月篩選 - 標題: ${event.title}, 事件日期: ${eventDate.getFullYear()}-${eventDate.getMonth()+1}-${eventDate.getDate()}, 當前: ${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}, 顯示: ${shouldShow}`);
-                        break;
-                    case 'all':
-                    default:
-                        shouldShow = true;
-                        break;
-                }
-                
-                return shouldShow;
-            });
+            // 獲取當前視圖
+            const currentView = document.querySelector('.btn-primary')?.textContent || '今日';
             
             // 計算篩選後的講師數量
             const uniqueInstructors = new Set(filteredEvents.map(event => event.instructor));
@@ -4205,8 +4446,8 @@ async function loadTodayEvents() {
             
             // 調試日誌：顯示篩選結果
             console.log(`📊 篩選結果 - 模式: ${currentView}, 總事件: ${allEvents.length}, 篩選後: ${filteredEvents.length}`);
-            if (currentView === 'week' || currentView === 'month') {
-                console.log(`📅 ${currentView === 'week' ? '本週' : '本月'}事件詳情:`, filteredEvents.map(e => ({
+            if (currentView === '本週' || currentView === '本月') {
+                console.log(`📅 ${currentView === '本週' ? '本週' : '本月'}事件詳情:`, filteredEvents.map(e => ({
                     title: e.title,
                     instructor: e.instructor,
                     start: e.start,
@@ -4219,10 +4460,10 @@ async function loadTodayEvents() {
             const now = new Date();
             
             switch (currentView) {
-                case 'today':
+                case '今日':
                     dateRange = now.toLocaleDateString('zh-TW');
                     break;
-                case 'week':
+                case '本週':
                     const weekStart = new Date(now);
                     // 計算本週一的日期（getDay() 返回 0-6，0是週日，1是週一）
                     const dayOfWeek = now.getDay();
@@ -4232,17 +4473,17 @@ async function loadTodayEvents() {
                     weekEnd.setDate(weekStart.getDate() + 6); // 週日
                     dateRange = `${weekStart.toLocaleDateString('zh-TW')} - ${weekEnd.toLocaleDateString('zh-TW')}`;
                     break;
-                case 'month':
+                case '本月':
                     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
                     const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
                     dateRange = `${monthStart.toLocaleDateString('zh-TW')} - ${monthEnd.toLocaleDateString('zh-TW')}`;
                     break;
-                case 'all':
+                case '全部':
                 default:
-            if (allEvents.length > 0) {
-                const dates = allEvents.map(event => new Date(event.start));
-                const minDate = new Date(Math.min(...dates));
-                const maxDate = new Date(Math.max(...dates));
+                    if (allEvents.length > 0) {
+                        const dates = allEvents.map(event => new Date(event.start));
+                        const minDate = new Date(Math.min(...dates));
+                        const maxDate = new Date(Math.max(...dates));
                         dateRange = `${minDate.toLocaleDateString('zh-TW')} - ${maxDate.toLocaleDateString('zh-TW')}`;
                     }
                     break;
@@ -4269,16 +4510,12 @@ async function loadTodayEvents() {
         const settingsOverlay = document.getElementById('settingsOverlay');
         if (settingsOverlay) {
             settingsOverlay.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeSettings();
-                }
-            });
+            if (e.target === this) {
+                closeSettings();
+            }
+        });
         }
     </script>
 </body>
-</html>// Railway 強制重新部署 - Wed Sep 17 10:03:13 CST 2025
-// 強制 Railway 重新部署 - Wed Sep 17 12:07:01 CST 2025
-// 修復時間顯示問題 - 強制重新部署 - Wed Jan 16 2025
-// 緊急修復 - 時間顯示問題 - 2025-01-16 15:30
-// 修復 CORS 問題 - 強制重新部署 - 2025-01-16 15:45
+</html>
 
