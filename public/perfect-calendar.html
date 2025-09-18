@@ -361,40 +361,41 @@
 
         /* 快速篩選樣式 */
         .quick-filters {
-            margin-top: 15px;
-            padding: 15px;
+            margin-top: 10px;
+            padding: 10px;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
+            border-radius: 8px;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .quick-filter-group h4 {
             color: rgba(255, 255, 255, 0.9);
-            margin: 0 0 10px 0;
-            font-size: 16px;
+            margin: 0 0 8px 0;
+            font-size: 14px;
             font-weight: 600;
         }
 
         .quick-filter-buttons {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             flex-wrap: wrap;
         }
 
         .quick-filter-btn {
-            padding: 6px 12px;
-            font-size: 13px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            background: rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.8);
+            padding: 4px 8px;
+            font-size: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.9);
             transition: all 0.3s ease;
-            border-radius: 6px;
+            border-radius: 4px;
             cursor: pointer;
+            font-weight: 500;
         }
 
         .quick-filter-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.6);
             color: white;
             transform: translateY(-1px);
         }
@@ -2240,6 +2241,10 @@
                     try {
                         hideLoadingAnimation();
                         console.log('系統初始化完成');
+                        
+                        // 預設顯示今日篩選的快速選單並選中「今天」
+                        showQuickFilters('today');
+                        handleQuickFilter('today');
                         
                         // 自動滑動到行事曆區域（僅行動裝置）
                         autoScrollToCalendar();
