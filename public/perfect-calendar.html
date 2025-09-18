@@ -501,6 +501,52 @@
         .event-card:nth-child(4) { animation-delay: 0.4s; }
         .event-card:nth-child(5) { animation-delay: 0.5s; }
 
+        /* 停課狀態樣式 */
+        .event-card.cancelled-event {
+            background: rgba(248, 249, 250, 0.9);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            opacity: 0.7;
+            position: relative;
+        }
+
+        .event-card.cancelled-event::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(220, 53, 69, 0.1) 10px,
+                rgba(220, 53, 69, 0.1) 20px
+            );
+            pointer-events: none;
+            border-radius: 12px;
+        }
+
+        .cancelled-badge {
+            background: #dc3545;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
         .event-card:hover {
             transform: translateY(-5px) scale(1.02);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
@@ -3024,10 +3070,22 @@ async function loadTodayEvents() {
             return baseDate;
         }
 
+        // 檢查是否為停課/請假
+        function isCancelled(event) {
+            const title = event.title.toLowerCase();
+            const description = (event.description || '').toLowerCase();
+            const cancelledKeywords = ['請假', '停課', '取消', '暫停', '休息', '放假'];
+            
+            return cancelledKeywords.some(keyword => 
+                title.includes(keyword) || description.includes(keyword)
+            );
+        }
+
         // 創建事件卡片
         function createEventCard(event) {
             const startDate = new Date(event.start);
             const endDate = new Date(event.end);
+            const isCancelledEvent = isCancelled(event);
             
             // 從標題解析時間
             const titleTime = parseTimeFromTitle(event.title);
@@ -3120,10 +3178,13 @@ async function loadTodayEvents() {
             const instructorStyle = instructorColors[event.instructor] ? 'custom-color' : '';
             
             return `
-                <div class="event-card">
+                <div class="event-card ${isCancelledEvent ? 'cancelled-event' : ''}">
                     <div class="event-header">
                         <div>
-                            <div class="event-title">${event.title}</div>
+                            <div class="event-title">
+                                ${event.title}
+                                ${isCancelledEvent ? '<span class="cancelled-badge"><i class="fas fa-ban"></i> 停課</span>' : ''}
+                            </div>
                             <div class="event-instructor ${instructorStyle}" style="--instructor-color: ${instructorColor}">
                                 <i class="fas fa-user"></i> ${event.instructor}
                             </div>
