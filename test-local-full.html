@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>講師行事曆檢視 - 完整本地測試版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .test-controls {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .test-controls h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .control-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .control-group select,
+        .control-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .control-group select:focus,
+        .control-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        }
+
+        .status {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .status h4 {
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            padding: 5px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            font-weight: 600;
+            color: #6c757d;
+        }
+
+        .status-value {
+            color: #495057;
+        }
+
+        .debug-log {
+            background: #1e1e1e;
+            color: #f8f8f2;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .debug-log h4 {
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+
+        .log-info { color: #66d9ef; }
+        .log-success { color: #a6e22e; }
+        .log-warning { color: #f4bf75; }
+        .log-error { color: #f92672; }
+
+        .calendar-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .view-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .view-btn {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            color: #495057;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .view-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .view-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .events-container {
+            margin-top: 20px;
+        }
+
+        .event-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .event-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .event-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .event-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .event-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .event-meta-item .icon {
+            width: 16px;
+            height: 16px;
+            background: #667eea;
+            border-radius: 50%;
+        }
+
+        .event-description {
+            color: #495057;
+            line-height: 1.5;
+            margin-top: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .quick-filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .quick-filter-btn {
+            background: #e9ecef;
+            border: 1px solid #dee2e6;
+            color: #495057;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .quick-filter-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .quick-filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 講師行事曆檢視 - 完整本地測試版</h1>
+            <p>包含原始系統的核心邏輯，移除 LIFF 認證功能</p>
+        </div>
+
+        <div class="test-controls">
+            <h3>🧪 測試控制面板</h3>
+            
+            <div class="control-row">
+                <div class="control-group">
+                    <label for="instructorSelect">選擇講師：</label>
+                    <select id="instructorSelect">
+                        <option value="">全部講師</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="timeFilter">時段篩選：</label>
+                    <select id="timeFilter">
+                        <option value="">全部時段</option>
+                        <option value="morning">早上 (06:00-12:00)</option>
+                        <option value="afternoon">下午 (12:00-18:00)</option>
+                        <option value="evening">晚上 (18:00-24:00)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="dateFilter">指定日期：</label>
+                    <input type="date" id="dateFilter">
+                </div>
+                <div class="control-group">
+                    <label for="sortMethod">排序方式：</label>
+                    <select id="sortMethod">
+                        <option value="time">按時間排序</option>
+                        <option value="instructor">按講師排序</option>
+                        <option value="title">按標題排序</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="loadMockData()">📊 載入模擬數據</button>
+            <button class="btn btn-secondary" onclick="clearLogs()">🗑️ 清除日誌</button>
+            <button class="btn btn-secondary" onclick="runFullTest()">🚀 完整測試</button>
+        </div>
+
+        <div class="status">
+            <h4>📊 系統狀態</h4>
+            <div class="status-item">
+                <span class="status-label">載入事件數：</span>
+                <span class="status-value" id="totalEvents">0</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">講師數量：</span>
+                <span class="status-value" id="instructorCount">0</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">當前講師：</span>
+                <span class="status-value" id="currentInstructor">無</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">當前視圖：</span>
+                <span class="status-value" id="currentView">今日</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">篩選後事件：</span>
+                <span class="status-value" id="filteredEvents">0</span>
+            </div>
+        </div>
+
+        <div class="debug-log">
+            <h4>🔍 調試日誌</h4>
+            <div id="debugLogs"></div>
+        </div>
+
+        <div class="calendar-container hidden" id="calendarContainer">
+            <div class="view-buttons">
+                <button class="view-btn active" data-view="today">今日</button>
+                <button class="view-btn" data-view="week">本週</button>
+                <button class="view-btn" data-view="month">本月</button>
+                <button class="view-btn" data-view="all">全部</button>
+            </div>
+
+            <div class="quick-filter-buttons" id="quickFilterButtons">
+                <!-- 快速篩選按鈕將在這裡動態生成 -->
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-number" id="statTotalEvents">0</div>
+                    <div class="stat-label">總事件數</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statInstructorCount">0</div>
+                    <div class="stat-label">講師數量</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statDateRange">-</div>
+                    <div class="stat-label">日期範圍</div>
+                </div>
+            </div>
+
+            <div class="events-container" id="eventsContainer">
+                <!-- 事件將在這裡動態生成 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模擬數據 - 包含更多樣本
+        const mockEvents = [
+            {
+                title: "SPIKE 五 16:10-17:40 松山 第2週",
+                instructor: "TIM",
+                start: "2025-09-19T16:10:00.000",
+                end: "2025-09-19T17:40:00.000",
+                location: "樂程坊 Funlearnbar",
+                description: "TIM 助教:無 教案:SPIKE教案:陀螺發射器"
+            },
+            {
+                title: "ESM 一 09:00-10:30 信義 第1週",
+                instructor: "TIM",
+                start: "2025-09-23T09:00:00.000",
+                end: "2025-09-23T10:30:00.000",
+                location: "樂程坊 Funlearnbar",
+                description: "TIM 助教:無 教案:ESM教案:基礎程式設計"
+            },
+            {
+                title: "SPM 三 14:00-15:30 松山 第3週",
+                instructor: "ALICE",
+                start: "2025-09-25T14:00:00.000",
+                end: "2025-09-25T15:30:00.000",
+                location: "樂程坊 Funlearnbar",
+                description: "ALICE 助教:無 教案:SPM教案:進階程式設計"
+            },
+            {
+                title: "ESM 五 10:00-11:30 信義 第2週",
+                instructor: "BOB",
+                start: "2025-09-27T10:00:00.000",
+                end: "2025-09-27T11:30:00.000",
+                location: "樂程坊 Funlearnbar",
+                description: "BOB 助教:無 教案:ESM教案:資料結構"
+            },
+            {
+                title: "SPIKE 一 16:00-17:30 松山 第4週",
+                instructor: "TIM",
+                start: "2025-09-30T16:00:00.000",
+                end: "2025-09-30T17:30:00.000",
+                location: "樂程坊 Funlearnbar",
+                description: "TIM 助教:無 教案:SPIKE教案:機器人控制"
+            },
+            {
+                title: "ESM 二 08:30-10:00 信義 第1週",
+                instructor: "TIM",
+                start: "2025-09-24T08:30:00.000",
+                end: "2025-09-24T10:00:00.000",
+                location: "樂程坊 Funlearnbar",
+                description: "TIM 助教:無 教案:ESM教案:演算法基礎"
+            },
+            {
+                title: "SPM 四 15:00-16:30 松山 第2週",
+                instructor: "ALICE",
+                start: "2025-09-26T15:00:00.000",
+                end: "2025-09-26T16:30:00.000",
+                location: "樂程坊 Funlearnbar",
+                description: "ALICE 助教:無 教案:SPM教案:物件導向程式設計"
+            },
+            {
+                title: "SPIKE 六 11:00-12:30 信義 第3週",
+                instructor: "BOB",
+                start: "2025-09-28T11:00:00.000",
+                end: "2025-09-28T12:30:00.000",
+                location: "樂程坊 Funlearnbar",
+                description: "BOB 助教:無 教案:SPIKE教案:感應器應用"
+            }
+        ];
+
+        // 全局變量
+        let allEvents = [];
+        let allInstructors = [];
+        let currentView = '今日';
+        let currentInstructor = '';
+        let currentQuickFilter = null;
+        let currentQuickFilterRange = null;
+
+        // 調試日誌函數
+        function addLog(message, type = 'info') {
+            const logContainer = document.getElementById('debugLogs');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('debugLogs').innerHTML = '';
+        }
+
+        // 初始化系統
+        function initializeSystem() {
+            addLog('🚀 開始初始化本地測試系統...', 'info');
+            
+            // 載入模擬數據
+            allEvents = [...mockEvents];
+            allInstructors = [...new Set(allEvents.map(event => event.instructor).filter(Boolean))];
+            
+            addLog(`✅ 載入 ${allEvents.length} 個模擬事件`, 'success');
+            addLog(`👥 發現 ${allInstructors.length} 位講師: ${allInstructors.join(', ')}`, 'info');
+            
+            // 填充講師下拉選單
+            populateInstructorDropdown();
+            
+            // 更新狀態
+            updateStatus();
+            
+            addLog('✅ 系統初始化完成', 'success');
+        }
+
+        // 填充講師下拉選單
+        function populateInstructorDropdown() {
+            const select = document.getElementById('instructorSelect');
+            const currentValue = select.value; // 保存當前選擇
+            
+            addLog(`🔄 填充講師下拉選單，當前選擇: "${currentValue}"`, 'info');
+            addLog(`🔄 可用講師列表: [${allInstructors.join(', ')}]`, 'info');
+            
+            select.innerHTML = '<option value="">全部講師</option>';
+            
+            allInstructors.forEach(instructor => {
+                const option = document.createElement('option');
+                option.value = instructor;
+                option.textContent = instructor;
+                select.appendChild(option);
+            });
+            
+            // 恢復之前的選擇
+            if (currentValue) {
+                select.value = currentValue;
+                addLog(`🔄 恢復講師選擇: "${currentValue}"`, 'success');
+            } else {
+                addLog(`🔄 沒有需要恢復的講師選擇`, 'info');
+            }
+        }
+
+        // 更新狀態顯示
+        function updateStatus() {
+            document.getElementById('totalEvents').textContent = allEvents.length;
+            document.getElementById('instructorCount').textContent = allInstructors.length;
+            document.getElementById('currentInstructor').textContent = currentInstructor || '無';
+            document.getElementById('currentView').textContent = currentView;
+        }
+
+        // 通用篩選函數
+        function getFilteredEvents() {
+            const instructorFilter = document.getElementById('instructorSelect').value;
+            const timeFilter = document.getElementById('timeFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            
+            addLog(`🔍 getFilteredEvents - 篩選條件: {instructorFilter: '${instructorFilter}', timeFilter: '${timeFilter}', dateFilter: '${dateFilter}', totalEvents: ${allEvents.length}}`, 'info');
+            
+            const filtered = allEvents.filter(event => {
+                const eventDate = new Date(event.start);
+                
+                // 講師篩選
+                if (instructorFilter && event.instructor !== instructorFilter) {
+                    return false;
+                }
+                
+                // 時段篩選
+                if (timeFilter) {
+                    const hour = eventDate.getHours();
+                    let timeMatch = false;
+                    switch (timeFilter) {
+                        case 'morning':
+                            timeMatch = hour >= 6 && hour < 12;
+                            break;
+                        case 'afternoon':
+                            timeMatch = hour >= 12 && hour < 18;
+                            break;
+                        case 'evening':
+                            timeMatch = hour >= 18 && hour < 24;
+                            break;
+                    }
+                    if (!timeMatch) return false;
+                }
+                
+                // 指定日期篩選
+                if (dateFilter) {
+                    const filterDate = new Date(dateFilter);
+                    const eventYear = eventDate.getFullYear();
+                    const eventMonth = eventDate.getMonth();
+                    const eventDay = eventDate.getDate();
+                    const filterYear = filterDate.getFullYear();
+                    const filterMonth = filterDate.getMonth();
+                    const filterDay = filterDate.getDate();
+                    
+                    if (eventYear !== filterYear || eventMonth !== filterMonth || eventDay !== filterDay) {
+                        return false;
+                    }
+                }
+                
+                // 快速篩選日期範圍
+                if (currentQuickFilterRange) {
+                    const range = currentQuickFilterRange;
+                    const eventTime = eventDate.getTime();
+                    if (eventTime < range.start.getTime() || eventTime > range.end.getTime()) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
+            
+            addLog(`🔍 getFilteredEvents - 篩選結果: ${filtered.length}`, 'info');
+            return filtered;
+        }
+
+        // 根據當前視圖篩選事件
+        function getViewFilteredEvents() {
+            const filteredEvents = getFilteredEvents();
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            addLog(`🔍 getViewFilteredEvents - 當前視圖: ${currentView}`, 'info');
+            addLog(`🔍 getViewFilteredEvents - 輸入事件數量: ${filteredEvents.length}`, 'info');
+            
+            const result = filteredEvents.filter(event => {
+                const eventDate = new Date(event.start);
+                const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+                
+                switch (currentView) {
+                    case '今日':
+                        const isToday = eventDay.getTime() === today.getTime();
+                        if (isToday) {
+                            addLog(`📅 今日事件: ${event.title} ${event.start}`, 'info');
+                        }
+                        return isToday;
+                    case '本週':
+                        const weekStart = new Date(today);
+                        weekStart.setDate(today.getDate() - today.getDay() + 1);
+                        const weekEnd = new Date(weekStart);
+                        weekEnd.setDate(weekStart.getDate() + 6);
+                        const isInWeek = eventDay >= weekStart && eventDay <= weekEnd;
+                        if (isInWeek) {
+                            addLog(`📅 本週事件: ${event.title} ${event.start} 週期範圍: ${weekStart.toLocaleDateString()} - ${weekEnd.toLocaleDateString()}`, 'info');
+                        }
+                        return isInWeek;
+                    case '本月':
+                        const isInMonth = eventDate.getFullYear() === now.getFullYear() && 
+                               eventDate.getMonth() === now.getMonth();
+                        if (isInMonth) {
+                            addLog(`📅 本月事件: ${event.title} ${event.start}`, 'info');
+                        }
+                        return isInMonth;
+                    case '全部':
+                        addLog(`📅 全部事件: ${event.title} ${event.start}`, 'info');
+                        return true;
+                    default:
+                        return true;
+                }
+            });
+            
+            addLog(`🔍 getViewFilteredEvents - 輸出事件數量: ${result.length}`, 'info');
+            return result;
+        }
+
+        // 渲染事件
+        function renderEvents() {
+            const events = getViewFilteredEvents();
+            const container = document.getElementById('eventsContainer');
+            
+            addLog(`🎨 renderEvents - 篩選後事件數量: ${events.length}`, 'info');
+            
+            if (events.length === 0) {
+                container.innerHTML = '<div class="event-card"><p>沒有找到符合條件的事件</p></div>';
+                addLog('⚠️ 沒有找到符合條件的事件', 'warning');
+            } else {
+                container.innerHTML = events.map(event => `
+                    <div class="event-card">
+                        <div class="event-title">${event.title}</div>
+                        <div class="event-meta">
+                            <div class="event-meta-item">
+                                <span class="icon"></span>
+                                <span>${event.instructor}</span>
+                            </div>
+                            <div class="event-meta-item">
+                                <span class="icon"></span>
+                                <span>${new Date(event.start).toLocaleDateString()}</span>
+                            </div>
+                            <div class="event-meta-item">
+                                <span class="icon"></span>
+                                <span>${new Date(event.start).toLocaleTimeString()} - ${new Date(event.end).toLocaleTimeString()}</span>
+                            </div>
+                            <div class="event-meta-item">
+                                <span class="icon"></span>
+                                <span>${event.location}</span>
+                            </div>
+                        </div>
+                        <div class="event-description">${event.description}</div>
+                    </div>
+                `).join('');
+                addLog(`✅ 成功渲染 ${events.length} 個事件`, 'success');
+            }
+
+            // 更新統計
+            updateStats(events);
+        }
+
+        // 更新統計
+        function updateStats(events) {
+            document.getElementById('statTotalEvents').textContent = events.length;
+            document.getElementById('statInstructorCount').textContent = new Set(events.map(e => e.instructor)).size;
+            
+            if (events.length > 0) {
+                const dates = events.map(e => new Date(e.start));
+                const minDate = new Date(Math.min(...dates));
+                const maxDate = new Date(Math.max(...dates));
+                document.getElementById('statDateRange').textContent = 
+                    `${minDate.toLocaleDateString()} - ${maxDate.toLocaleDateString()}`;
+            } else {
+                document.getElementById('statDateRange').textContent = '-';
+            }
+
+            document.getElementById('filteredEvents').textContent = events.length;
+        }
+
+        // 切換視圖
+        function switchView(view) {
+            const viewMap = {
+                'today': '今日',
+                'week': '本週',
+                'month': '本月',
+                'all': '全部'
+            };
+            
+            const chineseView = viewMap[view] || view;
+            addLog(`🔄 切換視圖: ${currentView} → ${chineseView}`, 'info');
+            currentView = chineseView;
+            
+            // 更新按鈕狀態
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-view') === view) {
+                    btn.classList.add('active');
+                }
+            });
+
+            updateStatus();
+            renderEvents();
+        }
+
+        // 設置講師
+        function setInstructor(instructor) {
+            addLog(`👨‍🏫 設置講師: "${currentInstructor}" → "${instructor}"`, 'info');
+            currentInstructor = instructor;
+            updateStatus();
+            renderEvents();
+        }
+
+        // 載入模擬數據
+        function loadMockData() {
+            addLog('📊 開始載入模擬數據...', 'info');
+            initializeSystem();
+            document.getElementById('calendarContainer').classList.remove('hidden');
+            addLog('✅ 模擬數據載入完成', 'success');
+        }
+
+        // 完整測試
+        function runFullTest() {
+            addLog('🧪 開始完整測試...', 'info');
+            
+            // 載入數據
+            loadMockData();
+            
+            // 測試講師選擇
+            addLog('🧪 測試講師選擇...', 'info');
+            setInstructor('TIM');
+            
+            // 測試視圖切換
+            addLog('🧪 測試視圖切換...', 'info');
+            switchView('week');
+            switchView('month');
+            switchView('all');
+            switchView('today');
+            
+            addLog('✅ 完整測試完成', 'success');
+        }
+
+        // 綁定事件監聽器
+        function bindEventListeners() {
+            // 視圖按鈕
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    switchView(this.getAttribute('data-view'));
+                });
+            });
+
+            // 講師選擇
+            document.getElementById('instructorSelect').addEventListener('change', function() {
+                setInstructor(this.value);
+            });
+
+            // 其他篩選器
+            document.getElementById('timeFilter').addEventListener('change', function() {
+                addLog(`🕐 時段篩選變更: ${this.value}`, 'info');
+                renderEvents();
+            });
+
+            document.getElementById('dateFilter').addEventListener('change', function() {
+                addLog(`📅 日期篩選變更: ${this.value}`, 'info');
+                renderEvents();
+            });
+
+            document.getElementById('sortMethod').addEventListener('change', function() {
+                addLog(`🔄 排序方式變更: ${this.value}`, 'info');
+                renderEvents();
+            });
+        }
+
+        // 頁面載入完成後初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('📄 頁面載入完成，開始初始化...', 'info');
+            bindEventListeners();
+            addLog('🎉 本地測試系統準備就緒！', 'success');
+        });
+    </script>
+</body>
+</html>
