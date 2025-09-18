@@ -189,15 +189,15 @@ if __name__ == '__main__':
     print("🚀 啟動本地 Flask 伺服器...")
     print(f"📊 載入 {len(mock_events)} 個模擬事件")
     print(f"👥 載入 {len(MOCK_TEACHERS)} 位講師")
-    print("🌐 伺服器將在 http://localhost:5000 啟動")
-    print("📅 行事曆頁面: http://localhost:5000/perfect-calendar.html")
-    print("🔍 調試信息: http://localhost:5000/api/debug")
-    print("❤️ 健康檢查: http://localhost:5000/api/health")
+    print("🌐 伺服器將在 http://localhost:5001 啟動")
+    print("📅 行事曆頁面: http://localhost:5001/perfect-calendar.html")
+    print("🔍 調試信息: http://localhost:5001/api/debug")
+    print("❤️ 健康檢查: http://localhost:5001/api/health")
     print("\n按 Ctrl+C 停止伺服器")
     
     app.run(
         host='0.0.0.0',
-        port=5000,
+        port=5001,
         debug=True,
         threaded=True
     )

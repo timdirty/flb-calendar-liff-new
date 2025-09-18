@@ -45,7 +45,7 @@ SERVER_PID=$!
 sleep 3
 
 # 檢查伺服器是否正常啟動
-if curl -s http://localhost:5000/api/health > /dev/null; then
+if curl -s http://localhost:5001/api/health > /dev/null; then
     echo "✅ 伺服器啟動成功"
     
     # 執行篩選功能測試
@@ -55,7 +55,7 @@ if curl -s http://localhost:5000/api/health > /dev/null; then
     
     echo ""
     echo "🎉 本地測試環境已準備就緒！"
-    echo "📅 請在瀏覽器中開啟: http://localhost:5000/perfect-calendar.html"
+    echo "📅 請在瀏覽器中開啟: http://localhost:5001/perfect-calendar.html"
     echo ""
     echo "按 Ctrl+C 停止伺服器"
     

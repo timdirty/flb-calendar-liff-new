@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import sys
 
 # 本地伺服器配置
-BASE_URL = "http://localhost:5000"
+BASE_URL = "http://localhost:5001"
 
 def test_api_health():
     """測試 API 健康狀態"""
