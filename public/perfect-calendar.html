@@ -2671,14 +2671,22 @@
             if (isMobile) {
                 // 延遲一點時間確保頁面完全載入
                 setTimeout(() => {
+                    // 優先滾動到快速篩選區域，如果沒有則滾動到視圖按鈕
+                    const quickFilters = document.getElementById('quickFilters');
                     const viewButtons = document.querySelector('.view-buttons');
-                    if (viewButtons) {
+                    
+                    if (quickFilters && quickFilters.style.display !== 'none') {
+                        quickFilters.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start'
+                        });
+                        console.log('已自動滑動到快速篩選區域');
+                    } else if (viewButtons) {
                         viewButtons.scrollIntoView({ 
                             behavior: 'smooth', 
-                            block: 'start',
-                            inline: 'end' // 讓按鈕切齊右面頂端
+                            block: 'start'
                         });
-                        console.log('已自動滑動到行事曆區域');
+                        console.log('已自動滑動到視圖按鈕區域');
                     }
                 }, 1000);
             }
@@ -3262,25 +3270,27 @@ async function loadTodayEvents() {
                 { key: 'dayAfterTomorrow', name: '後天', days: 2 }
             ];
             
-            // 檢查每個日期是否有課程
+            // 檢查每個日期是否有課程並統計數量
             const buttonsToShow = [];
             todayOptions.forEach(option => {
                 const targetDate = new Date();
                 targetDate.setDate(targetDate.getDate() + option.days);
                 
-                // 檢查這一天是否有課程
-                const hasClasses = allEvents.some(event => {
+                // 統計這一天的課程數量
+                const classesOnThisDay = allEvents.filter(event => {
                     const eventDate = new Date(event.start);
                     return eventDate.getFullYear() === targetDate.getFullYear() &&
                            eventDate.getMonth() === targetDate.getMonth() &&
                            eventDate.getDate() === targetDate.getDate();
                 });
                 
-                if (hasClasses) {
+                // 只有有課程的日期才顯示按鈕
+                if (classesOnThisDay.length > 0) {
                     buttonsToShow.push({
                         key: option.key,
                         name: option.name,
-                        days: option.days
+                        days: option.days,
+                        count: classesOnThisDay.length
                     });
                 }
             });
@@ -3294,7 +3304,7 @@ async function loadTodayEvents() {
                     const button = document.createElement('button');
                     button.className = 'btn btn-outline-primary quick-filter-btn';
                     button.setAttribute('data-quick', buttonInfo.key);
-                    button.textContent = buttonInfo.name;
+                    button.textContent = `${buttonInfo.name} (${buttonInfo.count})`;
                     quickFilterButtons.appendChild(button);
                 });
                 
@@ -3323,25 +3333,27 @@ async function loadTodayEvents() {
             const weekStart = new Date(now);
             weekStart.setDate(now.getDate() + daysToMonday);
             
-            // 檢查每個週次是否有課程
+            // 檢查每個週次是否有課程並統計數量
             const buttonsToShow = [];
             weekdays.forEach((weekday, index) => {
                 const targetDate = new Date(weekStart);
                 targetDate.setDate(weekStart.getDate() + index);
                 
-                // 檢查這一天是否有課程
-                const hasClasses = allEvents.some(event => {
+                // 統計這一天的課程數量
+                const classesOnThisDay = allEvents.filter(event => {
                     const eventDate = new Date(event.start);
                     return eventDate.getFullYear() === targetDate.getFullYear() &&
                            eventDate.getMonth() === targetDate.getMonth() &&
                            eventDate.getDate() === targetDate.getDate();
                 });
                 
-                if (hasClasses) {
+                // 只有有課程的週次才顯示按鈕
+                if (classesOnThisDay.length > 0) {
                     buttonsToShow.push({
                         weekday: weekday,
                         name: weekdayNames[index],
-                        date: targetDate
+                        date: targetDate,
+                        count: classesOnThisDay.length
                     });
                 }
             });
@@ -3355,7 +3367,7 @@ async function loadTodayEvents() {
                     const button = document.createElement('button');
                     button.className = 'btn btn-outline-primary quick-filter-btn';
                     button.setAttribute('data-quick', buttonInfo.weekday);
-                    button.textContent = buttonInfo.name;
+                    button.textContent = `${buttonInfo.name} (${buttonInfo.count})`;
                     quickFilterButtons.appendChild(button);
                 });
                 
