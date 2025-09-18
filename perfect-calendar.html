@@ -354,6 +354,53 @@
             left: 100%;
         }
 
+        /* 快速篩選樣式 */
+        .quick-filters {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .quick-filter-group h4 {
+            color: rgba(255, 255, 255, 0.9);
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .quick-filter-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .quick-filter-btn {
+            padding: 6px 12px;
+            font-size: 13px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .quick-filter-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .quick-filter-btn.active {
+            background: rgba(255, 223, 102, 0.9);
+            border-color: rgba(255, 223, 102, 1);
+            color: #333;
+            font-weight: 600;
+        }
+
         .btn-primary {
             background: rgba(255, 223, 102, 0.9);
             color: rgba(44, 44, 44, 0.9);
@@ -475,9 +522,10 @@
         .event-card {
             background: rgba(255, 255, 255, 0.9);
             border-radius: 12px;
-            padding: 20px;
+            padding: 12px 16px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             border: 1px solid rgba(233, 236, 239, 0.9);
+            margin-bottom: 10px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             opacity: 0;
@@ -1752,15 +1800,38 @@
                             <option value="instructor">按講師排序</option>
                             <option value="title">按標題排序</option>
                         </select>
-                    </div>
+                </div>
                     <div class="control-group">
                         <div class="view-buttons">
                             <button class="btn btn-primary active" data-view="today">今日</button>
                             <button class="btn btn-primary" data-view="week">本週</button>
                             <button class="btn btn-primary" data-view="month">本月</button>
                             <button class="btn btn-primary" data-view="all">全部</button>
+            </div>
+        </div>
+
+                    <!-- 快速篩選選項 -->
+                    <div class="quick-filters" id="quickFilters" style="display: none;">
+                        <div class="quick-filter-group" id="todayQuickFilters" style="display: none;">
+                            <h4>快速篩選</h4>
+                            <div class="quick-filter-buttons">
+                                <button class="btn btn-outline-primary quick-filter-btn" data-quick="today">今天</button>
+                                <button class="btn btn-outline-primary quick-filter-btn" data-quick="tomorrow">明天</button>
+                                <button class="btn btn-outline-primary quick-filter-btn" data-quick="dayAfterTomorrow">後天</button>
+                            </div>
                         </div>
-                </div>
+                        
+                        <div class="quick-filter-group" id="weekQuickFilters" style="display: none;">
+                            <h4>本週快速篩選</h4>
+                            <div class="quick-filter-buttons">
+                                <button class="btn btn-outline-primary quick-filter-btn" data-quick="monday">週一</button>
+                                <button class="btn btn-outline-primary quick-filter-btn" data-quick="tuesday">週二</button>
+                                <button class="btn btn-outline-primary quick-filter-btn" data-quick="wednesday">週三</button>
+                                <button class="btn btn-outline-primary quick-filter-btn" data-quick="thursday">週四</button>
+                                <button class="btn btn-outline-primary quick-filter-btn" data-quick="friday">週五</button>
+                            </div>
+                        </div>
+                    </div>
             </div>
         </div>
 
@@ -1866,6 +1937,7 @@
         let allInstructors = [];
         let currentView = 'today';
         let currentUser = null;
+        let currentQuickFilter = null; // 當前快速篩選狀態
         let colorSettings = {
             esm: 'rgba(255, 182, 193, 0.8)',
             spm: 'rgba(116, 185, 255, 0.8)',
@@ -2728,6 +2800,14 @@
                 });
             });
             
+            // 為快速篩選按鈕添加事件監聽器
+            document.querySelectorAll('.quick-filter-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const quickFilter = this.getAttribute('data-quick');
+                    handleQuickFilter(quickFilter);
+                });
+            });
+            
             // 綁定用戶按鈕事件監聽器
             const bindUserBtn = document.getElementById('bindUserBtn');
             if (bindUserBtn) {
@@ -3075,9 +3155,112 @@ async function loadTodayEvents() {
                 }
             });
             
+            // 顯示/隱藏快速篩選選項
+            showQuickFilters(view);
+            
             // 更新統計資訊（包括日期範圍）
             updateStats();
             renderEvents();
+        }
+
+        // 顯示快速篩選選項
+        function showQuickFilters(view) {
+            const quickFilters = document.getElementById('quickFilters');
+            const todayQuickFilters = document.getElementById('todayQuickFilters');
+            const weekQuickFilters = document.getElementById('weekQuickFilters');
+            
+            // 隱藏所有快速篩選
+            if (todayQuickFilters) todayQuickFilters.style.display = 'none';
+            if (weekQuickFilters) weekQuickFilters.style.display = 'none';
+            
+            if (view === 'today') {
+                if (quickFilters) quickFilters.style.display = 'block';
+                if (todayQuickFilters) todayQuickFilters.style.display = 'block';
+            } else if (view === 'week') {
+                if (quickFilters) quickFilters.style.display = 'block';
+                if (weekQuickFilters) weekQuickFilters.style.display = 'block';
+            } else {
+                if (quickFilters) quickFilters.style.display = 'none';
+            }
+        }
+
+        // 處理快速篩選
+        function handleQuickFilter(quickFilter) {
+            currentQuickFilter = quickFilter;
+            
+            // 更新快速篩選按鈕狀態
+            const quickFilterBtns = document.querySelectorAll('.quick-filter-btn');
+            quickFilterBtns.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-quick') === quickFilter) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // 更新統計和渲染
+            updateStats();
+            renderEvents();
+        }
+
+        // 獲取快速篩選的日期範圍
+        function getQuickFilterDateRange(quickFilter) {
+            const now = new Date();
+            
+            switch (quickFilter) {
+                case 'today':
+                    return {
+                        start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0),
+                        end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59)
+                    };
+                case 'tomorrow':
+                    const tomorrow = new Date(now);
+                    tomorrow.setDate(now.getDate() + 1);
+                    return {
+                        start: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 0, 0, 0),
+                        end: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 23, 59, 59)
+                    };
+                case 'dayAfterTomorrow':
+                    const dayAfterTomorrow = new Date(now);
+                    dayAfterTomorrow.setDate(now.getDate() + 2);
+                    return {
+                        start: new Date(dayAfterTomorrow.getFullYear(), dayAfterTomorrow.getMonth(), dayAfterTomorrow.getDate(), 0, 0, 0),
+                        end: new Date(dayAfterTomorrow.getFullYear(), dayAfterTomorrow.getMonth(), dayAfterTomorrow.getDate(), 23, 59, 59)
+                    };
+                case 'monday':
+                case 'tuesday':
+                case 'wednesday':
+                case 'thursday':
+                case 'friday':
+                    return getWeekdayRange(quickFilter);
+                default:
+                    return null;
+            }
+        }
+
+        // 獲取週幾的日期範圍
+        function getWeekdayRange(weekday) {
+            const now = new Date();
+            const dayOfWeek = now.getDay();
+            const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+            const weekStart = new Date(now);
+            weekStart.setDate(now.getDate() + daysToMonday);
+            
+            const weekdayMap = {
+                'monday': 0,
+                'tuesday': 1,
+                'wednesday': 2,
+                'thursday': 3,
+                'friday': 4
+            };
+            
+            const targetDay = weekdayMap[weekday];
+            const targetDate = new Date(weekStart);
+            targetDate.setDate(weekStart.getDate() + targetDay);
+            
+            return {
+                start: new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 0, 0, 0),
+                end: new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 23, 59, 59)
+            };
         }
 
         // 渲染事件
@@ -3092,6 +3275,17 @@ async function loadTodayEvents() {
                 // 講師篩選
                 if (instructorFilter && event.instructor !== instructorFilter) {
                     return false;
+                }
+                
+                // 快速篩選（優先於其他篩選）
+                if (currentQuickFilter) {
+                    const dateRange = getQuickFilterDateRange(currentQuickFilter);
+                    if (dateRange) {
+                        const eventDate = new Date(event.start);
+                        if (eventDate < dateRange.start || eventDate > dateRange.end) {
+                    return false;
+                        }
+                    }
                 }
                 
                 // 時段篩選
@@ -3113,7 +3307,7 @@ async function loadTodayEvents() {
                     }
                     
                     if (!timeMatch) {
-                    return false;
+                        return false;
                     }
                 }
                 

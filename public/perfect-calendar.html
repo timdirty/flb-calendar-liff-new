@@ -1807,7 +1807,30 @@
                             <button class="btn btn-primary" data-view="month">本月</button>
                             <button class="btn btn-primary" data-view="all">全部</button>
                         </div>
-                </div>
+                    </div>
+                    
+                    <!-- 快速篩選選項 -->
+                    <div class="quick-filters" id="quickFilters" style="display: none;">
+                        <div class="quick-filter-group" id="todayQuickFilters" style="display: none;">
+                            <h4>快速篩選</h4>
+                            <div class="quick-filter-buttons">
+                                <button class="btn btn-outline-primary quick-filter-btn" data-quick="today">今天</button>
+                                <button class="btn btn-outline-primary quick-filter-btn" data-quick="tomorrow">明天</button>
+                                <button class="btn btn-outline-primary quick-filter-btn" data-quick="dayAfterTomorrow">後天</button>
+                            </div>
+                        </div>
+                        
+                        <div class="quick-filter-group" id="weekQuickFilters" style="display: none;">
+                            <h4>本週快速篩選</h4>
+                            <div class="quick-filter-buttons">
+                                <button class="btn btn-outline-primary quick-filter-btn" data-quick="monday">週一</button>
+                                <button class="btn btn-outline-primary quick-filter-btn" data-quick="tuesday">週二</button>
+                                <button class="btn btn-outline-primary quick-filter-btn" data-quick="wednesday">週三</button>
+                                <button class="btn btn-outline-primary quick-filter-btn" data-quick="thursday">週四</button>
+                                <button class="btn btn-outline-primary quick-filter-btn" data-quick="friday">週五</button>
+                            </div>
+                        </div>
+                    </div>
             </div>
         </div>
 
@@ -1913,6 +1936,7 @@
         let allInstructors = [];
         let currentView = 'today';
         let currentUser = null;
+        let currentQuickFilter = null; // 當前快速篩選狀態
         let colorSettings = {
             esm: 'rgba(255, 182, 193, 0.8)',
             spm: 'rgba(116, 185, 255, 0.8)',
