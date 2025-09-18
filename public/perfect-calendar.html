@@ -3898,11 +3898,12 @@ async function loadTodayEvents() {
         // 根據當前視圖篩選事件
         function getViewFilteredEvents() {
             const filteredEvents = getFilteredEvents();
-                const now = new Date();
+            const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             
             // 獲取當前視圖
             const currentView = document.querySelector('.btn-primary')?.textContent || '今日';
+            console.log('🔍 getViewFilteredEvents - 當前視圖:', currentView);
             
             return filteredEvents.filter(event => {
                 const eventDate = new Date(event.start);
@@ -4195,6 +4196,7 @@ async function loadTodayEvents() {
             
             // 使用新的篩選函數
             let filteredEvents = getViewFilteredEvents();
+            console.log('🎨 renderEvents - 篩選後事件數量:', filteredEvents.length);
             
             // 快速篩選（優先於其他篩選）
             if (currentQuickFilter) {
@@ -4465,11 +4467,11 @@ async function loadTodayEvents() {
 
         // 更新統計資訊
         function updateStats() {
-            // 使用新的篩選函數確保一致性
-            const filteredEvents = getViewFilteredEvents();
-            
             // 獲取當前視圖
             const currentView = document.querySelector('.btn-primary')?.textContent || '今日';
+            
+            // 使用新的篩選函數確保一致性
+            const filteredEvents = getViewFilteredEvents();
             
             // 計算篩選後的講師數量
             const uniqueInstructors = new Set(filteredEvents.map(event => event.instructor));
