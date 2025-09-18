@@ -2232,12 +2232,13 @@
             console.log('User Agent:', navigator.userAgent);
             
             return new Promise((resolve) => {
-                // 設置超時保護（5秒）
+                // 設置超時保護（3秒，減少等待時間）
                 const timeout = setTimeout(() => {
                     console.warn('LIFF 初始化超時，顯示綁定按鈕');
+                    addLoadingLog('⏰ LINE 登入超時，請手動綁定', 'warning');
                     showBindButton();
                     resolve();
-                }, 5000);
+                }, 3000);
                 
                 // 檢查是否在LINE環境中
                 if (typeof liff !== 'undefined') {
@@ -2414,15 +2415,22 @@
             
             // 在頁面上顯示比對過程
             showMatchingProcess('開始比對講師...', 'info');
+            addLoadingLog('🔍 開始講師身份比對...', 'info');
             
             return new Promise(async (resolve) => {
             
             try {
-                console.log('準備調用Google Apps Script API...');
-                showMatchingProcess('正在調用Google Apps Script API...', 'info');
+                console.log('準備調用講師 API...');
+                showMatchingProcess('正在調用講師 API...', 'info');
+                addLoadingLog('🌐 正在連接講師資料庫...', 'info');
+                
+                // 設置 API 調用超時（10秒）
+                const apiTimeout = new Promise((_, reject) => {
+                    setTimeout(() => reject(new Error('API 調用超時')), 10000);
+                });
                 
                 // 暫時使用現有的講師 API（避免 404 問題）
-                const response = await fetch('/api/teachers', {
+                const apiCall = fetch('/api/teachers', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
@@ -2430,9 +2438,12 @@
                     redirect: 'follow'  // 自動跟隨重定向
                 });
                 
+                const response = await Promise.race([apiCall, apiTimeout]);
+                
                 console.log('API回應狀態:', response.status);
                 console.log('API回應OK:', response.ok);
                 showMatchingProcess(`API回應狀態: ${response.status}`, response.ok ? 'success' : 'error');
+                addLoadingLog(`📡 API 回應: ${response.status}`, response.ok ? 'success' : 'error');
                 
                 if (!response.ok) {
                     throw new Error(`API請求失敗: ${response.status}`);
@@ -2441,19 +2452,26 @@
                 const data = await response.json();
                 console.log('API回應:', data);
                 showMatchingProcess('API回應成功，開始比對講師...', 'success');
+                addLoadingLog('✅ 講師資料載入成功', 'success');
                 
                 // 處理 /api/teachers 的回應格式
                 if (data.success && data.teachers && Array.isArray(data.teachers)) {
                     showMatchingProcess(`找到 ${data.teachers.length} 個講師，開始比對...`, 'info');
+                    addLoadingLog(`👥 找到 ${data.teachers.length} 個講師，開始比對...`, 'info');
                     
                     // 顯示比對過程
                     showMatchingProcess(`比對條件: UserID=${userId}, DisplayName=${displayName}`, 'info');
+                    addLoadingLog(`🔍 比對條件: ${displayName} (${userId})`, 'info');
                     
                     // 尋找匹配的講師
-                    const matchedTeacher = data.teachers.find(teacher => {
+                    addLoadingLog('🔍 開始逐一比對講師...', 'info');
+                    const matchedTeacher = data.teachers.find((teacher, index) => {
+                        addLoadingLog(`📝 比對第 ${index + 1} 位講師: ${teacher.name}`, 'info');
+                        
                         // 精確比對userId（不區分大小寫）
                         if (teacher.userId && userId && teacher.userId.toLowerCase() === userId.toLowerCase()) {
                             showMatchingProcess(`✅ 精確匹配UserID: ${teacher.userId}`, 'success');
+                            addLoadingLog(`🎯 精確匹配 UserID: ${teacher.userId}`, 'success');
                             return true;
                         }
                         // 模糊比對name與displayName（不區分大小寫）
@@ -2464,12 +2482,14 @@
                             // 完全匹配（不區分大小寫）
                             if (teacherName === userName) {
                                 showMatchingProcess(`✅ 完全匹配名稱: ${teacher.name}`, 'success');
+                                addLoadingLog(`🎯 完全匹配名稱: ${teacher.name}`, 'success');
                                 return true;
                             }
                             
                             // 包含匹配（不區分大小寫）
                             if (teacherName.includes(userName) || userName.includes(teacherName)) {
                                 showMatchingProcess(`✅ 包含匹配: ${teacher.name}`, 'success');
+                                addLoadingLog(`🎯 包含匹配: ${teacher.name}`, 'success');
                                 return true;
                             }
                             
@@ -2478,7 +2498,8 @@
                                 const commonChars = [...teacherName].filter(char => userName.includes(char)).length;
                                 const similarity = commonChars / Math.max(teacherName.length, userName.length);
                                 if (similarity >= 0.6) { // 60%相似度
-                                    showMatchingProcess(`✅ 相似度匹配: ${teacher.teacherName} (${Math.round(similarity * 100)}%)`, 'success');
+                                    showMatchingProcess(`✅ 相似度匹配: ${teacher.name} (${Math.round(similarity * 100)}%)`, 'success');
+                                    addLoadingLog(`🎯 相似度匹配: ${teacher.name} (${Math.round(similarity * 100)}%)`, 'success');
                                     return true;
                                 }
                             }
@@ -2537,8 +2558,17 @@
             } catch (error) {
                 console.error('自動比對講師失敗:', error);
                 showMatchingProcess(`❌ 自動比對失敗: ${error.message}`, 'error');
+                
+                if (error.message.includes('超時')) {
+                    addLoadingLog('⏰ API 調用超時，請檢查網路連接', 'error');
+                } else if (error.message.includes('404')) {
+                    addLoadingLog('❌ 講師 API 不存在，請聯繫管理員', 'error');
+                } else {
+                    addLoadingLog(`❌ 比對失敗: ${error.message}`, 'error');
+                }
             } finally {
                 // 無論比對成功與否，都解析 Promise
+                addLoadingLog('🏁 講師比對流程結束', 'info');
                 resolve();
             }
             });
