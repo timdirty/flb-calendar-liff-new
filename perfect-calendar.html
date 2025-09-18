@@ -2791,9 +2791,9 @@
                         hideLoadingAnimation();
                         console.log('系統初始化完成');
                         
-                        // 預設顯示今日篩選的快速選單並選中「今天」
+                        // 預設顯示今日篩選的快速選單但不強制選中
                         showQuickFilters('today');
-                        handleQuickFilter('today');
+                        // 不強制設置快速篩選，讓用戶自由選擇視圖
                         
                         // 自動滑動到行事曆區域（僅行動裝置）
                         autoScrollToCalendar();
@@ -3853,6 +3853,7 @@ async function loadTodayEvents() {
             } else {
                 // 清除快速篩選狀態
                 currentQuickFilter = null;
+                window.currentQuickFilterRange = null; // 清除日期範圍限制
                 const quickFilterBtns = document.querySelectorAll('.quick-filter-btn');
                 quickFilterBtns.forEach(btn => {
                     btn.classList.remove('active');
