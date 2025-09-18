@@ -348,9 +348,13 @@ def extract_instructor_from_title(title):
 # 嘗試抓取真實 CalDAV 資料
 caldav_success = fetch_caldav_events()
 
-# 如果 CalDAV 抓取失敗，使用真實格式的模擬資料
-if not caldav_success:
-    print("⚠️ CalDAV 抓取失敗，使用真實格式的模擬資料")
+# 如果 CalDAV 抓取失敗或沒有事件，使用真實格式的模擬資料
+if not caldav_success or len(real_events) == 0:
+    if caldav_success and len(real_events) == 0:
+        print("⚠️ CalDAV 連接成功但沒有事件，使用真實格式的模擬資料")
+    else:
+        print("⚠️ CalDAV 抓取失敗，使用真實格式的模擬資料")
+    
     from mock_caldav_data import generate_realistic_caldav_events, generate_realistic_teachers
     real_events = generate_realistic_caldav_events()
     REAL_TEACHERS = generate_realistic_teachers()

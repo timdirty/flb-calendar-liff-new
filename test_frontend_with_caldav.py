@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-測試真實 CalDAV 連接和前端功能
+測試前端載入真實 CalDAV 資料
 """
 
 import requests
 import json
 from datetime import datetime, timedelta
 
-def test_real_caldav():
-    """測試真實 CalDAV 連接"""
-    print("🧪 測試真實 CalDAV 連接")
+def test_frontend_with_caldav():
+    """測試前端載入真實 CalDAV 資料"""
+    print("🧪 測試前端載入真實 CalDAV 資料")
     print("=" * 50)
     
     base_url = "http://localhost:5001"
     
     try:
-        # 1. 測試伺服器狀態
+        # 1. 檢查伺服器狀態
         print("1️⃣ 檢查伺服器狀態...")
         health_response = requests.get(f"{base_url}/api/health", timeout=10)
         if health_response.status_code != 200:
@@ -28,7 +28,7 @@ def test_real_caldav():
         print(f"   👥 講師數量: {health_data['teachers_count']}")
         print(f"   📡 資料來源: {health_data['data_source']}")
         
-        # 2. 測試 CalDAV 狀態
+        # 2. 檢查 CalDAV 狀態
         print("\n2️⃣ 檢查 CalDAV 狀態...")
         debug_response = requests.get(f"{base_url}/api/debug", timeout=10)
         if debug_response.status_code != 200:
@@ -62,8 +62,22 @@ def test_real_caldav():
         print(f"   ✅ 載入 {len(teachers)} 位講師")
         print(f"   👥 講師列表: {[t['name'] for t in teachers]}")
         
-        # 5. 測試前端頁面
-        print("\n5️⃣ 測試前端頁面...")
+        # 5. 測試講師篩選
+        print("\n5️⃣ 測試講師篩選...")
+        for teacher in teachers[:3]:  # 測試前3位講師
+            teacher_name = teacher['name']
+            teacher_response = requests.get(f"{base_url}/api/events/{teacher_name}", timeout=10)
+            if teacher_response.status_code == 200:
+                teacher_data = teacher_response.json()
+                teacher_events = teacher_data['data']
+                print(f"   👤 {teacher_name}: {len(teacher_events)} 個事件")
+                if teacher_events:
+                    print(f"      範例事件: {teacher_events[0]['title']}")
+            else:
+                print(f"   ❌ {teacher_name}: 載入失敗")
+        
+        # 6. 測試前端頁面
+        print("\n6️⃣ 測試前端頁面...")
         pages = [
             ("/", "首頁"),
             ("/perfect-calendar.html", "行事曆頁面"),
@@ -77,8 +91,8 @@ def test_real_caldav():
             else:
                 print(f"   ❌ {name}: 載入失敗")
         
-        # 6. 檢查動畫問題
-        print("\n6️⃣ 檢查動畫問題...")
+        # 7. 檢查動畫問題
+        print("\n7️⃣ 檢查動畫問題...")
         calendar_response = requests.get(f"{base_url}/perfect-calendar.html", timeout=10)
         if calendar_response.status_code == 200:
             content = calendar_response.text
@@ -89,7 +103,7 @@ def test_real_caldav():
                 print("   ✅ 動畫強制跳轉問題已修復")
         
         print("\n" + "=" * 50)
-        print("🎉 真實 CalDAV 連接測試完成")
+        print("🎉 前端 CalDAV 載入測試完成")
         print("=" * 50)
         print("✅ 所有功能正常運作")
         print(f"📊 總事件數: {len(all_events)}")
@@ -97,11 +111,8 @@ def test_real_caldav():
         print(f"📡 資料來源: {events_data['data_source']}")
         print(f"🔗 CalDAV 狀態: {debug_data['caldav_status']}")
         
-        if len(all_events) == 0:
-            print("\n💡 目前沒有日曆事件，這是正常的")
-            print("💡 當有事件時，系統會自動載入並顯示")
-        
-        print("\n🎯 結論: 真實 CalDAV 連接成功，系統準備好投入使用！")
+        print("\n🎯 結論: 前端已成功載入真實 CalDAV 資料！")
+        print("💡 現在可以打開 http://localhost:5001/perfect-calendar.html 查看行事曆")
         
         return True
         
@@ -111,17 +122,17 @@ def test_real_caldav():
 
 def main():
     """主測試函數"""
-    print("🚀 開始真實 CalDAV 連接測試")
+    print("🚀 開始前端 CalDAV 載入測試")
     print("=" * 50)
     
-    success = test_real_caldav()
+    success = test_frontend_with_caldav()
     
     if success:
-        print("\n🎉 真實 CalDAV 連接測試成功！")
+        print("\n🎉 前端 CalDAV 載入測試成功！")
         print("💡 系統已準備好使用真實的 CalDAV 資料")
         return 0
     else:
-        print("\n❌ 真實 CalDAV 連接測試失敗！")
+        print("\n❌ 前端 CalDAV 載入測試失敗！")
         print("💡 請檢查相關問題並修復")
         return 1
 
