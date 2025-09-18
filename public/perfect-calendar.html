@@ -1325,52 +1325,147 @@
             }
         }
 
-        /* 載入動畫樣式 */
+        /* 載入動畫樣式 - 生動版 */
         .loading-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(44, 44, 44, 0.95);
+            background: linear-gradient(135deg, rgba(44, 44, 44, 0.95), rgba(30, 30, 30, 0.98));
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 9999;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(8px);
         }
 
         .loading-container {
             text-align: center;
             color: rgba(255, 255, 255, 0.9);
+            max-width: 500px;
+            width: 90%;
         }
 
         .loading-spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid rgba(255, 223, 102, 0.3);
-            border-top: 4px solid rgba(255, 223, 102, 0.9);
+            width: 80px;
+            height: 80px;
+            border: 6px solid rgba(255, 223, 102, 0.2);
+            border-top: 6px solid #ffdf66;
+            border-right: 6px solid #ff6b6b;
+            border-bottom: 6px solid #4ecdc4;
+            border-left: 6px solid #45b7d1;
             border-radius: 50%;
-            animation: spin 1s linear infinite, pulse 2s ease-in-out infinite;
-            margin: 0 auto 20px;
+            animation: spin 1.2s linear infinite, pulse 2s ease-in-out infinite, glow 3s ease-in-out infinite;
+            margin: 0 auto 30px;
             position: relative;
+            box-shadow: 0 0 30px rgba(255, 223, 102, 0.3);
         }
 
         .loading-spinner::before {
             content: '';
             position: absolute;
-            top: -4px;
-            left: -4px;
-            right: -4px;
-            bottom: -4px;
-            border: 2px solid rgba(255, 223, 102, 0.1);
+            top: -8px;
+            left: -8px;
+            right: -8px;
+            bottom: -8px;
+            border: 3px solid rgba(255, 223, 102, 0.1);
             border-radius: 50%;
-            animation: spin 2s linear infinite reverse;
+            animation: spin 2.5s linear infinite reverse, pulse 1.5s ease-in-out infinite;
+        }
+
+        .loading-spinner::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, #ffdf66, #ff6b6b);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: innerPulse 1s ease-in-out infinite;
+        }
+
+        .loading-logs {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 223, 102, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            max-height: 200px;
+            overflow-y: auto;
+            text-align: left;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .loading-log-item {
+            color: #4ecdc4;
+            margin: 5px 0;
+            opacity: 0;
+            animation: logFadeIn 0.5s ease-in forwards;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .loading-log-item.success {
+            color: #4ecdc4;
+        }
+
+        .loading-log-item.warning {
+            color: #ffdf66;
+        }
+
+        .loading-log-item.error {
+            color: #ff6b6b;
+        }
+
+        .loading-log-item.info {
+            color: #45b7d1;
+        }
+
+        .loading-log-icon {
+            font-size: 12px;
+            width: 16px;
+            text-align: center;
         }
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        @keyframes glow {
+            0%, 100% { 
+                box-shadow: 0 0 30px rgba(255, 223, 102, 0.3);
+            }
+            50% { 
+                box-shadow: 0 0 50px rgba(255, 223, 102, 0.6), 0 0 80px rgba(255, 107, 107, 0.3);
+            }
+        }
+
+        @keyframes innerPulse {
+            0%, 100% { 
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            50% { 
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes logFadeIn {
+            from { 
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         .loading-text h3 {
@@ -1605,12 +1700,18 @@
         <div class="loading-container">
             <div class="loading-spinner"></div>
             <div class="loading-text">
-                <h3>載入中...</h3>
+                <h3>🚀 載入中...</h3>
                 <p>正在初始化系統，請稍候</p>
                 <div class="loading-progress">
                     <div class="loading-progress-bar" id="loadingProgressBar"></div>
                 </div>
                 <div class="loading-percentage" id="loadingPercentage">0%</div>
+            </div>
+            <div class="loading-logs" id="loadingLogs">
+                <div class="loading-log-item info">
+                    <span class="loading-log-icon">ℹ️</span>
+                    <span>系統初始化中...</span>
+                </div>
             </div>
         </div>
     </div>
@@ -2003,13 +2104,16 @@
         async function initializeSystem() {
             try {
                 console.log('開始初始化系統...');
+                addLoadingLog('🚀 開始初始化系統...', 'info');
                 updateLoadingProgress(10);
                 
                 // 載入設定
+                addLoadingLog('⚙️ 載入系統設定...', 'info');
                 loadSettings();
                 updateLoadingProgress(20);
                 
                 // 更新日期時間
+                addLoadingLog('🕐 初始化時間系統...', 'info');
                 updateDateTime();
                 setInterval(updateDateTime, 1000);
                 
@@ -2018,34 +2122,46 @@
                 updateLoadingProgress(30);
                 
                 // 先載入行事曆資料，再初始化LIFF
+                addLoadingLog('📅 正在載入行事曆資料...', 'info');
                 await loadEvents().catch(error => {
                     console.error('載入行事曆資料失敗:', error);
+                    addLoadingLog('❌ 載入行事曆資料失敗: ' + error.message, 'error');
                 });
+                addLoadingLog('✅ 行事曆資料載入完成', 'success');
                 updateLoadingProgress(60);
                 
+                addLoadingLog('🔐 正在初始化 LINE 登入...', 'info');
                 await initLineUser().catch(error => {
                     console.error('LIFF 初始化失敗:', error);
+                    addLoadingLog('❌ LINE 登入初始化失敗: ' + error.message, 'error');
                 });
+                addLoadingLog('✅ LINE 登入初始化完成', 'success');
                 updateLoadingProgress(80);
                 
                 console.log('所有初始化任務完成，開始講師比對...');
+                addLoadingLog('👨‍🏫 開始講師身份比對...', 'info');
                 updateLoadingProgress(90);
                 
                 // 執行講師比對
                 if (currentUser && currentUser.userId && currentUser.displayName) {
                     console.log('=== 開始自動比對講師 ===');
                     console.log('用戶資料:', currentUser);
+                    addLoadingLog('🔍 正在比對講師身份...', 'info');
                     
                     try {
                         await autoMatchTeacher(currentUser.userId, currentUser.displayName);
                         console.log('講師比對完成');
+                        addLoadingLog('✅ 講師身份比對完成', 'success');
                     } catch (error) {
                         console.error('自動比對講師失敗:', error);
+                        addLoadingLog('⚠️ 講師身份比對失敗: ' + error.message, 'warning');
                     }
                 } else {
                     console.log('沒有用戶資料，跳過自動比對');
+                    addLoadingLog('⚠️ 沒有用戶資料，跳過講師比對', 'warning');
                 }
                 
+                addLoadingLog('🎉 系統初始化完成！', 'success');
                 updateLoadingProgress(100);
                 
                 // 比對完成後隱藏載入動畫
@@ -2791,23 +2907,34 @@
 async function loadTodayEvents() {
     try {
         console.log('🚀 開始載入完整事件數據...');
+        addLoadingLog('🌐 正在連接 CalDAV 伺服器...', 'info');
+        
         const response = await fetch('/api/events');
+        addLoadingLog('📡 正在獲取行事曆資料...', 'info');
+        
         const data = await response.json();
         
         if (data.success) {
+            addLoadingLog(`📊 成功獲取 ${data.data.length} 個事件`, 'success');
+            
             allEvents = data.data;
             allInstructors = [...new Set(allEvents.map(event => event.instructor).filter(Boolean))];
             
+            addLoadingLog(`👥 發現 ${allInstructors.length} 位講師`, 'info');
+            
             // 為新講師生成隨機馬卡龍顏色（如果沒有保存的設置）
             if (Object.keys(instructorColors).length === 0) {
+                addLoadingLog('🎨 正在生成講師顏色配置...', 'info');
                 generateRandomInstructorColors();
             }
             
+            addLoadingLog('🔄 正在渲染事件列表...', 'info');
             populateInstructorDropdown();
             renderEvents();
             updateStats();
             
             console.log(`✅ 完整事件載入完成: ${allEvents.length} 個事件`);
+            addLoadingLog(`✅ 載入完成！共 ${allEvents.length} 個事件`, 'success');
             hideLoadingMessage();
         } else {
             showError('載入事件失敗: ' + data.message);
@@ -2824,8 +2951,44 @@ async function loadTodayEvents() {
             return loadTodayEvents();
         }
 
+        // 載入日誌管理
+        let loadingLogs = [];
+        
+        function addLoadingLog(message, type = 'info') {
+            const logItem = {
+                message,
+                type,
+                timestamp: new Date().toLocaleTimeString()
+            };
+            loadingLogs.push(logItem);
+            
+            const logsContainer = document.getElementById('loadingLogs');
+            if (logsContainer) {
+                const logElement = document.createElement('div');
+                logElement.className = `loading-log-item ${type}`;
+                
+                const icon = {
+                    'success': '✅',
+                    'warning': '⚠️',
+                    'error': '❌',
+                    'info': 'ℹ️'
+                }[type] || 'ℹ️';
+                
+                logElement.innerHTML = `
+                    <span class="loading-log-icon">${icon}</span>
+                    <span>[${logItem.timestamp}] ${message}</span>
+                `;
+                
+                logsContainer.appendChild(logElement);
+                
+                // 自動滾動到最新日誌
+                logsContainer.scrollTop = logsContainer.scrollHeight;
+            }
+        }
+
         // 顯示載入進度提示
         function showLoadingMessage(message) {
+            addLoadingLog(message, 'info');
             // 移除現有的載入提示
             const existingMessage = document.getElementById('loading-message');
             if (existingMessage) {
