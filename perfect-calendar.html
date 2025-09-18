@@ -5,7 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>講師行事曆檢視</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <!-- LIFF SDK - 僅在需要時載入 -->
+    <script>
+        // 檢測是否在 LINE 環境中
+        function isInLineEnvironment() {
+            return window.navigator.userAgent.includes('Line') || 
+                   window.location.href.includes('liff') ||
+                   window.location.href.includes('line');
+        }
+        
+        // 動態載入 LIFF SDK
+        if (isInLineEnvironment()) {
+            const script = document.createElement('script');
+            script.charset = 'utf-8';
+            script.src = 'https://static.line-scdn.net/liff/edge/2/sdk.js';
+            document.head.appendChild(script);
+        }
+    </script>
     <style>
         * {
             margin: 0;
@@ -2762,6 +2778,17 @@
                 addLoadingLog('👨‍🏫 開始講師身份比對...', 'info');
                 updateLoadingProgress(90);
                 
+                // 檢查是否在 LINE 環境中，決定是否執行講師比對
+                const isInLine = isInLineEnvironment();
+                if (!isInLine) {
+                    console.log('不在 LINE 環境中，跳過講師比對');
+                    addLoadingLog('🌐 非 LINE 環境，跳過講師比對', 'info');
+                    addLoadingLog('📋 顯示全部講師選項', 'info');
+                    updateLoadingProgress(100);
+                    showStep(2); // 直接跳轉到第二步驟
+                    return;
+                }
+                
                 // 執行講師比對
                 if (currentUser && currentUser.userId && currentUser.displayName) {
                     console.log('=== 開始自動比對講師 ===');
@@ -2856,6 +2883,19 @@
             console.log('User Agent:', navigator.userAgent);
             
             return new Promise((resolve) => {
+                // 檢查是否在 LINE 環境中
+                const isInLine = isInLineEnvironment();
+                console.log('是否在 LINE 環境中:', isInLine);
+                
+                if (!isInLine) {
+                    console.log('不在 LINE 環境中，跳過講師比對，直接顯示全部講師');
+                    addLoadingLog('🌐 檢測到非 LINE 環境，跳過講師比對', 'info');
+                    addLoadingLog('📋 顯示全部講師選項', 'info');
+                    showBindButton(); // 顯示綁定按鈕，但不會強制要求登入
+                    resolve();
+                    return;
+                }
+                
                 // 設置超時保護（3秒，減少等待時間）
                 const timeout = setTimeout(() => {
                     console.warn('LIFF 初始化超時，顯示綁定按鈕');
@@ -2988,11 +3028,25 @@
         }
 
         function showBindButton() {
+            const isInLine = isInLineEnvironment();
+            if (!isInLine) {
+                console.log('非 LINE 環境，顯示本地測試模式');
+                addLoadingLog('🌐 本地測試模式，無需 LINE 登入', 'info');
+                addLoadingLog('📋 請手動選擇講師', 'info');
+            }
             updateUserDisplay();
         }
 
         function bindUser() {
             console.log('用戶點擊綁定按鈕');
+            
+            const isInLine = isInLineEnvironment();
+            if (!isInLine) {
+                console.log('非 LINE 環境，跳過綁定流程');
+                addLoadingLog('🌐 本地測試模式，無需綁定', 'info');
+                addLoadingLog('📋 請直接選擇講師開始使用', 'info');
+                return;
+            }
             
             if (typeof liff !== 'undefined') {
                 try {
@@ -3916,7 +3970,7 @@ async function loadTodayEvents() {
                     const filterDay = filterDate.getDate();
                     
                     if (eventYear !== filterYear || eventMonth !== filterMonth || eventDay !== filterDay) {
-                        return false;
+                    return false;
                     }
                 }
                 
@@ -3939,7 +3993,7 @@ async function loadTodayEvents() {
         // 根據當前視圖篩選事件
         function getViewFilteredEvents() {
             const filteredEvents = getFilteredEvents();
-            const now = new Date();
+                const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             
             // 獲取當前視圖 - 使用全局變量而不是 DOM 查詢
