@@ -3780,18 +3780,12 @@ async function loadTodayEvents() {
             if (view === 'today') {
                 if (quickFilters) quickFilters.style.display = 'block';
                 if (todayQuickFilters) todayQuickFilters.style.display = 'block';
-                // 只顯示有課的日期
-                updateTodayQuickFilters();
             } else if (view === 'week') {
                 if (quickFilters) quickFilters.style.display = 'block';
                 if (weekQuickFilters) weekQuickFilters.style.display = 'block';
-                // 只顯示有課的週次
-                updateWeekQuickFilters();
             } else if (view === 'month' || view === 'all') {
                 if (quickFilters) quickFilters.style.display = 'block';
                 if (courseTypeQuickFilters) courseTypeQuickFilters.style.display = 'block';
-                // 顯示課別快速篩選
-                updateCourseTypeQuickFilters();
             } else {
                 if (quickFilters) quickFilters.style.display = 'none';
             }
@@ -3803,7 +3797,14 @@ async function loadTodayEvents() {
             const timeFilter = document.getElementById('timeFilter').value;
             const dateFilter = document.getElementById('dateFilter').value;
             
-            return allEvents.filter(event => {
+            console.log('🔍 getFilteredEvents - 篩選條件:', {
+                instructorFilter,
+                timeFilter,
+                dateFilter,
+                totalEvents: allEvents.length
+            });
+            
+            const filtered = allEvents.filter(event => {
                 const eventDate = new Date(event.start);
                 
                 // 講師篩選
@@ -3846,6 +3847,9 @@ async function loadTodayEvents() {
                 
                 return true;
             });
+            
+            console.log('🔍 getFilteredEvents - 篩選結果:', filtered.length);
+            return filtered;
         }
 
         // 根據當前視圖篩選事件
@@ -3891,6 +3895,7 @@ async function loadTodayEvents() {
             
             // 獲取已篩選的事件（不包含視圖篩選）
             const filteredEvents = getFilteredEvents();
+            console.log('🔍 更新今日快速篩選 - 已篩選事件數量:', filteredEvents.length);
             
             // 檢查每個日期是否有課程並統計數量
             const buttonsToShow = [];
@@ -3951,6 +3956,7 @@ async function loadTodayEvents() {
             
             // 獲取已篩選的事件（不包含視圖篩選）
             const filteredEvents = getFilteredEvents();
+            console.log('🔍 更新本週快速篩選 - 已篩選事件數量:', filteredEvents.length);
             
             // 獲取本週的日期範圍
             const now = new Date();
@@ -4111,6 +4117,8 @@ async function loadTodayEvents() {
                 case 'wednesday':
                 case 'thursday':
                 case 'friday':
+                case 'saturday':
+                case 'sunday':
                     return getWeekdayRange(quickFilter);
                 case 'esm':
                 case 'spm':
@@ -4134,7 +4142,9 @@ async function loadTodayEvents() {
                 'tuesday': 1,
                 'wednesday': 2,
                 'thursday': 3,
-                'friday': 4
+                'friday': 4,
+                'saturday': 5,
+                'sunday': 6
             };
             
             const targetDay = weekdayMap[weekday];
