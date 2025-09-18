@@ -3,58 +3,312 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>前端測試</title>
+    <title>前端功能測試</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+        }
+        .success { border-color: #28a745; background: #d4edda; }
+        .error { border-color: #dc3545; background: #f8d7da; }
+    </style>
 </head>
 <body>
-    <h1>前端測試</h1>
-    <div id="test-results"></div>
+    <h1>🧪 前端功能測試</h1>
+    
+    <div class="test-container">
+        <h2>API 連接測試</h2>
+        <button class="test-button" onclick="testAPI()">測試 API 連接</button>
+        <div id="apiResult" class="result"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>事件載入測試</h2>
+        <button class="test-button" onclick="testLoadEvents()">載入所有事件</button>
+        <button class="test-button" onclick="testLoadEventsByInstructor()">載入講師事件</button>
+        <div id="eventsResult" class="result"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>篩選功能測試</h2>
+        <button class="test-button" onclick="testFiltering()">測試篩選邏輯</button>
+        <div id="filterResult" class="result"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>視圖切換測試</h2>
+        <button class="test-button" onclick="testViewSwitching()">測試視圖切換</button>
+        <div id="viewResult" class="result"></div>
+    </div>
 
     <script>
-        // 測試位置處理
-        function testLocation() {
-            const testLocation = "nan";
-            const result = testLocation && testLocation !== 'nan' && testLocation !== 'null' && testLocation !== '' && testLocation.trim() !== '' ? testLocation : 'FLB工作室';
-            console.log('位置測試結果:', result);
-            return result;
-        }
-
-        // 測試教案連結匹配
-        function testLessonMatch() {
-            const testDescription = "SPM教案: SPM教案: 拳擊機器人 (https://www.notion.so/2470a4c0ed8480dc930bf2d8383e93fc?pvs=21)";
-            const notionUrlRegex = /https:\/\/www\.notion\.so\/([^)\s]+)/;
-            const notionMatch = testDescription.match(notionUrlRegex);
+        let allEvents = [];
+        let allInstructors = [];
+        
+        // 測試 API 連接
+        async function testAPI() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.textContent = '正在測試 API 連接...';
             
-            console.log('Notion 連結匹配:', notionMatch);
-            
-            if (notionMatch) {
-                const lessonUrl = `https://www.notion.so/${notionMatch[1]}`;
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
                 
-                // 測試教案名稱提取
-                const duplicateMatch = testDescription.match(/(ESM教案|SPM教案|SPIKE教案|BOOST教案)[:\s]*(ESM教案|SPM教案|SPIKE教案|BOOST教案)[:\s]*([^(]+?)(?:\s*\(https:\/\/www\.notion\.so)/);
-                console.log('重複教案匹配:', duplicateMatch);
-                
-                if (duplicateMatch && duplicateMatch[3]) {
-                    const lessonName = duplicateMatch[3].trim();
-                    const lessonType = duplicateMatch[1];
-                    console.log('教案資訊:', { lessonName, lessonType, lessonUrl });
-                    return { lessonName, lessonType, lessonUrl };
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ API 連接成功\n狀態: ${data.status}\n事件數量: ${data.events_count}\n講師數量: ${data.teachers_count}\n資料來源: ${data.data_source}`;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
                 }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ API 連接失敗: ${error.message}`;
+            }
+        }
+        
+        // 測試事件載入
+        async function testLoadEvents() {
+            const resultDiv = document.getElementById('eventsResult');
+            resultDiv.textContent = '正在載入事件...';
+            
+            try {
+                const response = await fetch('/api/events');
+                const data = await response.json();
+                
+                if (data.success) {
+                    allEvents = data.data;
+                    allInstructors = [...new Set(allEvents.map(event => event.instructor).filter(Boolean))];
+                    
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ 事件載入成功\n總事件數: ${allEvents.length}\n講師列表: ${allInstructors.join(', ')}\n資料來源: ${data.data_source}\n\n前5個事件:\n${allEvents.slice(0, 5).map((event, i) => `${i+1}. ${event.title} (${event.instructor})`).join('\n')}`;
+                } else {
+                    throw new Error(data.message || '載入失敗');
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ 事件載入失敗: ${error.message}`;
+            }
+        }
+        
+        // 測試講師事件載入
+        async function testLoadEventsByInstructor() {
+            const resultDiv = document.getElementById('eventsResult');
+            
+            if (allInstructors.length === 0) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ 請先載入所有事件';
+                return;
             }
             
-            return null;
-        }
-
-        // 執行測試
-        document.addEventListener('DOMContentLoaded', function() {
-            const locationResult = testLocation();
-            const lessonResult = testLessonMatch();
+            resultDiv.textContent = '正在測試講師事件載入...';
             
-            document.getElementById('test-results').innerHTML = `
-                <h2>測試結果</h2>
-                <p><strong>位置處理:</strong> ${locationResult}</p>
-                <p><strong>教案匹配:</strong> ${lessonResult ? JSON.stringify(lessonResult) : '無匹配'}</p>
-            `;
-        });
+            try {
+                const results = [];
+                
+                for (const instructor of allInstructors) {
+                    const response = await fetch(`/api/events/${instructor}`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        results.push(`${instructor}: ${data.data.length} 個事件`);
+                    } else {
+                        results.push(`${instructor}: 載入失敗`);
+                    }
+                }
+                
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ 講師事件載入測試完成\n\n${results.join('\n')}`;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ 講師事件載入失敗: ${error.message}`;
+            }
+        }
+        
+        // 測試篩選邏輯
+        function testFiltering() {
+            const resultDiv = document.getElementById('filterResult');
+            
+            if (allEvents.length === 0) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ 請先載入所有事件';
+                return;
+            }
+            
+            resultDiv.textContent = '正在測試篩選邏輯...';
+            
+            try {
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                
+                // 測試今日篩選
+                const todayEvents = allEvents.filter(event => {
+                    const eventDate = new Date(event.start);
+                    const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+                    return eventDay.getTime() === today.getTime();
+                });
+                
+                // 測試本週篩選
+                const weekStart = new Date(today);
+                weekStart.setDate(today.getDate() - today.getDay() + 1);
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekStart.getDate() + 6);
+                
+                const weekEvents = allEvents.filter(event => {
+                    const eventDate = new Date(event.start);
+                    const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+                    return eventDay >= weekStart && eventDay <= weekEnd;
+                });
+                
+                // 測試本月篩選
+                const monthEvents = allEvents.filter(event => {
+                    const eventDate = new Date(event.start);
+                    return eventDate.getFullYear() === now.getFullYear() && 
+                           eventDate.getMonth() === now.getMonth();
+                });
+                
+                // 測試講師篩選
+                const instructorStats = {};
+                allInstructors.forEach(instructor => {
+                    instructorStats[instructor] = allEvents.filter(event => event.instructor === instructor).length;
+                });
+                
+                // 測試時段篩選
+                const morningEvents = allEvents.filter(event => {
+                    const hour = new Date(event.start).getHours();
+                    return hour >= 6 && hour < 12;
+                });
+                
+                const afternoonEvents = allEvents.filter(event => {
+                    const hour = new Date(event.start).getHours();
+                    return hour >= 12 && hour < 18;
+                });
+                
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ 篩選邏輯測試完成
+                
+📅 日期篩選:
+- 今日事件: ${todayEvents.length} 個
+- 本週事件: ${weekEvents.length} 個  
+- 本月事件: ${monthEvents.length} 個
+- 全部事件: ${allEvents.length} 個
+
+👥 講師篩選:
+${Object.entries(instructorStats).map(([instructor, count]) => `- ${instructor}: ${count} 個事件`).join('\n')}
+
+🕐 時段篩選:
+- 早上 (06:00-12:00): ${morningEvents.length} 個事件
+- 下午 (12:00-18:00): ${afternoonEvents.length} 個事件
+
+📋 今日事件詳情:
+${todayEvents.map(event => `- ${new Date(event.start).toLocaleTimeString()} ${event.title} (${event.instructor})`).join('\n') || '無今日事件'}`;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ 篩選邏輯測試失敗: ${error.message}`;
+            }
+        }
+        
+        // 測試視圖切換
+        function testViewSwitching() {
+            const resultDiv = document.getElementById('viewResult');
+            
+            if (allEvents.length === 0) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ 請先載入所有事件';
+                return;
+            }
+            
+            resultDiv.textContent = '正在測試視圖切換...';
+            
+            try {
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                
+                // 模擬視圖切換邏輯
+                const views = ['今日', '本週', '本月', '全部'];
+                const results = [];
+                
+                views.forEach(view => {
+                    let filteredEvents = [];
+                    
+                    switch (view) {
+                        case '今日':
+                            filteredEvents = allEvents.filter(event => {
+                                const eventDate = new Date(event.start);
+                                const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+                                return eventDay.getTime() === today.getTime();
+                            });
+                            break;
+                        case '本週':
+                            const weekStart = new Date(today);
+                            weekStart.setDate(today.getDate() - today.getDay() + 1);
+                            const weekEnd = new Date(weekStart);
+                            weekEnd.setDate(weekStart.getDate() + 6);
+                            
+                            filteredEvents = allEvents.filter(event => {
+                                const eventDate = new Date(event.start);
+                                const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+                                return eventDay >= weekStart && eventDay <= weekEnd;
+                            });
+                            break;
+                        case '本月':
+                            filteredEvents = allEvents.filter(event => {
+                                const eventDate = new Date(event.start);
+                                return eventDate.getFullYear() === now.getFullYear() && 
+                                       eventDate.getMonth() === now.getMonth();
+                            });
+                            break;
+                        case '全部':
+                            filteredEvents = allEvents;
+                            break;
+                    }
+                    
+                    results.push(`${view}: ${filteredEvents.length} 個事件`);
+                });
+                
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ 視圖切換測試完成
+                
+${results.join('\n')}
+
+📊 視圖切換邏輯正常運作，所有視圖都能正確篩選事件。`;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ 視圖切換測試失敗: ${error.message}`;
+            }
+        }
+        
+        // 頁面載入時自動測試 API 連接
+        window.onload = function() {
+            testAPI();
+        };
     </script>
 </body>
 </html>

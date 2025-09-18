@@ -326,6 +326,11 @@ def calendar():
     """行事曆頁面"""
     return send_from_directory('.', 'perfect-calendar.html')
 
+@app.route('/test-frontend.html')
+def test_frontend():
+    """前端功能測試頁面"""
+    return send_from_directory('.', 'test-frontend.html')
+
 @app.route('/api/teachers', methods=['GET'])
 def get_teachers():
     """獲取講師列表 API"""
