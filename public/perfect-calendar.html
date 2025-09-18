@@ -501,12 +501,13 @@
         .event-card:nth-child(4) { animation-delay: 0.4s; }
         .event-card:nth-child(5) { animation-delay: 0.5s; }
 
-        /* 停課狀態樣式 */
+        /* 停課狀態樣式 - 加強版 */
         .event-card.cancelled-event {
             background: rgba(248, 249, 250, 0.9);
-            border: 1px solid rgba(220, 53, 69, 0.3);
-            opacity: 0.7;
+            border: 3px solid #dc3545;
+            opacity: 0.8;
             position: relative;
+            box-shadow: 0 0 20px rgba(220, 53, 69, 0.3);
         }
 
         .event-card.cancelled-event::before {
@@ -519,32 +520,72 @@
             background: repeating-linear-gradient(
                 45deg,
                 transparent,
-                transparent 10px,
-                rgba(220, 53, 69, 0.1) 10px,
-                rgba(220, 53, 69, 0.1) 20px
+                transparent 8px,
+                rgba(220, 53, 69, 0.15) 8px,
+                rgba(220, 53, 69, 0.15) 16px
             );
             pointer-events: none;
             border-radius: 12px;
         }
 
-        .cancelled-badge {
+        .event-card.cancelled-event::after {
+            content: '⚠️ 停課 ⚠️';
+            position: absolute;
+            top: -15px;
+            right: -10px;
             background: #dc3545;
             color: white;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
             font-weight: bold;
-            margin-left: 8px;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+            animation: bounce 1.5s infinite;
+        }
+
+        .cancelled-badge {
+            background: linear-gradient(45deg, #dc3545, #c82333);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            margin-left: 12px;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            animation: pulse 2s infinite;
+            gap: 6px;
+            animation: pulse 1.5s infinite;
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+            border: 2px solid white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            0% { 
+                transform: scale(1);
+                box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+            }
+            50% { 
+                transform: scale(1.1);
+                box-shadow: 0 6px 20px rgba(220, 53, 69, 0.6);
+            }
+            100% { 
+                transform: scale(1);
+                box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
         }
 
         .event-card:hover {
@@ -3183,7 +3224,7 @@ async function loadTodayEvents() {
                         <div>
                             <div class="event-title">
                                 ${event.title}
-                                ${isCancelledEvent ? '<span class="cancelled-badge"><i class="fas fa-ban"></i> 停課</span>' : ''}
+                                ${isCancelledEvent ? '<span class="cancelled-badge"><i class="fas fa-ban"></i> ⚠️ 停課 ⚠️</span>' : ''}
                             </div>
                             <div class="event-instructor ${instructorStyle}" style="--instructor-color: ${instructorColor}">
                                 <i class="fas fa-user"></i> ${event.instructor}
@@ -3408,3 +3449,4 @@ async function loadTodayEvents() {
 // 修復時間顯示問題 - 強制重新部署 - Wed Jan 16 2025
 // 緊急修復 - 時間顯示問題 - 2025-01-16 15:30
 // 修復 CORS 問題 - 強制重新部署 - 2025-01-16 15:45
+
