@@ -436,6 +436,77 @@ app.post('/api/refresh-teachers', async (req, res) => {
     }
 });
 
+// 獲取當日事件（快速載入）
+app.get('/api/events/today', async (req, res) => {
+    try {
+        if (!caldavClient) {
+            console.log('CalDAV 客戶端未初始化，使用模擬數據');
+            return res.json({
+                success: true,
+                data: mockEvents.filter(event => {
+                    const eventDate = new Date(event.start);
+                    const today = new Date();
+                    return eventDate.toDateString() === today.toDateString();
+                }),
+                source: 'mock',
+                type: 'today'
+            });
+        }
+
+        // 只獲取當日事件
+        const today = new Date();
+        const startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+
+        // 強制重新載入 CalDAV 客戶端
+        delete require.cache[require.resolve('./caldav-client.js')];
+        const CalDAVClient = require('./caldav-client.js');
+        caldavClient = new CalDAVClient(CALDAV_CONFIG.baseUrl, CALDAV_CONFIG.username, CALDAV_CONFIG.password);
+        console.log('CalDAV 客戶端已重新載入');
+        
+        console.log('正在從 CalDAV 獲取當日事件...');
+        const events = await caldavClient.getAllInstructorEvents(startDate, endDate);
+        
+        // 轉換事件格式以符合前端需求
+        const formattedEvents = events.map(event => ({
+            id: event.id,
+            title: event.title,
+            instructor: event.instructor,
+            start: event.start,
+            end: event.end,
+            type: event.type || 'other',
+            description: event.description || '',
+            location: event.location || '',
+            time: event.time || '',
+            lessonUrl: event.lessonUrl || ''
+        }));
+
+        console.log(`成功獲取 ${formattedEvents.length} 個當日事件`);
+        res.json({
+            success: true,
+            data: formattedEvents,
+            source: 'caldav',
+            type: 'today'
+        });
+    } catch (error) {
+        console.error('獲取當日事件失敗:', error.message);
+        console.log('回退到模擬數據');
+        
+        // 如果 CalDAV 失敗，回退到模擬數據
+        res.json({
+            success: true,
+            data: mockEvents.filter(event => {
+                const eventDate = new Date(event.start);
+                const today = new Date();
+                return eventDate.toDateString() === today.toDateString();
+            }),
+            source: 'mock',
+            type: 'today',
+            error: error.message
+        });
+    }
+});
+
 // 獲取行事曆事件
 app.get('/api/events', async (req, res) => {
     try {
@@ -481,7 +552,8 @@ app.get('/api/events', async (req, res) => {
         res.json({
             success: true,
             data: formattedEvents,
-            source: 'caldav'
+            source: 'caldav',
+            type: 'full'
         });
     } catch (error) {
         console.error('獲取行事曆事件失敗:', error.message);
@@ -492,6 +564,7 @@ app.get('/api/events', async (req, res) => {
             success: true,
             data: mockEvents,
             source: 'mock',
+            type: 'full',
             error: error.message
         });
     }

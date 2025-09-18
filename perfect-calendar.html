@@ -2653,9 +2653,46 @@
             return '#000000';
         }
 
-        // 載入事件資料
-        async function loadEvents() {
+        // 載入當日事件（快速載入）
+        async function loadTodayEvents() {
             try {
+                console.log('🚀 開始載入當日事件...');
+                const response = await fetch('/api/events/today');
+                const data = await response.json();
+                
+                if (data.success) {
+                    allEvents = data.data;
+                    allInstructors = [...new Set(allEvents.map(event => event.instructor).filter(Boolean))];
+                    
+                    // 為新講師生成隨機馬卡龍顏色（如果沒有保存的設置）
+                    if (Object.keys(instructorColors).length === 0) {
+                        generateRandomInstructorColors();
+                    }
+                    
+                    populateInstructorDropdown();
+                    renderEvents();
+                    updateStats();
+                    
+                    console.log(`✅ 當日事件載入完成: ${allEvents.length} 個事件`);
+                    
+                    // 顯示載入進度提示
+                    showLoadingMessage('當日課程已載入，正在載入完整課程...');
+                    
+                    // 開始後台載入完整事件
+                    loadFullEvents();
+                } else {
+                    showError('載入當日事件失敗: ' + data.message);
+                }
+            } catch (error) {
+                console.error('載入當日事件錯誤:', error);
+                showError('無法連接到服務器');
+            }
+        }
+
+        // 載入完整事件資料（後台載入）
+        async function loadFullEvents() {
+            try {
+                console.log('🔄 開始後台載入完整事件...');
                 const response = await fetch('/api/events');
                 const data = await response.json();
                 
@@ -2671,12 +2708,64 @@
                     populateInstructorDropdown();
                     renderEvents();
                     updateStats();
+                    
+                    console.log(`✅ 完整事件載入完成: ${allEvents.length} 個事件`);
+                    hideLoadingMessage();
                 } else {
-                    showError('載入事件失敗: ' + data.message);
+                    console.error('載入完整事件失敗:', data.message);
                 }
             } catch (error) {
-                console.error('載入事件錯誤:', error);
-                showError('無法連接到服務器');
+                console.error('載入完整事件錯誤:', error);
+            }
+        }
+
+        // 載入事件資料（向後相容）
+        async function loadEvents() {
+            return loadTodayEvents();
+        }
+
+        // 顯示載入進度提示
+        function showLoadingMessage(message) {
+            // 移除現有的載入提示
+            const existingMessage = document.getElementById('loading-message');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+
+            // 創建載入提示元素
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = 'loading-message';
+            loadingDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: rgba(0, 123, 255, 0.9);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                z-index: 10000;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                animation: slideInRight 0.3s ease-out;
+            `;
+            loadingDiv.innerHTML = `
+                <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>
+                ${message}
+            `;
+            
+            document.body.appendChild(loadingDiv);
+        }
+
+        // 隱藏載入進度提示
+        function hideLoadingMessage() {
+            const loadingMessage = document.getElementById('loading-message');
+            if (loadingMessage) {
+                loadingMessage.style.animation = 'slideOutRight 0.3s ease-in';
+                setTimeout(() => {
+                    if (loadingMessage.parentNode) {
+                        loadingMessage.remove();
+                    }
+                }, 300);
             }
         }
 
