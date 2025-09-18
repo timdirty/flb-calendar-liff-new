@@ -436,7 +436,7 @@ app.post('/api/refresh-teachers', async (req, res) => {
     }
 });
 
-// 獲取當日事件（快速載入）
+// 獲取當日事件（最快載入）
 app.get('/api/events/today', async (req, res) => {
     try {
         if (!caldavClient) {
@@ -464,7 +464,7 @@ app.get('/api/events/today', async (req, res) => {
         caldavClient = new CalDAVClient(CALDAV_CONFIG.baseUrl, CALDAV_CONFIG.username, CALDAV_CONFIG.password);
         console.log('CalDAV 客戶端已重新載入');
         
-        console.log('正在從 CalDAV 獲取當日事件...');
+        console.log('🚀 正在從 CalDAV 獲取當日事件...');
         const events = await caldavClient.getAllInstructorEvents(startDate, endDate);
         
         // 轉換事件格式以符合前端需求
@@ -481,7 +481,7 @@ app.get('/api/events/today', async (req, res) => {
             lessonUrl: event.lessonUrl || ''
         }));
 
-        console.log(`成功獲取 ${formattedEvents.length} 個當日事件`);
+        console.log(`✅ 成功獲取 ${formattedEvents.length} 個當日事件`);
         res.json({
             success: true,
             data: formattedEvents,
@@ -502,6 +502,88 @@ app.get('/api/events/today', async (req, res) => {
             }),
             source: 'mock',
             type: 'today',
+            error: error.message
+        });
+    }
+});
+
+// 獲取本週事件（第二階段載入）
+app.get('/api/events/week', async (req, res) => {
+    try {
+        if (!caldavClient) {
+            console.log('CalDAV 客戶端未初始化，使用模擬數據');
+            return res.json({
+                success: true,
+                data: mockEvents.filter(event => {
+                    const eventDate = new Date(event.start);
+                    const today = new Date();
+                    const weekStart = new Date(today);
+                    weekStart.setDate(today.getDate() - today.getDay());
+                    const weekEnd = new Date(weekStart);
+                    weekEnd.setDate(weekStart.getDate() + 7);
+                    return eventDate >= weekStart && eventDate < weekEnd;
+                }),
+                source: 'mock',
+                type: 'week'
+            });
+        }
+
+        // 獲取本週事件
+        const today = new Date();
+        const weekStart = new Date(today);
+        weekStart.setDate(today.getDate() - today.getDay());
+        weekStart.setHours(0, 0, 0, 0);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 7);
+
+        // 強制重新載入 CalDAV 客戶端
+        delete require.cache[require.resolve('./caldav-client.js')];
+        const CalDAVClient = require('./caldav-client.js');
+        caldavClient = new CalDAVClient(CALDAV_CONFIG.baseUrl, CALDAV_CONFIG.username, CALDAV_CONFIG.password);
+        console.log('CalDAV 客戶端已重新載入');
+        
+        console.log('🔄 正在從 CalDAV 獲取本週事件...');
+        const events = await caldavClient.getAllInstructorEvents(weekStart, weekEnd);
+        
+        // 轉換事件格式以符合前端需求
+        const formattedEvents = events.map(event => ({
+            id: event.id,
+            title: event.title,
+            instructor: event.instructor,
+            start: event.start,
+            end: event.end,
+            type: event.type || 'other',
+            description: event.description || '',
+            location: event.location || '',
+            time: event.time || '',
+            lessonUrl: event.lessonUrl || ''
+        }));
+
+        console.log(`✅ 成功獲取 ${formattedEvents.length} 個本週事件`);
+        res.json({
+            success: true,
+            data: formattedEvents,
+            source: 'caldav',
+            type: 'week'
+        });
+    } catch (error) {
+        console.error('獲取本週事件失敗:', error.message);
+        console.log('回退到模擬數據');
+        
+        // 如果 CalDAV 失敗，回退到模擬數據
+        res.json({
+            success: true,
+            data: mockEvents.filter(event => {
+                const eventDate = new Date(event.start);
+                const today = new Date();
+                const weekStart = new Date(today);
+                weekStart.setDate(today.getDate() - today.getDay());
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekStart.getDate() + 7);
+                return eventDate >= weekStart && eventDate < weekEnd;
+            }),
+            source: 'mock',
+            type: 'week',
             error: error.message
         });
     }
