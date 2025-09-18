@@ -3023,6 +3023,7 @@
                     case 'month':
                         // 使用本地時間進行本月篩選
                         shouldShow = eventDate.getMonth() === now.getMonth() && eventDate.getFullYear() === now.getFullYear();
+                        console.log(`📅 本月篩選 - 標題: ${event.title}, 事件日期: ${eventDate.getFullYear()}-${eventDate.getMonth()+1}-${eventDate.getDate()}, 當前: ${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}, 顯示: ${shouldShow}`);
                         break;
                     case 'all':
                     default:
@@ -3342,6 +3343,7 @@
                     case 'month':
                         // 使用本地時間進行本月篩選
                         shouldShow = eventDate.getMonth() === now.getMonth() && eventDate.getFullYear() === now.getFullYear();
+                        console.log(`📅 本月篩選 - 標題: ${event.title}, 事件日期: ${eventDate.getFullYear()}-${eventDate.getMonth()+1}-${eventDate.getDate()}, 當前: ${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}, 顯示: ${shouldShow}`);
                         break;
                     case 'all':
                     default:

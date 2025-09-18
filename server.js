@@ -465,6 +465,7 @@ app.get('/api/events/today', async (req, res) => {
         console.log('CalDAV 客戶端已重新載入');
         
         console.log('🚀 正在從 CalDAV 獲取當日事件...');
+        console.log(`📅 當日日期範圍: ${startDate.toISOString()} 到 ${endDate.toISOString()}`);
         const events = await caldavClient.getAllInstructorEvents(startDate, endDate);
         
         // 轉換事件格式以符合前端需求
@@ -482,6 +483,7 @@ app.get('/api/events/today', async (req, res) => {
         }));
 
         console.log(`✅ 成功獲取 ${formattedEvents.length} 個當日事件`);
+        console.log('📋 當日事件範例:', formattedEvents.slice(0, 3).map(e => ({ title: e.title, instructor: e.instructor, start: e.start })));
         res.json({
             success: true,
             data: formattedEvents,
@@ -518,23 +520,30 @@ app.get('/api/events/week', async (req, res) => {
                     const eventDate = new Date(event.start);
                     const today = new Date();
                     const weekStart = new Date(today);
-                    weekStart.setDate(today.getDate() - today.getDay());
+                    const dayOfWeek = today.getDay();
+                    const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+                    weekStart.setDate(today.getDate() + daysToMonday);
+                    weekStart.setHours(0, 0, 0, 0);
                     const weekEnd = new Date(weekStart);
-                    weekEnd.setDate(weekStart.getDate() + 7);
-                    return eventDate >= weekStart && eventDate < weekEnd;
+                    weekEnd.setDate(weekStart.getDate() + 6);
+                    weekEnd.setHours(23, 59, 59, 999);
+                    return eventDate >= weekStart && eventDate <= weekEnd;
                 }),
                 source: 'mock',
                 type: 'week'
             });
         }
 
-        // 獲取本週事件
+        // 獲取本週事件（週一到週日）
         const today = new Date();
         const weekStart = new Date(today);
-        weekStart.setDate(today.getDate() - today.getDay());
+        const dayOfWeek = today.getDay();
+        const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 週日時回到本週一，其他天回到本週一
+        weekStart.setDate(today.getDate() + daysToMonday);
         weekStart.setHours(0, 0, 0, 0);
         const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekStart.getDate() + 7);
+        weekEnd.setDate(weekStart.getDate() + 6); // 週日
+        weekEnd.setHours(23, 59, 59, 999);
 
         // 強制重新載入 CalDAV 客戶端
         delete require.cache[require.resolve('./caldav-client.js')];
@@ -543,6 +552,7 @@ app.get('/api/events/week', async (req, res) => {
         console.log('CalDAV 客戶端已重新載入');
         
         console.log('🔄 正在從 CalDAV 獲取本週事件...');
+        console.log(`📅 本週日期範圍: ${weekStart.toISOString()} 到 ${weekEnd.toISOString()}`);
         const events = await caldavClient.getAllInstructorEvents(weekStart, weekEnd);
         
         // 轉換事件格式以符合前端需求
@@ -560,6 +570,7 @@ app.get('/api/events/week', async (req, res) => {
         }));
 
         console.log(`✅ 成功獲取 ${formattedEvents.length} 個本週事件`);
+        console.log('📋 本週事件範例:', formattedEvents.slice(0, 3).map(e => ({ title: e.title, instructor: e.instructor, start: e.start })));
         res.json({
             success: true,
             data: formattedEvents,
