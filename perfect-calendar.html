@@ -3417,18 +3417,30 @@
             });
             
             // 為快速篩選按鈕添加事件監聽器
-            document.querySelectorAll('.quick-filter-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const quickFilter = this.getAttribute('data-quick');
-                    handleQuickFilter(quickFilter);
-                });
-            });
+            bindQuickFilterButtons();
             
             // 綁定用戶按鈕事件監聽器
             const bindUserBtn = document.getElementById('bindUserBtn');
             if (bindUserBtn) {
                 bindUserBtn.addEventListener('click', bindUser);
             }
+        }
+
+        // 綁定快速篩選按鈕事件監聽器
+        function bindQuickFilterButtons() {
+            document.querySelectorAll('.quick-filter-btn').forEach(button => {
+                // 移除舊的事件監聽器
+                button.removeEventListener('click', handleQuickFilterClick);
+                // 添加新的事件監聽器
+                button.addEventListener('click', handleQuickFilterClick);
+            });
+        }
+
+        // 快速篩選按鈕點擊處理函數
+        function handleQuickFilterClick(event) {
+            const quickFilter = event.target.getAttribute('data-quick');
+            console.log('🔍 快速篩選按鈕點擊:', quickFilter);
+            handleQuickFilter(quickFilter);
         }
 
         // 生成隨機馬卡龍顏色
@@ -3889,6 +3901,9 @@ async function loadTodayEvents() {
                 const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             
+            // 獲取當前視圖
+            const currentView = document.querySelector('.btn-primary')?.textContent || '今日';
+            
             return filteredEvents.filter(event => {
                 const eventDate = new Date(event.start);
                 const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
@@ -3967,12 +3982,7 @@ async function loadTodayEvents() {
                 });
                 
                 // 重新綁定事件監聽器
-                quickFilterButtons.querySelectorAll('.quick-filter-btn').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const quickFilter = this.getAttribute('data-quick');
-                        handleQuickFilter(quickFilter);
-                    });
-                });
+                bindQuickFilterButtons();
             }
         }
 
@@ -4035,12 +4045,7 @@ async function loadTodayEvents() {
                 });
                 
                 // 重新綁定事件監聽器
-                quickFilterButtons.querySelectorAll('.quick-filter-btn').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const quickFilter = this.getAttribute('data-quick');
-                        handleQuickFilter(quickFilter);
-                    });
-                });
+                bindQuickFilterButtons();
             }
         }
 
@@ -4092,12 +4097,7 @@ async function loadTodayEvents() {
                 });
                 
                 // 重新綁定事件監聽器
-                quickFilterButtons.querySelectorAll('.quick-filter-btn').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const quickFilter = this.getAttribute('data-quick');
-                        handleQuickFilter(quickFilter);
-                    });
-                });
+                bindQuickFilterButtons();
             }
         }
 
@@ -4466,7 +4466,7 @@ async function loadTodayEvents() {
         // 更新統計資訊
         function updateStats() {
             // 使用新的篩選函數確保一致性
-            const filteredEvents = getFilteredEvents();
+            const filteredEvents = getViewFilteredEvents();
             
             // 獲取當前視圖
             const currentView = document.querySelector('.btn-primary')?.textContent || '今日';
