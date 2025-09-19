@@ -1389,10 +1389,24 @@
 
         /* 響應式設計 */
         @media (max-width: 768px) {
+            body {
+                height: 100vh;
+                overflow: hidden;
+            }
+            
             .container {
                 padding: 8px;
                 max-width: 100%;
                 overflow-x: hidden;
+                height: 100vh;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .main-content {
+                flex: 1;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
             }
 
             .header {
@@ -2526,7 +2540,7 @@
         // 全域變數
         let allEvents = [];
         let allInstructors = [];
-        let currentView = 'today';
+        let currentView = '今日'; // 統一使用中文
         let currentUser = null;
         let currentQuickFilter = null; // 當前快速篩選狀態
         let colorSettings = {
@@ -3930,9 +3944,11 @@ async function loadTodayEvents() {
             if (view === 'today') {
                 if (quickFilters) quickFilters.style.display = 'block';
                 if (todayQuickFilters) todayQuickFilters.style.display = 'block';
+                if (courseTypeQuickFilters) courseTypeQuickFilters.style.display = 'block';
             } else if (view === 'week') {
                 if (quickFilters) quickFilters.style.display = 'block';
                 if (weekQuickFilters) weekQuickFilters.style.display = 'block';
+                if (courseTypeQuickFilters) courseTypeQuickFilters.style.display = 'block';
             } else if (view === 'month' || view === 'all') {
                 if (quickFilters) quickFilters.style.display = 'block';
                 if (courseTypeQuickFilters) courseTypeQuickFilters.style.display = 'block';
