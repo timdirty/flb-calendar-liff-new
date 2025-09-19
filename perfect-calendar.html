@@ -1392,6 +1392,8 @@
             body {
                 height: 100vh;
                 overflow: hidden;
+                position: fixed;
+                width: 100%;
             }
             
             .container {
@@ -1401,12 +1403,24 @@
                 height: 100vh;
                 display: flex;
                 flex-direction: column;
+                position: relative;
             }
             
             .main-content {
                 flex: 1;
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
+                height: 0; /* 強制flex計算高度 */
+            }
+            
+            /* 固定篩選區域 */
+            .control-section {
+                flex-shrink: 0;
+                position: sticky;
+                top: 0;
+                z-index: 10;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
             }
 
             .header {
@@ -1554,23 +1568,23 @@
 
             .stats-grid {
                 grid-template-columns: repeat(3, 1fr);
-                gap: 6px;
+                gap: 4px;
             }
 
             .stat-item {
-                padding: 12px 8px;
-                border-radius: 6px;
-                min-height: 70px;
+                padding: 6px 4px;
+                border-radius: 4px;
+                min-height: 40px;
             }
 
             .stat-item h3 {
-                font-size: 1.5rem;
-                margin-bottom: 6px;
+                font-size: 1rem;
+                margin-bottom: 2px;
             }
 
             .stat-item p {
-                font-size: 0.85rem;
-                line-height: 1.2;
+                font-size: 0.7rem;
+                line-height: 1.1;
             }
 
             .settings-modal {
@@ -1712,16 +1726,16 @@
             }
 
             .stat-item {
-                padding: 10px 6px;
-                min-height: 60px;
+                padding: 4px 3px;
+                min-height: 30px;
             }
 
             .stat-item h3 {
-                font-size: 1.3rem;
+                font-size: 0.8rem;
             }
 
             .stat-item p {
-                font-size: 0.75rem;
+                font-size: 0.6rem;
             }
 
             .datetime-item {
@@ -3260,18 +3274,23 @@
                     const quickFilters = document.getElementById('quickFilters');
                     const viewButtons = document.querySelector('.view-buttons');
                     
-                    if (quickFilters && quickFilters.style.display !== 'none') {
-                        quickFilters.scrollIntoView({ 
-                            behavior: 'smooth', 
-                            block: 'start'
-                        });
-                        console.log('已自動滑動到快速篩選區域');
-                    } else if (viewButtons) {
-                        viewButtons.scrollIntoView({ 
-                            behavior: 'smooth', 
-                            block: 'start'
-                        });
-                        console.log('已自動滑動到視圖按鈕區域');
+                    // 在手機版本中，不自動滑動，避免整個頁面滑動
+                    if (window.innerWidth > 768) {
+                        if (quickFilters && quickFilters.style.display !== 'none') {
+                            quickFilters.scrollIntoView({ 
+                                behavior: 'smooth', 
+                                block: 'start'
+                            });
+                            console.log('已自動滑動到快速篩選區域');
+                        } else if (viewButtons) {
+                            viewButtons.scrollIntoView({ 
+                                behavior: 'smooth', 
+                                block: 'start'
+                            });
+                            console.log('已自動滑動到視圖按鈕區域');
+                        }
+                    } else {
+                        console.log('手機版本：跳過自動滑動');
                     }
                 }, 1000);
             }
@@ -3391,9 +3410,11 @@
                     calendarSection.style.display = 'block';
                 }
                 
-                // 立即滾動到行事曆區域（移除延遲）
-                if (calendarSection) {
+                // 在手機版本中，不自動滑動到行事曆區域
+                if (window.innerWidth > 768 && calendarSection) {
                     calendarSection.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    console.log('手機版本：跳過行事曆區域自動滑動');
                 }
             }
         }
