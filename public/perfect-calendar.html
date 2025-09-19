@@ -4101,55 +4101,7 @@ async function loadTodayEvents() {
             return filtered;
         }
 
-        // 根據當前視圖篩選事件
-        function getViewFilteredEvents() {
-            const filteredEvents = getFilteredEvents();
-                const now = new Date();
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            
-            // 獲取當前視圖 - 使用全局變量而不是 DOM 查詢
-            const currentView = window.currentView || '今日';
-            console.log('🔍 getViewFilteredEvents - 當前視圖:', currentView);
-            console.log('🔍 getViewFilteredEvents - 輸入事件數量:', filteredEvents.length);
-            
-            const result = filteredEvents.filter(event => {
-                const eventDate = new Date(event.start);
-                const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
-                
-                switch (currentView) {
-                    case '今日':
-                        const isToday = eventDay.getTime() === today.getTime();
-                        if (isToday) {
-                            console.log('📅 今日事件:', event.title, event.start);
-                        }
-                        return isToday;
-                    case '本週':
-                        const weekStart = new Date(today);
-                        weekStart.setDate(today.getDate() - today.getDay() + 1); // 週一
-                        const weekEnd = new Date(weekStart);
-                        weekEnd.setDate(weekStart.getDate() + 6); // 週日
-                        const isInWeek = eventDay >= weekStart && eventDay <= weekEnd;
-                        if (isInWeek) {
-                            console.log('📅 本週事件:', event.title, event.start, '週期範圍:', weekStart.toLocaleDateString(), '-', weekEnd.toLocaleDateString());
-                        }
-                        return isInWeek;
-                    case '本月':
-                        const isInMonth = eventDate.getFullYear() === now.getFullYear() && 
-                               eventDate.getMonth() === now.getMonth();
-                        if (isInMonth) {
-                            console.log('📅 本月事件:', event.title, event.start);
-                        }
-                        return isInMonth;
-                    case '全部':
-                    default:
-                        console.log('📅 全部事件:', event.title, event.start);
-                        return true;
-                }
-            });
-            
-            console.log('🔍 getViewFilteredEvents - 輸出事件數量:', result.length);
-            return result;
-        }
+        // 未使用的 getViewFilteredEvents 函數已移除
 
 
         // 移除快速篩選功能 - 所有快速篩選相關代碼已移除
@@ -4526,100 +4478,15 @@ async function loadTodayEvents() {
 
         // 更新統計信息
         function updateStats() {
-            // 使用與 renderEvents 相同的篩選邏輯
-            const instructorFilter = document.getElementById('instructorSelect').value;
-            const timeFilter = document.getElementById('timeFilter').value;
-            const dateFilter = document.getElementById('dateFilter').value;
-            
-            const filteredEvents = allEvents.filter(event => {
-                // 講師篩選
-                if (instructorFilter && event.instructor !== instructorFilter) {
-                    return false;
-                }
-                
-                // 時段篩選
-                if (timeFilter) {
-                    const eventDate = new Date(event.start);
-                    const hour = eventDate.getHours();
-                    let timeMatch = false;
-                    
-                    switch (timeFilter) {
-                        case 'morning':
-                            timeMatch = hour >= 6 && hour < 12;
-                            break;
-                        case 'afternoon':
-                            timeMatch = hour >= 12 && hour < 18;
-                            break;
-                        case 'evening':
-                            timeMatch = hour >= 18 && hour < 24;
-                            break;
-                    }
-                    
-                    if (!timeMatch) {
-                        return false;
-                    }
-                }
-                
-                // 指定日期篩選
-                if (dateFilter) {
-                    const eventDate = new Date(event.start);
-                    const filterDate = new Date(dateFilter);
-                    const eventYear = eventDate.getFullYear();
-                    const eventMonth = eventDate.getMonth();
-                    const eventDay = eventDate.getDate();
-                    const filterYear = filterDate.getFullYear();
-                    const filterMonth = filterDate.getMonth();
-                    const filterDay = filterDate.getDate();
-                    
-                    if (eventYear !== filterYear || eventMonth !== filterMonth || eventDay !== filterDay) {
-                        return false;
-                    }
-                }
-                
-                // 視圖篩選
-                const eventDate = new Date(event.start);
-                const now = new Date();
-                
-                let shouldShow = false;
-                switch (currentView) {
-                    case '今日':
-                        const eventYear = eventDate.getFullYear();
-                        const eventMonth = eventDate.getMonth();
-                        const eventDay = eventDate.getDate();
-                        const nowYear = now.getFullYear();
-                        const nowMonth = now.getMonth();
-                        const nowDay = now.getDate();
-                        shouldShow = eventYear === nowYear && eventMonth === nowMonth && eventDay === nowDay;
-                        break;
-                    case '本週':
-                        const weekStart = new Date(now);
-                        const dayOfWeek = now.getDay();
-                        const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-                        weekStart.setDate(now.getDate() + daysToMonday);
-                        weekStart.setHours(0, 0, 0, 0);
-                        const weekEnd = new Date(weekStart);
-                        weekEnd.setDate(weekStart.getDate() + 6);
-                        weekEnd.setHours(23, 59, 59, 999);
-                        shouldShow = eventDate >= weekStart && eventDate <= weekEnd;
-                        break;
-                    case '本月':
-                        shouldShow = eventDate.getFullYear() === now.getFullYear() && 
-                                   eventDate.getMonth() === now.getMonth();
-                        break;
-                    case '全部':
-                    default:
-                        shouldShow = true;
-                }
-                
-                return shouldShow;
-            });
+            // 簡化統計更新，直接使用 getFilteredEvents 避免重複篩選
+            const filteredEvents = getFilteredEvents();
             
             // 計算篩選後的講師數量
             const uniqueInstructors = new Set(filteredEvents.map(event => event.instructor));
             const instructorCount = uniqueInstructors.size;
             
             // 調試日誌：顯示篩選結果
-            console.log(`📊 篩選結果 - 模式: ${currentView}, 總事件: ${allEvents.length}, 篩選後: ${filteredEvents.length}`);
+            console.log(`📊 統計更新 - 模式: ${currentView}, 總事件: ${allEvents.length}, 篩選後: ${filteredEvents.length}`);
             
             // 根據當前篩選模式計算日期範圍
             let dateRange = '-';
@@ -4631,12 +4498,11 @@ async function loadTodayEvents() {
                     break;
                 case '本週':
                     const weekStart = new Date(now);
-                    // 計算本週一的日期（getDay() 返回 0-6，0是週日，1是週一）
                     const dayOfWeek = now.getDay();
-                    const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 週日時回到上週一，其他天回到本週一
+                    const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
                     weekStart.setDate(now.getDate() + daysToMonday);
                     const weekEnd = new Date(weekStart);
-                    weekEnd.setDate(weekStart.getDate() + 6); // 週日
+                    weekEnd.setDate(weekStart.getDate() + 6);
                     dateRange = `${weekStart.toLocaleDateString('zh-TW')} - ${weekEnd.toLocaleDateString('zh-TW')}`;
                     break;
                 case '本月':
@@ -4646,10 +4512,10 @@ async function loadTodayEvents() {
                     break;
                 case '全部':
                 default:
-            if (allEvents.length > 0) {
-                const dates = allEvents.map(event => new Date(event.start));
-                const minDate = new Date(Math.min(...dates));
-                const maxDate = new Date(Math.max(...dates));
+                    if (allEvents.length > 0) {
+                        const dates = allEvents.map(event => new Date(event.start));
+                        const minDate = new Date(Math.min(...dates));
+                        const maxDate = new Date(Math.max(...dates));
                         dateRange = `${minDate.toLocaleDateString('zh-TW')} - ${maxDate.toLocaleDateString('zh-TW')}`;
                     }
                     break;
