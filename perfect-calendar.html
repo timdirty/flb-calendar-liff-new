@@ -2692,7 +2692,7 @@
     </div>
 
     <!-- 重新整理浮動按鈕 -->
-    <div id="refreshButton" class="refresh-button" onclick="forceRefresh()" title="重新整理行事曆">
+    <div id="refreshButton" class="refresh-button" title="重新整理行事曆">
         <i class="fas fa-sync-alt"></i>
     </div>
 
@@ -2962,6 +2962,7 @@
                         // 綁定視圖按鈕（移除重複綁定）
                         console.log('🔄 系統初始化完成，開始綁定按鈕...');
                         bindViewButtons();
+                        bindRefreshButton();
                         
                         // 設置今日按鈕的預設按下效果
                         updateViewButtonStates();
@@ -3575,6 +3576,28 @@
             return (maxLen - matrix[len2][len1]) / maxLen;
         }
 
+
+        // 綁定重新整理按鈕事件
+        function bindRefreshButton() {
+            const refreshButton = document.getElementById('refreshButton');
+            if (refreshButton) {
+                // 移除舊的事件監聽器
+                refreshButton.removeEventListener('click', handleRefreshClick);
+                // 添加新的事件監聽器
+                refreshButton.addEventListener('click', handleRefreshClick);
+                console.log('✅ 重新整理按鈕事件已綁定');
+            } else {
+                console.warn('⚠️ 重新整理按鈕元素未找到');
+            }
+        }
+
+        // 重新整理按鈕點擊處理函數
+        function handleRefreshClick(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            console.log('🔄 重新整理按鈕被點擊');
+            forceRefresh();
+        }
 
         // 強制重新整理行事曆
         async function forceRefresh() {

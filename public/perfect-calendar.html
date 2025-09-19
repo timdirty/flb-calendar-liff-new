@@ -2497,16 +2497,16 @@
             <div class="loading-spinner"></div>
             <div class="loading-text">🚀 載入中...</div>
             <div class="loading-subtitle">正在初始化系統，請稍候</div>
-            <div class="loading-progress">
-                <div class="loading-progress-bar" id="loadingProgressBar"></div>
-            </div>
-            <div class="loading-percentage" id="loadingPercentage">0%</div>
+                <div class="loading-progress">
+                    <div class="loading-progress-bar" id="loadingProgressBar"></div>
+                </div>
+                <div class="loading-percentage" id="loadingPercentage">0%</div>
             <div class="loading-logs" id="loadingLogs">
                 <div class="loading-log-item info">
                     <span class="loading-log-icon">ℹ️</span>
                     <span>系統初始化中...</span>
-                </div>
             </div>
+        </div>
         </div>
         <div class="loading-signature">Tim感恩戴德🙏🏻</div>
     </div>
@@ -2586,8 +2586,8 @@
                 <div class="control-group">
                         <label for="dateFilter">指定日期</label>
                         <input type="date" id="dateFilter" />
-                </div>
-                <div class="control-group">
+                    </div>
+                    <div class="control-group">
                         <div class="view-buttons">
                             <button class="btn btn-primary active" data-view="today">今日</button>
                             <button class="btn btn-primary" data-view="week">本週</button>
@@ -2602,10 +2602,10 @@
                         <div class="stats-row" style="margin-bottom: 4px;">
                             <span id="totalEventsText">總事件: 0</span> | 
                             <span id="instructorCountText">講師: 0</span>
-                        </div>
+                </div>
                         <div class="stats-row">
                             <span id="dateRangeText">日期: -</span>
-                        </div>
+                </div>
                 </div>
                     
 
@@ -2692,7 +2692,7 @@
     </div>
 
     <!-- 重新整理浮動按鈕 -->
-    <div id="refreshButton" class="refresh-button" onclick="forceRefresh()" title="重新整理行事曆">
+    <div id="refreshButton" class="refresh-button" title="重新整理行事曆">
         <i class="fas fa-sync-alt"></i>
     </div>
 
@@ -2962,6 +2962,7 @@
                         // 綁定視圖按鈕（移除重複綁定）
                         console.log('🔄 系統初始化完成，開始綁定按鈕...');
                         bindViewButtons();
+                        bindRefreshButton();
                         
                         // 設置今日按鈕的預設按下效果
                         updateViewButtonStates();
@@ -3367,7 +3368,7 @@
                         // 比對失敗，顯示全部講師
                         console.log('比對失敗，將顯示全部講師');
                         if (instructorSelect) {
-                            instructorSelect.value = ''; // 選擇全部講師
+                        instructorSelect.value = ''; // 選擇全部講師
                             // 立即更新統計和渲染事件
                             updateStats();
                             renderEvents();
@@ -3380,7 +3381,7 @@
                         // 比對失敗，顯示全部講師
                         console.log('比對失敗，將顯示全部講師');
                         if (instructorSelect) {
-                            instructorSelect.value = ''; // 選擇全部講師
+                        instructorSelect.value = ''; // 選擇全部講師
                             // 立即更新統計和渲染事件
                             updateStats();
                             renderEvents();
@@ -3416,12 +3417,12 @@
 
         // 自動滑動到行事曆區域（所有裝置）
         function autoScrollToCalendar() {
-            // 延遲一點時間確保頁面完全載入
-            setTimeout(() => {
+                // 延遲一點時間確保頁面完全載入
+                setTimeout(() => {
                 // 滑動到視圖按鈕區域，讓今日本週每月按鈕切齊頂部
-                const viewButtons = document.querySelector('.view-buttons');
+                    const viewButtons = document.querySelector('.view-buttons');
                 
-                if (viewButtons) {
+                    if (viewButtons) {
                     // 計算視圖按鈕的位置，讓按鈕齊平頂部
                     const viewButtonsRect = viewButtons.getBoundingClientRect();
                     const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
@@ -3446,9 +3447,9 @@
                         });
                         console.log(`已自動滑動到主內容區域，篩選區塊高度: ${controlHeight}px`);
                     }
-                }
-            }, 1000);
-        }
+                    }
+                }, 1000);
+            }
 
         // 自動滾動到視圖按鈕（通用函數）
         function autoScrollToViewButtons() {
@@ -3575,6 +3576,28 @@
             return (maxLen - matrix[len2][len1]) / maxLen;
         }
 
+
+        // 綁定重新整理按鈕事件
+        function bindRefreshButton() {
+            const refreshButton = document.getElementById('refreshButton');
+            if (refreshButton) {
+                // 移除舊的事件監聽器
+                refreshButton.removeEventListener('click', handleRefreshClick);
+                // 添加新的事件監聽器
+                refreshButton.addEventListener('click', handleRefreshClick);
+                console.log('✅ 重新整理按鈕事件已綁定');
+            } else {
+                console.warn('⚠️ 重新整理按鈕元素未找到');
+            }
+        }
+
+        // 重新整理按鈕點擊處理函數
+        function handleRefreshClick(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            console.log('🔄 重新整理按鈕被點擊');
+            forceRefresh();
+        }
 
         // 強制重新整理行事曆
         async function forceRefresh() {
@@ -4007,7 +4030,7 @@
 
 // 載入當日事件（直接載入完整數據）
 async function loadTodayEvents() {
-    try {
+            try {
         console.log('🚀 開始載入完整事件數據...');
         addLoadingLog('🌐 正在連接 CalDAV 伺服器...', 'info');
         
@@ -4165,8 +4188,8 @@ async function loadTodayEvents() {
             console.log('🔄 可用講師列表:', allInstructors);
             
             try {
-                select.innerHTML = '<option value="">全部講師</option>';
-                
+            select.innerHTML = '<option value="">全部講師</option>';
+            
                 let instructors = [];
                 
                 // 方法1: 使用 allInstructors
@@ -4793,11 +4816,11 @@ async function loadTodayEvents() {
             container.innerHTML = filteredEvents.map(event => createEventCard(event)).join('');
             
             // 觸發事件卡片動畫（移除延遲）
-            animateEventCards();
-            // 更新倒數計時
-            updateAllCountdowns();
+                animateEventCards();
+                // 更新倒數計時
+                updateAllCountdowns();
         }
-        
+
         // 從標題解析時間
         function parseTimeFromTitle(title) {
             // 匹配格式如 "18:30-20:30", "14:30-15:30", "16:30-17:30", "1630-1730" 等
@@ -4820,7 +4843,7 @@ async function loadTodayEvents() {
             }
             return null;
         }
-        
+
         // 從標題解析日期（根據星期幾）
         function parseDateFromTitle(title, baseDate = new Date()) {
             // 直接使用 CalDAV 的日期，不重新計算
@@ -5017,16 +5040,16 @@ async function loadTodayEvents() {
                 `;
             }
             
-            // 處理位置資訊
-            let location = event.location;
-            if (!location || location === 'nan' || location === 'null' || location === '' || location.trim() === '') {
+        // 處理位置資訊
+        let location = event.location;
+        if (!location || location === 'nan' || location === 'null' || location === '' || location.trim() === '') {
                 location = '樂程坊 FunLearnBar';
             }
         
             // 統一地址為樂程坊 FunLearnBar
             if (location === '站前教室' || location === '台北市中正區開封街1段2號9樓' || location === '台北市中正區開封街一段2號9樓') {
                 location = '樂程坊 FunLearnBar';
-            }
+        }
             
             // 講師底色
             const instructorColor = instructorColors[event.instructor] || '#667eea';
@@ -5064,7 +5087,7 @@ async function loadTodayEvents() {
                                class="location-link"
                                title="點擊查看地圖">
                                 <i class="fas fa-map-marked-alt location-map-icon"></i>
-                            <span>${location}</span>
+                                <span>${location}</span>
                                 <i class="fas fa-external-link-alt location-external-icon"></i>
                             </a>
                         </div>
@@ -5107,7 +5130,7 @@ async function loadTodayEvents() {
             }
             
             // 應用時段篩選
-            if (timeFilter) {
+                if (timeFilter) {
                 filteredEvents = filteredEvents.filter(event => {
                     const eventDate = new Date(event.start);
                     const hour = eventDate.getHours();
@@ -5122,10 +5145,10 @@ async function loadTodayEvents() {
                             return true;
                     }
                 });
-            }
-            
+                }
+                
             // 應用指定日期篩選
-            if (dateFilter) {
+                if (dateFilter) {
                 filteredEvents = filteredEvents.filter(event => {
                     const eventDate = new Date(event.start);
                     const filterDate = new Date(dateFilter);
@@ -5136,7 +5159,7 @@ async function loadTodayEvents() {
             }
             
             // 應用視圖篩選（今日/本週/本月/全部）
-            const now = new Date();
+                const now = new Date();
             filteredEvents = filteredEvents.filter(event => {
                 const eventDate = new Date(event.start);
                 
@@ -5200,9 +5223,9 @@ async function loadTodayEvents() {
                         const maxDate = new Date(Math.max(...dates));
                         dateRange = `${minDate.toLocaleDateString('zh-TW')} - ${maxDate.toLocaleDateString('zh-TW')}`;
                     } else if (allEvents.length > 0) {
-                        const dates = allEvents.map(event => new Date(event.start));
-                        const minDate = new Date(Math.min(...dates));
-                        const maxDate = new Date(Math.max(...dates));
+                const dates = allEvents.map(event => new Date(event.start));
+                const minDate = new Date(Math.min(...dates));
+                const maxDate = new Date(Math.max(...dates));
                         dateRange = `${minDate.toLocaleDateString('zh-TW')} - ${maxDate.toLocaleDateString('zh-TW')}`;
                     }
                     break;
@@ -5257,10 +5280,10 @@ async function loadTodayEvents() {
         const settingsOverlay = document.getElementById('settingsOverlay');
         if (settingsOverlay) {
             settingsOverlay.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeSettings();
-            }
-        });
+                if (e.target === this) {
+                    closeSettings();
+                }
+            });
         }
     </script>
 </body>
