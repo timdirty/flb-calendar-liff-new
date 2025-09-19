@@ -4549,7 +4549,7 @@ async function loadTodayEvents() {
                             <div class="event-title">
                                 ${event.title}
                                 ${isCancelledEvent ? '<span class="cancelled-badge"><i class="fas fa-ban"></i> ⚠️ 停課 ⚠️</span>' : ''}
-                                ${isSubstituteEvent ? `<span class="substitute-badge"><i class="fas fa-exchange-alt"></i> ${substituteInfo.type} ${substituteInfo.originalInstructor}</span>` : ''}
+                                ${isSubstituteEvent && substituteInfo ? `<span class="substitute-badge"><i class="fas fa-exchange-alt"></i> ${substituteInfo.type} ${substituteInfo.originalInstructor}</span>` : ''}
                             </div>
                             <div class="event-instructor ${instructorStyle}" style="--instructor-color: ${instructorColor}">
                                 <i class="fas fa-user"></i> ${event.instructor}

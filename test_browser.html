@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>測試前端事件渲染</title>
+</head>
+<body>
+    <h1>測試前端事件渲染</h1>
+    <div id="test-results"></div>
+    
+    <script>
+        async function testFrontend() {
+            const results = document.getElementById('test-results');
+            
+            try {
+                // 測試 API
+                const response = await fetch('/api/events');
+                const data = await response.json();
+                
+                results.innerHTML += `<p>✅ API 請求成功，返回 ${data.data.length} 個事件</p>`;
+                
+                // 檢查 BELLA 和 AGNES 的事件
+                const bellaEvents = data.data.filter(e => e && e.instructor === 'BELLA');
+                const agnesEvents = data.data.filter(e => e && e.instructor === 'AGNES');
+                
+                results.innerHTML += `<p>📊 BELLA 事件數: ${bellaEvents.length}</p>`;
+                results.innerHTML += `<p>📊 AGNES 事件數: ${agnesEvents.length}</p>`;
+                
+                // 測試 createEventCard 函數
+                if (typeof createEventCard === 'function') {
+                    results.innerHTML += `<p>✅ createEventCard 函數存在</p>`;
+                    
+                    // 測試 BELLA 事件
+                    if (bellaEvents.length > 0) {
+                        try {
+                            const bellaCard = createEventCard(bellaEvents[0]);
+                            results.innerHTML += `<p>✅ BELLA 事件卡片生成成功</p>`;
+                            results.innerHTML += `<div style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">${bellaCard}</div>`;
+                        } catch (error) {
+                            results.innerHTML += `<p>❌ BELLA 事件卡片生成失敗: ${error.message}</p>`;
+                        }
+                    }
+                    
+                    // 測試 AGNES 事件
+                    if (agnesEvents.length > 0) {
+                        try {
+                            const agnesCard = createEventCard(agnesEvents[0]);
+                            results.innerHTML += `<p>✅ AGNES 事件卡片生成成功</p>`;
+                            results.innerHTML += `<div style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">${agnesCard}</div>`;
+                        } catch (error) {
+                            results.innerHTML += `<p>❌ AGNES 事件卡片生成失敗: ${error.message}</p>`;
+                        }
+                    }
+                } else {
+                    results.innerHTML += `<p>❌ createEventCard 函數不存在</p>`;
+                }
+                
+            } catch (error) {
+                results.innerHTML += `<p>❌ 測試失敗: ${error.message}</p>`;
+            }
+        }
+        
+        // 載入完成後執行測試
+        window.addEventListener('load', testFrontend);
+    </script>
+    
+    <!-- 載入主頁面的 JavaScript -->
+    <script src="/perfect-calendar.html"></script>
+</body>
+</html>
