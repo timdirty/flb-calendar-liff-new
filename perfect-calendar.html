@@ -3178,6 +3178,9 @@
             showMatchingProcess('開始比對講師...', 'info');
             addLoadingLog('🔍 開始講師身份比對...', 'info');
             
+            // 獲取講師選擇元素
+            const instructorSelect = document.getElementById('instructorSelect');
+            
             return new Promise(async (resolve) => {
             
             try {
@@ -3273,7 +3276,6 @@
                         showMatchingProcess(`🎉 找到匹配講師: ${matchedTeacher.name}`, 'success');
                         
                         // 自動選擇講師
-                        const instructorSelect = document.getElementById('instructorSelect');
                         if (instructorSelect) {
                             // 模糊比對講師選項
                             const matchedOption = findBestMatchingOption(instructorSelect, matchedTeacher.name);
@@ -3305,7 +3307,6 @@
                         
                         // 比對失敗，顯示全部講師
                         console.log('比對失敗，將顯示全部講師');
-                        const instructorSelect = document.getElementById('instructorSelect');
                         if (instructorSelect) {
                             instructorSelect.value = ''; // 選擇全部講師
                             // 立即更新統計和渲染事件
@@ -3319,7 +3320,6 @@
                         
                         // 比對失敗，顯示全部講師
                         console.log('比對失敗，將顯示全部講師');
-                        const instructorSelect = document.getElementById('instructorSelect');
                         if (instructorSelect) {
                             instructorSelect.value = ''; // 選擇全部講師
                             // 立即更新統計和渲染事件
