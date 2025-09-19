@@ -3088,21 +3088,34 @@
         function autoScrollToCalendar() {
             // 延遲一點時間確保頁面完全載入
             setTimeout(() => {
-                // 滑動到主內容區域，而不是篩選區域
-                // 這樣可以避免影響固定的篩選區塊
-                const mainContent = document.querySelector('.main-content');
+                // 滑動到視圖按鈕區域，讓今日本週每月按鈕切齊頂部
+                const viewButtons = document.querySelector('.view-buttons');
                 
-                if (mainContent) {
-                    // 計算篩選區域的高度，確保滑動後內容不會被遮擋
-                    const controlSection = document.querySelector('.control-section');
-                    const controlHeight = controlSection ? controlSection.offsetHeight : 0;
+                if (viewButtons) {
+                    // 計算視圖按鈕的位置，讓按鈕齊平頂部
+                    const viewButtonsRect = viewButtons.getBoundingClientRect();
+                    const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const targetScrollTop = currentScrollTop + viewButtonsRect.top;
                     
-                    // 滑動到篩選區塊下方，讓篩選區塊完全可見
+                    // 滑動到視圖按鈕區域，讓按鈕齊平頂部
                     window.scrollTo({
-                        top: controlHeight + 10, // 額外 10px 間距
+                        top: targetScrollTop,
                         behavior: 'smooth'
                     });
-                    console.log(`已自動滑動到篩選區塊下方，篩選區塊高度: ${controlHeight}px`);
+                    console.log(`已自動滑動到視圖按鈕區域，讓今日本週每月按鈕切齊頂部`);
+                } else {
+                    // 如果沒有找到視圖按鈕，則滑動到主內容區域
+                    const mainContent = document.querySelector('.main-content');
+                    if (mainContent) {
+                        const controlSection = document.querySelector('.control-section');
+                        const controlHeight = controlSection ? controlSection.offsetHeight : 0;
+                        
+                        window.scrollTo({
+                            top: controlHeight + 10,
+                            behavior: 'smooth'
+                        });
+                        console.log(`已自動滑動到主內容區域，篩選區塊高度: ${controlHeight}px`);
+                    }
                 }
             }, 1000);
         }
@@ -3221,19 +3234,33 @@
                     calendarSection.style.display = 'block';
                 }
                 
-                // 自動滑動到行事曆區域，但避免影響篩選區塊
-                const mainContent = document.querySelector('.main-content');
-                if (mainContent) {
-                    // 計算篩選區域的高度，確保滑動後內容不會被遮擋
-                    const controlSection = document.querySelector('.control-section');
-                    const controlHeight = controlSection ? controlSection.offsetHeight : 0;
+                // 自動滑動到視圖按鈕區域，讓今日本週每月按鈕切齊頂部
+                const viewButtons = document.querySelector('.view-buttons');
+                if (viewButtons) {
+                    // 計算視圖按鈕的位置，讓按鈕齊平頂部
+                    const viewButtonsRect = viewButtons.getBoundingClientRect();
+                    const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const targetScrollTop = currentScrollTop + viewButtonsRect.top;
                     
-                    // 滑動到篩選區塊下方，讓篩選區塊完全可見
+                    // 滑動到視圖按鈕區域，讓按鈕齊平頂部
                     window.scrollTo({
-                        top: controlHeight + 10, // 額外 10px 間距
+                        top: targetScrollTop,
                         behavior: 'smooth'
                     });
-                    console.log(`已自動滑動到行事曆區域，篩選區塊高度: ${controlHeight}px`);
+                    console.log(`已自動滑動到視圖按鈕區域，讓今日本週每月按鈕切齊頂部`);
+                } else {
+                    // 如果沒有找到視圖按鈕，則滑動到主內容區域
+                    const mainContent = document.querySelector('.main-content');
+                    if (mainContent) {
+                        const controlSection = document.querySelector('.control-section');
+                        const controlHeight = controlSection ? controlSection.offsetHeight : 0;
+                        
+                        window.scrollTo({
+                            top: controlHeight + 10,
+                            behavior: 'smooth'
+                        });
+                        console.log(`已自動滑動到主內容區域，篩選區塊高度: ${controlHeight}px`);
+                    }
                 }
             }
         }
