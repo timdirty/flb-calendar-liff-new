@@ -4947,6 +4947,12 @@ async function loadTodayEvents() {
             }
             return 1 + Math.ceil((firstThursday - target) / 604800000);
         }
+
+        // 獲取星期幾（中文）
+        function getWeekday(date) {
+            const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            return weekdays[date.getDay()];
+        }
         
         // 檢查是否為停課/請假
         function isCancelled(event) {
@@ -5171,7 +5177,7 @@ async function loadTodayEvents() {
                     <div class="event-details">
                         <div class="event-detail">
                             <i class="fas fa-calendar"></i>
-                            <span>${displayDate} (第${getWeekNumber(startDate)}週)</span>
+                            <span>${displayDate} (${getWeekday(startDate)})</span>
                         </div>
                         <div class="event-detail">
                             <i class="fas fa-clock"></i>
