@@ -1372,11 +1372,10 @@
                 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             }
             
-            /* 主內容區域，為固定篩選區域留出空間 */
+            /* 主內容區域，為固定篩選區域留出空間，但不限制滑動 */
             .main-content {
                 margin-top: 200px; /* 為固定篩選區域留出空間 */
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
+                /* 移除 overflow 限制，讓整個頁面可以滑動 */
             }
             
             /* 移除視圖按鈕的 sticky 定位，因為篩選區域已經固定 */
@@ -3396,39 +3395,36 @@
                 return;
             }
             
-            // 使用事件委託，在父容器上綁定事件
-            const quickFiltersContainer = document.getElementById('quickFilters');
-            if (quickFiltersContainer) {
-                // 移除舊的事件監聽器
-                quickFiltersContainer.removeEventListener('click', handleQuickFilterDelegate);
-                // 添加新的事件監聽器
-                quickFiltersContainer.addEventListener('click', handleQuickFilterDelegate);
-                console.log('✅ 事件委託綁定完成');
-            }
-            
-            // 確保所有按鈕都可點擊
+            // 直接為每個按鈕綁定事件
             buttons.forEach((button, index) => {
                 const quickFilter = button.getAttribute('data-quick');
-                console.log(`🔗 設置按鈕 ${index + 1}: ${quickFilter}`);
+                console.log(`🔗 綁定按鈕 ${index + 1}: ${quickFilter}`);
+                
+                // 移除舊的事件監聽器
+                button.removeEventListener('click', handleQuickFilterClick);
+                // 添加新的事件監聽器
+                button.addEventListener('click', handleQuickFilterClick);
                 
                 // 確保按鈕可點擊
                 button.style.pointerEvents = 'auto';
                 button.style.cursor = 'pointer';
                 button.style.userSelect = 'none';
                 
-                console.log(`✅ 按鈕 ${quickFilter} 樣式設置完成`);
+                console.log(`✅ 按鈕 ${quickFilter} 事件監聽器綁定完成`);
             });
             
             console.log('🎉 所有快速篩選按鈕事件監聽器綁定完成');
         }
         
-        // 事件委託處理函數
-        function handleQuickFilterDelegate(event) {
-            const button = event.target.closest('.quick-filter-btn');
-            if (!button) return;
-            
+        // 快速篩選按鈕點擊處理函數
+        function handleQuickFilterClick(event) {
+            const button = event.target;
             const quickFilter = button.getAttribute('data-quick');
-            if (!quickFilter) return;
+            
+            if (!quickFilter) {
+                console.log('❌ 無法獲取 data-quick 屬性');
+                return;
+            }
             
             console.log('🔍 快速篩選按鈕被點擊！', quickFilter);
             event.preventDefault();
@@ -3436,22 +3432,6 @@
             handleQuickFilter(quickFilter);
         }
 
-        // 快速篩選按鈕點擊處理函數
-        function handleQuickFilterClick(event) {
-            console.log('🔍 快速篩選按鈕被點擊！');
-            console.log('🔍 事件目標:', event.target);
-            console.log('🔍 事件目標類名:', event.target.className);
-            console.log('🔍 事件目標 data-quick:', event.target.getAttribute('data-quick'));
-            
-            const quickFilter = event.target.getAttribute('data-quick');
-            if (!quickFilter) {
-                console.log('❌ 無法獲取 data-quick 屬性');
-                return;
-            }
-            
-            console.log('🔍 快速篩選按鈕點擊:', quickFilter);
-            handleQuickFilter(quickFilter);
-        }
 
         // 生成隨機馬卡龍顏色
         function generateRandomMacaronColor() {
