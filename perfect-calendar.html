@@ -3447,8 +3447,8 @@
                 });
             });
             
-            // 為快速篩選按鈕添加事件監聽器
-            bindQuickFilterButtons();
+            // 為快速篩選按鈕添加事件監聽器（初始化時可能還沒有動態按鈕）
+            // bindQuickFilterButtons(); // 移到動態按鈕生成後調用
             
             // 綁定用戶按鈕事件監聽器
             const bindUserBtn = document.getElementById('bindUserBtn');
@@ -3462,6 +3462,11 @@
             const buttons = document.querySelectorAll('.quick-filter-btn');
             console.log('🔗 綁定快速篩選按鈕，找到按鈕數量:', buttons.length);
             
+            if (buttons.length === 0) {
+                console.log('⚠️ 沒有找到快速篩選按鈕，跳過綁定');
+                return;
+            }
+            
             buttons.forEach((button, index) => {
                 const quickFilter = button.getAttribute('data-quick');
                 console.log(`🔗 綁定按鈕 ${index + 1}: ${quickFilter}`);
@@ -3473,20 +3478,44 @@
                 
                 // 添加視覺反饋
                 button.style.cursor = 'pointer';
-                button.addEventListener('mouseenter', function() {
+                button.style.pointerEvents = 'auto'; // 確保可以點擊
+                
+                // 移除舊的 hover 事件監聽器
+                button.removeEventListener('mouseenter', button._hoverEnter);
+                button.removeEventListener('mouseleave', button._hoverLeave);
+                
+                // 添加新的 hover 事件監聽器
+                button._hoverEnter = function() {
                     this.style.transform = 'translateY(-1px)';
                     this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
-                });
-                button.addEventListener('mouseleave', function() {
+                };
+                button._hoverLeave = function() {
                     this.style.transform = 'translateY(0)';
                     this.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-                });
+                };
+                
+                button.addEventListener('mouseenter', button._hoverEnter);
+                button.addEventListener('mouseleave', button._hoverLeave);
+                
+                console.log(`✅ 按鈕 ${quickFilter} 事件監聽器綁定完成`);
             });
+            
+            console.log('🎉 所有快速篩選按鈕事件監聽器綁定完成');
         }
 
         // 快速篩選按鈕點擊處理函數
         function handleQuickFilterClick(event) {
+            console.log('🔍 快速篩選按鈕被點擊！');
+            console.log('🔍 事件目標:', event.target);
+            console.log('🔍 事件目標類名:', event.target.className);
+            console.log('🔍 事件目標 data-quick:', event.target.getAttribute('data-quick'));
+            
             const quickFilter = event.target.getAttribute('data-quick');
+            if (!quickFilter) {
+                console.log('❌ 無法獲取 data-quick 屬性');
+                return;
+            }
+            
             console.log('🔍 快速篩選按鈕點擊:', quickFilter);
             handleQuickFilter(quickFilter);
         }
