@@ -2775,6 +2775,10 @@
                         console.log('🔄 系統初始化完成，開始綁定按鈕...');
                         bindViewButtons();
                         
+                        // 設置今日按鈕的預設按下效果
+                        updateViewButtonStates();
+                        console.log('🔄 今日按鈕預設狀態已設置');
+                        
                         // 自動滑動到行事曆區域（僅行動裝置）
                         autoScrollToCalendar();
                     } catch (error) {
