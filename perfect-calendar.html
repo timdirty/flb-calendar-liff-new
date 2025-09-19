@@ -2794,11 +2794,6 @@
                         showQuickFilters('today');
                         // 不強制設置快速篩選，讓用戶自由選擇視圖
                         
-                        // 初始化快速篩選按鈕
-                        updateTodayQuickFilters();
-                        updateWeekQuickFilters();
-                        updateCourseTypeQuickFilters();
-                        
                         // 自動滑動到行事曆區域（僅行動裝置）
                         autoScrollToCalendar();
                     } catch (error) {
@@ -3710,10 +3705,15 @@ async function loadTodayEvents() {
                         generateRandomInstructorColors();
                     }
                     
-            addLoadingLog('🔄 正在渲染事件列表...', 'info');
+                    addLoadingLog('🔄 正在渲染事件列表...', 'info');
                     populateInstructorDropdown();
                     renderEvents();
                     updateStats();
+                    
+                    // 在事件載入完成後更新快速篩選按鈕
+                    updateTodayQuickFilters();
+                    updateWeekQuickFilters();
+                    updateCourseTypeQuickFilters();
             
             console.log(`✅ 完整事件載入完成: ${allEvents.length} 個事件`);
             addLoadingLog(`✅ 載入完成！共 ${allEvents.length} 個事件`, 'success');
@@ -3991,7 +3991,7 @@ async function loadTodayEvents() {
                     const filterDay = filterDate.getDate();
                     
                     if (eventYear !== filterYear || eventMonth !== filterMonth || eventDay !== filterDay) {
-                    return false;
+                        return false;
                     }
                 }
                 
@@ -4185,80 +4185,90 @@ async function loadTodayEvents() {
 
         // 更新課別快速篩選，只顯示有課的課別
         function updateCourseTypeQuickFilters() {
-            console.log('🔍 開始更新課別快速篩選...');
-            const courseTypeQuickFilters = document.getElementById('courseTypeQuickFilters');
-            if (!courseTypeQuickFilters) {
-                console.log('❌ 找不到 courseTypeQuickFilters 元素');
-                return;
-            }
-            console.log('✅ 找到 courseTypeQuickFilters 元素');
-            
-            const courseTypes = [
-                { key: 'esm', name: 'ESM' },
-                { key: 'spm', name: 'SPM' },
-                { key: 'boost', name: 'BOOST' },
-                { key: 'spike', name: 'SPIKE' }
-            ];
-            
-            // 獲取已篩選的事件（不包含視圖篩選）
-            const filteredEvents = getFilteredEvents();
-            console.log('🔍 更新課別快速篩選 - 已篩選事件數量:', filteredEvents.length);
-            
-            // 檢查每個課別是否有課程並統計數量
-            const buttonsToShow = [];
-            courseTypes.forEach(courseType => {
-                // 統計這個課別符合目前篩選條件的課程數量
-                const classesOfThisType = filteredEvents.filter(event => {
-                    // 檢查課別
-                    const title = event.title.toLowerCase();
-                    const description = (event.description || '').toLowerCase();
+            try {
+                console.log('🔍 開始更新課別快速篩選...');
+                
+                // 檢查 allEvents 是否存在
+                if (!allEvents || allEvents.length === 0) {
+                    console.log('❌ allEvents 不存在或為空，跳過課別快速篩選更新');
+                    return;
+                }
+                
+                const courseTypeQuickFilters = document.getElementById('courseTypeQuickFilters');
+                if (!courseTypeQuickFilters) {
+                    console.log('❌ 找不到 courseTypeQuickFilters 元素');
+                    return;
+                }
+                console.log('✅ 找到 courseTypeQuickFilters 元素');
+                
+                const courseTypes = [
+                    { key: 'esm', name: 'ESM' },
+                    { key: 'spm', name: 'SPM' },
+                    { key: 'boost', name: 'BOOST' },
+                    { key: 'spike', name: 'SPIKE' }
+                ];
+                
+                // 直接使用 allEvents 而不是 getFilteredEvents()
+                console.log('🔍 使用 allEvents 進行課別統計，事件數量:', allEvents.length);
+                
+                // 檢查每個課別是否有課程並統計數量
+                const buttonsToShow = [];
+                courseTypes.forEach(courseType => {
+                    // 統計這個課別的課程數量
+                    const classesOfThisType = allEvents.filter(event => {
+                        const title = (event.title || '').toLowerCase();
+                        const description = (event.description || '').toLowerCase();
+                        const keyword = courseType.key.toLowerCase();
+                        
+                        return title.includes(keyword) || description.includes(keyword);
+                    });
                     
-                    // 檢查標題和描述中是否包含課別關鍵字
-                    return title.includes(courseType.key.toLowerCase()) || 
-                           description.includes(courseType.key.toLowerCase());
+                    // 只有有課程的課別才顯示按鈕
+                    if (classesOfThisType.length > 0) {
+                        buttonsToShow.push({
+                            key: courseType.key,
+                            name: courseType.name,
+                            count: classesOfThisType.length
+                        });
+                        console.log(`✅ 找到 ${courseType.name} 課程: ${classesOfThisType.length} 個`);
+                    }
                 });
                 
-                // 只有有課程的課別才顯示按鈕
-                if (classesOfThisType.length > 0) {
-                    buttonsToShow.push({
-                        key: courseType.key,
-                        name: courseType.name,
-                        count: classesOfThisType.length
-                    });
-                }
-            });
-            
-            // 更新按鈕顯示
-            const quickFilterButtons = courseTypeQuickFilters.querySelector('.quick-filter-buttons');
-            if (quickFilterButtons) {
-                console.log('✅ 找到 quick-filter-buttons 容器');
-                quickFilterButtons.innerHTML = '';
                 console.log('🔍 要顯示的按鈕數量:', buttonsToShow.length);
                 
-                buttonsToShow.forEach((buttonInfo, index) => {
-                    console.log(`🔍 創建按鈕 ${index + 1}: ${buttonInfo.name} (${buttonInfo.count})`);
-                    const button = document.createElement('button');
-                    button.className = 'btn btn-outline-primary quick-filter-btn';
-                    button.setAttribute('data-quick', buttonInfo.key);
-                    button.textContent = `${buttonInfo.name} (${buttonInfo.count})`;
+                // 更新按鈕顯示
+                const quickFilterButtons = courseTypeQuickFilters.querySelector('.quick-filter-buttons');
+                if (quickFilterButtons) {
+                    console.log('✅ 找到 quick-filter-buttons 容器');
+                    quickFilterButtons.innerHTML = '';
                     
-                    // 添加測試用的 onclick 屬性
-                    button.onclick = function(event) {
-                        console.log('🔍 直接 onclick 事件被觸發！', buttonInfo.key);
-                        event.preventDefault();
-                        event.stopPropagation();
-                        handleQuickFilter(buttonInfo.key);
-                    };
+                    buttonsToShow.forEach((buttonInfo, index) => {
+                        console.log(`🔍 創建按鈕 ${index + 1}: ${buttonInfo.name} (${buttonInfo.count})`);
+                        const button = document.createElement('button');
+                        button.className = 'btn btn-outline-primary quick-filter-btn';
+                        button.setAttribute('data-quick', buttonInfo.key);
+                        button.textContent = `${buttonInfo.name} (${buttonInfo.count})`;
+                        
+                        // 添加 onclick 事件處理
+                        button.onclick = function(event) {
+                            console.log('🔍 按鈕點擊事件被觸發！', buttonInfo.key);
+                            event.preventDefault();
+                            event.stopPropagation();
+                            handleQuickFilter(buttonInfo.key);
+                        };
+                        
+                        quickFilterButtons.appendChild(button);
+                        console.log(`✅ 按鈕 ${buttonInfo.name} 已添加到 DOM`);
+                    });
                     
-                    quickFilterButtons.appendChild(button);
-                    console.log(`✅ 按鈕 ${buttonInfo.name} 已添加到 DOM`);
-                });
-                
-                console.log('✅ 按鈕創建完成，開始綁定事件監聽器...');
-                // 重新綁定事件監聽器
-                bindQuickFilterButtons();
-            } else {
-                console.log('❌ 找不到 quick-filter-buttons 容器');
+                    console.log('✅ 按鈕創建完成，開始綁定事件監聽器...');
+                    // 重新綁定事件監聽器
+                    bindQuickFilterButtons();
+                } else {
+                    console.log('❌ 找不到 quick-filter-buttons 容器');
+                }
+            } catch (error) {
+                console.error('❌ updateCourseTypeQuickFilters 執行錯誤:', error);
             }
         }
 
