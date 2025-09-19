@@ -18,10 +18,13 @@ def generate_realistic_caldav_events():
     ]
     
     # 課程類型
-    course_types = ["SPIKE", "ESM", "SPM"]
+    course_types = ["SPIKE", "ESM", "SPM", "BOOST", "SPIKE"]
     
     # 地點
     locations = ["樂程坊 Funlearnbar", "松山", "信義", "台北", "新北"]
+    
+    # 代課/帶班標示
+    substitute_types = ["代課", "帶班", "代理", "支援"]
     
     events = []
     
@@ -49,14 +52,25 @@ def generate_realistic_caldav_events():
             # 生成週數
             week_num = random.randint(1, 4)
             
+            # 決定是否為代課/帶班事件 (20% 機率)
+            is_substitute = random.random() < 0.2
+            substitute_type = random.choice(substitute_types) if is_substitute else None
+            original_instructor = random.choice([inst for inst in instructors if inst != instructor]) if is_substitute else None
+            
             # 生成真實格式的標題
             weekday_names = ['一', '二', '三', '四', '五', '六', '日']
             weekday = weekday_names[current_date.weekday()]
             
-            title = f"{course_type} {weekday} {hour:02d}:{minute:02d}-{end_time.hour:02d}:{end_time.minute:02d} {location} 第{week_num}週"
+            if is_substitute:
+                title = f"{course_type} {weekday} {hour:02d}:{minute:02d}-{end_time.hour:02d}:{end_time.minute:02d} {location} 第{week_num}週 [{substitute_type}]{original_instructor}"
+            else:
+                title = f"{course_type} {weekday} {hour:02d}:{minute:02d}-{end_time.hour:02d}:{end_time.minute:02d} {location} 第{week_num}週"
             
             # 生成描述
-            description = f"{instructor} 助教:無 教案:{course_type}教案:範例課程"
+            if is_substitute:
+                description = f"{instructor} 助教:無 教案:{course_type}教案:範例課程 [{substitute_type}]{original_instructor}"
+            else:
+                description = f"{instructor} 助教:無 教案:{course_type}教案:範例課程"
             
             event = {
                 'title': title,
