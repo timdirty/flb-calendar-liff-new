@@ -564,6 +564,19 @@
             left: 100%;
         }
 
+        /* 快速篩選樣式 */
+        .quick-filters {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            box-shadow: 
+                0 5px 15px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 215, 0, 0.1);
+        }
 
 
 
@@ -3765,6 +3778,740 @@ async function loadTodayEvents() {
 
 
         // 移除快速篩選功能 - 所有快速篩選相關代碼已移除
+            weekStart.setDate(now.getDate() + daysToMonday);
+            
+            // 檢查每個週次是否有課程並統計數量
+            const buttonsToShow = [];
+            weekdays.forEach((weekday, index) => {
+                const targetDate = new Date(weekStart);
+                targetDate.setDate(weekStart.getDate() + index);
+                
+                // 統計這一天符合目前篩選條件的課程數量
+                const classesOnThisDay = filteredEvents.filter(event => {
+                    const eventDate = new Date(event.start);
+                    const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+                    const targetDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+                    
+                    return eventDay.getTime() === targetDay.getTime();
+                });
+                
+                // 只有有課程的週次才顯示按鈕
+                if (classesOnThisDay.length > 0) {
+                    buttonsToShow.push({
+                        weekday: weekday,
+                        name: weekdayNames[index],
+                        date: targetDate,
+                        count: classesOnThisDay.length
+                    });
+                }
+            });
+            
+            // 更新按鈕顯示
+            const quickFilterButtons = weekQuickFilters.querySelector('.quick-filter-buttons');
+            if (quickFilterButtons) {
+                quickFilterButtons.innerHTML = '';
+                
+                buttonsToShow.forEach(buttonInfo => {
+                    const button = document.createElement('button');
+                    button.className = 'btn btn-outline-primary quick-filter-btn';
+                    button.setAttribute('data-quick', buttonInfo.weekday);
+                    button.textContent = `${buttonInfo.name} (${buttonInfo.count})`;
+                    quickFilterButtons.appendChild(button);
+                });
+                
+                // 重新綁定事件監聽器
+                bindQuickFilterButtons();
+            }
+        }
+
+        // 重寫課別快速篩選功能 - 簡化版本
+        function updateCourseTypeQuickFilters() {
+            console.log('🔄 更新課別快速篩選...');
+            
+            // 檢查基本條件
+            if (!allEvents || allEvents.length === 0) {
+                console.log('❌ allEvents 不存在或為空');
+                return;
+            }
+            
+            const container = document.getElementById('courseTypeQuickFilters');
+            if (!container) {
+                console.log('❌ 找不到 courseTypeQuickFilters 容器');
+                return;
+            }
+            
+            // 統計各課別數量
+            const esmCount = allEvents.filter(e => 
+                (e.title || '').toLowerCase().includes('esm') || 
+                (e.description || '').toLowerCase().includes('esm')
+            ).length;
+            
+            const spmCount = allEvents.filter(e => 
+                (e.title || '').toLowerCase().includes('spm') || 
+                (e.description || '').toLowerCase().includes('spm')
+            ).length;
+            
+            const boostCount = allEvents.filter(e => 
+                (e.title || '').toLowerCase().includes('boost') || 
+                (e.description || '').toLowerCase().includes('boost')
+            ).length;
+            
+            const spikeCount = allEvents.filter(e => 
+                (e.title || '').toLowerCase().includes('spike') || 
+                (e.description || '').toLowerCase().includes('spike')
+            ).length;
+            
+            console.log(`📊 課別統計: ESM=${esmCount}, SPM=${spmCount}, BOOST=${boostCount}, SPIKE=${spikeCount}`);
+            
+            // 生成按鈕HTML - 使用簡單的onclick
+            let buttonsHTML = '';
+            
+            if (esmCount > 0) {
+                buttonsHTML += `<button class="btn btn-outline-primary quick-filter-btn" data-quick="esm" onclick="handleQuickFilterDirect('esm')">ESM (${esmCount})</button>`;
+            }
+            
+            if (spmCount > 0) {
+                buttonsHTML += `<button class="btn btn-outline-primary quick-filter-btn" data-quick="spm" onclick="handleQuickFilterDirect('spm')">SPM (${spmCount})</button>`;
+            }
+            
+            if (boostCount > 0) {
+                buttonsHTML += `<button class="btn btn-outline-primary quick-filter-btn" data-quick="boost" onclick="handleQuickFilterDirect('boost')">BOOST (${boostCount})</button>`;
+            }
+            
+            if (spikeCount > 0) {
+                buttonsHTML += `<button class="btn btn-outline-primary quick-filter-btn" data-quick="spike" onclick="handleQuickFilterDirect('spike')">SPIKE (${spikeCount})</button>`;
+            }
+            
+            // 更新HTML
+            const buttonsContainer = container.querySelector('.quick-filter-buttons');
+            if (buttonsContainer) {
+                buttonsContainer.innerHTML = buttonsHTML;
+                console.log('✅ 課別快速篩選按鈕已更新');
+            }
+        }
+
+        // 處理快速篩選
+        function handleQuickFilter(quickFilter) {
+            currentQuickFilter = quickFilter;
+            
+            // 更新快速篩選按鈕狀態
+            const quickFilterBtns = document.querySelectorAll('.quick-filter-btn');
+            quickFilterBtns.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-quick') === quickFilter) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // 應用快速篩選的日期範圍
+            if (quickFilter && quickFilter !== 'all') {
+                const dateRange = getQuickFilterDateRange(quickFilter);
+                if (dateRange) {
+                    // 設置日期篩選
+                    const dateInput = document.getElementById('dateFilter');
+                    if (dateInput) {
+                        // 清除日期篩選，改用自定義範圍
+                        dateInput.value = '';
+                    }
+                    
+                    // 設置自定義日期範圍（這裡我們需要修改篩選邏輯）
+                    window.currentQuickFilterRange = dateRange;
+                }
+            } else {
+                // 清除快速篩選
+                window.currentQuickFilterRange = null;
+            }
+            
+            // 更新統計和渲染（只調用一次）
+            updateStats();
+            renderEvents();
+        }
+
+        // 獲取快速篩選的日期範圍
+        function getQuickFilterDateRange(quickFilter) {
+            const now = new Date();
+            
+            switch (quickFilter) {
+                case 'today':
+                    return {
+                        start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0),
+                        end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59)
+                    };
+                case 'tomorrow':
+                    const tomorrow = new Date(now);
+                    tomorrow.setDate(now.getDate() + 1);
+                    return {
+                        start: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 0, 0, 0),
+                        end: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 23, 59, 59)
+                    };
+                case 'dayAfterTomorrow':
+                    const dayAfterTomorrow = new Date(now);
+                    dayAfterTomorrow.setDate(now.getDate() + 2);
+                    return {
+                        start: new Date(dayAfterTomorrow.getFullYear(), dayAfterTomorrow.getMonth(), dayAfterTomorrow.getDate(), 0, 0, 0),
+                        end: new Date(dayAfterTomorrow.getFullYear(), dayAfterTomorrow.getMonth(), dayAfterTomorrow.getDate(), 23, 59, 59)
+                    };
+                case 'monday':
+                case 'tuesday':
+                case 'wednesday':
+                case 'thursday':
+                case 'friday':
+                case 'saturday':
+                case 'sunday':
+                    return getWeekdayRange(quickFilter);
+                case 'esm':
+                case 'spm':
+                case 'boost':
+                case 'spike':
+                    // 課別篩選不需要日期範圍，返回 null
+                    return null;
+                default:
+                    return null;
+            }
+        }
+
+        // 獲取週幾的日期範圍
+        function getWeekdayRange(weekday) {
+            const now = new Date();
+            const dayOfWeek = now.getDay();
+            const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+            const weekStart = new Date(now);
+            weekStart.setDate(now.getDate() + daysToMonday);
+            
+            const weekdayMap = {
+                'monday': 0,
+                'tuesday': 1,
+                'wednesday': 2,
+                'thursday': 3,
+                'friday': 4,
+                'saturday': 5,
+                'sunday': 6
+            };
+            
+            const targetDay = weekdayMap[weekday];
+            const targetDate = new Date(weekStart);
+            targetDate.setDate(weekStart.getDate() + targetDay);
+            
+            return {
+                start: new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 0, 0, 0),
+                end: new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 23, 59, 59)
+            };
+        }
+
+        // 渲染事件
+        function renderEvents() {
+            const container = document.getElementById('eventsContainer');
+            const instructorFilter = document.getElementById('instructorSelect').value;
+            const timeFilter = document.getElementById('timeFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            
+            // 使用簡單直接的篩選邏輯（恢復到昨天版本）
+            let filteredEvents = allEvents.filter(event => {
+                // 講師篩選
+                if (instructorFilter && event.instructor !== instructorFilter) {
+                    return false;
+                }
+                
+                // 時段篩選
+                if (timeFilter) {
+                    const eventDate = new Date(event.start);
+                    const hour = eventDate.getHours();
+                    let timeMatch = false;
+                    
+                    switch (timeFilter) {
+                        case 'morning':
+                            timeMatch = hour >= 6 && hour < 12;
+                            break;
+                        case 'afternoon':
+                            timeMatch = hour >= 12 && hour < 18;
+                            break;
+                        case 'evening':
+                            timeMatch = hour >= 18 && hour < 24;
+                            break;
+                    }
+                    
+                    if (!timeMatch) {
+                    return false;
+                    }
+                }
+                
+                // 指定日期篩選
+                if (dateFilter) {
+                    const eventDate = new Date(event.start);
+                    const filterDate = new Date(dateFilter);
+                    const eventYear = eventDate.getFullYear();
+                    const eventMonth = eventDate.getMonth();
+                    const eventDay = eventDate.getDate();
+                    const filterYear = filterDate.getFullYear();
+                    const filterMonth = filterDate.getMonth();
+                    const filterDay = filterDate.getDate();
+                    
+                    if (eventYear !== filterYear || eventMonth !== filterMonth || eventDay !== filterDay) {
+                        return false;
+                    }
+                }
+                
+                // 課別快速篩選
+                if (currentQuickFilter && ['esm', 'spm', 'boost', 'spike'].includes(currentQuickFilter)) {
+                    const title = event.title.toLowerCase();
+                    const description = (event.description || '').toLowerCase();
+                    const keyword = currentQuickFilter.toLowerCase();
+                    
+                    if (!title.includes(keyword) && !description.includes(keyword)) {
+                        return false;
+                    }
+                }
+                
+                // 視圖篩選
+                const eventDate = new Date(event.start);
+                const now = new Date();
+                
+                let shouldShow = false;
+                switch (currentView) {
+                    case '今日':
+                        const eventYear = eventDate.getFullYear();
+                        const eventMonth = eventDate.getMonth();
+                        const eventDay = eventDate.getDate();
+                        const nowYear = now.getFullYear();
+                        const nowMonth = now.getMonth();
+                        const nowDay = now.getDate();
+                        shouldShow = eventYear === nowYear && eventMonth === nowMonth && eventDay === nowDay;
+                        break;
+                    case '本週':
+                        const weekStart = new Date(now);
+                        const dayOfWeek = now.getDay();
+                        const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+                        weekStart.setDate(now.getDate() + daysToMonday);
+                        weekStart.setHours(0, 0, 0, 0);
+                        const weekEnd = new Date(weekStart);
+                        weekEnd.setDate(weekStart.getDate() + 6);
+                        weekEnd.setHours(23, 59, 59, 999);
+                        shouldShow = eventDate >= weekStart && eventDate <= weekEnd;
+                        break;
+                    case '本月':
+                        shouldShow = eventDate.getFullYear() === now.getFullYear() && 
+                                   eventDate.getMonth() === now.getMonth();
+                        break;
+                    case '全部':
+                    default:
+                        shouldShow = true;
+                }
+                
+                return shouldShow;
+            });
+            
+            console.log('🎨 renderEvents - 篩選後事件數量:', filteredEvents.length);
+            
+            // 排序事件 - 優化排序邏輯
+            filteredEvents.sort((a, b) => {
+                const now = new Date();
+                const eventA = new Date(a.start);
+                const eventB = new Date(b.start);
+                const endA = new Date(a.end);
+                const endB = new Date(b.end);
+                
+                // 判斷事件狀態
+                const isEventAOngoing = eventA <= now && endA > now;
+                const isEventBOngoing = eventB <= now && endB > now;
+                const isEventAPast = endA < now;
+                const isEventBPast = endB < now;
+                const isEventAUpcoming = eventA > now;
+                const isEventBUpcoming = eventB > now;
+                
+                // 優先排序：正在進行中 > 即將開始 > 已結束
+                if (isEventAOngoing && !isEventBOngoing) return -1;
+                if (!isEventAOngoing && isEventBOngoing) return 1;
+                
+                if (isEventAUpcoming && isEventBPast) return -1;
+                if (isEventAPast && isEventBUpcoming) return 1;
+                
+                // 在相同狀態下，按時間排序
+                // 按時間排序
+                return eventA - eventB;
+            });
+            
+            if (filteredEvents.length === 0) {
+                container.innerHTML = `
+                    <div class="no-events">
+                        <i class="fas fa-calendar-times"></i>
+                        <h3>沒有找到事件</h3>
+                        <p>請嘗試調整篩選條件</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = filteredEvents.map(event => createEventCard(event)).join('');
+            
+            // 觸發事件卡片動畫
+            setTimeout(() => {
+                animateEventCards();
+                // 更新倒數計時
+                updateAllCountdowns();
+            }, 100);
+        }
+
+        // 從標題解析時間
+        function parseTimeFromTitle(title) {
+            // 匹配格式如 "18:30-20:30", "14:30-15:30", "16:30-17:30", "1630-1730" 等
+            const timeMatch = title.match(/(\d{1,2}):?(\d{2})-(\d{1,2}):?(\d{2})/);
+            if (timeMatch) {
+                const startHour = timeMatch[1];
+                const startMin = timeMatch[2];
+                const endHour = timeMatch[3];
+                const endMin = timeMatch[4];
+                
+                // 格式化時間為 HH:MM 格式
+                const startTime = `${startHour.padStart(2, '0')}:${startMin}`;
+                const endTime = `${endHour.padStart(2, '0')}:${endMin}`;
+                
+                return {
+                    startTime: startTime,
+                    endTime: endTime,
+                    timeString: `${startTime} - ${endTime}`
+                };
+            }
+            return null;
+        }
+
+        // 從標題解析日期（根據星期幾）
+        function parseDateFromTitle(title, baseDate = new Date()) {
+            // 直接使用 CalDAV 的日期，不重新計算
+            // 因為 CalDAV 已經提供了正確的日期
+            return baseDate;
+        }
+
+        // 檢查是否為停課/請假
+        function isCancelled(event) {
+            const title = event.title.toLowerCase();
+            const description = (event.description || '').toLowerCase();
+            const cancelledKeywords = ['請假', '停課', '取消', '暫停', '休息', '放假'];
+            
+            return cancelledKeywords.some(keyword => 
+                title.includes(keyword) || description.includes(keyword)
+            );
+        }
+
+        // 創建事件卡片
+        function createEventCard(event) {
+            const startDate = new Date(event.start);
+            const endDate = new Date(event.end);
+            const isCancelledEvent = isCancelled(event);
+            
+            // 從標題解析時間
+            const titleTime = parseTimeFromTitle(event.title);
+            
+            // 統一使用 CalDAV 的日期，確保日期正確
+            const displayDate = startDate.toLocaleDateString('zh-TW');
+            let timeString;
+            
+            if (titleTime) {
+                // 使用標題解析的時間，但日期使用 CalDAV
+                timeString = titleTime.timeString;
+                
+                console.log(`標題解析 - ${event.title}:`);
+                console.log(`  原始 start: ${event.start}`);
+                console.log(`  startDate 物件:`, startDate);
+                console.log(`  CalDAV日期: ${displayDate}`);
+                console.log(`  解析時間: ${timeString}`);
+                console.log(`  CalDAV時間: ${startDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })} - ${endDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })}`);
+            } else {
+                // 回退到CalDAV時間
+                timeString = `${startDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })} - ${endDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })}`;
+                console.log(`無法解析標題時間，使用CalDAV時間 - ${event.title}: ${displayDate} ${timeString}`);
+            }
+            
+            // 清理描述內容
+            let cleanDescription = event.description || '';
+            
+            // 移除技術標籤和重複資訊
+            cleanDescription = cleanDescription
+                .replace(/\[NOTION_SYNC\]/g, '')
+                .replace(/時間:.*?講師:/g, '')
+                .replace(/講師:.*?TA:/g, '')
+                .replace(/TA:.*?第一期:/g, '')
+                .replace(/第一期:/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+            
+            // 尋找教案連結 - 從原始描述中提取
+            // 優先匹配括號內的完整 Notion 連結（包含 ?pvs=21 等參數）
+            const notionUrlRegex = /\(https:\/\/www\.notion\.so\/([^)]+)\)/;
+            let notionMatch = event.description.match(notionUrlRegex);
+            
+            // 如果沒有找到括號內的連結，則匹配一般的 Notion 連結
+            if (!notionMatch) {
+                const generalNotionRegex = /https:\/\/www\.notion\.so\/([^)\s]+)/;
+                notionMatch = event.description.match(generalNotionRegex);
+            }
+            
+            let lessonButton = '';
+            if (notionMatch) {
+                const lessonUrl = `https://www.notion.so/${notionMatch[1]}`;
+                
+                // 提取教案名稱和類型
+                let lessonName = '查看教案';
+                let lessonType = '教案';
+                
+                // 從原始描述中提取教案資訊
+                const originalDescription = event.description;
+                
+                // 匹配各種教案格式，優先匹配括號前的教案名稱
+                const lessonMatch = originalDescription.match(/(ESM教案|SPM教案|SPIKE教案|BOOST教案|EV3教案|MINECRAFT教案)[:\s]*([^(]+?)(?:\s*\(https:\/\/www\.notion\.so)/);
+                if (lessonMatch && lessonMatch[2]) {
+                    lessonName = lessonMatch[2].trim();
+                    lessonType = lessonMatch[1].replace('教案', '');
+                }
+                
+                lessonButton = `
+                    <div class="lesson-section">
+                        <div class="lesson-label">${lessonType}教案</div>
+                        <a href="${lessonUrl}" target="_blank" class="lesson-button ${lessonType.toLowerCase()}">
+                            <i class="fas fa-book"></i> ${lessonName}
+                        </a>
+                    </div>
+                `;
+            }
+            
+            // 處理位置資訊
+            let location = event.location;
+            if (!location || location === 'nan' || location === 'null' || location === '' || location.trim() === '') {
+                location = '樂程坊 Funlearnbar';
+            }
+        
+        // 如果是站前教室，設定預設地址
+        if (location === '站前教室') {
+            location = '台北市中正區開封街1段2號9樓';
+            }
+            
+            // 講師底色
+            const instructorColor = instructorColors[event.instructor] || '#667eea';
+            const instructorStyle = instructorColors[event.instructor] ? 'custom-color' : '';
+            
+            return `
+                <div class="event-card ${isCancelledEvent ? 'cancelled-event' : ''}">
+                    <div class="event-header">
+                        <div>
+                            <div class="event-title">
+                                ${event.title}
+                                ${isCancelledEvent ? '<span class="cancelled-badge"><i class="fas fa-ban"></i> ⚠️ 停課 ⚠️</span>' : ''}
+                            </div>
+                            <div class="event-instructor ${instructorStyle}" style="--instructor-color: ${instructorColor}">
+                                <i class="fas fa-user"></i> ${event.instructor}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="event-details">
+                        <div class="event-detail">
+                            <i class="fas fa-calendar"></i>
+                            <span>${displayDate}</span>
+                        </div>
+                        <div class="event-detail">
+                            <i class="fas fa-clock"></i>
+                            <span>${timeString}</span>
+                        </div>
+                        <div class="event-detail">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}" 
+                               target="_blank" 
+                               class="location-link"
+                               title="點擊查看地圖">
+                                <i class="fas fa-map-marked-alt location-map-icon"></i>
+                            <span>${location}</span>
+                                <i class="fas fa-external-link-alt location-external-icon"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="countdown-timer" 
+                         data-start-time="${event.start}" 
+                         data-end-time="${event.end}">
+                        <i class="fas fa-clock countdown-icon"></i>
+                        <span class="countdown-text">計算中...</span>
+                    </div>
+                    
+                    <div class="event-description">
+                        <h4><i class="fas fa-info-circle"></i> 課程描述</h4>
+                        <p>${cleanDescription || '無描述'}</p>
+                    </div>
+                    
+                    ${lessonButton}
+                </div>
+            `;
+        }
+
+        // 更新統計資訊
+        function updateStats() {
+            // 使用與 renderEvents 相同的篩選邏輯（恢復到昨天版本）
+            const instructorFilter = document.getElementById('instructorSelect').value;
+            const timeFilter = document.getElementById('timeFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            
+            const filteredEvents = allEvents.filter(event => {
+                // 講師篩選
+                if (instructorFilter && event.instructor !== instructorFilter) {
+                    return false;
+                }
+                
+                // 時段篩選
+                if (timeFilter) {
+                    const eventDate = new Date(event.start);
+                    const hour = eventDate.getHours();
+                    let timeMatch = false;
+                    
+                    switch (timeFilter) {
+                        case 'morning':
+                            timeMatch = hour >= 6 && hour < 12;
+                            break;
+                        case 'afternoon':
+                            timeMatch = hour >= 12 && hour < 18;
+                            break;
+                        case 'evening':
+                            timeMatch = hour >= 18 && hour < 24;
+                            break;
+                    }
+                    
+                    if (!timeMatch) {
+                        return false;
+                    }
+                }
+                
+                // 指定日期篩選
+                if (dateFilter) {
+                    const eventDate = new Date(event.start);
+                    const filterDate = new Date(dateFilter);
+                    const eventYear = eventDate.getFullYear();
+                    const eventMonth = eventDate.getMonth();
+                    const eventDay = eventDate.getDate();
+                    const filterYear = filterDate.getFullYear();
+                    const filterMonth = filterDate.getMonth();
+                    const filterDay = filterDate.getDate();
+                    
+                    if (eventYear !== filterYear || eventMonth !== filterMonth || eventDay !== filterDay) {
+                        return false;
+                    }
+                }
+                
+                // 課別快速篩選
+                if (currentQuickFilter && ['esm', 'spm', 'boost', 'spike'].includes(currentQuickFilter)) {
+                    const title = event.title.toLowerCase();
+                    const description = (event.description || '').toLowerCase();
+                    const keyword = currentQuickFilter.toLowerCase();
+                    
+                    if (!title.includes(keyword) && !description.includes(keyword)) {
+                        return false;
+                    }
+                }
+                
+                // 視圖篩選
+                const eventDate = new Date(event.start);
+                const now = new Date();
+                
+                let shouldShow = false;
+                switch (currentView) {
+                    case '今日':
+                        const eventYear = eventDate.getFullYear();
+                        const eventMonth = eventDate.getMonth();
+                        const eventDay = eventDate.getDate();
+                        const nowYear = now.getFullYear();
+                        const nowMonth = now.getMonth();
+                        const nowDay = now.getDate();
+                        shouldShow = eventYear === nowYear && eventMonth === nowMonth && eventDay === nowDay;
+                        break;
+                    case '本週':
+                        const weekStart = new Date(now);
+                        const dayOfWeek = now.getDay();
+                        const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+                        weekStart.setDate(now.getDate() + daysToMonday);
+                        weekStart.setHours(0, 0, 0, 0);
+                        const weekEnd = new Date(weekStart);
+                        weekEnd.setDate(weekStart.getDate() + 6);
+                        weekEnd.setHours(23, 59, 59, 999);
+                        shouldShow = eventDate >= weekStart && eventDate <= weekEnd;
+                        break;
+                    case '本月':
+                        shouldShow = eventDate.getFullYear() === now.getFullYear() && 
+                                   eventDate.getMonth() === now.getMonth();
+                        break;
+                    case '全部':
+                    default:
+                        shouldShow = true;
+                }
+                
+                return shouldShow;
+            });
+            
+            // 計算篩選後的講師數量
+            const uniqueInstructors = new Set(filteredEvents.map(event => event.instructor));
+            const instructorCount = uniqueInstructors.size;
+            
+            // 調試日誌：顯示篩選結果
+            console.log(`📊 篩選結果 - 模式: ${currentView}, 總事件: ${allEvents.length}, 篩選後: ${filteredEvents.length}`);
+            if (currentView === '本週' || currentView === '本月') {
+                console.log(`📅 ${currentView === '本週' ? '本週' : '本月'}事件詳情:`, filteredEvents.map(e => ({
+                    title: e.title,
+                    instructor: e.instructor,
+                    start: e.start,
+                    date: new Date(e.start).toLocaleDateString('zh-TW')
+                })));
+            }
+            
+            // 根據當前篩選模式計算日期範圍
+            let dateRange = '-';
+            const now = new Date();
+            
+            switch (currentView) {
+                case '今日':
+                    dateRange = now.toLocaleDateString('zh-TW');
+                    break;
+                case '本週':
+                    const weekStart = new Date(now);
+                    // 計算本週一的日期（getDay() 返回 0-6，0是週日，1是週一）
+                    const dayOfWeek = now.getDay();
+                    const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 週日時回到上週一，其他天回到本週一
+                    weekStart.setDate(now.getDate() + daysToMonday);
+                    const weekEnd = new Date(weekStart);
+                    weekEnd.setDate(weekStart.getDate() + 6); // 週日
+                    dateRange = `${weekStart.toLocaleDateString('zh-TW')} - ${weekEnd.toLocaleDateString('zh-TW')}`;
+                    break;
+                case '本月':
+                    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                    dateRange = `${monthStart.toLocaleDateString('zh-TW')} - ${monthEnd.toLocaleDateString('zh-TW')}`;
+                    break;
+                case '全部':
+                default:
+            if (allEvents.length > 0) {
+                const dates = allEvents.map(event => new Date(event.start));
+                const minDate = new Date(Math.min(...dates));
+                const maxDate = new Date(Math.max(...dates));
+                        dateRange = `${minDate.toLocaleDateString('zh-TW')} - ${maxDate.toLocaleDateString('zh-TW')}`;
+                    }
+                    break;
+            }
+            
+            // 更新文字形式的統計信息
+            const totalEventsText = document.getElementById('totalEventsText');
+            const instructorCountText = document.getElementById('instructorCountText');
+            const dateRangeText = document.getElementById('dateRangeText');
+            
+            if (totalEventsText) totalEventsText.textContent = `總事件: ${filteredEvents.length}`;
+            if (instructorCountText) instructorCountText.textContent = `講師: ${instructorCount}`;
+            if (dateRangeText) dateRangeText.textContent = `日期: ${dateRange}`;
+        }
+
+        // 顯示錯誤訊息
+        function showError(message) {
+            const container = document.getElementById('eventsContainer');
+            container.innerHTML = `
+                <div class="no-events">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>載入失敗</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
 
         // 點擊外部關閉設置畫面
         const settingsOverlay = document.getElementById('settingsOverlay');
@@ -3778,3 +4525,4 @@ async function loadTodayEvents() {
     </script>
 </body>
 </html>
+
