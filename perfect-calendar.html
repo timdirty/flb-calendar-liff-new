@@ -1354,13 +1354,19 @@
 
         /* 響應式設計 */
         @media (max-width: 768px) {
+            /* 整個頁面可以滑動 */
+            body {
+                overflow-x: hidden;
+                overflow-y: auto;
+            }
+            
             .container {
                 padding: 8px;
                 max-width: 100%;
-                overflow-x: hidden;
+                /* 移除任何滑動限制 */
             }
             
-            /* 篩選區域固定，不被滑動影響 */
+            /* 篩選區域完全固定，絕對不會移動 */
             .control-section {
                 position: fixed;
                 top: 0;
@@ -1370,12 +1376,13 @@
                 background: white;
                 padding: 8px;
                 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                /* 確保篩選區域永遠固定在頂部 */
             }
             
-            /* 主內容區域，為固定篩選區域留出空間，但不限制滑動 */
+            /* 主內容區域，為固定篩選區域留出空間 */
             .main-content {
                 margin-top: 200px; /* 為固定篩選區域留出空間 */
-                /* 移除 overflow 限制，讓整個頁面可以滑動 */
+                /* 讓整個頁面可以正常滑動 */
             }
             
             /* 移除視圖按鈕的 sticky 定位，因為篩選區域已經固定 */
@@ -3418,18 +3425,30 @@
         
         // 快速篩選按鈕點擊處理函數
         function handleQuickFilterClick(event) {
+            console.log('🔍 快速篩選按鈕被點擊！事件目標:', event.target);
+            console.log('🔍 事件目標類名:', event.target.className);
+            
             const button = event.target;
             const quickFilter = button.getAttribute('data-quick');
+            
+            console.log('🔍 獲取的 data-quick 屬性:', quickFilter);
             
             if (!quickFilter) {
                 console.log('❌ 無法獲取 data-quick 屬性');
                 return;
             }
             
-            console.log('🔍 快速篩選按鈕被點擊！', quickFilter);
+            console.log('🔍 準備調用 handleQuickFilter:', quickFilter);
             event.preventDefault();
             event.stopPropagation();
-            handleQuickFilter(quickFilter);
+            
+            // 直接調用 handleQuickFilter 函數
+            try {
+                handleQuickFilter(quickFilter);
+                console.log('✅ handleQuickFilter 調用成功');
+            } catch (error) {
+                console.error('❌ handleQuickFilter 調用失敗:', error);
+            }
         }
 
 
@@ -4152,19 +4171,19 @@ async function loadTodayEvents() {
             let buttonsHTML = '';
             
             if (esmCount > 0) {
-                buttonsHTML += `<button class="btn btn-outline-primary quick-filter-btn" data-quick="esm" onclick="handleQuickFilter('esm')">ESM (${esmCount})</button>`;
+                buttonsHTML += `<button class="btn btn-outline-primary quick-filter-btn" data-quick="esm">ESM (${esmCount})</button>`;
             }
             
             if (spmCount > 0) {
-                buttonsHTML += `<button class="btn btn-outline-primary quick-filter-btn" data-quick="spm" onclick="handleQuickFilter('spm')">SPM (${spmCount})</button>`;
+                buttonsHTML += `<button class="btn btn-outline-primary quick-filter-btn" data-quick="spm">SPM (${spmCount})</button>`;
             }
             
             if (boostCount > 0) {
-                buttonsHTML += `<button class="btn btn-outline-primary quick-filter-btn" data-quick="boost" onclick="handleQuickFilter('boost')">BOOST (${boostCount})</button>`;
+                buttonsHTML += `<button class="btn btn-outline-primary quick-filter-btn" data-quick="boost">BOOST (${boostCount})</button>`;
             }
             
             if (spikeCount > 0) {
-                buttonsHTML += `<button class="btn btn-outline-primary quick-filter-btn" data-quick="spike" onclick="handleQuickFilter('spike')">SPIKE (${spikeCount})</button>`;
+                buttonsHTML += `<button class="btn btn-outline-primary quick-filter-btn" data-quick="spike">SPIKE (${spikeCount})</button>`;
             }
             
             // 直接更新HTML
