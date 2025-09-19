@@ -2337,6 +2337,7 @@
                             <button class="btn btn-primary" data-view="week">本週</button>
                             <button class="btn btn-primary" data-view="month">本月</button>
                             <button class="btn btn-primary" data-view="all">全部</button>
+                        </div>
                 </div>
             </div>
                     
@@ -3591,9 +3592,6 @@
             
             
             
-            // 立即綁定視圖按鈕
-            bindViewButtons();
-            
             // 設置初始選中狀態
             setTimeout(() => {
                 updateViewButtonStates();
@@ -3954,7 +3952,11 @@ async function loadTodayEvents() {
             e.stopPropagation();
             
             const view = this.getAttribute('data-view');
-            console.log(`📱 按鈕點擊：切換到 ${view}`);
+            console.log(`📱 按鈕點擊：切換到 ${view}`, {
+                eventType: e.type,
+                target: this,
+                currentView: currentView
+            });
             
             // 觸發按鈕高亮動畫
             highlightViewButton(view);
@@ -3972,6 +3974,7 @@ async function loadTodayEvents() {
             setTimeout(() => {
                 updateStats();
                 renderEvents();
+                console.log(`📱 視圖已切換到 ${view}，事件已重新渲染`);
             }, 100);
         }
 
@@ -3980,16 +3983,22 @@ async function loadTodayEvents() {
             const viewButtons = document.querySelectorAll('.view-buttons .btn-primary');
             console.log(`🔗 綁定 ${viewButtons.length} 個視圖按鈕`);
             
+            if (viewButtons.length === 0) {
+                console.error('❌ 找不到視圖按鈕，請檢查 HTML 結構');
+                return;
+            }
+            
             viewButtons.forEach((button, index) => {
-                // 移除舊的事件監聽器
+                // 清除所有舊的事件監聽器和屬性
                 button.removeEventListener('click', handleViewButtonClick);
                 button.removeEventListener('touchstart', handleViewButtonClick);
                 button.removeEventListener('touchend', handleViewButtonClick);
+                button.onclick = null;
                 
                 // 添加點擊事件監聽器
-                button.addEventListener('click', handleViewButtonClick);
+                button.addEventListener('click', handleViewButtonClick, { passive: false });
                 
-                // 添加觸控事件監聽器（LIFF環境）
+                // 添加觸控事件監聽器（手機端）
                 button.addEventListener('touchstart', handleViewButtonClick, { passive: false });
                 button.addEventListener('touchend', handleViewButtonClick, { passive: false });
                 
@@ -4000,12 +4009,23 @@ async function loadTodayEvents() {
                 button.style.touchAction = 'manipulation';
                 button.style.webkitUserSelect = 'none';
                 button.style.webkitTouchCallout = 'none';
+                button.style.webkitTapHighlightColor = 'transparent';
                 
-                // 添加點擊測試
+                // 添加點擊測試（備用方案）
                 button.onclick = function(e) {
                     console.log(`📱 按鈕 onclick 觸發: ${button.getAttribute('data-view')}`);
+                    e.preventDefault();
+                    e.stopPropagation();
                     handleViewButtonClick.call(this, e);
                 };
+                
+                // 添加 mousedown 事件（桌面端）
+                button.addEventListener('mousedown', function(e) {
+                    console.log(`🖥️ 按鈕 mousedown 觸發: ${button.getAttribute('data-view')}`);
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleViewButtonClick.call(this, e);
+                });
                 
                 console.log(`✅ 按鈕 ${index + 1} 綁定完成: ${button.getAttribute('data-view')}`);
             });
