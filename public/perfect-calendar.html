@@ -3563,53 +3563,7 @@
             }
             
             
-            // 為視圖按鈕添加事件監聽器
-            function bindViewButtons() {
-                const viewButtons = document.querySelectorAll('.view-buttons .btn-primary');
-                console.log(`🔗 綁定 ${viewButtons.length} 個視圖按鈕`);
-                
-                viewButtons.forEach((button, index) => {
-                    // 移除舊的事件監聽器
-                    button.removeEventListener('click', handleViewButtonClick);
-                    button.removeEventListener('touchstart', handleViewButtonClick);
-                    
-                    // 添加點擊事件監聽器
-                    button.addEventListener('click', handleViewButtonClick);
-                    
-                    // 添加觸控事件監聽器（LIFF環境）
-                    button.addEventListener('touchstart', handleViewButtonClick, { passive: false });
-                    
-                    // 確保按鈕可點擊
-                    button.style.pointerEvents = 'auto';
-                    button.style.cursor = 'pointer';
-                    button.style.userSelect = 'none';
-                    button.style.touchAction = 'manipulation';
-                    
-                    console.log(`✅ 按鈕 ${index + 1} 綁定完成: ${button.getAttribute('data-view')}`);
-                });
-            }
             
-            // 視圖按鈕點擊處理函數
-            function handleViewButtonClick(e) {
-                // 防止滑動事件干擾點擊
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const view = this.getAttribute('data-view');
-                console.log(`📱 按鈕點擊：切換到 ${view}`);
-                
-                // 觸發按鈕高亮動畫
-                highlightViewButton(view);
-                
-                // 切換視圖
-                switchView(view);
-                
-                // 強制重新渲染
-                setTimeout(() => {
-                    updateStats();
-                    renderEvents();
-                }, 100);
-            }
             
             
             // 立即綁定視圖按鈕
@@ -3966,6 +3920,54 @@ async function loadTodayEvents() {
             if (currentValue && allInstructors.includes(currentValue)) {
                 select.value = currentValue;
             }
+        }
+
+        // 視圖按鈕點擊處理函數
+        function handleViewButtonClick(e) {
+            // 防止滑動事件干擾點擊
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const view = this.getAttribute('data-view');
+            console.log(`📱 按鈕點擊：切換到 ${view}`);
+            
+            // 觸發按鈕高亮動畫
+            highlightViewButton(view);
+            
+            // 切換視圖
+            switchView(view);
+            
+            // 強制重新渲染
+            setTimeout(() => {
+                updateStats();
+                renderEvents();
+            }, 100);
+        }
+
+        // 為視圖按鈕添加事件監聽器
+        function bindViewButtons() {
+            const viewButtons = document.querySelectorAll('.view-buttons .btn-primary');
+            console.log(`🔗 綁定 ${viewButtons.length} 個視圖按鈕`);
+            
+            viewButtons.forEach((button, index) => {
+                // 移除舊的事件監聽器
+                button.removeEventListener('click', handleViewButtonClick);
+                button.removeEventListener('touchstart', handleViewButtonClick);
+                
+                // 添加點擊事件監聽器
+                button.addEventListener('click', handleViewButtonClick);
+                
+                // 添加觸控事件監聽器（LIFF環境）
+                button.addEventListener('touchstart', handleViewButtonClick, { passive: false });
+                
+                // 確保按鈕可點擊
+                button.style.pointerEvents = 'auto';
+                button.style.cursor = 'pointer';
+                button.style.userSelect = 'none';
+                button.style.touchAction = 'manipulation';
+                
+                console.log(`✅ 按鈕 ${index + 1} 綁定完成: ${button.getAttribute('data-view')}`);
+            });
         }
 
         // 更新視圖按鈕狀態
