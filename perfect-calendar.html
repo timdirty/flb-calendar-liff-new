@@ -1348,25 +1348,43 @@
             .view-buttons::after {
                 content: '← 左右滑動切換 →';
                 position: absolute;
-                top: -25px;
+                top: -30px;
                 left: 50%;
                 transform: translateX(-50%);
-                font-size: 0.6rem;
+                font-size: 0.55rem;
                 color: rgba(255, 193, 7, 0.9);
                 background: rgba(255, 255, 255, 0.95);
-                padding: 3px 10px;
-                border-radius: 12px;
+                padding: 2px 8px;
+                border-radius: 10px;
                 white-space: nowrap;
                 animation: swipeHint 3s ease-in-out infinite;
                 z-index: 10;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
                 border: 1px solid rgba(255, 193, 7, 0.3);
+                max-width: 90%;
+                word-break: keep-all;
             }
             
             /* 滑動提示動畫 */
             @keyframes swipeHint {
                 0%, 100% { opacity: 0.6; transform: translateX(-50%) translateY(0); }
                 50% { opacity: 1; transform: translateX(-50%) translateY(-2px); }
+            }
+            
+            /* 按鈕脈衝動畫 */
+            @keyframes buttonPulse {
+                0% { 
+                    transform: scale(1.1); 
+                    box-shadow: 0 6px 12px rgba(0, 123, 255, 0.4);
+                }
+                50% { 
+                    transform: scale(1.15); 
+                    box-shadow: 0 8px 16px rgba(0, 123, 255, 0.5);
+                }
+                100% { 
+                    transform: scale(1.1); 
+                    box-shadow: 0 6px 12px rgba(0, 123, 255, 0.4);
+                }
             }
 
             .header {
@@ -3300,6 +3318,9 @@
             const allButtons = document.querySelectorAll('.view-buttons .btn');
             allButtons.forEach(btn => {
                 btn.classList.remove('active');
+                btn.style.transform = 'scale(1)';
+                btn.style.boxShadow = '';
+                btn.style.transition = 'all 0.3s ease';
             });
             
             // 添加目標按鈕的 active 狀態
@@ -3307,14 +3328,20 @@
             if (targetButton) {
                 targetButton.classList.add('active');
                 
-                // 添加高亮動畫
-                targetButton.style.transform = 'scale(1.05)';
-                targetButton.style.boxShadow = '0 4px 8px rgba(0, 123, 255, 0.3)';
+                // 添加高亮動畫 - 更明顯的效果
+                targetButton.style.transform = 'scale(1.1)';
+                targetButton.style.boxShadow = '0 6px 12px rgba(0, 123, 255, 0.4)';
+                targetButton.style.transition = 'all 0.3s ease';
+                targetButton.style.zIndex = '10';
+                
+                // 添加脈衝動畫
+                targetButton.style.animation = 'buttonPulse 0.6s ease-out';
                 
                 setTimeout(() => {
-                    targetButton.style.transform = 'scale(1)';
-                    targetButton.style.boxShadow = '';
-                }, 200);
+                    targetButton.style.transform = 'scale(1.05)';
+                    targetButton.style.boxShadow = '0 4px 8px rgba(0, 123, 255, 0.3)';
+                    targetButton.style.animation = '';
+                }, 300);
             }
         }
 
@@ -3351,16 +3378,40 @@
                 const diffY = startY - endY;
                 
                 // 判斷是否為水平滑動（水平距離大於垂直距離）
-                if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 30) {
                     isSwipe = true;
                     // 防止頁面滾動
                     e.preventDefault();
                     
-                    // 添加滑動視覺反饋
+                    // 添加滑動視覺反饋 - 更平順的過度
                     const viewButtons = document.querySelector('.view-buttons');
                     if (viewButtons) {
-                        viewButtons.style.transform = `translateX(${diffX * 0.1}px)`;
+                        const moveAmount = Math.max(-20, Math.min(20, diffX * 0.15)); // 限制移動範圍
+                        viewButtons.style.transform = `translateX(${moveAmount}px)`;
                         viewButtons.style.transition = 'none';
+                        
+                        // 添加滑動提示
+                        const hint = viewButtons.querySelector('.swipe-hint');
+                        if (!hint) {
+                            const hintDiv = document.createElement('div');
+                            hintDiv.className = 'swipe-hint';
+                            hintDiv.style.cssText = `
+                                position: absolute;
+                                top: -35px;
+                                left: 50%;
+                                transform: translateX(-50%);
+                                font-size: 0.5rem;
+                                color: rgba(0, 123, 255, 0.8);
+                                background: rgba(255, 255, 255, 0.9);
+                                padding: 2px 6px;
+                                border-radius: 8px;
+                                white-space: nowrap;
+                                z-index: 11;
+                                pointer-events: none;
+                            `;
+                            hintDiv.textContent = diffX > 0 ? '← 切換到下一個' : '切換到上一個 →';
+                            viewButtons.appendChild(hintDiv);
+                        }
                     }
                 }
             }, { passive: false });
@@ -3371,7 +3422,13 @@
                 const viewButtons = document.querySelector('.view-buttons');
                 if (viewButtons) {
                     viewButtons.style.transform = 'translateX(0)';
-                    viewButtons.style.transition = 'transform 0.3s ease';
+                    viewButtons.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                    
+                    // 移除滑動提示
+                    const hint = viewButtons.querySelector('.swipe-hint');
+                    if (hint) {
+                        hint.remove();
+                    }
                 }
                 
                 if (!isSwipe || !startX || !endX) {
@@ -3399,12 +3456,12 @@
                     switchView(nextView);
                     console.log(`📱 向左滑動：切換到 ${nextView}`);
                     
-                    // 添加切換動畫
+                    // 添加切換動畫 - 更平順
                     if (viewButtons) {
-                        viewButtons.style.transform = 'translateX(-10px)';
+                        viewButtons.style.transform = 'translateX(-15px)';
                         setTimeout(() => {
                             viewButtons.style.transform = 'translateX(0)';
-                        }, 100);
+                        }, 150);
                     }
                 } else if (diffX < -50) {
                     // 向右滑動：切換到上一個視圖
@@ -3418,12 +3475,12 @@
                     switchView(prevView);
                     console.log(`📱 向右滑動：切換到 ${prevView}`);
                     
-                    // 添加切換動畫
+                    // 添加切換動畫 - 更平順
                     if (viewButtons) {
-                        viewButtons.style.transform = 'translateX(10px)';
+                        viewButtons.style.transform = 'translateX(15px)';
                         setTimeout(() => {
                             viewButtons.style.transform = 'translateX(0)';
-                        }, 100);
+                        }, 150);
                     }
                 }
                 
@@ -3473,9 +3530,19 @@
             
             // 為視圖按鈕添加事件監聽器
             document.querySelectorAll('.view-buttons .btn-primary').forEach(button => {
-                button.addEventListener('click', function() {
+                button.addEventListener('click', function(e) {
+                    // 防止滑動事件干擾點擊
+                    e.stopPropagation();
+                    
                     const view = this.getAttribute('data-view');
+                    
+                    // 觸發按鈕高亮動畫
+                    highlightViewButton(view);
+                    
+                    // 切換視圖
                     switchView(view);
+                    
+                    console.log(`📱 按鈕點擊：切換到 ${view}`);
                 });
             });
             
