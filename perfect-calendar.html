@@ -1323,11 +1323,14 @@
                 transform: translateZ(0) !important; /* 強制硬體加速 */
                 will-change: auto !important; /* 優化渲染性能 */
                 backface-visibility: hidden !important; /* 防止閃爍 */
+                /* 確保篩選區塊覆蓋在標題區塊上方 */
+                margin: 0 !important;
+                border-radius: 0 !important;
             }
             
             /* 主內容區域，為固定篩選區域留出空間 */
             .main-content {
-                margin-top: 220px !important; /* 為固定篩選區域留出更多空間 */
+                margin-top: 0 !important; /* 移除頂部間距，讓內容緊貼篩選區塊 */
                 padding: 8px;
                 /* 讓整個頁面可以正常滑動 */
             }
@@ -1339,7 +1342,8 @@
 
             .header {
                 padding: 12px;
-                margin-bottom: 12px;
+                margin-bottom: 0 !important; /* 移除底部間距，避免與篩選區塊重疊 */
+                position: relative !important; /* 確保標題區塊不會影響篩選區塊 */
             }
 
             .header h1 {
@@ -3086,14 +3090,14 @@
                     if (mainContent) {
                         // 計算篩選區域的高度，確保滑動後內容不會被遮擋
                         const controlSection = document.querySelector('.control-section');
-                        const controlHeight = controlSection ? controlSection.offsetHeight : 220;
+                        const controlHeight = controlSection ? controlSection.offsetHeight : 0;
                         
-                        // 滑動到主內容區域的頂部，但考慮篩選區域的高度
+                        // 滑動到篩選區塊下方，讓篩選區塊完全可見
                         window.scrollTo({
-                            top: controlHeight,
+                            top: controlHeight + 10, // 額外 10px 間距
                             behavior: 'smooth'
                         });
-                        console.log('已自動滑動到主內容區域，篩選區塊保持固定');
+                        console.log(`已自動滑動到篩選區塊下方，篩選區塊高度: ${controlHeight}px`);
                     }
                 }, 1000);
             }
@@ -3218,14 +3222,14 @@
                 if (mainContent) {
                     // 計算篩選區域的高度，確保滑動後內容不會被遮擋
                     const controlSection = document.querySelector('.control-section');
-                    const controlHeight = controlSection ? controlSection.offsetHeight : 220;
+                    const controlHeight = controlSection ? controlSection.offsetHeight : 0;
                     
-                    // 滑動到主內容區域的頂部，但考慮篩選區域的高度
+                    // 滑動到篩選區塊下方，讓篩選區塊完全可見
                     window.scrollTo({
-                        top: controlHeight,
+                        top: controlHeight + 10, // 額外 10px 間距
                         behavior: 'smooth'
                     });
-                    console.log('已自動滑動到行事曆區域，篩選區塊保持固定');
+                    console.log(`已自動滑動到行事曆區域，篩選區塊高度: ${controlHeight}px`);
                 }
             }
         }
