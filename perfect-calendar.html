@@ -2708,6 +2708,8 @@
                         // 重新綁定視圖按鈕（確保按鈕可點擊）
                         setTimeout(() => {
                             bindViewButtons();
+                            // 重新設置滑動功能（LIFF環境）
+                            setupMobileSwipeNavigation();
                         }, 500);
                         
                         // 自動滑動到行事曆區域（僅行動裝置）
@@ -3367,9 +3369,22 @@
 
         // 手機端左右滑動切換視圖功能
         function setupMobileSwipeNavigation() {
-            // 檢查是否為手機端
-            const isMobile = window.innerWidth <= 768;
-            if (!isMobile) return;
+            // 檢查是否為手機端 - 更寬鬆的檢測條件
+            const isMobile = window.innerWidth <= 768 || 
+                           /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                           navigator.userAgent.includes('LIFF') ||
+                           window.navigator.standalone === true;
+            
+            console.log('📱 手機端檢測:', {
+                innerWidth: window.innerWidth,
+                userAgent: navigator.userAgent,
+                isMobile: isMobile
+            });
+            
+            if (!isMobile) {
+                console.log('🖥️ 桌面端，跳過滑動功能');
+                return;
+            }
             
             let startX = 0;
             let startY = 0;
@@ -3556,14 +3571,19 @@
                 viewButtons.forEach((button, index) => {
                     // 移除舊的事件監聽器
                     button.removeEventListener('click', handleViewButtonClick);
+                    button.removeEventListener('touchstart', handleViewButtonClick);
                     
-                    // 添加新的事件監聽器
+                    // 添加點擊事件監聽器
                     button.addEventListener('click', handleViewButtonClick);
+                    
+                    // 添加觸控事件監聽器（LIFF環境）
+                    button.addEventListener('touchstart', handleViewButtonClick, { passive: false });
                     
                     // 確保按鈕可點擊
                     button.style.pointerEvents = 'auto';
                     button.style.cursor = 'pointer';
                     button.style.userSelect = 'none';
+                    button.style.touchAction = 'manipulation';
                     
                     console.log(`✅ 按鈕 ${index + 1} 綁定完成: ${button.getAttribute('data-view')}`);
                 });
@@ -3583,6 +3603,12 @@
                 
                 // 切換視圖
                 switchView(view);
+                
+                // 強制重新渲染
+                setTimeout(() => {
+                    updateStats();
+                    renderEvents();
+                }, 100);
             }
             
             // 更新視圖按鈕狀態
@@ -3968,6 +3994,8 @@ async function loadTodayEvents() {
             const chineseView = viewMap[view] || view;
             currentView = chineseView;
             
+            console.log('🔄 switchView - 切換到視圖:', chineseView, '原始視圖:', view);
+            
             // 更新按鈕選中狀態
             updateViewButtonStates();
             window.currentView = chineseView; // 設置全局變量
@@ -4123,6 +4151,8 @@ async function loadTodayEvents() {
             const timeFilter = document.getElementById('timeFilter').value;
             const dateFilter = document.getElementById('dateFilter').value;
             
+            console.log('🎨 renderEvents - 開始篩選，總事件數:', allEvents.length, '當前視圖:', currentView);
+            
             // 使用簡單直接的篩選邏輯
             let filteredEvents = allEvents.filter(event => {
                 // 講師篩選
@@ -4207,7 +4237,12 @@ async function loadTodayEvents() {
                 return shouldShow;
             });
             
-            console.log('🎨 renderEvents - 篩選後事件數量:', filteredEvents.length);
+            console.log('🎨 renderEvents - 篩選後事件數量:', filteredEvents.length, '當前視圖:', currentView);
+            
+            // 清空容器
+            if (container) {
+                container.innerHTML = '';
+            }
             
             // 排序事件
             filteredEvents.sort((a, b) => {
