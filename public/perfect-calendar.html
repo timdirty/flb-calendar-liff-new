@@ -4140,7 +4140,9 @@ async function loadTodayEvents() {
             
             const courseTypes = [
                 { key: 'esm', name: 'ESM' },
-                { key: 'spm', name: 'SPM' }
+                { key: 'spm', name: 'SPM' },
+                { key: 'boost', name: 'BOOST' },
+                { key: 'spike', name: 'SPIKE' }
             ];
             
             // 獲取已篩選的事件（不包含視圖篩選）
@@ -4154,7 +4156,11 @@ async function loadTodayEvents() {
                 const classesOfThisType = filteredEvents.filter(event => {
                     // 檢查課別
                     const title = event.title.toLowerCase();
-                    return title.includes(courseType.key.toLowerCase());
+                    const description = (event.description || '').toLowerCase();
+                    
+                    // 檢查標題和描述中是否包含課別關鍵字
+                    return title.includes(courseType.key.toLowerCase()) || 
+                           description.includes(courseType.key.toLowerCase());
                 });
                 
                 // 只有有課程的課別才顯示按鈕
@@ -4256,6 +4262,8 @@ async function loadTodayEvents() {
                     return getWeekdayRange(quickFilter);
                 case 'esm':
                 case 'spm':
+                case 'boost':
+                case 'spike':
                     // 課別篩選不需要日期範圍，返回 null
                     return null;
                 default:
@@ -4346,9 +4354,12 @@ async function loadTodayEvents() {
                 }
                 
                 // 課別快速篩選
-                if (currentQuickFilter && (currentQuickFilter === 'esm' || currentQuickFilter === 'spm')) {
+                if (currentQuickFilter && ['esm', 'spm', 'boost', 'spike'].includes(currentQuickFilter)) {
                     const title = event.title.toLowerCase();
-                    if (!title.includes(currentQuickFilter.toLowerCase())) {
+                    const description = (event.description || '').toLowerCase();
+                    const keyword = currentQuickFilter.toLowerCase();
+                    
+                    if (!title.includes(keyword) && !description.includes(keyword)) {
                         return false;
                     }
                 }
@@ -4693,9 +4704,12 @@ async function loadTodayEvents() {
                 }
                 
                 // 課別快速篩選
-                if (currentQuickFilter && (currentQuickFilter === 'esm' || currentQuickFilter === 'spm')) {
+                if (currentQuickFilter && ['esm', 'spm', 'boost', 'spike'].includes(currentQuickFilter)) {
                     const title = event.title.toLowerCase();
-                    if (!title.includes(currentQuickFilter.toLowerCase())) {
+                    const description = (event.description || '').toLowerCase();
+                    const keyword = currentQuickFilter.toLowerCase();
+                    
+                    if (!title.includes(keyword) && !description.includes(keyword)) {
                         return false;
                     }
                 }
