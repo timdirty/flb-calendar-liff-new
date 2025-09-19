@@ -1358,36 +1358,41 @@
             body {
                 overflow-x: hidden;
                 overflow-y: auto;
+                margin: 0;
+                padding: 0;
             }
             
             .container {
-                padding: 8px;
+                padding: 0;
                 max-width: 100%;
-                /* 移除任何滑動限制 */
+                margin: 0;
             }
             
             /* 篩選區域完全固定，絕對不會移動 */
             .control-section {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                z-index: 1000;
-                background: white;
-                padding: 8px;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-                /* 確保篩選區域永遠固定在頂部 */
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                z-index: 9999 !important;
+                background: white !important;
+                padding: 8px !important;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+                width: 100% !important;
+                height: auto !important;
+                /* 確保篩選區域永遠固定在頂部，絕對不會移動 */
             }
             
             /* 主內容區域，為固定篩選區域留出空間 */
             .main-content {
-                margin-top: 200px; /* 為固定篩選區域留出空間 */
+                margin-top: 220px !important; /* 為固定篩選區域留出更多空間 */
+                padding: 8px;
                 /* 讓整個頁面可以正常滑動 */
             }
             
             /* 移除視圖按鈕的 sticky 定位，因為篩選區域已經固定 */
             .view-buttons {
-                position: static;
+                position: static !important;
             }
 
             .header {
@@ -3392,63 +3397,102 @@
             }
         }
 
-        // 綁定快速篩選按鈕事件監聽器
+        // 重做快速篩選功能 - 使用最簡單直接的方法
         function bindQuickFilterButtons() {
-            const buttons = document.querySelectorAll('.quick-filter-btn');
-            console.log('🔗 綁定快速篩選按鈕，找到按鈕數量:', buttons.length);
+            console.log('🔄 重做快速篩選功能...');
             
-            if (buttons.length === 0) {
-                console.log('⚠️ 沒有找到快速篩選按鈕，跳過綁定');
-                return;
-            }
-            
-            // 直接為每個按鈕綁定事件
-            buttons.forEach((button, index) => {
-                const quickFilter = button.getAttribute('data-quick');
-                console.log(`🔗 綁定按鈕 ${index + 1}: ${quickFilter}`);
-                
-                // 移除舊的事件監聽器
-                button.removeEventListener('click', handleQuickFilterClick);
-                // 添加新的事件監聽器
-                button.addEventListener('click', handleQuickFilterClick);
-                
-                // 確保按鈕可點擊
-                button.style.pointerEvents = 'auto';
-                button.style.cursor = 'pointer';
-                button.style.userSelect = 'none';
-                
-                console.log(`✅ 按鈕 ${quickFilter} 事件監聽器綁定完成`);
+            // 清除所有現有的快速篩選按鈕
+            const existingButtons = document.querySelectorAll('.quick-filter-btn');
+            existingButtons.forEach(btn => {
+                btn.remove();
             });
             
-            console.log('🎉 所有快速篩選按鈕事件監聽器綁定完成');
+            // 重新生成快速篩選按鈕
+            generateQuickFilterButtons();
+            
+            console.log('✅ 快速篩選功能重做完成');
         }
         
-        // 快速篩選按鈕點擊處理函數
-        function handleQuickFilterClick(event) {
-            console.log('🔍 快速篩選按鈕被點擊！事件目標:', event.target);
-            console.log('🔍 事件目標類名:', event.target.className);
+        // 生成快速篩選按鈕
+        function generateQuickFilterButtons() {
+            console.log('🎨 生成快速篩選按鈕...');
             
-            const button = event.target;
-            const quickFilter = button.getAttribute('data-quick');
-            
-            console.log('🔍 獲取的 data-quick 屬性:', quickFilter);
-            
-            if (!quickFilter) {
-                console.log('❌ 無法獲取 data-quick 屬性');
-                return;
+            // 今日快速篩選
+            const todayContainer = document.getElementById('todayQuickFilters');
+            if (todayContainer) {
+                const buttonsContainer = todayContainer.querySelector('.quick-filter-buttons');
+                if (buttonsContainer) {
+                    buttonsContainer.innerHTML = `
+                        <button class="btn btn-outline-primary quick-filter-btn" data-quick="today" onclick="handleQuickFilterDirect('today')">今天</button>
+                        <button class="btn btn-outline-primary quick-filter-btn" data-quick="tomorrow" onclick="handleQuickFilterDirect('tomorrow')">明天</button>
+                        <button class="btn btn-outline-primary quick-filter-btn" data-quick="dayAfterTomorrow" onclick="handleQuickFilterDirect('dayAfterTomorrow')">後天</button>
+                    `;
+                }
             }
             
-            console.log('🔍 準備調用 handleQuickFilter:', quickFilter);
-            event.preventDefault();
-            event.stopPropagation();
-            
-            // 直接調用 handleQuickFilter 函數
-            try {
-                handleQuickFilter(quickFilter);
-                console.log('✅ handleQuickFilter 調用成功');
-            } catch (error) {
-                console.error('❌ handleQuickFilter 調用失敗:', error);
+            // 本週快速篩選
+            const weekContainer = document.getElementById('weekQuickFilters');
+            if (weekContainer) {
+                const buttonsContainer = weekContainer.querySelector('.quick-filter-buttons');
+                if (buttonsContainer) {
+                    buttonsContainer.innerHTML = `
+                        <button class="btn btn-outline-primary quick-filter-btn" data-quick="monday" onclick="handleQuickFilterDirect('monday')">週一</button>
+                        <button class="btn btn-outline-primary quick-filter-btn" data-quick="tuesday" onclick="handleQuickFilterDirect('tuesday')">週二</button>
+                        <button class="btn btn-outline-primary quick-filter-btn" data-quick="wednesday" onclick="handleQuickFilterDirect('wednesday')">週三</button>
+                        <button class="btn btn-outline-primary quick-filter-btn" data-quick="thursday" onclick="handleQuickFilterDirect('thursday')">週四</button>
+                        <button class="btn btn-outline-primary quick-filter-btn" data-quick="friday" onclick="handleQuickFilterDirect('friday')">週五</button>
+                    `;
+                }
             }
+            
+            // 課別快速篩選
+            const courseContainer = document.getElementById('courseTypeQuickFilters');
+            if (courseContainer) {
+                const buttonsContainer = courseContainer.querySelector('.quick-filter-buttons');
+                if (buttonsContainer) {
+                    buttonsContainer.innerHTML = `
+                        <button class="btn btn-outline-primary quick-filter-btn" data-quick="esm" onclick="handleQuickFilterDirect('esm')">ESM</button>
+                        <button class="btn btn-outline-primary quick-filter-btn" data-quick="spm" onclick="handleQuickFilterDirect('spm')">SPM</button>
+                        <button class="btn btn-outline-primary quick-filter-btn" data-quick="boost" onclick="handleQuickFilterDirect('boost')">BOOST</button>
+                        <button class="btn btn-outline-primary quick-filter-btn" data-quick="spike" onclick="handleQuickFilterDirect('spike')">SPIKE</button>
+                    `;
+                }
+            }
+            
+            console.log('✅ 快速篩選按鈕生成完成');
+        }
+        
+        // 直接處理快速篩選點擊 - 最簡單的方法
+        function handleQuickFilterDirect(quickFilter) {
+            console.log('🔍 快速篩選按鈕被點擊！', quickFilter);
+            
+            // 更新按鈕狀態
+            const allButtons = document.querySelectorAll('.quick-filter-btn');
+            allButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-quick') === quickFilter) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // 設置快速篩選
+            currentQuickFilter = quickFilter;
+            
+            // 應用快速篩選的日期範圍
+            if (quickFilter && quickFilter !== 'all') {
+                const dateRange = getQuickFilterDateRange(quickFilter);
+                if (dateRange) {
+                    window.currentQuickFilterRange = dateRange;
+                }
+            } else {
+                window.currentQuickFilterRange = null;
+            }
+            
+            // 更新統計和渲染
+            updateStats();
+            renderEvents();
+            
+            console.log('✅ 快速篩選處理完成');
         }
 
 
@@ -4128,7 +4172,7 @@ async function loadTodayEvents() {
 
         // 重寫課別快速篩選功能 - 簡化版本
         function updateCourseTypeQuickFilters() {
-            console.log('🚀 開始重寫課別快速篩選功能...');
+            console.log('🔄 更新課別快速篩選...');
             
             // 檢查基本條件
             if (!allEvents || allEvents.length === 0) {
@@ -4142,9 +4186,7 @@ async function loadTodayEvents() {
                 return;
             }
             
-            console.log('✅ 基本條件檢查通過，開始生成按鈕...');
-            
-            // 直接統計各課別數量
+            // 統計各課別數量
             const esmCount = allEvents.filter(e => 
                 (e.title || '').toLowerCase().includes('esm') || 
                 (e.description || '').toLowerCase().includes('esm')
@@ -4167,35 +4209,31 @@ async function loadTodayEvents() {
             
             console.log(`📊 課別統計: ESM=${esmCount}, SPM=${spmCount}, BOOST=${boostCount}, SPIKE=${spikeCount}`);
             
-            // 生成按鈕HTML
+            // 生成按鈕HTML - 使用簡單的onclick
             let buttonsHTML = '';
             
             if (esmCount > 0) {
-                buttonsHTML += `<button class="btn btn-outline-primary quick-filter-btn" data-quick="esm">ESM (${esmCount})</button>`;
+                buttonsHTML += `<button class="btn btn-outline-primary quick-filter-btn" data-quick="esm" onclick="handleQuickFilterDirect('esm')">ESM (${esmCount})</button>`;
             }
             
             if (spmCount > 0) {
-                buttonsHTML += `<button class="btn btn-outline-primary quick-filter-btn" data-quick="spm">SPM (${spmCount})</button>`;
+                buttonsHTML += `<button class="btn btn-outline-primary quick-filter-btn" data-quick="spm" onclick="handleQuickFilterDirect('spm')">SPM (${spmCount})</button>`;
             }
             
             if (boostCount > 0) {
-                buttonsHTML += `<button class="btn btn-outline-primary quick-filter-btn" data-quick="boost">BOOST (${boostCount})</button>`;
+                buttonsHTML += `<button class="btn btn-outline-primary quick-filter-btn" data-quick="boost" onclick="handleQuickFilterDirect('boost')">BOOST (${boostCount})</button>`;
             }
             
             if (spikeCount > 0) {
-                buttonsHTML += `<button class="btn btn-outline-primary quick-filter-btn" data-quick="spike">SPIKE (${spikeCount})</button>`;
+                buttonsHTML += `<button class="btn btn-outline-primary quick-filter-btn" data-quick="spike" onclick="handleQuickFilterDirect('spike')">SPIKE (${spikeCount})</button>`;
             }
             
-            // 直接更新HTML
+            // 更新HTML
             const buttonsContainer = container.querySelector('.quick-filter-buttons');
             if (buttonsContainer) {
                 buttonsContainer.innerHTML = buttonsHTML;
-                console.log('✅ 按鈕HTML已更新');
-            } else {
-                console.log('❌ 找不到按鈕容器');
+                console.log('✅ 課別快速篩選按鈕已更新');
             }
-            
-            console.log('🎉 課別快速篩選功能重寫完成');
         }
 
         // 處理快速篩選
