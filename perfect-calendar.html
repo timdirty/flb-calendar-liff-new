@@ -3297,22 +3297,38 @@
         function autoScrollToViewButtons() {
             console.log('🔄 開始自動滾動到視圖按鈕');
             
+            // 使用與第一次載入時相同的滑動邏輯
             setTimeout(() => {
-                try {
-                    const viewButtons = document.querySelector('.view-buttons');
-                    if (viewButtons) {
-                        console.log('✅ 找到視圖按鈕，開始滾動');
-                        viewButtons.scrollIntoView({ 
-                            behavior: 'smooth', 
-                            block: 'start' 
+                // 滑動到視圖按鈕區域，讓今日本週每月按鈕切齊頂部
+                const viewButtons = document.querySelector('.view-buttons');
+                
+                if (viewButtons) {
+                    // 計算視圖按鈕的位置，讓按鈕齊平頂部
+                    const viewButtonsRect = viewButtons.getBoundingClientRect();
+                    const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const targetScrollTop = currentScrollTop + viewButtonsRect.top;
+                    
+                    // 滑動到視圖按鈕區域，讓按鈕齊平頂部
+                    window.scrollTo({
+                        top: targetScrollTop,
+                        behavior: 'smooth'
+                    });
+                    console.log(`已自動滑動到視圖按鈕區域，讓今日本週每月按鈕切齊頂部`);
+                } else {
+                    // 如果沒有找到視圖按鈕，則滑動到主內容區域
+                    const mainContent = document.querySelector('.main-content');
+                    if (mainContent) {
+                        const controlSection = document.querySelector('.control-section');
+                        const controlHeight = controlSection ? controlSection.offsetHeight : 0;
+                        
+                        window.scrollTo({
+                            top: controlHeight + 10,
+                            behavior: 'smooth'
                         });
-                    } else {
-                        console.log('⚠️ 未找到視圖按鈕');
+                        console.log(`已自動滑動到主內容區域，篩選區塊高度: ${controlHeight}px`);
                     }
-                } catch (error) {
-                    console.error('❌ 自動滾動失敗:', error);
                 }
-            }, 50);
+            }, 100);
         }
 
         // 模糊比對講師選項
