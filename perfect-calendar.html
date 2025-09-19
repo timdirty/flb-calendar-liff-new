@@ -3373,18 +3373,23 @@
             const isMobile = window.innerWidth <= 768 || 
                            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
                            navigator.userAgent.includes('LIFF') ||
-                           window.navigator.standalone === true;
+                           window.navigator.standalone === true ||
+                           (typeof liff !== 'undefined' && liff.isInClient());
             
             console.log('📱 手機端檢測:', {
                 innerWidth: window.innerWidth,
                 userAgent: navigator.userAgent,
-                isMobile: isMobile
+                isMobile: isMobile,
+                liffAvailable: typeof liff !== 'undefined',
+                liffInClient: typeof liff !== 'undefined' ? liff.isInClient() : false
             });
             
             if (!isMobile) {
                 console.log('🖥️ 桌面端，跳過滑動功能');
                 return;
             }
+            
+            console.log('📱 開始設置滑動功能...');
             
             let startX = 0;
             let startY = 0;
@@ -3400,6 +3405,7 @@
                 startX = e.touches[0].clientX;
                 startY = e.touches[0].clientY;
                 isSwipe = false;
+                console.log('📱 觸控開始:', { startX, startY });
             }, { passive: true });
             
             // 觸控移動
@@ -3411,6 +3417,8 @@
                 
                 const diffX = startX - endX;
                 const diffY = startY - endY;
+                
+                console.log('📱 觸控移動:', { diffX, diffY, isSwipe });
                 
                 // 判斷是否為水平滑動（水平距離大於垂直距離）
                 if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 30) {
@@ -3453,6 +3461,8 @@
             
             // 觸控結束
             document.addEventListener('touchend', function(e) {
+                console.log('📱 觸控結束:', { isSwipe, startX, endX });
+                
                 // 重置視覺反饋
                 const viewButtons = document.querySelector('.view-buttons');
                 if (viewButtons) {
@@ -3467,6 +3477,7 @@
                 }
                 
                 if (!isSwipe || !startX || !endX) {
+                    console.log('📱 非滑動操作，重置變量');
                     // 重置變量
                     startX = 0;
                     startY = 0;
@@ -3484,12 +3495,19 @@
                     const nextIndex = (currentViewIndex + 1) % viewOrder.length;
                     const nextView = viewOrder[nextIndex];
                     
+                    console.log(`📱 向左滑動：從 ${currentView} 切換到 ${nextView}`);
+                    
                     // 先觸發按鈕視覺反饋
                     highlightViewButton(nextView);
                     
                     // 切換視圖
                     switchView(nextView);
-                    console.log(`📱 向左滑動：切換到 ${nextView}`);
+                    
+                    // 強制更新按鈕狀態
+                    setTimeout(() => {
+                        updateViewButtonStates();
+                        console.log(`📱 按鈕狀態已更新到 ${nextView}`);
+                    }, 100);
                     
                     // 添加切換動畫 - 更平順
                     if (viewButtons) {
@@ -3503,12 +3521,19 @@
                     const prevIndex = currentViewIndex === 0 ? viewOrder.length - 1 : currentViewIndex - 1;
                     const prevView = viewOrder[prevIndex];
                     
+                    console.log(`📱 向右滑動：從 ${currentView} 切換到 ${prevView}`);
+                    
                     // 先觸發按鈕視覺反饋
                     highlightViewButton(prevView);
                     
                     // 切換視圖
                     switchView(prevView);
-                    console.log(`📱 向右滑動：切換到 ${prevView}`);
+                    
+                    // 強制更新按鈕狀態
+                    setTimeout(() => {
+                        updateViewButtonStates();
+                        console.log(`📱 按鈕狀態已更新到 ${prevView}`);
+                    }, 100);
                     
                     // 添加切換動畫 - 更平順
                     if (viewButtons) {
@@ -3937,6 +3962,12 @@ async function loadTodayEvents() {
             // 切換視圖
             switchView(view);
             
+            // 強制更新按鈕狀態
+            setTimeout(() => {
+                updateViewButtonStates();
+                console.log(`📱 按鈕狀態已更新到 ${view}`);
+            }, 50);
+            
             // 強制重新渲染
             setTimeout(() => {
                 updateStats();
@@ -3953,21 +3984,37 @@ async function loadTodayEvents() {
                 // 移除舊的事件監聽器
                 button.removeEventListener('click', handleViewButtonClick);
                 button.removeEventListener('touchstart', handleViewButtonClick);
+                button.removeEventListener('touchend', handleViewButtonClick);
                 
                 // 添加點擊事件監聽器
                 button.addEventListener('click', handleViewButtonClick);
                 
                 // 添加觸控事件監聽器（LIFF環境）
                 button.addEventListener('touchstart', handleViewButtonClick, { passive: false });
+                button.addEventListener('touchend', handleViewButtonClick, { passive: false });
                 
                 // 確保按鈕可點擊
                 button.style.pointerEvents = 'auto';
                 button.style.cursor = 'pointer';
                 button.style.userSelect = 'none';
                 button.style.touchAction = 'manipulation';
+                button.style.webkitUserSelect = 'none';
+                button.style.webkitTouchCallout = 'none';
+                
+                // 添加點擊測試
+                button.onclick = function(e) {
+                    console.log(`📱 按鈕 onclick 觸發: ${button.getAttribute('data-view')}`);
+                    handleViewButtonClick.call(this, e);
+                };
                 
                 console.log(`✅ 按鈕 ${index + 1} 綁定完成: ${button.getAttribute('data-view')}`);
             });
+            
+            // 強制更新按鈕狀態
+            setTimeout(() => {
+                updateViewButtonStates();
+                console.log('📱 按鈕狀態已強制更新');
+            }, 100);
         }
 
         // 更新視圖按鈕狀態
