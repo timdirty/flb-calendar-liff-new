@@ -1339,6 +1339,31 @@
             /* 移除視圖按鈕的 sticky 定位，因為篩選區域已經固定 */
             .view-buttons {
                 position: static !important;
+                /* 添加滑動提示 */
+                position: relative;
+            }
+            
+            /* 滑動提示指示器 */
+            .view-buttons::after {
+                content: '← 左右滑動切換 →';
+                position: absolute;
+                top: -20px;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 0.7rem;
+                color: rgba(255, 193, 7, 0.8);
+                background: rgba(255, 255, 255, 0.9);
+                padding: 2px 8px;
+                border-radius: 10px;
+                white-space: nowrap;
+                animation: swipeHint 3s ease-in-out infinite;
+                z-index: 10;
+            }
+            
+            /* 滑動提示動畫 */
+            @keyframes swipeHint {
+                0%, 100% { opacity: 0.6; transform: translateX(-50%) translateY(0); }
+                50% { opacity: 1; transform: translateX(-50%) translateY(-2px); }
             }
 
             .header {
@@ -3266,8 +3291,121 @@
         }
 
 
+        // 手機端左右滑動切換視圖功能
+        function setupMobileSwipeNavigation() {
+            // 檢查是否為手機端
+            const isMobile = window.innerWidth <= 768;
+            if (!isMobile) return;
+            
+            let startX = 0;
+            let startY = 0;
+            let endX = 0;
+            let endY = 0;
+            let isSwipe = false;
+            
+            // 視圖順序：今日、本週、本月、全部
+            const viewOrder = ['今日', '本週', '本月', '全部'];
+            
+            // 觸控開始
+            document.addEventListener('touchstart', function(e) {
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                isSwipe = false;
+            }, { passive: true });
+            
+            // 觸控移動
+            document.addEventListener('touchmove', function(e) {
+                if (!startX || !startY) return;
+                
+                endX = e.touches[0].clientX;
+                endY = e.touches[0].clientY;
+                
+                const diffX = startX - endX;
+                const diffY = startY - endY;
+                
+                // 判斷是否為水平滑動（水平距離大於垂直距離）
+                if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                    isSwipe = true;
+                    // 防止頁面滾動
+                    e.preventDefault();
+                    
+                    // 添加滑動視覺反饋
+                    const viewButtons = document.querySelector('.view-buttons');
+                    if (viewButtons) {
+                        viewButtons.style.transform = `translateX(${diffX * 0.1}px)`;
+                        viewButtons.style.transition = 'none';
+                    }
+                }
+            }, { passive: false });
+            
+            // 觸控結束
+            document.addEventListener('touchend', function(e) {
+                // 重置視覺反饋
+                const viewButtons = document.querySelector('.view-buttons');
+                if (viewButtons) {
+                    viewButtons.style.transform = 'translateX(0)';
+                    viewButtons.style.transition = 'transform 0.3s ease';
+                }
+                
+                if (!isSwipe || !startX || !endX) {
+                    // 重置變量
+                    startX = 0;
+                    startY = 0;
+                    endX = 0;
+                    endY = 0;
+                    isSwipe = false;
+                    return;
+                }
+                
+                const diffX = startX - endX;
+                const currentViewIndex = viewOrder.indexOf(currentView);
+                
+                if (diffX > 50) {
+                    // 向左滑動：切換到下一個視圖
+                    const nextIndex = (currentViewIndex + 1) % viewOrder.length;
+                    const nextView = viewOrder[nextIndex];
+                    switchView(nextView);
+                    console.log(`📱 向左滑動：切換到 ${nextView}`);
+                    
+                    // 添加切換動畫
+                    if (viewButtons) {
+                        viewButtons.style.transform = 'translateX(-10px)';
+                        setTimeout(() => {
+                            viewButtons.style.transform = 'translateX(0)';
+                        }, 100);
+                    }
+                } else if (diffX < -50) {
+                    // 向右滑動：切換到上一個視圖
+                    const prevIndex = currentViewIndex === 0 ? viewOrder.length - 1 : currentViewIndex - 1;
+                    const prevView = viewOrder[prevIndex];
+                    switchView(prevView);
+                    console.log(`📱 向右滑動：切換到 ${prevView}`);
+                    
+                    // 添加切換動畫
+                    if (viewButtons) {
+                        viewButtons.style.transform = 'translateX(10px)';
+                        setTimeout(() => {
+                            viewButtons.style.transform = 'translateX(0)';
+                        }, 100);
+                    }
+                }
+                
+                // 重置變量
+                startX = 0;
+                startY = 0;
+                endX = 0;
+                endY = 0;
+                isSwipe = false;
+            }, { passive: true });
+            
+            console.log('📱 手機端滑動導航已啟用：左右滑動切換視圖');
+        }
+
         // 設置事件監聽器
         function setupEventListeners() {
+            // 手機端左右滑動切換視圖功能
+            setupMobileSwipeNavigation();
+            
             // 講師篩選事件監聽器
             const instructorSelect = document.getElementById('instructorSelect');
             if (instructorSelect) {
