@@ -3178,23 +3178,19 @@
                     const quickFilters = document.getElementById('quickFilters');
                     const viewButtons = document.querySelector('.view-buttons');
                     
-                    // 在手機版本中，不自動滑動，避免整個頁面滑動
-                    if (window.innerWidth > 768) {
-                        if (quickFilters && quickFilters.style.display !== 'none') {
-                            quickFilters.scrollIntoView({ 
-                                behavior: 'smooth', 
-                                block: 'start'
-                            });
-                            console.log('已自動滑動到快速篩選區域');
-                        } else if (viewButtons) {
-                            viewButtons.scrollIntoView({ 
-                                behavior: 'smooth', 
-                                block: 'start'
-                            });
-                            console.log('已自動滑動到視圖按鈕區域');
-                        }
-                    } else {
-                        console.log('手機版本：跳過自動滑動');
+                    // 自動滑動到視圖按鈕區域，讓按鈕齊平頂部
+                    if (viewButtons) {
+                        viewButtons.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start'
+                        });
+                        console.log('已自動滑動到視圖按鈕區域');
+                    } else if (quickFilters && quickFilters.style.display !== 'none') {
+                        quickFilters.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start'
+                        });
+                        console.log('已自動滑動到快速篩選區域');
                     }
                 }, 1000);
             }
@@ -3314,11 +3310,9 @@
                     calendarSection.style.display = 'block';
                 }
                 
-                // 在手機版本中，不自動滑動到行事曆區域
-                if (window.innerWidth > 768 && calendarSection) {
+                // 自動滑動到行事曆區域
+                if (calendarSection) {
                     calendarSection.scrollIntoView({ behavior: 'smooth' });
-                } else {
-                    console.log('手機版本：跳過行事曆區域自動滑動');
                 }
             }
         }
@@ -3375,7 +3369,8 @@
             });
             
             // 為快速篩選按鈕添加事件監聽器（初始化時可能還沒有動態按鈕）
-            // bindQuickFilterButtons(); // 移到動態按鈕生成後調用
+            // 綁定快速篩選按鈕事件監聽器
+            bindQuickFilterButtons();
             
             // 綁定用戶按鈕事件監聽器
             const bindUserBtn = document.getElementById('bindUserBtn');
@@ -3398,37 +3393,22 @@
                 const quickFilter = button.getAttribute('data-quick');
                 console.log(`🔗 綁定按鈕 ${index + 1}: ${quickFilter}`);
                 
-                // 移除舊的事件監聽器
-                button.removeEventListener('click', handleQuickFilterClick);
-                // 添加新的事件監聽器
-                button.addEventListener('click', handleQuickFilterClick);
+                // 移除所有舊的事件監聽器
+                const newButton = button.cloneNode(true);
+                button.parentNode.replaceChild(newButton, button);
                 
-                // 添加測試用的 onclick 屬性作為備用
-                button.onclick = function(event) {
-                    console.log('🔍 onclick 事件被觸發！');
-                    handleQuickFilterClick(event);
+                // 添加直接的 onclick 事件
+                newButton.onclick = function(event) {
+                    console.log('🔍 快速篩選按鈕被點擊！', quickFilter);
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleQuickFilter(quickFilter);
                 };
                 
-                // 添加視覺反饋
-                button.style.cursor = 'pointer';
-                button.style.pointerEvents = 'auto'; // 確保可以點擊
-                
-                // 移除舊的 hover 事件監聽器
-                button.removeEventListener('mouseenter', button._hoverEnter);
-                button.removeEventListener('mouseleave', button._hoverLeave);
-                
-                // 添加新的 hover 事件監聽器
-                button._hoverEnter = function() {
-                    this.style.transform = 'translateY(-1px)';
-                    this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
-                };
-                button._hoverLeave = function() {
-                    this.style.transform = 'translateY(0)';
-                    this.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-                };
-                
-                button.addEventListener('mouseenter', button._hoverEnter);
-                button.addEventListener('mouseleave', button._hoverLeave);
+                // 確保按鈕可點擊
+                newButton.style.pointerEvents = 'auto';
+                newButton.style.cursor = 'pointer';
+                newButton.style.userSelect = 'none';
                 
                 console.log(`✅ 按鈕 ${quickFilter} 事件監聽器綁定完成`);
             });
