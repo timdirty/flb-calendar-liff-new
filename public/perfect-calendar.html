@@ -2707,13 +2707,9 @@
                 loadSettings();
                 updateLoadingProgress(20);
                 
-                // 更新日期時間
+                // 更新日期時間（移除背景監聽）
                 addLoadingLog('🕐 初始化時間系統...', 'info');
                 updateDateTime();
-                setInterval(updateDateTime, 1000);
-                
-                // 設置倒數計時更新
-                setInterval(updateAllCountdowns, 60000); // 每分鐘更新一次
                 updateLoadingProgress(30);
                 
                 // 先載入行事曆資料，再初始化LIFF
@@ -2775,20 +2771,9 @@
                         hideLoadingAnimation();
                         console.log('系統初始化完成');
                         
-                        // 重新綁定視圖按鈕（確保按鈕可點擊）
-                        setTimeout(() => {
-                            console.log('🔄 系統初始化完成，開始綁定按鈕...');
-                            bindViewButtons();
-                            
-                            // 強制再次綁定按鈕（確保手機端正常工作）
-                            setTimeout(() => {
-                                console.log('🔄 延遲綁定按鈕（手機端確保）...');
-                                bindViewButtons();
-                                
-                                // iOS Safari 特殊測試
-                                testIOSButtons();
-                            }, 1000);
-                        }, 500);
+                        // 綁定視圖按鈕（移除重複綁定）
+                        console.log('🔄 系統初始化完成，開始綁定按鈕...');
+                        bindViewButtons();
                         
                         // 自動滑動到行事曆區域（僅行動裝置）
                         autoScrollToCalendar();
@@ -3482,10 +3467,8 @@
             
             
             
-            // 設置初始選中狀態
-            setTimeout(() => {
-                updateViewButtonStates();
-            }, 100);
+            // 設置初始選中狀態（移除延遲）
+            updateViewButtonStates();
             
             // 快速篩選功能已移除
             
@@ -3864,18 +3847,11 @@ async function loadTodayEvents() {
             // 切換視圖
             switchView(view);
             
-            // 強制更新按鈕狀態
-            setTimeout(() => {
-                updateViewButtonStates();
-                console.log(`📱 按鈕狀態已更新到 ${view}`);
-            }, 50);
-            
-            // 強制重新渲染
-            setTimeout(() => {
-                updateStats();
-                renderEvents();
-                console.log(`📱 視圖已切換到 ${view}，事件已重新渲染`);
-            }, 100);
+            // 更新按鈕狀態和重新渲染（移除延遲）
+            updateViewButtonStates();
+            updateStats();
+            renderEvents();
+            console.log(`📱 視圖已切換到 ${view}，事件已重新渲染`);
         }
 
         // 為視圖按鈕添加事件監聽器
@@ -3967,19 +3943,9 @@ async function loadTodayEvents() {
                 console.log(`✅ 按鈕 ${index + 1} 綁定完成: ${button.getAttribute('data-view')}`);
             });
             
-            // 強制更新按鈕狀態
-            setTimeout(() => {
-                updateViewButtonStates();
-                console.log('📱 按鈕狀態已強制更新');
-            }, 100);
-            
-            // iOS Safari 特殊處理：強制重新綁定
-            if (isIOS) {
-                setTimeout(() => {
-                    console.log('🍎 iOS Safari 強制重新綁定按鈕...');
-                    bindViewButtons();
-                }, 2000);
-            }
+            // 更新按鈕狀態（移除延遲）
+            updateViewButtonStates();
+            console.log('📱 按鈕狀態已更新');
         }
 
         // 更新視圖按鈕狀態
@@ -4328,12 +4294,10 @@ async function loadTodayEvents() {
             
             container.innerHTML = filteredEvents.map(event => createEventCard(event)).join('');
             
-            // 觸發事件卡片動畫
-            setTimeout(() => {
-                animateEventCards();
-                // 更新倒數計時
-                updateAllCountdowns();
-            }, 100);
+            // 觸發事件卡片動畫（移除延遲）
+            animateEventCards();
+            // 更新倒數計時
+            updateAllCountdowns();
         }
         
         // 從標題解析時間
