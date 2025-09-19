@@ -1360,21 +1360,28 @@
                 overflow-x: hidden;
             }
             
-            /* 恢復滑動效果 */
+            /* 篩選區域固定，不被滑動影響 */
+            .control-section {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+                background: white;
+                padding: 8px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+            
+            /* 主內容區域，為固定篩選區域留出空間 */
             .main-content {
+                margin-top: 200px; /* 為固定篩選區域留出空間 */
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
             }
             
-            /* 讓視圖按鈕可以滑動到頂部 */
+            /* 移除視圖按鈕的 sticky 定位，因為篩選區域已經固定 */
             .view-buttons {
-                position: sticky;
-                top: 0;
-                z-index: 10;
-                background: rgba(255, 255, 255, 0.95);
-                backdrop-filter: blur(10px);
-                padding: 8px 0;
-                margin: -8px 0 8px 0;
+                position: static;
             }
 
             .header {
@@ -3389,31 +3396,44 @@
                 return;
             }
             
+            // 使用事件委託，在父容器上綁定事件
+            const quickFiltersContainer = document.getElementById('quickFilters');
+            if (quickFiltersContainer) {
+                // 移除舊的事件監聽器
+                quickFiltersContainer.removeEventListener('click', handleQuickFilterDelegate);
+                // 添加新的事件監聽器
+                quickFiltersContainer.addEventListener('click', handleQuickFilterDelegate);
+                console.log('✅ 事件委託綁定完成');
+            }
+            
+            // 確保所有按鈕都可點擊
             buttons.forEach((button, index) => {
                 const quickFilter = button.getAttribute('data-quick');
-                console.log(`🔗 綁定按鈕 ${index + 1}: ${quickFilter}`);
-                
-                // 移除所有舊的事件監聽器
-                const newButton = button.cloneNode(true);
-                button.parentNode.replaceChild(newButton, button);
-                
-                // 添加直接的 onclick 事件
-                newButton.onclick = function(event) {
-                    console.log('🔍 快速篩選按鈕被點擊！', quickFilter);
-                    event.preventDefault();
-                    event.stopPropagation();
-                    handleQuickFilter(quickFilter);
-                };
+                console.log(`🔗 設置按鈕 ${index + 1}: ${quickFilter}`);
                 
                 // 確保按鈕可點擊
-                newButton.style.pointerEvents = 'auto';
-                newButton.style.cursor = 'pointer';
-                newButton.style.userSelect = 'none';
+                button.style.pointerEvents = 'auto';
+                button.style.cursor = 'pointer';
+                button.style.userSelect = 'none';
                 
-                console.log(`✅ 按鈕 ${quickFilter} 事件監聽器綁定完成`);
+                console.log(`✅ 按鈕 ${quickFilter} 樣式設置完成`);
             });
             
             console.log('🎉 所有快速篩選按鈕事件監聽器綁定完成');
+        }
+        
+        // 事件委託處理函數
+        function handleQuickFilterDelegate(event) {
+            const button = event.target.closest('.quick-filter-btn');
+            if (!button) return;
+            
+            const quickFilter = button.getAttribute('data-quick');
+            if (!quickFilter) return;
+            
+            console.log('🔍 快速篩選按鈕被點擊！', quickFilter);
+            event.preventDefault();
+            event.stopPropagation();
+            handleQuickFilter(quickFilter);
         }
 
         // 快速篩選按鈕點擊處理函數
@@ -3626,6 +3646,11 @@ async function loadTodayEvents() {
                     updateTodayQuickFilters();
                     updateWeekQuickFilters();
                     updateCourseTypeQuickFilters();
+                    
+                    // 重新綁定快速篩選按鈕事件
+                    setTimeout(() => {
+                        bindQuickFilterButtons();
+                    }, 100);
             
             console.log(`✅ 完整事件載入完成: ${allEvents.length} 個事件`);
             addLoadingLog(`✅ 載入完成！共 ${allEvents.length} 個事件`, 'success');
@@ -3808,6 +3833,11 @@ async function loadTodayEvents() {
             updateTodayQuickFilters();
             updateWeekQuickFilters();
             updateCourseTypeQuickFilters();
+            
+            // 重新綁定快速篩選按鈕事件
+            setTimeout(() => {
+                bindQuickFilterButtons();
+            }, 100);
             
             // 如果是今日視圖，預設選中「今天」快速篩選
             if (view === 'today') {
