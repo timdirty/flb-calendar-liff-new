@@ -2453,10 +2453,14 @@
         </div>
 
                     <!-- 統計信息文字顯示 -->
-                    <div class="stats-text" id="statsText" style="text-align: center; margin-top: 8px; padding: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; font-size: 0.75rem; color: rgba(51, 51, 51, 0.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">
-                        <span id="totalEventsText">總事件: 0</span> | 
-                        <span id="instructorCountText">講師: 0</span> | 
-                        <span id="dateRangeText">日期: -</span>
+                    <div class="stats-text" id="statsText" style="text-align: center; margin-top: 8px; padding: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; font-size: 0.75rem; color: rgba(51, 51, 51, 0.8); max-width: 100%;">
+                        <div class="stats-row" style="margin-bottom: 4px;">
+                            <span id="totalEventsText">總事件: 0</span> | 
+                            <span id="instructorCountText">講師: 0</span>
+                        </div>
+                        <div class="stats-row">
+                            <span id="dateRangeText">日期: -</span>
+                        </div>
                 </div>
                     
 
@@ -3289,6 +3293,28 @@
             }, 1000);
         }
 
+        // 自動滾動到視圖按鈕（通用函數）
+        function autoScrollToViewButtons() {
+            console.log('🔄 開始自動滾動到視圖按鈕');
+            
+            setTimeout(() => {
+                try {
+                    const viewButtons = document.querySelector('.view-buttons');
+                    if (viewButtons) {
+                        console.log('✅ 找到視圖按鈕，開始滾動');
+                        viewButtons.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start' 
+                        });
+                    } else {
+                        console.log('⚠️ 未找到視圖按鈕');
+                    }
+                } catch (error) {
+                    console.error('❌ 自動滾動失敗:', error);
+                }
+            }, 50);
+        }
+
         // 模糊比對講師選項
         function findBestMatchingOption(selectElement, targetName) {
             if (!selectElement || !targetName) return null;
@@ -3552,8 +3578,10 @@
                     }
                     
                     updateViewButtonStates();
+                    updateTimeFilterOptions(); // 更新時段篩選選項
                     updateStats();
                     renderEvents();
+                    autoScrollToViewButtons(); // 自動滾動到視圖按鈕
                     console.log('📱 講師選擇後智慧切換視圖:', currentView);
                 });
             }
@@ -3564,6 +3592,7 @@
                 timeFilter.addEventListener('change', function() {
                     updateStats();
                     renderEvents();
+                    autoScrollToViewButtons(); // 自動滾動到視圖按鈕
                 });
             }
             
@@ -3573,6 +3602,7 @@
                 dateFilter.addEventListener('change', function() {
                     updateStats();
                     renderEvents();
+                    autoScrollToViewButtons(); // 自動滾動到視圖按鈕
                 });
             }
             
@@ -3998,6 +4028,94 @@ async function loadTodayEvents() {
             }
         }
 
+        // 更新時段篩選選項（智慧算法）
+        function updateTimeFilterOptions() {
+            const timeFilter = document.getElementById('timeFilter');
+            const instructorFilter = document.getElementById('instructorSelect').value;
+            
+            if (!timeFilter) return;
+            
+            // 保存當前選擇
+            const currentValue = timeFilter.value;
+            
+            // 清空現有選項
+            timeFilter.innerHTML = '<option value="">全部時段</option>';
+            
+            if (instructorFilter) {
+                // 獲取該講師的所有事件
+                const instructorEvents = allEvents.filter(event => 
+                    event && event.instructor === instructorFilter
+                );
+                
+                // 統計該講師的時段分布
+                const timeSlots = {
+                    morning: 0,
+                    afternoon: 0,
+                    evening: 0
+                };
+                
+                instructorEvents.forEach(event => {
+                    if (event.start) {
+                        const eventDate = new Date(event.start);
+                        const hour = eventDate.getHours();
+                        
+                        if (hour >= 6 && hour < 12) {
+                            timeSlots.morning++;
+                        } else if (hour >= 12 && hour < 18) {
+                            timeSlots.afternoon++;
+                        } else if (hour >= 18 && hour < 24) {
+                            timeSlots.evening++;
+                        }
+                    }
+                });
+                
+                // 只添加有事件的時段選項
+                if (timeSlots.morning > 0) {
+                    const option = document.createElement('option');
+                    option.value = 'morning';
+                    option.textContent = `上午 (${timeSlots.morning})`;
+                    timeFilter.appendChild(option);
+                }
+                
+                if (timeSlots.afternoon > 0) {
+                    const option = document.createElement('option');
+                    option.value = 'afternoon';
+                    option.textContent = `下午 (${timeSlots.afternoon})`;
+                    timeFilter.appendChild(option);
+                }
+                
+                if (timeSlots.evening > 0) {
+                    const option = document.createElement('option');
+                    option.value = 'evening';
+                    option.textContent = `晚上 (${timeSlots.evening})`;
+                    timeFilter.appendChild(option);
+                }
+                
+                console.log('🕐 智慧時段篩選更新:', timeSlots);
+            } else {
+                // 全部講師時，顯示所有時段選項
+                const timeOptions = [
+                    { value: 'morning', text: '上午' },
+                    { value: 'afternoon', text: '下午' },
+                    { value: 'evening', text: '晚上' }
+                ];
+                
+                timeOptions.forEach(optionData => {
+                    const option = document.createElement('option');
+                    option.value = optionData.value;
+                    option.textContent = optionData.text;
+                    timeFilter.appendChild(option);
+                });
+            }
+            
+            // 恢復之前的選擇（如果該選項仍然存在）
+            if (currentValue && timeFilter.querySelector(`option[value="${currentValue}"]`)) {
+                timeFilter.value = currentValue;
+            } else {
+                timeFilter.value = '';
+            }
+        }
+
         // 視圖按鈕點擊處理函數
         function handleViewButtonClick(e) {
             console.log('🎯 handleViewButtonClick 被調用', {
@@ -4031,6 +4149,7 @@ async function loadTodayEvents() {
             updateViewButtonStates();
             updateStats();
             renderEvents();
+            autoScrollToViewButtons(); // 自動滾動到視圖按鈕
             console.log(`📱 視圖已切換到 ${view}，事件已重新渲染`);
         }
 
