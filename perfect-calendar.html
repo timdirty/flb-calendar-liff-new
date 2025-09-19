@@ -1359,6 +1359,23 @@
                 max-width: 100%;
                 overflow-x: hidden;
             }
+            
+            /* 恢復滑動效果 */
+            .main-content {
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            /* 讓視圖按鈕可以滑動到頂部 */
+            .view-buttons {
+                position: sticky;
+                top: 0;
+                z-index: 10;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                padding: 8px 0;
+                margin: -8px 0 8px 0;
+            }
 
             .header {
                 padding: 12px;
@@ -2309,14 +2326,6 @@
                 <div class="control-group">
                         <label for="dateFilter">指定日期</label>
                         <input type="date" id="dateFilter" />
-                </div>
-                <div class="control-group">
-                        <label for="sortOrder">排序方式</label>
-                        <select id="sortOrder">
-                            <option value="time">按時間排序</option>
-                            <option value="instructor">按講師排序</option>
-                            <option value="title">按標題排序</option>
-                        </select>
                 </div>
                     <div class="control-group">
                         <div class="view-buttons">
@@ -3356,13 +3365,6 @@
                 });
             }
             
-            // 排序方式事件監聽器
-            const sortOrder = document.getElementById('sortOrder');
-            if (sortOrder) {
-                sortOrder.addEventListener('change', function() {
-                    renderEvents();
-                });
-            }
             
             // 為視圖按鈕添加事件監聽器
             document.querySelectorAll('.view-buttons .btn-primary').forEach(button => {
@@ -4301,7 +4303,6 @@ async function loadTodayEvents() {
             const instructorFilter = document.getElementById('instructorSelect').value;
             const timeFilter = document.getElementById('timeFilter').value;
             const dateFilter = document.getElementById('dateFilter').value;
-            const sortOrder = document.getElementById('sortOrder').value;
             
             // 使用簡單直接的篩選邏輯（恢復到昨天版本）
             let filteredEvents = allEvents.filter(event => {
@@ -4424,16 +4425,8 @@ async function loadTodayEvents() {
                 if (isEventAPast && isEventBUpcoming) return 1;
                 
                 // 在相同狀態下，按時間排序
-                switch (sortOrder) {
-                    case 'time':
-                        return eventA - eventB;
-                    case 'instructor':
-                        return a.instructor.localeCompare(b.instructor);
-                    case 'title':
-                        return a.title.localeCompare(b.title);
-                    default:
-                        return eventA - eventB;
-                }
+                // 按時間排序
+                return eventA - eventB;
             });
             
             if (filteredEvents.length === 0) {
