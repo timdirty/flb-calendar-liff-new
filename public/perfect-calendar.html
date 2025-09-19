@@ -4934,6 +4934,19 @@ async function loadTodayEvents() {
             // 因為 CalDAV 已經提供了正確的日期
             return baseDate;
         }
+
+        // 計算週次（ISO 8601 標準）
+        function getWeekNumber(date) {
+            const target = new Date(date.valueOf());
+            const dayNr = (date.getDay() + 6) % 7;
+            target.setDate(target.getDate() - dayNr + 3);
+            const firstThursday = target.valueOf();
+            target.setMonth(0, 1);
+            if (target.getDay() !== 4) {
+                target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
+            }
+            return 1 + Math.ceil((firstThursday - target) / 604800000);
+        }
         
         // 檢查是否為停課/請假
         function isCancelled(event) {
@@ -5158,7 +5171,7 @@ async function loadTodayEvents() {
                     <div class="event-details">
                         <div class="event-detail">
                             <i class="fas fa-calendar"></i>
-                            <span>${displayDate}</span>
+                            <span>${displayDate} (第${getWeekNumber(startDate)}週)</span>
                         </div>
                         <div class="event-detail">
                             <i class="fas fa-clock"></i>
