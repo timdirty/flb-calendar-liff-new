@@ -1370,6 +1370,29 @@
                     box-shadow: 0 6px 12px rgba(0, 123, 255, 0.4);
                 }
             }
+            
+            /* 視圖按鈕選中效果 */
+            .view-buttons .btn-primary.active {
+                background: linear-gradient(135deg, #ffc107, #ff9800) !important;
+                color: rgba(0, 0, 0, 0.9) !important;
+                border: 2px solid #ff9800 !important;
+                box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3) !important;
+                transform: scale(1.05) !important;
+                font-weight: 600 !important;
+            }
+            
+            .view-buttons .btn-primary:not(.active) {
+                background: rgba(255, 193, 7, 0.3) !important;
+                color: rgba(0, 0, 0, 0.7) !important;
+                border: 1px solid rgba(255, 193, 7, 0.5) !important;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+            }
+            
+            .view-buttons .btn-primary:hover {
+                background: rgba(255, 193, 7, 0.6) !important;
+                transform: scale(1.02) !important;
+                transition: all 0.2s ease !important;
+            }
 
             .header {
                 padding: 12px;
@@ -2326,10 +2349,10 @@
                     
                     <!-- 滑動提示指示器 -->
                     <div class="swipe-hint-container" style="text-align: center; margin-top: 8px; padding: 4px 0;">
-                        <div class="swipe-hint-text" style="font-size: 0.6rem; color: rgba(255, 193, 7, 0.8); background: rgba(255, 255, 255, 0.9); padding: 3px 12px; border-radius: 12px; display: inline-block; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); animation: swipeHint 3s ease-in-out infinite;">
-                            <i class="fas fa-arrow-left" style="margin-right: 4px;"></i>
+                        <div class="swipe-hint-text" style="font-size: 0.8rem; color: rgba(0, 0, 0, 0.8); background: rgba(255, 193, 7, 0.9); padding: 6px 16px; border-radius: 16px; display: inline-block; box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15); border: 2px solid rgba(255, 193, 7, 0.6); animation: swipeHint 3s ease-in-out infinite; font-weight: 500;">
+                            <i class="fas fa-arrow-left" style="margin-right: 6px; font-size: 0.9rem;"></i>
                             左右滑動切換
-                            <i class="fas fa-arrow-right" style="margin-left: 4px;"></i>
+                            <i class="fas fa-arrow-right" style="margin-left: 6px; font-size: 0.9rem;"></i>
                         </div>
                     </div>
 
@@ -3562,8 +3585,27 @@
                 switchView(view);
             }
             
+            // 更新視圖按鈕狀態
+            function updateViewButtonStates() {
+                const viewButtons = document.querySelectorAll('.view-buttons .btn-primary');
+                viewButtons.forEach(button => {
+                    const view = button.getAttribute('data-view');
+                    if (view === currentView) {
+                        button.classList.add('active');
+                        console.log(`✅ 按鈕 ${view} 設為選中狀態`);
+                    } else {
+                        button.classList.remove('active');
+                    }
+                });
+            }
+            
             // 立即綁定視圖按鈕
             bindViewButtons();
+            
+            // 設置初始選中狀態
+            setTimeout(() => {
+                updateViewButtonStates();
+            }, 100);
             
             // 快速篩選功能已移除
             
@@ -3925,6 +3967,9 @@ async function loadTodayEvents() {
             
             const chineseView = viewMap[view] || view;
             currentView = chineseView;
+            
+            // 更新按鈕選中狀態
+            updateViewButtonStates();
             window.currentView = chineseView; // 設置全局變量
             
             // 更新按鈕狀態 - 只針對視圖按鈕
@@ -4328,12 +4373,12 @@ async function loadTodayEvents() {
             // 處理位置資訊
             let location = event.location;
             if (!location || location === 'nan' || location === 'null' || location === '' || location.trim() === '') {
-                location = '樂程坊 Funlearnbar';
+                location = '樂程坊 FunLearnBar';
             }
         
-            // 如果是站前教室，設定預設地址
-            if (location === '站前教室') {
-                location = '台北市中正區開封街1段2號9樓';
+            // 統一地址為樂程坊 FunLearnBar
+            if (location === '站前教室' || location === '台北市中正區開封街1段2號9樓' || location === '台北市中正區開封街一段2號9樓') {
+                location = '樂程坊 FunLearnBar';
             }
             
             // 講師底色
