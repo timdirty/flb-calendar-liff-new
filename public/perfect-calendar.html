@@ -3016,7 +3016,7 @@
                         
                         if (liff.isLoggedIn()) {
                             console.log('用戶已登入，獲取用戶資料...');
-                            liff.getProfile().then(profile => {
+                            liff.getProfile().then(async (profile) => {
                                 clearTimeout(timeout);
                                 console.log('獲取到用戶資料:', profile);
                                 currentUser = {
@@ -3135,7 +3135,7 @@
                 try {
                     if (liff.isLoggedIn()) {
                         console.log('用戶已登入，獲取用戶資料');
-                        liff.getProfile().then(profile => {
+                        liff.getProfile().then(async (profile) => {
                             console.log('獲取到用戶資料:', profile);
                             currentUser = {
                                 userId: profile.userId,
