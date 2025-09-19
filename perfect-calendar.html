@@ -3964,60 +3964,124 @@ async function loadTodayEvents() {
                 timeString = titleTime.timeString;
             } else {
                 // 使用 CalDAV 的時間
-                timeString = `${startDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${endDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
+                timeString = `${startDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })} - ${endDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })}`;
             }
             
-            // 計算倒數計時
-            const now = new Date();
-            const timeUntilStart = startDate - now;
-            const timeUntilEnd = endDate - now;
+            // 清理描述內容
+            let cleanDescription = event.description || '';
             
-            let countdownText = '';
-            let eventStatus = '';
+            // 移除技術標籤和重複資訊
+            cleanDescription = cleanDescription
+                .replace(/\[NOTION_SYNC\]/g, '')
+                .replace(/時間:.*?講師:/g, '')
+                .replace(/講師:.*?TA:/g, '')
+                .replace(/TA:.*?第一期:/g, '')
+                .replace(/第一期:/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
             
-            if (timeUntilEnd < 0) {
-                eventStatus = 'past';
-                countdownText = '已結束';
-            } else if (timeUntilStart < 0) {
-                eventStatus = 'ongoing';
-                countdownText = calculateCountdown(now, endDate);
-            } else {
-                eventStatus = 'upcoming';
-                countdownText = calculateCountdown(now, startDate);
+            // 尋找教案連結 - 從原始描述中提取
+            const notionUrlRegex = /\(https:\/\/www\.notion\.so\/([^)]+)\)/;
+            let notionMatch = event.description.match(notionUrlRegex);
+            
+            // 如果沒有找到括號內的連結，則匹配一般的 Notion 連結
+            if (!notionMatch) {
+                const generalNotionRegex = /https:\/\/www\.notion\.so\/([^)\s]+)/;
+                notionMatch = event.description.match(generalNotionRegex);
             }
             
-            // 生成馬卡龍顏色
-            const color = generateRandomMacaronColor();
+            let lessonButton = '';
+            if (notionMatch) {
+                const lessonUrl = `https://www.notion.so/${notionMatch[1]}`;
+                
+                // 提取教案名稱和類型
+                let lessonName = '查看教案';
+                let lessonType = '教案';
+                
+                // 從原始描述中提取教案資訊
+                const originalDescription = event.description;
+                
+                // 匹配各種教案格式，優先匹配括號前的教案名稱
+                const lessonMatch = originalDescription.match(/(ESM教案|SPM教案|SPIKE教案|BOOST教案|EV3教案|MINECRAFT教案)[:\s]*([^(]+?)(?:\s*\(https:\/\/www\.notion\.so)/);
+                if (lessonMatch && lessonMatch[2]) {
+                    lessonName = lessonMatch[2].trim();
+                    lessonType = lessonMatch[1].replace('教案', '');
+                }
+                
+                lessonButton = `
+                    <div class="lesson-section">
+                        <div class="lesson-label">${lessonType}教案</div>
+                        <a href="${lessonUrl}" target="_blank" class="lesson-button ${lessonType.toLowerCase()}">
+                            <i class="fas fa-book"></i> ${lessonName}
+                        </a>
+                    </div>
+                `;
+            }
+            
+            // 處理位置資訊
+            let location = event.location;
+            if (!location || location === 'nan' || location === 'null' || location === '' || location.trim() === '') {
+                location = '樂程坊 Funlearnbar';
+            }
+        
+            // 如果是站前教室，設定預設地址
+            if (location === '站前教室') {
+                location = '台北市中正區開封街1段2號9樓';
+            }
+            
+            // 講師底色
+            const instructorColor = instructorColors[event.instructor] || '#667eea';
+            const instructorStyle = instructorColors[event.instructor] ? 'custom-color' : '';
             
             return `
-                <div class="event-card ${eventStatus} ${isCancelledEvent ? 'cancelled' : ''}" data-event-id="${event.id}">
+                <div class="event-card ${isCancelledEvent ? 'cancelled-event' : ''}">
                     <div class="event-header">
-                        <div class="event-time">
-                            <i class="fas fa-clock"></i>
-                            <span>${timeString}</span>
+                        <div>
+                            <div class="event-title">
+                                ${event.title}
+                                ${isCancelledEvent ? '<span class="cancelled-badge"><i class="fas fa-ban"></i> ⚠️ 停課 ⚠️</span>' : ''}
+                            </div>
+                            <div class="event-instructor ${instructorStyle}" style="--instructor-color: ${instructorColor}">
+                                <i class="fas fa-user"></i> ${event.instructor}
+                            </div>
                         </div>
-                        <div class="event-date">
+                    </div>
+                    
+                    <div class="event-details">
+                        <div class="event-detail">
                             <i class="fas fa-calendar"></i>
                             <span>${displayDate}</span>
                         </div>
-                    </div>
-                    <div class="event-content">
-                        <h3 class="event-title">${event.title}</h3>
-                        <div class="event-instructor">
-                            <i class="fas fa-user"></i>
-                            <span>${event.instructor}</span>
+                        <div class="event-detail">
+                            <i class="fas fa-clock"></i>
+                            <span>${timeString}</span>
                         </div>
-                        ${event.description ? `<p class="event-description">${event.description}</p>` : ''}
-                        <div class="event-countdown">
-                            <i class="fas fa-hourglass-half"></i>
-                            <span>${countdownText}</span>
-                        </div>
-                    </div>
-                    <div class="event-footer">
-                        <div class="event-status ${eventStatus}">
-                            ${eventStatus === 'ongoing' ? '進行中' : eventStatus === 'past' ? '已結束' : '即將開始'}
+                        <div class="event-detail">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}" 
+                               target="_blank" 
+                               class="location-link"
+                               title="點擊查看地圖">
+                                <i class="fas fa-map-marked-alt location-map-icon"></i>
+                            <span>${location}</span>
+                                <i class="fas fa-external-link-alt location-external-icon"></i>
+                            </a>
                         </div>
                     </div>
+                    
+                    <div class="countdown-timer" 
+                         data-start-time="${event.start}" 
+                         data-end-time="${event.end}">
+                        <i class="fas fa-clock countdown-icon"></i>
+                        <span class="countdown-text">計算中...</span>
+                    </div>
+                    
+                    <div class="event-description">
+                        <h4><i class="fas fa-info-circle"></i> 課程描述</h4>
+                        <p>${cleanDescription || '無描述'}</p>
+                    </div>
+                    
+                    ${lessonButton}
                 </div>
             `;
         }
