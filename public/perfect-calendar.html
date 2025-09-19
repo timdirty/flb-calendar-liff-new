@@ -3611,19 +3611,6 @@
                 }, 100);
             }
             
-            // 更新視圖按鈕狀態
-            function updateViewButtonStates() {
-                const viewButtons = document.querySelectorAll('.view-buttons .btn-primary');
-                viewButtons.forEach(button => {
-                    const view = button.getAttribute('data-view');
-                    if (view === currentView) {
-                        button.classList.add('active');
-                        console.log(`✅ 按鈕 ${view} 設為選中狀態`);
-                    } else {
-                        button.classList.remove('active');
-                    }
-                });
-            }
             
             // 立即綁定視圖按鈕
             bindViewButtons();
@@ -3979,6 +3966,20 @@ async function loadTodayEvents() {
             if (currentValue && allInstructors.includes(currentValue)) {
                 select.value = currentValue;
             }
+        }
+
+        // 更新視圖按鈕狀態
+        function updateViewButtonStates() {
+            const viewButtons = document.querySelectorAll('.view-buttons .btn-primary');
+            viewButtons.forEach(button => {
+                const view = button.getAttribute('data-view');
+                if (view === currentView) {
+                    button.classList.add('active');
+                    console.log(`✅ 按鈕 ${view} 設為選中狀態`);
+                } else {
+                    button.classList.remove('active');
+                }
+            });
         }
 
         // 切換檢視模式
