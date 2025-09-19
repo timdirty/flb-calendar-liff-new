@@ -1466,6 +1466,51 @@
             transform: translateY(-1px);
         }
 
+        /* 重新整理浮動按鈕 */
+        .refresh-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            user-select: none;
+        }
+
+        .refresh-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
+            background: linear-gradient(45deg, #764ba2, #667eea);
+        }
+
+        .refresh-button:active {
+            transform: scale(0.95);
+        }
+
+        .refresh-button i {
+            transition: transform 0.3s ease;
+        }
+
+        .refresh-button.loading i {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
         /* 響應式設計 */
         @media (max-width: 768px) {
             /* 整個頁面可以滑動 */
@@ -1737,6 +1782,15 @@
             .progress-step {
                 font-size: 0.7rem;
                 padding: 6px 8px;
+            }
+
+            /* 手機版重新整理按鈕 */
+            .refresh-button {
+                width: 50px;
+                height: 50px;
+                bottom: 15px;
+                right: 15px;
+                font-size: 20px;
             }
         }
 
@@ -2637,6 +2691,11 @@
         </div>
     </div>
 
+    <!-- 重新整理浮動按鈕 -->
+    <div id="refreshButton" class="refresh-button" onclick="forceRefresh()" title="重新整理行事曆">
+        <i class="fas fa-sync-alt"></i>
+    </div>
+
     <script>
         // 全域變數
         let allEvents = [];
@@ -3516,6 +3575,55 @@
             return (maxLen - matrix[len2][len1]) / maxLen;
         }
 
+
+        // 強制重新整理行事曆
+        async function forceRefresh() {
+            const refreshButton = document.getElementById('refreshButton');
+            const icon = refreshButton.querySelector('i');
+            
+            // 添加載入動畫
+            refreshButton.classList.add('loading');
+            icon.style.animation = 'spin 1s linear infinite';
+            
+            try {
+                console.log('🔄 開始強制重新整理行事曆...');
+                
+                // 顯示載入動畫
+                showLoadingAnimation();
+                
+                // 重新載入事件數據
+                await loadTodayEvents();
+                
+                // 重新綁定所有事件監聽器
+                bindViewButtons();
+                updateViewButtonStates();
+                
+                // 更新統計和渲染
+                updateStats();
+                renderEvents();
+                
+                // 自動滾動到行事曆區域
+                autoScrollToCalendar();
+                
+                console.log('✅ 行事曆重新整理完成');
+                
+                // 顯示成功提示
+                addLoadingLog('✅ 行事曆已重新整理', 'success');
+                
+            } catch (error) {
+                console.error('❌ 重新整理失敗:', error);
+                addLoadingLog('❌ 重新整理失敗: ' + error.message, 'error');
+            } finally {
+                // 移除載入動畫
+                refreshButton.classList.remove('loading');
+                icon.style.animation = '';
+                
+                // 隱藏載入動畫
+                setTimeout(() => {
+                    hideLoadingAnimation();
+                }, 500);
+            }
+        }
 
         // 顯示指定步驟
         function showStep(stepNumber) {
