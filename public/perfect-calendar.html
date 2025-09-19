@@ -3052,6 +3052,10 @@
                         updateViewButtonStates();
                         console.log('🔄 今日按鈕預設狀態已設置');
                         
+                        // 更新時段篩選選項（智慧算法）
+                        updateTimeFilterOptions();
+                        console.log('🕐 時段篩選智慧算法已更新');
+                        
                         // 自動滑動到行事曆區域（僅行動裝置）
                         autoScrollToCalendar();
                     } catch (error) {
@@ -4370,72 +4374,59 @@ async function loadTodayEvents() {
             // 清空現有選項
             timeFilter.innerHTML = '<option value="">全部時段</option>';
             
+            // 獲取要統計的事件（根據講師篩選）
+            let eventsToAnalyze = allEvents;
             if (instructorFilter) {
-                // 獲取該講師的所有事件
-                const instructorEvents = allEvents.filter(event => 
+                eventsToAnalyze = allEvents.filter(event => 
                     event && event.instructor === instructorFilter
                 );
-                
-                // 統計該講師的時段分布
-                const timeSlots = {
-                    morning: 0,
-                    afternoon: 0,
-                    evening: 0
-                };
-                
-                instructorEvents.forEach(event => {
-                    if (event.start) {
-                        const eventDate = new Date(event.start);
-                        const hour = eventDate.getHours();
-                        
-                        if (hour >= 6 && hour < 12) {
-                            timeSlots.morning++;
-                        } else if (hour >= 12 && hour < 18) {
-                            timeSlots.afternoon++;
-                        } else if (hour >= 18 && hour < 24) {
-                            timeSlots.evening++;
-                        }
-                    }
-                });
-                
-                // 只添加有事件的時段選項
-                if (timeSlots.morning > 0) {
-                    const option = document.createElement('option');
-                    option.value = 'morning';
-                    option.textContent = `上午 (${timeSlots.morning})`;
-                    timeFilter.appendChild(option);
-                }
-                
-                if (timeSlots.afternoon > 0) {
-                    const option = document.createElement('option');
-                    option.value = 'afternoon';
-                    option.textContent = `下午 (${timeSlots.afternoon})`;
-                    timeFilter.appendChild(option);
-                }
-                
-                if (timeSlots.evening > 0) {
-                    const option = document.createElement('option');
-                    option.value = 'evening';
-                    option.textContent = `晚上 (${timeSlots.evening})`;
-                    timeFilter.appendChild(option);
-                }
-                
-                console.log('🕐 智慧時段篩選更新:', timeSlots);
-            } else {
-                // 全部講師時，顯示所有時段選項
-                const timeOptions = [
-                    { value: 'morning', text: '上午' },
-                    { value: 'afternoon', text: '下午' },
-                    { value: 'evening', text: '晚上' }
-                ];
-                
-                timeOptions.forEach(optionData => {
-                    const option = document.createElement('option');
-                    option.value = optionData.value;
-                    option.textContent = optionData.text;
-                    timeFilter.appendChild(option);
-                });
             }
+            
+            // 統計時段分布
+            const timeSlots = {
+                morning: 0,
+                afternoon: 0,
+                evening: 0
+            };
+            
+            eventsToAnalyze.forEach(event => {
+                if (event.start) {
+                    const eventDate = new Date(event.start);
+                    const hour = eventDate.getHours();
+                    
+                    if (hour >= 6 && hour < 12) {
+                        timeSlots.morning++;
+                    } else if (hour >= 12 && hour < 18) {
+                        timeSlots.afternoon++;
+                    } else if (hour >= 18 && hour < 24) {
+                        timeSlots.evening++;
+                    }
+                }
+            });
+            
+            // 只添加有事件的時段選項
+            if (timeSlots.morning > 0) {
+                const option = document.createElement('option');
+                option.value = 'morning';
+                option.textContent = `上午 (${timeSlots.morning})`;
+                timeFilter.appendChild(option);
+            }
+            
+            if (timeSlots.afternoon > 0) {
+                const option = document.createElement('option');
+                option.value = 'afternoon';
+                option.textContent = `下午 (${timeSlots.afternoon})`;
+                timeFilter.appendChild(option);
+            }
+            
+            if (timeSlots.evening > 0) {
+                const option = document.createElement('option');
+                option.value = 'evening';
+                option.textContent = `晚上 (${timeSlots.evening})`;
+                timeFilter.appendChild(option);
+            }
+            
+            console.log('🕐 智慧時段篩選更新:', timeSlots, '講師:', instructorFilter || '全部');
             
             // 恢復之前的選擇（如果該選項仍然存在）
             if (currentValue && timeFilter.querySelector(`option[value="${currentValue}"]`)) {
