@@ -1320,6 +1320,9 @@
                 width: 100% !important;
                 height: auto !important;
                 /* 確保篩選區域永遠固定在頂部，絕對不會移動 */
+                transform: translateZ(0) !important; /* 強制硬體加速 */
+                will-change: auto !important; /* 優化渲染性能 */
+                backface-visibility: hidden !important; /* 防止閃爍 */
             }
             
             /* 主內容區域，為固定篩選區域留出空間 */
@@ -3076,23 +3079,21 @@
             if (isMobile) {
                 // 延遲一點時間確保頁面完全載入
                 setTimeout(() => {
-                    // 優先滾動到快速篩選區域，如果沒有則滾動到視圖按鈕
-                    const quickFilters = document.getElementById('quickFilters');
-                    const viewButtons = document.querySelector('.view-buttons');
+                    // 滑動到主內容區域，而不是篩選區域
+                    // 這樣可以避免影響固定的篩選區塊
+                    const mainContent = document.querySelector('.main-content');
                     
-                    // 自動滑動到視圖按鈕區域，讓按鈕齊平頂部
-                    if (viewButtons) {
-                        viewButtons.scrollIntoView({ 
-                            behavior: 'smooth', 
-                            block: 'start'
+                    if (mainContent) {
+                        // 計算篩選區域的高度，確保滑動後內容不會被遮擋
+                        const controlSection = document.querySelector('.control-section');
+                        const controlHeight = controlSection ? controlSection.offsetHeight : 220;
+                        
+                        // 滑動到主內容區域的頂部，但考慮篩選區域的高度
+                        window.scrollTo({
+                            top: controlHeight,
+                            behavior: 'smooth'
                         });
-                        console.log('已自動滑動到視圖按鈕區域');
-                    } else if (quickFilters && quickFilters.style.display !== 'none') {
-                        quickFilters.scrollIntoView({ 
-                            behavior: 'smooth', 
-                            block: 'start'
-                        });
-                        console.log('已自動滑動到快速篩選區域');
+                        console.log('已自動滑動到主內容區域，篩選區塊保持固定');
                     }
                 }, 1000);
             }
@@ -3212,9 +3213,19 @@
                     calendarSection.style.display = 'block';
                 }
                 
-                // 自動滑動到行事曆區域
-                if (calendarSection) {
-                    calendarSection.scrollIntoView({ behavior: 'smooth' });
+                // 自動滑動到行事曆區域，但避免影響篩選區塊
+                const mainContent = document.querySelector('.main-content');
+                if (mainContent) {
+                    // 計算篩選區域的高度，確保滑動後內容不會被遮擋
+                    const controlSection = document.querySelector('.control-section');
+                    const controlHeight = controlSection ? controlSection.offsetHeight : 220;
+                    
+                    // 滑動到主內容區域的頂部，但考慮篩選區域的高度
+                    window.scrollTo({
+                        top: controlHeight,
+                        behavior: 'smooth'
+                    });
+                    console.log('已自動滑動到行事曆區域，篩選區塊保持固定');
                 }
             }
         }
