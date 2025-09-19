@@ -3663,9 +3663,30 @@ async function loadTodayEvents() {
                 if (data.success) {
             addLoadingLog(`📊 成功獲取 ${data.data.length} 個事件`, 'success');
             
-                    allEvents = data.data;
+                    // 過濾掉 null 值和無效事件
+                    allEvents = data.data.filter(event => {
+                        if (!event) {
+                            console.warn('⚠️ loadTodayEvents: 發現 null 事件，已過濾');
+                            return false;
+                        }
+                        if (!event.start || !event.end || !event.title || !event.instructor) {
+                            console.warn('⚠️ loadTodayEvents: 事件缺少必要屬性，已過濾', event);
+                            return false;
+                        }
+                        return true;
+                    });
+                    
+                    console.log('🔍 loadTodayEvents: allEvents 過濾完成，數量:', allEvents.length);
+                    console.log('🔍 loadTodayEvents: allEvents 前5個事件:', allEvents.slice(0, 5));
+                    
+                    // 調試 allEvents 的狀態
+                    console.log('🔍 loadTodayEvents: 開始填充 allInstructors');
+                    console.log('🔍 loadTodayEvents: allEvents 長度:', allEvents.length);
+                    console.log('🔍 loadTodayEvents: allEvents 前3個事件的講師:', allEvents.slice(0, 3).map(event => event.instructor));
+                    
                     allInstructors = [...new Set(allEvents.map(event => event.instructor).filter(Boolean))];
             
+            console.log('🔍 loadTodayEvents: allInstructors 填充完成:', allInstructors);
             addLoadingLog(`👥 發現 ${allInstructors.length} 位講師`, 'info');
                     
                     // 為新講師生成隨機馬卡龍顏色（如果沒有保存的設置）
@@ -3675,7 +3696,7 @@ async function loadTodayEvents() {
                     }
                     
                     addLoadingLog('🔄 正在渲染事件列表...', 'info');
-                    populateInstructorDropdown();
+                    await populateInstructorDropdown();
                     renderEvents();
                     updateStats();
                     
@@ -3780,28 +3801,81 @@ async function loadTodayEvents() {
         }
 
         // 填充講師下拉選單
-        function populateInstructorDropdown() {
+        async function populateInstructorDropdown() {
             const select = document.getElementById('instructorSelect');
             const currentValue = select.value; // 保存當前選擇
             
             console.log('🔄 填充講師下拉選單，當前選擇:', currentValue);
             console.log('🔄 可用講師列表:', allInstructors);
             
-            select.innerHTML = '<option value="">全部講師</option>';
-            
-            allInstructors.forEach(instructor => {
-                const option = document.createElement('option');
-                option.value = instructor;
-                option.textContent = instructor;
-                select.appendChild(option);
-            });
-            
-            // 恢復之前的選擇
-            if (currentValue) {
-                select.value = currentValue;
-                console.log('🔄 恢復講師選擇:', currentValue);
-            } else {
-                console.log('🔄 沒有需要恢復的講師選擇');
+            try {
+                select.innerHTML = '<option value="">全部講師</option>';
+                
+                // 方法1: 使用 allInstructors
+                if (allInstructors && allInstructors.length > 0) {
+                    console.log('✅ 使用 allInstructors，數量:', allInstructors.length);
+                    allInstructors.forEach(instructor => {
+                        const option = document.createElement('option');
+                        option.value = instructor;
+                        option.textContent = instructor;
+                        select.appendChild(option);
+                    });
+                } else {
+                    // 方法2: 直接從 API 獲取並提取講師列表
+                    console.log('⚠️ allInstructors 為空，直接從 API 獲取講師列表');
+                    try {
+                        const response = await fetch('/api/events');
+                        const data = await response.json();
+                        
+                        if (data.success && data.data) {
+                            const instructors = [...new Set(data.data
+                                .filter(event => event && event.instructor)
+                                .map(event => event.instructor)
+                            )].sort();
+                            
+                            console.log('📡 從 API 獲取的講師列表:', instructors);
+                            
+                            instructors.forEach(instructor => {
+                                const option = document.createElement('option');
+                                option.value = instructor;
+                                option.textContent = instructor;
+                                select.appendChild(option);
+                            });
+                        } else {
+                            // 方法3: 使用硬編碼的測試講師
+                            console.log('⚠️ API 獲取失敗，使用測試講師');
+                            const testInstructors = ['AGNES', 'BELLA', 'TIM', 'ALICE'];
+                            testInstructors.forEach(instructor => {
+                                const option = document.createElement('option');
+                                option.value = instructor;
+                                option.textContent = `[測試] ${instructor}`;
+                                select.appendChild(option);
+                            });
+                        }
+                    } catch (apiError) {
+                        console.error('❌ API 調用失敗:', apiError);
+                        // 方法3: 使用硬編碼的測試講師
+                        const testInstructors = ['AGNES', 'BELLA', 'TIM', 'ALICE'];
+                        testInstructors.forEach(instructor => {
+                            const option = document.createElement('option');
+                            option.value = instructor;
+                            option.textContent = `[測試] ${instructor}`;
+                            select.appendChild(option);
+                        });
+                    }
+                }
+                
+                // 恢復之前的選擇
+                if (currentValue) {
+                    select.value = currentValue;
+                    console.log('🔄 恢復講師選擇:', currentValue);
+                }
+                
+                console.log('✅ populateInstructorDropdown 執行完成，講師選項數量:', select.options.length);
+            } catch (error) {
+                console.error('❌ populateInstructorDropdown 執行失敗:', error);
+                // 即使失敗也要確保有基本選項
+                select.innerHTML = '<option value="">全部講師</option><option value="ERROR">發生錯誤</option><option value="AGNES">[測試] AGNES</option><option value="BELLA">[測試] BELLA</option>';
             }
         }
 
@@ -3960,11 +4034,22 @@ async function loadTodayEvents() {
         // 更新視圖按鈕狀態
         function updateViewButtonStates() {
             const viewButtons = document.querySelectorAll('.view-buttons .btn-primary');
+            
+            // 中英文對應關係
+            const viewMap = {
+                '今日': 'today',
+                '本週': 'week', 
+                '本月': 'month',
+                '全部': 'all'
+            };
+            
+            const englishCurrentView = viewMap[currentView] || currentView;
+            
             viewButtons.forEach(button => {
                 const view = button.getAttribute('data-view');
-                if (view === currentView) {
+                if (view === englishCurrentView) {
                     button.classList.add('active');
-                    console.log(`✅ 按鈕 ${view} 設為選中狀態`);
+                    console.log(`✅ 按鈕 ${view} (${currentView}) 設為選中狀態`);
                 } else {
                     button.classList.remove('active');
                 }
@@ -4124,8 +4209,22 @@ async function loadTodayEvents() {
             
             console.log('🎨 renderEvents - 開始篩選，總事件數:', allEvents.length, '當前視圖:', currentView);
             
-            // 使用簡單直接的篩選邏輯
+            // 使用簡單直接的篩選邏輯，先過濾掉 null 值
             let filteredEvents = allEvents.filter(event => {
+                // 先檢查事件是否為 null 或 undefined
+                if (!event) {
+                    console.warn('⚠️ renderEvents: 發現 null 事件，已過濾');
+                    return false;
+                }
+                
+                // 檢查必要屬性是否存在
+                if (!event.start || !event.end || !event.title || !event.instructor) {
+                    console.warn('⚠️ renderEvents: 事件缺少必要屬性，已過濾', event);
+                    return false;
+                }
+                
+                return true;
+            }).filter(event => {
                 // 講師篩選
                 if (instructorFilter && event.instructor !== instructorFilter) {
                     return false;
@@ -4342,6 +4441,18 @@ async function loadTodayEvents() {
 
         // 創建事件卡片
         function createEventCard(event) {
+            // 檢查事件是否為 null 或 undefined
+            if (!event) {
+                console.error('❌ createEventCard: 事件為 null 或 undefined');
+                return '';
+            }
+            
+            // 檢查必要屬性是否存在
+            if (!event.start || !event.end || !event.title || !event.instructor) {
+                console.error('❌ createEventCard: 事件缺少必要屬性', event);
+                return '';
+            }
+            
             const startDate = new Date(event.start);
             const endDate = new Date(event.end);
             const isCancelledEvent = isCancelled(event);
