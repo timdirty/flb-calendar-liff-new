@@ -4345,6 +4345,14 @@ async function loadTodayEvents() {
                     }
                 }
                 
+                // 課別快速篩選
+                if (currentQuickFilter && (currentQuickFilter === 'esm' || currentQuickFilter === 'spm')) {
+                    const title = event.title.toLowerCase();
+                    if (!title.includes(currentQuickFilter.toLowerCase())) {
+                        return false;
+                    }
+                }
+                
                 // 視圖篩選
                 const eventDate = new Date(event.start);
                 const now = new Date();
@@ -4680,6 +4688,14 @@ async function loadTodayEvents() {
                     const filterDay = filterDate.getDate();
                     
                     if (eventYear !== filterYear || eventMonth !== filterMonth || eventDay !== filterDay) {
+                        return false;
+                    }
+                }
+                
+                // 課別快速篩選
+                if (currentQuickFilter && (currentQuickFilter === 'esm' || currentQuickFilter === 'spm')) {
+                    const title = event.title.toLowerCase();
+                    if (!title.includes(currentQuickFilter.toLowerCase())) {
                         return false;
                     }
                 }
