@@ -2419,8 +2419,7 @@
                         <div class="quick-filter-group" id="courseTypeQuickFilters" style="display: none;">
                             <h4>課別快速篩選</h4>
                             <div class="quick-filter-buttons">
-                                <button class="btn btn-outline-primary quick-filter-btn" data-quick="esm">ESM</button>
-                                <button class="btn btn-outline-primary quick-filter-btn" data-quick="spm">SPM</button>
+                                <!-- 按鈕會動態生成 -->
                             </div>
                         </div>
                     </div>
@@ -2794,6 +2793,11 @@
                         // 預設顯示今日篩選的快速選單但不強制選中
                         showQuickFilters('today');
                         // 不強制設置快速篩選，讓用戶自由選擇視圖
+                        
+                        // 初始化快速篩選按鈕
+                        updateTodayQuickFilters();
+                        updateWeekQuickFilters();
+                        updateCourseTypeQuickFilters();
                         
                         // 自動滑動到行事曆區域（僅行動裝置）
                         autoScrollToCalendar();
@@ -3466,6 +3470,17 @@
                 button.removeEventListener('click', handleQuickFilterClick);
                 // 添加新的事件監聽器
                 button.addEventListener('click', handleQuickFilterClick);
+                
+                // 添加視覺反饋
+                button.style.cursor = 'pointer';
+                button.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-1px)';
+                    this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+                });
+                button.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                });
             });
         }
 
@@ -4135,8 +4150,13 @@ async function loadTodayEvents() {
 
         // 更新課別快速篩選，只顯示有課的課別
         function updateCourseTypeQuickFilters() {
+            console.log('🔍 開始更新課別快速篩選...');
             const courseTypeQuickFilters = document.getElementById('courseTypeQuickFilters');
-            if (!courseTypeQuickFilters) return;
+            if (!courseTypeQuickFilters) {
+                console.log('❌ 找不到 courseTypeQuickFilters 元素');
+                return;
+            }
+            console.log('✅ 找到 courseTypeQuickFilters 元素');
             
             const courseTypes = [
                 { key: 'esm', name: 'ESM' },
@@ -4176,9 +4196,12 @@ async function loadTodayEvents() {
             // 更新按鈕顯示
             const quickFilterButtons = courseTypeQuickFilters.querySelector('.quick-filter-buttons');
             if (quickFilterButtons) {
+                console.log('✅ 找到 quick-filter-buttons 容器');
                 quickFilterButtons.innerHTML = '';
+                console.log('🔍 要顯示的按鈕數量:', buttonsToShow.length);
                 
-                buttonsToShow.forEach(buttonInfo => {
+                buttonsToShow.forEach((buttonInfo, index) => {
+                    console.log(`🔍 創建按鈕 ${index + 1}: ${buttonInfo.name} (${buttonInfo.count})`);
                     const button = document.createElement('button');
                     button.className = 'btn btn-outline-primary quick-filter-btn';
                     button.setAttribute('data-quick', buttonInfo.key);
@@ -4186,8 +4209,11 @@ async function loadTodayEvents() {
                     quickFilterButtons.appendChild(button);
                 });
                 
+                console.log('✅ 按鈕創建完成，開始綁定事件監聽器...');
                 // 重新綁定事件監聽器
                 bindQuickFilterButtons();
+            } else {
+                console.log('❌ 找不到 quick-filter-buttons 容器');
             }
         }
 
