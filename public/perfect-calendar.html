@@ -4776,7 +4776,8 @@ async function loadTodayEvents() {
             const title = event.title || '';
             const description = event.description || '';
             
-            const experienceKeywords = ['體驗', '體'];
+            // 更精確的體驗關鍵字檢測，避免誤判
+            const experienceKeywords = ['體驗'];
             
             return experienceKeywords.some(keyword => 
                 title.includes(keyword) || description.includes(keyword)

@@ -2548,10 +2548,10 @@
                         <div class="stats-row" style="margin-bottom: 4px;">
                             <span id="totalEventsText">總事件: 0</span> | 
                             <span id="instructorCountText">講師: 0</span>
-                        </div>
+                </div>
                         <div class="stats-row">
                             <span id="dateRangeText">日期: -</span>
-                        </div>
+                </div>
                 </div>
                     
 
@@ -4057,8 +4057,8 @@ async function loadTodayEvents() {
             console.log('🔄 可用講師列表:', allInstructors);
             
             try {
-                select.innerHTML = '<option value="">全部講師</option>';
-                
+            select.innerHTML = '<option value="">全部講師</option>';
+            
                 let instructors = [];
                 
                 // 方法1: 使用 allInstructors
@@ -4776,7 +4776,8 @@ async function loadTodayEvents() {
             const title = event.title || '';
             const description = event.description || '';
             
-            const experienceKeywords = ['體驗', '體'];
+            // 更精確的體驗關鍵字檢測，避免誤判
+            const experienceKeywords = ['體驗'];
             
             return experienceKeywords.some(keyword => 
                 title.includes(keyword) || description.includes(keyword)
@@ -5091,9 +5092,9 @@ async function loadTodayEvents() {
                         const maxDate = new Date(Math.max(...dates));
                         dateRange = `${minDate.toLocaleDateString('zh-TW')} - ${maxDate.toLocaleDateString('zh-TW')}`;
                     } else if (allEvents.length > 0) {
-                        const dates = allEvents.map(event => new Date(event.start));
-                        const minDate = new Date(Math.min(...dates));
-                        const maxDate = new Date(Math.max(...dates));
+                const dates = allEvents.map(event => new Date(event.start));
+                const minDate = new Date(Math.min(...dates));
+                const maxDate = new Date(Math.max(...dates));
                         dateRange = `${minDate.toLocaleDateString('zh-TW')} - ${maxDate.toLocaleDateString('zh-TW')}`;
                     }
                     break;
