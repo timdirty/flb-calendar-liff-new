@@ -3493,8 +3493,14 @@
             // 視圖順序：今日、本週、本月、全部
             const viewOrder = ['今日', '本週', '本月', '全部'];
             
-            // 觸控開始
+            // 觸控開始 - 只在非按鈕區域監聽
             document.addEventListener('touchstart', function(e) {
+                // 如果觸控的是按鈕，不處理滑動
+                if (e.target.closest('.view-buttons .btn-primary')) {
+                    console.log('📱 觸控按鈕，跳過滑動處理');
+                    return;
+                }
+                
                 startX = e.touches[0].clientX;
                 startY = e.touches[0].clientY;
                 isSwipe = false;
@@ -3504,6 +3510,11 @@
             // 觸控移動
             document.addEventListener('touchmove', function(e) {
                 if (!startX || !startY) return;
+                
+                // 如果觸控的是按鈕，不處理滑動
+                if (e.target.closest('.view-buttons .btn-primary')) {
+                    return;
+                }
                 
                 endX = e.touches[0].clientX;
                 endY = e.touches[0].clientY;
@@ -3516,8 +3527,10 @@
                 // 判斷是否為水平滑動（水平距離大於垂直距離）
                 if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 30) {
                     isSwipe = true;
-                    // 防止頁面滾動
-                    e.preventDefault();
+                    // 只在確認是滑動時才阻止默認行為
+                    if (Math.abs(diffX) > 50) {
+                        e.preventDefault();
+                    }
                     
                     // 添加滑動視覺反饋 - 更平順的過度
                     const viewButtons = document.querySelector('.view-buttons');
@@ -3554,6 +3567,12 @@
             
             // 觸控結束
             document.addEventListener('touchend', function(e) {
+                // 如果觸控的是按鈕，不處理滑動
+                if (e.target.closest('.view-buttons .btn-primary')) {
+                    console.log('📱 觸控按鈕結束，跳過滑動處理');
+                    return;
+                }
+                
                 console.log('📱 觸控結束:', { isSwipe, startX, endX });
                 
                 // 重置視覺反饋
@@ -3577,6 +3596,12 @@
                     endX = 0;
                     endY = 0;
                     isSwipe = false;
+                    
+                    // 確保按鈕在非滑動操作後仍然可點擊
+                    setTimeout(() => {
+                        bindViewButtons();
+                        console.log('📱 非滑動操作後重新綁定按鈕');
+                    }, 100);
                     return;
                 }
                 
@@ -3596,10 +3621,11 @@
                     // 切換視圖
                     switchView(nextView);
                     
-                    // 強制更新按鈕狀態
+                    // 強制更新按鈕狀態和重新綁定
                     setTimeout(() => {
                         updateViewButtonStates();
-                        console.log(`📱 按鈕狀態已更新到 ${nextView}`);
+                        bindViewButtons();
+                        console.log(`📱 按鈕狀態已更新到 ${nextView}，重新綁定按鈕`);
                     }, 100);
                     
                     // 添加切換動畫 - 更平順
@@ -3622,10 +3648,11 @@
                     // 切換視圖
                     switchView(prevView);
                     
-                    // 強制更新按鈕狀態
+                    // 強制更新按鈕狀態和重新綁定
                     setTimeout(() => {
                         updateViewButtonStates();
-                        console.log(`📱 按鈕狀態已更新到 ${prevView}`);
+                        bindViewButtons();
+                        console.log(`📱 按鈕狀態已更新到 ${prevView}，重新綁定按鈕`);
                     }, 100);
                     
                     // 添加切換動畫 - 更平順
@@ -3643,6 +3670,12 @@
                 endX = 0;
                 endY = 0;
                 isSwipe = false;
+                
+                // 確保滑動後按鈕仍然可點擊
+                setTimeout(() => {
+                    bindViewButtons();
+                    console.log('📱 滑動結束後重新綁定按鈕');
+                }, 200);
             }, { passive: true });
             
             console.log('📱 手機端滑動導航已啟用：左右滑動切換視圖');
