@@ -594,6 +594,7 @@
             box-shadow: 0 4px 15px rgba(255, 193, 7, 0.5);
             transform: translateY(-2px);
             font-weight: 700;
+            color: rgba(0, 0, 0, 0.9) !important; /* 確保選中時字體為深色 */
         }
 
         .btn-primary.active::after {
@@ -1401,6 +1402,10 @@
                 align-items: center;
                 justify-content: center;
             }
+            
+            .btn-primary.active {
+                color: rgba(0, 0, 0, 0.9) !important; /* 確保選中時字體為深色 */
+            }
 
             .events-container {
                 gap: 8px;
@@ -1556,6 +1561,10 @@
                 padding: 6px 2px;
                 font-size: 0.7rem;
                 min-height: 32px;
+            }
+            
+            .btn-primary.active {
+                color: rgba(0, 0, 0, 0.9) !important; /* 確保選中時字體為深色 */
             }
 
 
@@ -3075,32 +3084,27 @@
             console.log(`[比對過程] ${message}`);
         }
 
-        // 自動滑動到行事曆區域（僅行動裝置）
+        // 自動滑動到行事曆區域（所有裝置）
         function autoScrollToCalendar() {
-            // 檢查是否為行動裝置
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
-            
-            if (isMobile) {
-                // 延遲一點時間確保頁面完全載入
-                setTimeout(() => {
-                    // 滑動到主內容區域，而不是篩選區域
-                    // 這樣可以避免影響固定的篩選區塊
-                    const mainContent = document.querySelector('.main-content');
+            // 延遲一點時間確保頁面完全載入
+            setTimeout(() => {
+                // 滑動到主內容區域，而不是篩選區域
+                // 這樣可以避免影響固定的篩選區塊
+                const mainContent = document.querySelector('.main-content');
+                
+                if (mainContent) {
+                    // 計算篩選區域的高度，確保滑動後內容不會被遮擋
+                    const controlSection = document.querySelector('.control-section');
+                    const controlHeight = controlSection ? controlSection.offsetHeight : 0;
                     
-                    if (mainContent) {
-                        // 計算篩選區域的高度，確保滑動後內容不會被遮擋
-                        const controlSection = document.querySelector('.control-section');
-                        const controlHeight = controlSection ? controlSection.offsetHeight : 0;
-                        
-                        // 滑動到篩選區塊下方，讓篩選區塊完全可見
-                        window.scrollTo({
-                            top: controlHeight + 10, // 額外 10px 間距
-                            behavior: 'smooth'
-                        });
-                        console.log(`已自動滑動到篩選區塊下方，篩選區塊高度: ${controlHeight}px`);
-                    }
-                }, 1000);
-            }
+                    // 滑動到篩選區塊下方，讓篩選區塊完全可見
+                    window.scrollTo({
+                        top: controlHeight + 10, // 額外 10px 間距
+                        behavior: 'smooth'
+                    });
+                    console.log(`已自動滑動到篩選區塊下方，篩選區塊高度: ${controlHeight}px`);
+                }
+            }, 1000);
         }
 
         // 模糊比對講師選項
