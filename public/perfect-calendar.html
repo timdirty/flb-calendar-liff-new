@@ -1316,7 +1316,7 @@
                 right: 0 !important;
                 z-index: 9999 !important;
                 background: white !important;
-                padding: 8px !important;
+                padding: 6px !important; /* 減少內邊距 */
                 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
                 width: 100% !important;
                 height: auto !important;
@@ -1332,7 +1332,7 @@
             /* 主內容區域，為固定篩選區域留出空間 */
             .main-content {
                 margin-top: 0 !important; /* 移除頂部間距，讓內容緊貼篩選區塊 */
-                padding: 8px;
+                padding: 8px 8px 4px 8px; /* 減少底部間距 */
                 /* 讓整個頁面可以正常滑動 */
             }
             
@@ -1341,23 +1341,26 @@
                 position: static !important;
                 /* 添加滑動提示 */
                 position: relative;
+                margin: 4px 0 !important; /* 減少上下間距 */
             }
             
             /* 滑動提示指示器 */
             .view-buttons::after {
                 content: '← 左右滑動切換 →';
                 position: absolute;
-                top: -20px;
+                top: -25px;
                 left: 50%;
                 transform: translateX(-50%);
-                font-size: 0.7rem;
-                color: rgba(255, 193, 7, 0.8);
-                background: rgba(255, 255, 255, 0.9);
-                padding: 2px 8px;
-                border-radius: 10px;
+                font-size: 0.6rem;
+                color: rgba(255, 193, 7, 0.9);
+                background: rgba(255, 255, 255, 0.95);
+                padding: 3px 10px;
+                border-radius: 12px;
                 white-space: nowrap;
                 animation: swipeHint 3s ease-in-out infinite;
                 z-index: 10;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 193, 7, 0.3);
             }
             
             /* 滑動提示動畫 */
@@ -2313,7 +2316,7 @@
             </div>
                     
                     <!-- 統計信息文字顯示 -->
-                    <div class="stats-text" id="statsText" style="text-align: center; margin-top: 10px; padding: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; font-size: 0.9rem; color: rgba(51, 51, 51, 0.8);">
+                    <div class="stats-text" id="statsText" style="text-align: center; margin-top: 8px; padding: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; font-size: 0.75rem; color: rgba(51, 51, 51, 0.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">
                         <span id="totalEventsText">總事件: 0</span> | 
                         <span id="instructorCountText">講師: 0</span> | 
                         <span id="dateRangeText">日期: -</span>
@@ -3291,6 +3294,30 @@
         }
 
 
+        // 高亮視圖按鈕
+        function highlightViewButton(viewName) {
+            // 移除所有按鈕的 active 狀態
+            const allButtons = document.querySelectorAll('.view-buttons .btn');
+            allButtons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 添加目標按鈕的 active 狀態
+            const targetButton = document.querySelector(`[data-view="${viewName}"]`);
+            if (targetButton) {
+                targetButton.classList.add('active');
+                
+                // 添加高亮動畫
+                targetButton.style.transform = 'scale(1.05)';
+                targetButton.style.boxShadow = '0 4px 8px rgba(0, 123, 255, 0.3)';
+                
+                setTimeout(() => {
+                    targetButton.style.transform = 'scale(1)';
+                    targetButton.style.boxShadow = '';
+                }, 200);
+            }
+        }
+
         // 手機端左右滑動切換視圖功能
         function setupMobileSwipeNavigation() {
             // 檢查是否為手機端
@@ -3364,6 +3391,11 @@
                     // 向左滑動：切換到下一個視圖
                     const nextIndex = (currentViewIndex + 1) % viewOrder.length;
                     const nextView = viewOrder[nextIndex];
+                    
+                    // 先觸發按鈕視覺反饋
+                    highlightViewButton(nextView);
+                    
+                    // 切換視圖
                     switchView(nextView);
                     console.log(`📱 向左滑動：切換到 ${nextView}`);
                     
@@ -3378,6 +3410,11 @@
                     // 向右滑動：切換到上一個視圖
                     const prevIndex = currentViewIndex === 0 ? viewOrder.length - 1 : currentViewIndex - 1;
                     const prevView = viewOrder[prevIndex];
+                    
+                    // 先觸發按鈕視覺反饋
+                    highlightViewButton(prevView);
+                    
+                    // 切換視圖
                     switchView(prevView);
                     console.log(`📱 向右滑動：切換到 ${prevView}`);
                     
