@@ -3440,8 +3440,13 @@
             const instructorSelect = document.getElementById('instructorSelect');
             if (instructorSelect) {
                 instructorSelect.addEventListener('change', function() {
+                    // 選擇講師後重置為今日視圖
+                    currentView = '今日';
+                    window.currentView = '今日';
+                    updateViewButtonStates();
                     updateStats();
                     renderEvents();
+                    console.log('📱 講師選擇後重置為今日視圖');
                 });
             }
             
