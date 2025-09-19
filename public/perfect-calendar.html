@@ -1344,31 +1344,15 @@
                 margin: 4px 0 !important; /* 減少上下間距 */
             }
             
-            /* 滑動提示指示器 */
+            /* 移除原本的滑動提示指示器 */
             .view-buttons::after {
-                content: '← 左右滑動切換 →';
-                position: absolute;
-                top: -30px;
-                left: 50%;
-                transform: translateX(-50%);
-                font-size: 0.55rem;
-                color: rgba(255, 193, 7, 0.9);
-                background: rgba(255, 255, 255, 0.95);
-                padding: 2px 8px;
-                border-radius: 10px;
-                white-space: nowrap;
-                animation: swipeHint 3s ease-in-out infinite;
-                z-index: 10;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                border: 1px solid rgba(255, 193, 7, 0.3);
-                max-width: 90%;
-                word-break: keep-all;
+                display: none;
             }
             
             /* 滑動提示動畫 */
             @keyframes swipeHint {
-                0%, 100% { opacity: 0.6; transform: translateX(-50%) translateY(0); }
-                50% { opacity: 1; transform: translateX(-50%) translateY(-2px); }
+                0%, 100% { opacity: 0.6; transform: translateY(0); }
+                50% { opacity: 1; transform: translateY(-2px); }
             }
             
             /* 按鈕脈衝動畫 */
@@ -2338,7 +2322,16 @@
                         <span id="totalEventsText">總事件: 0</span> | 
                         <span id="instructorCountText">講師: 0</span> | 
                         <span id="dateRangeText">日期: -</span>
-        </div>
+                    </div>
+                    
+                    <!-- 滑動提示指示器 -->
+                    <div class="swipe-hint-container" style="text-align: center; margin-top: 8px; padding: 4px 0;">
+                        <div class="swipe-hint-text" style="font-size: 0.6rem; color: rgba(255, 193, 7, 0.8); background: rgba(255, 255, 255, 0.9); padding: 3px 12px; border-radius: 12px; display: inline-block; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); animation: swipeHint 3s ease-in-out infinite;">
+                            <i class="fas fa-arrow-left" style="margin-right: 4px;"></i>
+                            左右滑動切換
+                            <i class="fas fa-arrow-right" style="margin-left: 4px;"></i>
+                        </div>
+                    </div>
 
             </div>
         </div>
@@ -2689,6 +2682,10 @@
                         hideLoadingAnimation();
                         console.log('系統初始化完成');
                         
+                        // 重新綁定視圖按鈕（確保按鈕可點擊）
+                        setTimeout(() => {
+                            bindViewButtons();
+                        }, 500);
                         
                         // 自動滑動到行事曆區域（僅行動裝置）
                         autoScrollToCalendar();
@@ -3529,22 +3526,44 @@
             
             
             // 為視圖按鈕添加事件監聽器
-            document.querySelectorAll('.view-buttons .btn-primary').forEach(button => {
-                button.addEventListener('click', function(e) {
-                    // 防止滑動事件干擾點擊
-                    e.stopPropagation();
+            function bindViewButtons() {
+                const viewButtons = document.querySelectorAll('.view-buttons .btn-primary');
+                console.log(`🔗 綁定 ${viewButtons.length} 個視圖按鈕`);
+                
+                viewButtons.forEach((button, index) => {
+                    // 移除舊的事件監聽器
+                    button.removeEventListener('click', handleViewButtonClick);
                     
-                    const view = this.getAttribute('data-view');
+                    // 添加新的事件監聽器
+                    button.addEventListener('click', handleViewButtonClick);
                     
-                    // 觸發按鈕高亮動畫
-                    highlightViewButton(view);
+                    // 確保按鈕可點擊
+                    button.style.pointerEvents = 'auto';
+                    button.style.cursor = 'pointer';
+                    button.style.userSelect = 'none';
                     
-                    // 切換視圖
-                    switchView(view);
-                    
-                    console.log(`📱 按鈕點擊：切換到 ${view}`);
+                    console.log(`✅ 按鈕 ${index + 1} 綁定完成: ${button.getAttribute('data-view')}`);
                 });
-            });
+            }
+            
+            // 視圖按鈕點擊處理函數
+            function handleViewButtonClick(e) {
+                // 防止滑動事件干擾點擊
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const view = this.getAttribute('data-view');
+                console.log(`📱 按鈕點擊：切換到 ${view}`);
+                
+                // 觸發按鈕高亮動畫
+                highlightViewButton(view);
+                
+                // 切換視圖
+                switchView(view);
+            }
+            
+            // 立即綁定視圖按鈕
+            bindViewButtons();
             
             // 快速篩選功能已移除
             
