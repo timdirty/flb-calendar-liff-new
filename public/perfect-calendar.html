@@ -3472,13 +3472,83 @@
             const instructorSelect = document.getElementById('instructorSelect');
             if (instructorSelect) {
                 instructorSelect.addEventListener('change', function() {
-                    // 選擇講師後重置為今日視圖
-                    currentView = '今日';
-                    window.currentView = '今日';
+                    const selectedInstructor = this.value;
+                    console.log('📱 講師選擇變更:', selectedInstructor);
+                    
+                    if (selectedInstructor) {
+                        // 智慧判斷：檢查講師在不同視圖下的事件數量
+                        const instructorEvents = allEvents.filter(event => 
+                            event && event.instructor === selectedInstructor
+                        );
+                        
+                        if (instructorEvents.length === 0) {
+                            console.log('⚠️ 該講師沒有任何事件');
+                            currentView = '全部';
+                            window.currentView = '全部';
+                        } else {
+                            // 檢查今日是否有事件
+                            const now = new Date();
+                            const todayEvents = instructorEvents.filter(event => {
+                                const eventDate = new Date(event.start);
+                                return eventDate.getFullYear() === now.getFullYear() &&
+                                       eventDate.getMonth() === now.getMonth() &&
+                                       eventDate.getDate() === now.getDate();
+                            });
+                            
+                            if (todayEvents.length > 0) {
+                                console.log('✅ 講師今日有事件，保持今日視圖');
+                                currentView = '今日';
+                                window.currentView = '今日';
+                            } else {
+                                // 檢查本週是否有事件
+                                const weekStart = new Date(now);
+                                const dayOfWeek = now.getDay();
+                                const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+                                weekStart.setDate(now.getDate() + daysToMonday);
+                                weekStart.setHours(0, 0, 0, 0);
+                                const weekEnd = new Date(weekStart);
+                                weekEnd.setDate(weekStart.getDate() + 6);
+                                weekEnd.setHours(23, 59, 59, 999);
+                                
+                                const weekEvents = instructorEvents.filter(event => {
+                                    const eventDate = new Date(event.start);
+                                    return eventDate >= weekStart && eventDate <= weekEnd;
+                                });
+                                
+                                if (weekEvents.length > 0) {
+                                    console.log('✅ 講師本週有事件，切換到本週視圖');
+                                    currentView = '本週';
+                                    window.currentView = '本週';
+                                } else {
+                                    // 檢查本月是否有事件
+                                    const monthEvents = instructorEvents.filter(event => {
+                                        const eventDate = new Date(event.start);
+                                        return eventDate.getFullYear() === now.getFullYear() &&
+                                               eventDate.getMonth() === now.getMonth();
+                                    });
+                                    
+                                    if (monthEvents.length > 0) {
+                                        console.log('✅ 講師本月有事件，切換到本月視圖');
+                                        currentView = '本月';
+                                        window.currentView = '本月';
+                                    } else {
+                                        console.log('✅ 講師只有其他月份的事件，切換到全部視圖');
+                                        currentView = '全部';
+                                        window.currentView = '全部';
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        // 選擇全部講師時重置為今日視圖
+                        currentView = '今日';
+                        window.currentView = '今日';
+                    }
+                    
                     updateViewButtonStates();
                     updateStats();
                     renderEvents();
-                    console.log('📱 講師選擇後重置為今日視圖');
+                    console.log('📱 講師選擇後智慧切換視圖:', currentView);
                 });
             }
             
@@ -3839,15 +3909,12 @@ async function loadTodayEvents() {
             try {
                 select.innerHTML = '<option value="">全部講師</option>';
                 
+                let instructors = [];
+                
                 // 方法1: 使用 allInstructors
                 if (allInstructors && allInstructors.length > 0) {
                     console.log('✅ 使用 allInstructors，數量:', allInstructors.length);
-                    allInstructors.forEach(instructor => {
-                        const option = document.createElement('option');
-                        option.value = instructor;
-                        option.textContent = instructor;
-                        select.appendChild(option);
-                    });
+                    instructors = [...allInstructors];
                 } else {
                     // 方法2: 直接從 API 獲取並提取講師列表
                     console.log('⚠️ allInstructors 為空，直接從 API 獲取講師列表');
@@ -3856,42 +3923,38 @@ async function loadTodayEvents() {
                         const data = await response.json();
                         
                         if (data.success && data.data) {
-                            const instructors = [...new Set(data.data
+                            instructors = [...new Set(data.data
                                 .filter(event => event && event.instructor)
                                 .map(event => event.instructor)
                             )].sort();
                             
                             console.log('📡 從 API 獲取的講師列表:', instructors);
-                            
-                            instructors.forEach(instructor => {
-                                const option = document.createElement('option');
-                                option.value = instructor;
-                                option.textContent = instructor;
-                                select.appendChild(option);
-                            });
                         } else {
                             // 方法3: 使用硬編碼的測試講師
                             console.log('⚠️ API 獲取失敗，使用測試講師');
-                            const testInstructors = ['AGNES', 'BELLA', 'TIM', 'ALICE'];
-                            testInstructors.forEach(instructor => {
-                                const option = document.createElement('option');
-                                option.value = instructor;
-                                option.textContent = `[測試] ${instructor}`;
-                                select.appendChild(option);
-                            });
+                            instructors = ['AGNES', 'BELLA', 'TIM', 'ALICE'];
                         }
                     } catch (apiError) {
                         console.error('❌ API 調用失敗:', apiError);
                         // 方法3: 使用硬編碼的測試講師
-                        const testInstructors = ['AGNES', 'BELLA', 'TIM', 'ALICE'];
-                        testInstructors.forEach(instructor => {
-                            const option = document.createElement('option');
-                            option.value = instructor;
-                            option.textContent = `[測試] ${instructor}`;
-                            select.appendChild(option);
-                        });
+                        instructors = ['AGNES', 'BELLA', 'TIM', 'ALICE'];
                     }
                 }
+                
+                // 排序講師列表：已選擇的講師排在前面
+                if (currentValue && instructors.includes(currentValue)) {
+                    // 將當前選擇的講師移到最前面
+                    instructors = [currentValue, ...instructors.filter(inst => inst !== currentValue)];
+                    console.log('🔄 已選擇講師優先排序:', instructors);
+                }
+                
+                // 創建選項
+                instructors.forEach(instructor => {
+                    const option = document.createElement('option');
+                    option.value = instructor;
+                    option.textContent = instructor;
+                    select.appendChild(option);
+                });
                 
                 // 恢復之前的選擇
                 if (currentValue) {
@@ -4626,8 +4689,80 @@ async function loadTodayEvents() {
 
         // 更新統計信息
         function updateStats() {
-            // 簡化統計更新，直接使用 getFilteredEvents 避免重複篩選
-            const filteredEvents = getFilteredEvents();
+            // 獲取當前篩選條件
+            const instructorFilter = document.getElementById('instructorSelect').value;
+            const timeFilter = document.getElementById('timeFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            
+            // 先過濾掉 null 值
+            let filteredEvents = allEvents.filter(event => {
+                if (!event) return false;
+                if (!event.start || !event.end || !event.title || !event.instructor) return false;
+                return true;
+            });
+            
+            // 應用講師篩選
+            if (instructorFilter) {
+                filteredEvents = filteredEvents.filter(event => event.instructor === instructorFilter);
+            }
+            
+            // 應用時段篩選
+            if (timeFilter) {
+                filteredEvents = filteredEvents.filter(event => {
+                    const eventDate = new Date(event.start);
+                    const hour = eventDate.getHours();
+                    switch (timeFilter) {
+                        case 'morning':
+                            return hour >= 6 && hour < 12;
+                        case 'afternoon':
+                            return hour >= 12 && hour < 18;
+                        case 'evening':
+                            return hour >= 18 && hour < 24;
+                        default:
+                            return true;
+                    }
+                });
+            }
+            
+            // 應用指定日期篩選
+            if (dateFilter) {
+                filteredEvents = filteredEvents.filter(event => {
+                    const eventDate = new Date(event.start);
+                    const filterDate = new Date(dateFilter);
+                    return eventDate.getFullYear() === filterDate.getFullYear() &&
+                           eventDate.getMonth() === filterDate.getMonth() &&
+                           eventDate.getDate() === filterDate.getDate();
+                });
+            }
+            
+            // 應用視圖篩選（今日/本週/本月/全部）
+            const now = new Date();
+            filteredEvents = filteredEvents.filter(event => {
+                const eventDate = new Date(event.start);
+                
+                switch (currentView) {
+                    case '今日':
+                        return eventDate.getFullYear() === now.getFullYear() &&
+                               eventDate.getMonth() === now.getMonth() &&
+                               eventDate.getDate() === now.getDate();
+                    case '本週':
+                        const weekStart = new Date(now);
+                        const dayOfWeek = now.getDay();
+                        const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+                        weekStart.setDate(now.getDate() + daysToMonday);
+                        weekStart.setHours(0, 0, 0, 0);
+                        const weekEnd = new Date(weekStart);
+                        weekEnd.setDate(weekStart.getDate() + 6);
+                        weekEnd.setHours(23, 59, 59, 999);
+                        return eventDate >= weekStart && eventDate <= weekEnd;
+                    case '本月':
+                        return eventDate.getFullYear() === now.getFullYear() &&
+                               eventDate.getMonth() === now.getMonth();
+                    case '全部':
+                    default:
+                        return true;
+                }
+            });
             
             // 計算篩選後的講師數量
             const uniqueInstructors = new Set(filteredEvents.map(event => event.instructor));
@@ -4638,7 +4773,6 @@ async function loadTodayEvents() {
             
             // 根據當前篩選模式計算日期範圍
             let dateRange = '-';
-            const now = new Date();
             
             switch (currentView) {
                 case '今日':
@@ -4660,7 +4794,12 @@ async function loadTodayEvents() {
                     break;
                 case '全部':
                 default:
-                    if (allEvents.length > 0) {
+                    if (filteredEvents.length > 0) {
+                        const dates = filteredEvents.map(event => new Date(event.start));
+                        const minDate = new Date(Math.min(...dates));
+                        const maxDate = new Date(Math.max(...dates));
+                        dateRange = `${minDate.toLocaleDateString('zh-TW')} - ${maxDate.toLocaleDateString('zh-TW')}`;
+                    } else if (allEvents.length > 0) {
                         const dates = allEvents.map(event => new Date(event.start));
                         const minDate = new Date(Math.min(...dates));
                         const maxDate = new Date(Math.max(...dates));
