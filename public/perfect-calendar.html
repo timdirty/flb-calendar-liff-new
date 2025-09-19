@@ -1431,11 +1431,6 @@
                 display: none;
             }
             
-            /* 滑動提示動畫 */
-            @keyframes swipeHint {
-                0%, 100% { opacity: 0.6; transform: translateY(0); }
-                50% { opacity: 1; transform: translateY(-2px); }
-            }
             
             /* 按鈕脈衝動畫 */
             @keyframes buttonPulse {
@@ -2430,14 +2425,6 @@
                         <span id="dateRangeText">日期: -</span>
                 </div>
                     
-                    <!-- 滑動提示指示器 -->
-                    <div class="swipe-hint-container" style="text-align: center; margin-top: 8px; padding: 4px 0;">
-                        <div class="swipe-hint-text" style="font-size: 0.8rem; color: rgba(0, 0, 0, 0.8); background: rgba(255, 193, 7, 0.9); padding: 6px 16px; border-radius: 16px; display: inline-block; box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15); border: 2px solid rgba(255, 193, 7, 0.6); animation: swipeHint 3s ease-in-out infinite; font-weight: 500;">
-                            <i class="fas fa-arrow-left" style="margin-right: 6px; font-size: 0.9rem;"></i>
-                            左右滑動切換
-                            <i class="fas fa-arrow-right" style="margin-left: 6px; font-size: 0.9rem;"></i>
-                </div>
-                </div>
 
             </div>
         </div>
@@ -2792,8 +2779,6 @@
                         setTimeout(() => {
                             console.log('🔄 系統初始化完成，開始綁定按鈕...');
                             bindViewButtons();
-                            // 重新設置滑動功能（LIFF環境）
-                            setupMobileSwipeNavigation();
                             
                             // 強制再次綁定按鈕（確保手機端正常工作）
                             setTimeout(() => {
@@ -3460,159 +3445,11 @@
             }
         }
 
-        // 手機端左右滑動切換視圖功能 - 完全避免與按鈕衝突
-        function setupMobileSwipeNavigation() {
-            // 檢查是否為手機端
-            const isMobile = window.innerWidth <= 768 || 
-                           /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-                           navigator.userAgent.includes('LIFF') ||
-                           window.navigator.standalone === true ||
-                           (typeof liff !== 'undefined' && liff.isInClient());
-            
-            if (!isMobile) {
-                console.log('🖥️ 桌面端，跳過滑動功能');
-                return;
-            }
-            
-            console.log('📱 開始設置滑動功能（完全避免按鈕衝突）...');
-            
-            let startX = 0;
-            let startY = 0;
-            let endX = 0;
-            let endY = 0;
-            let isSwipe = false;
-            
-            // 視圖順序：今日、本週、本月、全部
-            const viewOrder = ['今日', '本週', '本月', '全部'];
-            
-            // 只在事件容器區域監聽滑動
-            const eventContainer = document.querySelector('#eventContainer');
-            if (!eventContainer) {
-                console.warn('📱 找不到事件容器，跳過滑動功能');
-                return;
-            }
-            
-            // 觸控開始 - 只在事件容器內監聽
-            eventContainer.addEventListener('touchstart', function(e) {
-                // 確保不在按鈕區域
-                if (e.target.closest('.view-buttons') || e.target.closest('.btn-primary')) {
-                    return;
-                }
-                
-                startX = e.touches[0].clientX;
-                startY = e.touches[0].clientY;
-                isSwipe = false;
-                console.log('📱 事件容器觸控開始:', { startX, startY });
-            }, { passive: true });
-            
-            // 觸控移動 - 只在事件容器內監聽
-            eventContainer.addEventListener('touchmove', function(e) {
-                if (!startX || !startY) return;
-                
-                // 確保不在按鈕區域
-                if (e.target.closest('.view-buttons') || e.target.closest('.btn-primary')) {
-                    return;
-                }
-                
-                endX = e.touches[0].clientX;
-                endY = e.touches[0].clientY;
-                
-                const diffX = startX - endX;
-                const diffY = startY - endY;
-                
-                // 判斷是否為水平滑動
-                if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 30) {
-                    isSwipe = true;
-                    // 只在確認是滑動時才阻止默認行為
-                    if (Math.abs(diffX) > 50) {
-                        e.preventDefault();
-                    }
-                    
-                    // 添加滑動視覺反饋
-                    const viewButtons = document.querySelector('.view-buttons');
-                    if (viewButtons) {
-                        const moveAmount = Math.max(-20, Math.min(20, diffX * 0.15));
-                        viewButtons.style.transform = `translateX(${moveAmount}px)`;
-                        viewButtons.style.transition = 'none';
-                    }
-                }
-            }, { passive: false });
-            
-            // 觸控結束 - 只在事件容器內監聽
-            eventContainer.addEventListener('touchend', function(e) {
-                // 確保不在按鈕區域
-                if (e.target.closest('.view-buttons') || e.target.closest('.btn-primary')) {
-                    return;
-                }
-                
-                console.log('📱 事件容器觸控結束:', { isSwipe, startX, endX });
-                
-                // 重置視覺反饋
-                const viewButtons = document.querySelector('.view-buttons');
-                if (viewButtons) {
-                    viewButtons.style.transform = 'translateX(0)';
-                    viewButtons.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-                }
-                
-                if (!isSwipe || !startX || !endX) {
-                    // 重置變量
-                    startX = 0;
-                    startY = 0;
-                    endX = 0;
-                    endY = 0;
-                    isSwipe = false;
-                    return;
-                }
-                
-                const diffX = startX - endX;
-                const currentViewIndex = viewOrder.indexOf(currentView);
-                
-                if (diffX > 50) {
-                    // 向左滑動：切換到下一個視圖
-                    const nextIndex = (currentViewIndex + 1) % viewOrder.length;
-                    const nextView = viewOrder[nextIndex];
-                    
-                    console.log(`📱 向左滑動：從 ${currentView} 切換到 ${nextView}`);
-                    
-                    // 切換視圖
-                    switchView(nextView);
-                    
-                    // 更新按鈕狀態
-                    setTimeout(() => {
-                        updateViewButtonStates();
-                    }, 100);
-                    
-                } else if (diffX < -50) {
-                    // 向右滑動：切換到上一個視圖
-                    const prevIndex = currentViewIndex === 0 ? viewOrder.length - 1 : currentViewIndex - 1;
-                    const prevView = viewOrder[prevIndex];
-                    
-                    console.log(`📱 向右滑動：從 ${currentView} 切換到 ${prevView}`);
-                    
-                    // 切換視圖
-                    switchView(prevView);
-                    
-                    // 更新按鈕狀態
-                    setTimeout(() => {
-                        updateViewButtonStates();
-                    }, 100);
-                }
-                
-                // 重置變量
-                startX = 0;
-                startY = 0;
-                endX = 0;
-                endY = 0;
-                isSwipe = false;
-            }, { passive: true });
-            
-            console.log('📱 滑動功能已綁定到事件容器，完全避免按鈕衝突');
-        }
+        // 滑動功能已移除 - 避免與按鈕點擊衝突
 
         // 設置事件監聽器
         function setupEventListeners() {
-            // 手機端左右滑動切換視圖功能
-            setupMobileSwipeNavigation();
+            // 滑動功能已移除
             
             // 講師篩選事件監聽器
             const instructorSelect = document.getElementById('instructorSelect');
