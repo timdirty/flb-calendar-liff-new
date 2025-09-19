@@ -2717,6 +2717,9 @@
                             setTimeout(() => {
                                 console.log('🔄 延遲綁定按鈕（手機端確保）...');
                                 bindViewButtons();
+                                
+                                // iOS Safari 特殊測試
+                                testIOSButtons();
                             }, 1000);
                         }, 500);
                         
@@ -4001,6 +4004,12 @@ async function loadTodayEvents() {
             const viewButtons = document.querySelectorAll('.view-buttons .btn-primary');
             console.log(`🔗 找到 ${viewButtons.length} 個視圖按鈕`);
             
+            // 檢查用戶代理
+            const userAgent = navigator.userAgent;
+            const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+            const isSafari = /Safari/.test(userAgent) && !/Chrome/.test(userAgent);
+            console.log('📱 設備檢測:', { userAgent, isIOS, isSafari });
+            
             if (viewButtons.length === 0) {
                 console.error('❌ 找不到視圖按鈕，請檢查 HTML 結構');
                 // 檢查 DOM 結構
@@ -4022,57 +4031,106 @@ async function loadTodayEvents() {
                 button.removeEventListener('touchstart', handleViewButtonClick);
                 button.removeEventListener('touchend', handleViewButtonClick);
                 button.removeEventListener('mousedown', handleViewButtonClick);
+                button.removeEventListener('touchend', handleViewButtonClick);
                 button.onclick = null;
                 
-                // 確保按鈕可點擊
+                // iOS Safari 特殊樣式設置
                 button.style.pointerEvents = 'auto';
                 button.style.cursor = 'pointer';
                 button.style.userSelect = 'none';
-                button.style.touchAction = 'manipulation';
                 button.style.webkitUserSelect = 'none';
                 button.style.webkitTouchCallout = 'none';
                 button.style.webkitTapHighlightColor = 'transparent';
                 button.style.position = 'relative';
                 button.style.zIndex = '10';
+                button.style.display = 'block';
+                button.style.width = '100%';
+                button.style.height = 'auto';
+                button.style.minHeight = '44px'; // iOS 最小觸控區域
                 
-                // 添加點擊測試（主要方案）
-                button.onclick = function(e) {
-                    console.log(`📱 按鈕 onclick 觸發: ${button.getAttribute('data-view')}`);
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleViewButtonClick.call(this, e);
-                };
+                // iOS Safari 觸控優化
+                if (isIOS) {
+                    button.style.touchAction = 'manipulation';
+                    button.style.webkitTouchCallout = 'none';
+                    button.style.webkitUserSelect = 'none';
+                    button.style.webkitTapHighlightColor = 'rgba(0, 0, 0, 0.1)';
+                    button.style.border = 'none';
+                    button.style.outline = 'none';
+                    button.style.appearance = 'none';
+                    button.style.webkitAppearance = 'none';
+                } else {
+                    button.style.touchAction = 'manipulation';
+                }
                 
-                // 添加點擊事件監聽器（備用方案）
-                button.addEventListener('click', function(e) {
-                    console.log(`📱 按鈕 click 觸發: ${button.getAttribute('data-view')}`);
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleViewButtonClick.call(this, e);
-                }, { passive: false });
-                
-                // 添加觸控事件監聽器（手機端）
-                button.addEventListener('touchstart', function(e) {
-                    console.log(`📱 按鈕 touchstart 觸發: ${button.getAttribute('data-view')}`);
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleViewButtonClick.call(this, e);
-                }, { passive: false });
-                
-                button.addEventListener('touchend', function(e) {
-                    console.log(`📱 按鈕 touchend 觸發: ${button.getAttribute('data-view')}`);
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleViewButtonClick.call(this, e);
-                }, { passive: false });
-                
-                // 添加 mousedown 事件（桌面端）
-                button.addEventListener('mousedown', function(e) {
-                    console.log(`🖥️ 按鈕 mousedown 觸發: ${button.getAttribute('data-view')}`);
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleViewButtonClick.call(this, e);
-                });
+                // iOS Safari 特殊事件處理
+                if (isIOS) {
+                    // iOS Safari 主要方案：touchstart + touchend
+                    button.addEventListener('touchstart', function(e) {
+                        console.log(`📱 iOS 按鈕 touchstart 觸發: ${button.getAttribute('data-view')}`);
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleViewButtonClick.call(this, e);
+                    }, { passive: false });
+                    
+                    button.addEventListener('touchend', function(e) {
+                        console.log(`📱 iOS 按鈕 touchend 觸發: ${button.getAttribute('data-view')}`);
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleViewButtonClick.call(this, e);
+                    }, { passive: false });
+                    
+                    // iOS Safari 備用方案：click
+                    button.addEventListener('click', function(e) {
+                        console.log(`📱 iOS 按鈕 click 觸發: ${button.getAttribute('data-view')}`);
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleViewButtonClick.call(this, e);
+                    }, { passive: false });
+                    
+                    // iOS Safari 強制 onclick
+                    button.onclick = function(e) {
+                        console.log(`📱 iOS 按鈕 onclick 觸發: ${button.getAttribute('data-view')}`);
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleViewButtonClick.call(this, e);
+                    };
+                } else {
+                    // 非 iOS 設備的處理
+                    button.addEventListener('click', function(e) {
+                        console.log(`📱 按鈕 click 觸發: ${button.getAttribute('data-view')}`);
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleViewButtonClick.call(this, e);
+                    }, { passive: false });
+                    
+                    button.addEventListener('touchstart', function(e) {
+                        console.log(`📱 按鈕 touchstart 觸發: ${button.getAttribute('data-view')}`);
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleViewButtonClick.call(this, e);
+                    }, { passive: false });
+                    
+                    button.addEventListener('touchend', function(e) {
+                        console.log(`📱 按鈕 touchend 觸發: ${button.getAttribute('data-view')}`);
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleViewButtonClick.call(this, e);
+                    }, { passive: false });
+                    
+                    button.addEventListener('mousedown', function(e) {
+                        console.log(`🖥️ 按鈕 mousedown 觸發: ${button.getAttribute('data-view')}`);
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleViewButtonClick.call(this, e);
+                    });
+                    
+                    button.onclick = function(e) {
+                        console.log(`📱 按鈕 onclick 觸發: ${button.getAttribute('data-view')}`);
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleViewButtonClick.call(this, e);
+                    };
+                }
                 
                 console.log(`✅ 按鈕 ${index + 1} 綁定完成: ${button.getAttribute('data-view')}`);
             });
@@ -4082,6 +4140,14 @@ async function loadTodayEvents() {
                 updateViewButtonStates();
                 console.log('📱 按鈕狀態已強制更新');
             }, 100);
+            
+            // iOS Safari 特殊處理：強制重新綁定
+            if (isIOS) {
+                setTimeout(() => {
+                    console.log('🍎 iOS Safari 強制重新綁定按鈕...');
+                    bindViewButtons();
+                }, 2000);
+            }
         }
 
         // 更新視圖按鈕狀態
@@ -4096,6 +4162,35 @@ async function loadTodayEvents() {
                     button.classList.remove('active');
                 }
             });
+        }
+
+        // iOS Safari 按鈕測試函數
+        function testIOSButtons() {
+            const userAgent = navigator.userAgent;
+            const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+            
+            if (isIOS) {
+                console.log('🍎 開始 iOS Safari 按鈕測試...');
+                const viewButtons = document.querySelectorAll('.view-buttons .btn-primary');
+                
+                viewButtons.forEach((button, index) => {
+                    console.log(`🍎 測試按鈕 ${index + 1}: ${button.getAttribute('data-view')}`);
+                    console.log(`🍎 按鈕樣式:`, {
+                        pointerEvents: button.style.pointerEvents,
+                        touchAction: button.style.touchAction,
+                        webkitUserSelect: button.style.webkitUserSelect,
+                        minHeight: button.style.minHeight,
+                        display: button.style.display,
+                        width: button.style.width
+                    });
+                    
+                    // 強制觸發測試
+                    button.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
+                    setTimeout(() => {
+                        button.style.backgroundColor = '';
+                    }, 1000);
+                });
+            }
         }
 
         // 切換檢視模式
