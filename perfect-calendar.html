@@ -845,6 +845,97 @@
             }
         }
 
+        /* 體驗狀態樣式 */
+        .experience-badge {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #8B4513;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            margin-left: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
+            animation: experiencePulse 3s infinite;
+            border: 2px solid #B8860B;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes experiencePulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
+            }
+            30% {
+                transform: scale(1.2);
+                color: #FFD700;
+                font-weight: bold;
+                text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+            }
+            70% {
+                transform: scale(1.1);
+                color: #FFA500;
+                font-weight: bold;
+                text-shadow: 0 0 6px rgba(255, 165, 0, 0.3);
+            }
+        }
+
+        .event-card.experience-event {
+            background: rgba(255, 248, 220, 0.9);
+            border: 3px solid #FFD700;
+            position: relative;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+        }
+
+        .event-card.experience-event::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 8px,
+                rgba(255, 215, 0, 0.1) 8px,
+                rgba(255, 215, 0, 0.1) 16px
+            );
+            pointer-events: none;
+            border-radius: 12px;
+        }
+
+        .event-card.experience-event::after {
+            content: '⭐ 體驗';
+            position: absolute;
+            top: -15px;
+            right: -10px;
+            background: #FFD700;
+            color: #8B4513;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
+            animation: experienceBounce 2s infinite;
+            border: 2px solid #B8860B;
+        }
+
+        @keyframes experienceBounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0) scale(1);
+            }
+            40% {
+                transform: translateY(-10px) scale(1.1);
+            }
+            60% {
+                transform: translateY(-5px) scale(1.05);
+            }
+        }
+
         .cancelled-badge {
             background: linear-gradient(45deg, #dc3545, #c82333);
             color: white;
@@ -4671,6 +4762,53 @@ async function loadTodayEvents() {
             return null;
         }
 
+        // 檢查是否為體驗事件
+        function isExperience(event) {
+            if (!event || !event.title) return false;
+            
+            const title = event.title || '';
+            const description = event.description || '';
+            
+            const experienceKeywords = ['體驗', '體'];
+            
+            return experienceKeywords.some(keyword => 
+                title.includes(keyword) || description.includes(keyword)
+            );
+        }
+
+        // 獲取體驗信息
+        function getExperienceInfo(event) {
+            if (!isExperience(event)) return null;
+            
+            const title = event.title || '';
+            const description = event.description || '';
+            
+            // 從標題中提取體驗信息
+            const titleMatch = title.match(/\[(體驗|體)\]([^\[\]]+)/);
+            if (titleMatch) {
+                return {
+                    type: titleMatch[1]
+                };
+            }
+            
+            // 從描述中提取體驗信息
+            const descMatch = description.match(/\[(體驗|體)\]([^\[\]]+)/);
+            if (descMatch) {
+                return {
+                    type: descMatch[1]
+                };
+            }
+            
+            // 如果沒有方括號格式，檢查是否包含關鍵字
+            if (title.includes('體驗')) {
+                return { type: '體驗' };
+            } else if (title.includes('體')) {
+                return { type: '體' };
+            }
+            
+            return null;
+        }
+
         // 創建事件卡片
         function createEventCard(event) {
             // 檢查事件是否為 null 或 undefined
@@ -4692,6 +4830,10 @@ async function loadTodayEvents() {
             // 檢測是否為代課/帶班事件
             const isSubstituteEvent = isSubstitute(event);
             const substituteInfo = isSubstituteEvent ? getSubstituteInfo(event) : null;
+            
+            // 檢測是否為體驗事件
+            const isExperienceEvent = isExperience(event);
+            const experienceInfo = isExperienceEvent ? getExperienceInfo(event) : null;
             
             // 從標題解析時間
             const titleTime = parseTimeFromTitle(event.title);
@@ -4775,13 +4917,14 @@ async function loadTodayEvents() {
             const instructorStyle = instructorColors[event.instructor] ? 'custom-color' : '';
             
             return `
-                <div class="event-card ${isCancelledEvent ? 'cancelled-event' : ''} ${isSubstituteEvent ? 'substitute-event' : ''}">
+                <div class="event-card ${isCancelledEvent ? 'cancelled-event' : ''} ${isSubstituteEvent ? 'substitute-event' : ''} ${isExperienceEvent ? 'experience-event' : ''}">
                     <div class="event-header">
                         <div>
                             <div class="event-title">
                                 ${event.title}
                                 ${isCancelledEvent ? '<span class="cancelled-badge"><i class="fas fa-ban"></i> ⚠️ 停課 ⚠️</span>' : ''}
                                 ${isSubstituteEvent && substituteInfo ? `<span class="substitute-badge"><i class="fas fa-exchange-alt"></i> ${substituteInfo.type} ${substituteInfo.originalInstructor}</span>` : ''}
+                                ${isExperienceEvent && experienceInfo ? `<span class="experience-badge"><i class="fas fa-star"></i> ${experienceInfo.type}</span>` : ''}
                             </div>
                             <div class="event-instructor ${instructorStyle}" style="--instructor-color: ${instructorColor}">
                                 <i class="fas fa-user"></i> ${event.instructor}
