@@ -3489,30 +3489,43 @@
             let endX = 0;
             let endY = 0;
             let isSwipe = false;
+            let swipeTarget = null;
             
             // 視圖順序：今日、本週、本月、全部
             const viewOrder = ['今日', '本週', '本月', '全部'];
             
-            // 觸控開始 - 只在非按鈕區域監聽
-            document.addEventListener('touchstart', function(e) {
-                // 如果觸控的是按鈕，不處理滑動
-                if (e.target.closest('.view-buttons .btn-primary')) {
-                    console.log('📱 觸控按鈕，跳過滑動處理');
+            // 獲取滑動目標區域（排除按鈕區域）
+            function getSwipeTarget() {
+                const mainContent = document.querySelector('.main-content');
+                const eventContainer = document.querySelector('#eventContainer');
+                return mainContent || eventContainer || document.body;
+            }
+            
+            // 觸控開始 - 只在特定區域監聽
+            function handleTouchStart(e) {
+                // 如果觸控的是按鈕或按鈕相關元素，完全不處理
+                if (e.target.closest('.view-buttons') || e.target.closest('.btn-primary')) {
+                    console.log('📱 觸控按鈕區域，跳過滑動處理');
                     return;
                 }
                 
-                startX = e.touches[0].clientX;
-                startY = e.touches[0].clientY;
-                isSwipe = false;
-                console.log('📱 觸控開始:', { startX, startY });
-            }, { passive: true });
+                // 如果觸控的是滑動目標區域
+                const target = getSwipeTarget();
+                if (target && target.contains(e.target)) {
+                    swipeTarget = target;
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                    isSwipe = false;
+                    console.log('📱 觸控開始:', { startX, startY, target: target.className });
+                }
+            }
             
             // 觸控移動
-            document.addEventListener('touchmove', function(e) {
-                if (!startX || !startY) return;
+            function handleTouchMove(e) {
+                if (!startX || !startY || !swipeTarget) return;
                 
-                // 如果觸控的是按鈕，不處理滑動
-                if (e.target.closest('.view-buttons .btn-primary')) {
+                // 如果觸控的是按鈕區域，不處理滑動
+                if (e.target.closest('.view-buttons') || e.target.closest('.btn-primary')) {
                     return;
                 }
                 
@@ -3563,13 +3576,13 @@
                         }
                     }
                 }
-            }, { passive: false });
+            }
             
             // 觸控結束
-            document.addEventListener('touchend', function(e) {
-                // 如果觸控的是按鈕，不處理滑動
-                if (e.target.closest('.view-buttons .btn-primary')) {
-                    console.log('📱 觸控按鈕結束，跳過滑動處理');
+            function handleTouchEnd(e) {
+                // 如果觸控的是按鈕區域，不處理滑動
+                if (e.target.closest('.view-buttons') || e.target.closest('.btn-primary')) {
+                    console.log('📱 觸控按鈕區域結束，跳過滑動處理');
                     return;
                 }
                 
@@ -3596,12 +3609,7 @@
                     endX = 0;
                     endY = 0;
                     isSwipe = false;
-                    
-                    // 確保按鈕在非滑動操作後仍然可點擊
-                    setTimeout(() => {
-                        bindViewButtons();
-                        console.log('📱 非滑動操作後重新綁定按鈕');
-                    }, 100);
+                    swipeTarget = null;
                     return;
                 }
                 
@@ -3621,11 +3629,10 @@
                     // 切換視圖
                     switchView(nextView);
                     
-                    // 強制更新按鈕狀態和重新綁定
+                    // 強制更新按鈕狀態
                     setTimeout(() => {
                         updateViewButtonStates();
-                        bindViewButtons();
-                        console.log(`📱 按鈕狀態已更新到 ${nextView}，重新綁定按鈕`);
+                        console.log(`📱 按鈕狀態已更新到 ${nextView}`);
                     }, 100);
                     
                     // 添加切換動畫 - 更平順
@@ -3648,11 +3655,10 @@
                     // 切換視圖
                     switchView(prevView);
                     
-                    // 強制更新按鈕狀態和重新綁定
+                    // 強制更新按鈕狀態
                     setTimeout(() => {
                         updateViewButtonStates();
-                        bindViewButtons();
-                        console.log(`📱 按鈕狀態已更新到 ${prevView}，重新綁定按鈕`);
+                        console.log(`📱 按鈕狀態已更新到 ${prevView}`);
                     }, 100);
                     
                     // 添加切換動畫 - 更平順
@@ -3670,13 +3676,22 @@
                 endX = 0;
                 endY = 0;
                 isSwipe = false;
-                
-                // 確保滑動後按鈕仍然可點擊
-                setTimeout(() => {
-                    bindViewButtons();
-                    console.log('📱 滑動結束後重新綁定按鈕');
-                }, 200);
-            }, { passive: true });
+                swipeTarget = null;
+            }
+            
+            // 綁定事件監聽器到特定目標
+            const target = getSwipeTarget();
+            if (target) {
+                target.addEventListener('touchstart', handleTouchStart, { passive: true });
+                target.addEventListener('touchmove', handleTouchMove, { passive: false });
+                target.addEventListener('touchend', handleTouchEnd, { passive: true });
+                console.log('📱 滑動事件已綁定到目標:', target.className);
+            } else {
+                console.warn('📱 找不到滑動目標，使用 document');
+                document.addEventListener('touchstart', handleTouchStart, { passive: true });
+                document.addEventListener('touchmove', handleTouchMove, { passive: false });
+                document.addEventListener('touchend', handleTouchEnd, { passive: true });
+            }
             
             console.log('📱 手機端滑動導航已啟用：左右滑動切換視圖');
         }
@@ -4177,75 +4192,23 @@ async function loadTodayEvents() {
                     button.style.touchAction = 'manipulation';
                 }
                 
-                // iOS Safari 特殊事件處理
-                if (isIOS) {
-                    // iOS Safari 主要方案：touchstart + touchend
-                    button.addEventListener('touchstart', function(e) {
-                        console.log(`📱 iOS 按鈕 touchstart 觸發: ${button.getAttribute('data-view')}`);
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleViewButtonClick.call(this, e);
-                    }, { passive: false });
-                    
-                    button.addEventListener('touchend', function(e) {
-                        console.log(`📱 iOS 按鈕 touchend 觸發: ${button.getAttribute('data-view')}`);
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleViewButtonClick.call(this, e);
-                    }, { passive: false });
-                    
-                    // iOS Safari 備用方案：click
-                    button.addEventListener('click', function(e) {
-                        console.log(`📱 iOS 按鈕 click 觸發: ${button.getAttribute('data-view')}`);
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleViewButtonClick.call(this, e);
-                    }, { passive: false });
-                    
-                    // iOS Safari 強制 onclick
-                    button.onclick = function(e) {
-                        console.log(`📱 iOS 按鈕 onclick 觸發: ${button.getAttribute('data-view')}`);
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleViewButtonClick.call(this, e);
-                    };
-                } else {
-                    // 非 iOS 設備的處理
-                    button.addEventListener('click', function(e) {
-                        console.log(`📱 按鈕 click 觸發: ${button.getAttribute('data-view')}`);
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleViewButtonClick.call(this, e);
-                    }, { passive: false });
-                    
-                    button.addEventListener('touchstart', function(e) {
-                        console.log(`📱 按鈕 touchstart 觸發: ${button.getAttribute('data-view')}`);
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleViewButtonClick.call(this, e);
-                    }, { passive: false });
-                    
-                    button.addEventListener('touchend', function(e) {
-                        console.log(`📱 按鈕 touchend 觸發: ${button.getAttribute('data-view')}`);
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleViewButtonClick.call(this, e);
-                    }, { passive: false });
-                    
-                    button.addEventListener('mousedown', function(e) {
-                        console.log(`🖥️ 按鈕 mousedown 觸發: ${button.getAttribute('data-view')}`);
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleViewButtonClick.call(this, e);
-                    });
-                    
-                    button.onclick = function(e) {
-                        console.log(`📱 按鈕 onclick 觸發: ${button.getAttribute('data-view')}`);
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleViewButtonClick.call(this, e);
-                    };
-                }
+                // 統一的按鈕事件處理 - 防止與滑動衝突
+                const buttonClickHandler = function(e) {
+                    console.log(`📱 按鈕點擊觸發: ${button.getAttribute('data-view')}`);
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    handleViewButtonClick.call(this, e);
+                };
+                
+                // 添加所有必要的事件監聽器
+                button.addEventListener('click', buttonClickHandler, { passive: false, capture: true });
+                button.addEventListener('touchstart', buttonClickHandler, { passive: false, capture: true });
+                button.addEventListener('touchend', buttonClickHandler, { passive: false, capture: true });
+                button.addEventListener('mousedown', buttonClickHandler, { passive: false, capture: true });
+                
+                // 強制 onclick 作為最後的備用方案
+                button.onclick = buttonClickHandler;
                 
                 console.log(`✅ 按鈕 ${index + 1} 綁定完成: ${button.getAttribute('data-view')}`);
             });
