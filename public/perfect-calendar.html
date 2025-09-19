@@ -4022,6 +4022,147 @@ async function loadTodayEvents() {
             `;
         }
         
+        // 更新統計信息
+        function updateStats() {
+            // 使用與 renderEvents 相同的篩選邏輯
+            const instructorFilter = document.getElementById('instructorSelect').value;
+            const timeFilter = document.getElementById('timeFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            
+            const filteredEvents = allEvents.filter(event => {
+                // 講師篩選
+                if (instructorFilter && event.instructor !== instructorFilter) {
+                    return false;
+                }
+                
+                // 時段篩選
+                if (timeFilter) {
+                    const eventDate = new Date(event.start);
+                    const hour = eventDate.getHours();
+                    let timeMatch = false;
+                    
+                    switch (timeFilter) {
+                        case 'morning':
+                            timeMatch = hour >= 6 && hour < 12;
+                            break;
+                        case 'afternoon':
+                            timeMatch = hour >= 12 && hour < 18;
+                            break;
+                        case 'evening':
+                            timeMatch = hour >= 18 && hour < 24;
+                            break;
+                    }
+                    
+                    if (!timeMatch) {
+                        return false;
+                    }
+                }
+                
+                // 指定日期篩選
+                if (dateFilter) {
+                    const eventDate = new Date(event.start);
+                    const filterDate = new Date(dateFilter);
+                    const eventYear = eventDate.getFullYear();
+                    const eventMonth = eventDate.getMonth();
+                    const eventDay = eventDate.getDate();
+                    const filterYear = filterDate.getFullYear();
+                    const filterMonth = filterDate.getMonth();
+                    const filterDay = filterDate.getDate();
+                    
+                    if (eventYear !== filterYear || eventMonth !== filterMonth || eventDay !== filterDay) {
+                        return false;
+                    }
+                }
+                
+                // 視圖篩選
+                const eventDate = new Date(event.start);
+                const now = new Date();
+                
+                let shouldShow = false;
+                switch (currentView) {
+                    case '今日':
+                        const eventYear = eventDate.getFullYear();
+                        const eventMonth = eventDate.getMonth();
+                        const eventDay = eventDate.getDate();
+                        const nowYear = now.getFullYear();
+                        const nowMonth = now.getMonth();
+                        const nowDay = now.getDate();
+                        shouldShow = eventYear === nowYear && eventMonth === nowMonth && eventDay === nowDay;
+                        break;
+                    case '本週':
+                        const weekStart = new Date(now);
+                        const dayOfWeek = now.getDay();
+                        const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+                        weekStart.setDate(now.getDate() + daysToMonday);
+                        weekStart.setHours(0, 0, 0, 0);
+                        const weekEnd = new Date(weekStart);
+                        weekEnd.setDate(weekStart.getDate() + 6);
+                        weekEnd.setHours(23, 59, 59, 999);
+                        shouldShow = eventDate >= weekStart && eventDate <= weekEnd;
+                        break;
+                    case '本月':
+                        shouldShow = eventDate.getFullYear() === now.getFullYear() && 
+                                   eventDate.getMonth() === now.getMonth();
+                        break;
+                    case '全部':
+                    default:
+                        shouldShow = true;
+                }
+                
+                return shouldShow;
+            });
+            
+            // 計算篩選後的講師數量
+            const uniqueInstructors = new Set(filteredEvents.map(event => event.instructor));
+            const instructorCount = uniqueInstructors.size;
+            
+            // 調試日誌：顯示篩選結果
+            console.log(`📊 篩選結果 - 模式: ${currentView}, 總事件: ${allEvents.length}, 篩選後: ${filteredEvents.length}`);
+            
+            // 根據當前篩選模式計算日期範圍
+            let dateRange = '-';
+            const now = new Date();
+            
+            switch (currentView) {
+                case '今日':
+                    dateRange = now.toLocaleDateString('zh-TW');
+                    break;
+                case '本週':
+                    const weekStart = new Date(now);
+                    // 計算本週一的日期（getDay() 返回 0-6，0是週日，1是週一）
+                    const dayOfWeek = now.getDay();
+                    const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 週日時回到上週一，其他天回到本週一
+                    weekStart.setDate(now.getDate() + daysToMonday);
+                    const weekEnd = new Date(weekStart);
+                    weekEnd.setDate(weekStart.getDate() + 6); // 週日
+                    dateRange = `${weekStart.toLocaleDateString('zh-TW')} - ${weekEnd.toLocaleDateString('zh-TW')}`;
+                    break;
+                case '本月':
+                    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                    dateRange = `${monthStart.toLocaleDateString('zh-TW')} - ${monthEnd.toLocaleDateString('zh-TW')}`;
+                    break;
+                case '全部':
+                default:
+                    if (allEvents.length > 0) {
+                        const dates = allEvents.map(event => new Date(event.start));
+                        const minDate = new Date(Math.min(...dates));
+                        const maxDate = new Date(Math.max(...dates));
+                        dateRange = `${minDate.toLocaleDateString('zh-TW')} - ${maxDate.toLocaleDateString('zh-TW')}`;
+                    }
+                    break;
+            }
+            
+            // 更新文字形式的統計信息
+            const totalEventsText = document.getElementById('totalEventsText');
+            const instructorCountText = document.getElementById('instructorCountText');
+            const dateRangeText = document.getElementById('dateRangeText');
+            
+            if (totalEventsText) totalEventsText.textContent = `總事件: ${filteredEvents.length}`;
+            if (instructorCountText) instructorCountText.textContent = `講師: ${instructorCount}`;
+            if (dateRangeText) dateRangeText.textContent = `日期: ${dateRange}`;
+        }
+        
         // 顯示錯誤訊息
         function showError(message) {
             const container = document.getElementById('eventsContainer');
