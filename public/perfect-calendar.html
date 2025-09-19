@@ -3763,6 +3763,276 @@ async function loadTodayEvents() {
 
 
         // 移除快速篩選功能 - 所有快速篩選相關代碼已移除
+        
+        // 渲染事件列表
+        function renderEvents() {
+            const container = document.getElementById('eventsContainer');
+            const instructorFilter = document.getElementById('instructorSelect').value;
+            const timeFilter = document.getElementById('timeFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            
+            // 使用簡單直接的篩選邏輯
+            let filteredEvents = allEvents.filter(event => {
+                // 講師篩選
+                if (instructorFilter && event.instructor !== instructorFilter) {
+                    return false;
+                }
+                
+                // 時段篩選
+                if (timeFilter) {
+                    const eventDate = new Date(event.start);
+                    const hour = eventDate.getHours();
+                    let timeMatch = false;
+                    
+                    switch (timeFilter) {
+                        case 'morning':
+                            timeMatch = hour >= 6 && hour < 12;
+                            break;
+                        case 'afternoon':
+                            timeMatch = hour >= 12 && hour < 18;
+                            break;
+                        case 'evening':
+                            timeMatch = hour >= 18 && hour < 24;
+                            break;
+                    }
+                    
+                    if (!timeMatch) {
+                        return false;
+                    }
+                }
+                
+                // 指定日期篩選
+                if (dateFilter) {
+                    const eventDate = new Date(event.start);
+                    const filterDate = new Date(dateFilter);
+                    const eventYear = eventDate.getFullYear();
+                    const eventMonth = eventDate.getMonth();
+                    const eventDay = eventDate.getDate();
+                    const filterYear = filterDate.getFullYear();
+                    const filterMonth = filterDate.getMonth();
+                    const filterDay = filterDate.getDate();
+                    
+                    if (eventYear !== filterYear || eventMonth !== filterMonth || eventDay !== filterDay) {
+                        return false;
+                    }
+                }
+                
+                // 視圖篩選
+                const eventDate = new Date(event.start);
+                const now = new Date();
+                
+                let shouldShow = false;
+                switch (currentView) {
+                    case '今日':
+                        const eventYear = eventDate.getFullYear();
+                        const eventMonth = eventDate.getMonth();
+                        const eventDay = eventDate.getDate();
+                        const nowYear = now.getFullYear();
+                        const nowMonth = now.getMonth();
+                        const nowDay = now.getDate();
+                        shouldShow = eventYear === nowYear && eventMonth === nowMonth && eventDay === nowDay;
+                        break;
+                    case '本週':
+                        const weekStart = new Date(now);
+                        const dayOfWeek = now.getDay();
+                        const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+                        weekStart.setDate(now.getDate() + daysToMonday);
+                        weekStart.setHours(0, 0, 0, 0);
+                        const weekEnd = new Date(weekStart);
+                        weekEnd.setDate(weekStart.getDate() + 6);
+                        weekEnd.setHours(23, 59, 59, 999);
+                        shouldShow = eventDate >= weekStart && eventDate <= weekEnd;
+                        break;
+                    case '本月':
+                        shouldShow = eventDate.getFullYear() === now.getFullYear() && 
+                                   eventDate.getMonth() === now.getMonth();
+                        break;
+                    case '全部':
+                    default:
+                        shouldShow = true;
+                }
+                
+                return shouldShow;
+            });
+            
+            console.log('🎨 renderEvents - 篩選後事件數量:', filteredEvents.length);
+            
+            // 排序事件
+            filteredEvents.sort((a, b) => {
+                const now = new Date();
+                const eventA = new Date(a.start);
+                const eventB = new Date(b.start);
+                const endA = new Date(a.end);
+                const endB = new Date(b.end);
+                
+                // 判斷事件狀態
+                const isEventAOngoing = eventA <= now && endA > now;
+                const isEventBOngoing = eventB <= now && endB > now;
+                const isEventAPast = endA < now;
+                const isEventBPast = endB < now;
+                const isEventAUpcoming = eventA > now;
+                const isEventBUpcoming = eventB > now;
+                
+                // 優先排序：正在進行中 > 即將開始 > 已結束
+                if (isEventAOngoing && !isEventBOngoing) return -1;
+                if (!isEventAOngoing && isEventBOngoing) return 1;
+                
+                if (isEventAUpcoming && isEventBPast) return -1;
+                if (isEventAPast && isEventBUpcoming) return 1;
+                
+                // 在相同狀態下，按時間排序
+                return eventA - eventB;
+            });
+            
+            if (filteredEvents.length === 0) {
+                container.innerHTML = `
+                    <div class="no-events">
+                        <i class="fas fa-calendar-times"></i>
+                        <h3>沒有找到事件</h3>
+                        <p>請嘗試調整篩選條件</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = filteredEvents.map(event => createEventCard(event)).join('');
+            
+            // 觸發事件卡片動畫
+            setTimeout(() => {
+                animateEventCards();
+                // 更新倒數計時
+                updateAllCountdowns();
+            }, 100);
+        }
+        
+        // 從標題解析時間
+        function parseTimeFromTitle(title) {
+            // 匹配格式如 "18:30-20:30", "14:30-15:30", "16:30-17:30", "1630-1730" 等
+            const timeMatch = title.match(/(\d{1,2}):?(\d{2})-(\d{1,2}):?(\d{2})/);
+            if (timeMatch) {
+                const startHour = timeMatch[1];
+                const startMin = timeMatch[2];
+                const endHour = timeMatch[3];
+                const endMin = timeMatch[4];
+                
+                // 格式化時間為 HH:MM 格式
+                const startTime = `${startHour.padStart(2, '0')}:${startMin}`;
+                const endTime = `${endHour.padStart(2, '0')}:${endMin}`;
+                
+                return {
+                    startTime: startTime,
+                    endTime: endTime,
+                    timeString: `${startTime} - ${endTime}`
+                };
+            }
+            return null;
+        }
+        
+        // 從標題解析日期（根據星期幾）
+        function parseDateFromTitle(title, baseDate = new Date()) {
+            // 直接使用 CalDAV 的日期，不重新計算
+            // 因為 CalDAV 已經提供了正確的日期
+            return baseDate;
+        }
+        
+        // 檢查是否為停課/請假
+        function isCancelled(event) {
+            const title = event.title.toLowerCase();
+            const description = (event.description || '').toLowerCase();
+            const cancelledKeywords = ['請假', '停課', '取消', '暫停', '休息', '放假'];
+            
+            return cancelledKeywords.some(keyword => 
+                title.includes(keyword) || description.includes(keyword)
+            );
+        }
+        
+        // 創建事件卡片
+        function createEventCard(event) {
+            const startDate = new Date(event.start);
+            const endDate = new Date(event.end);
+            const isCancelledEvent = isCancelled(event);
+            
+            // 從標題解析時間
+            const titleTime = parseTimeFromTitle(event.title);
+            
+            // 統一使用 CalDAV 的日期，確保日期正確
+            const displayDate = startDate.toLocaleDateString('zh-TW');
+            let timeString;
+            
+            if (titleTime) {
+                // 使用標題解析的時間，但日期使用 CalDAV
+                timeString = titleTime.timeString;
+            } else {
+                // 使用 CalDAV 的時間
+                timeString = `${startDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${endDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
+            }
+            
+            // 計算倒數計時
+            const now = new Date();
+            const timeUntilStart = startDate - now;
+            const timeUntilEnd = endDate - now;
+            
+            let countdownText = '';
+            let eventStatus = '';
+            
+            if (timeUntilEnd < 0) {
+                eventStatus = 'past';
+                countdownText = '已結束';
+            } else if (timeUntilStart < 0) {
+                eventStatus = 'ongoing';
+                countdownText = calculateCountdown(now, endDate);
+            } else {
+                eventStatus = 'upcoming';
+                countdownText = calculateCountdown(now, startDate);
+            }
+            
+            // 生成馬卡龍顏色
+            const color = generateRandomMacaronColor();
+            
+            return `
+                <div class="event-card ${eventStatus} ${isCancelledEvent ? 'cancelled' : ''}" data-event-id="${event.id}">
+                    <div class="event-header">
+                        <div class="event-time">
+                            <i class="fas fa-clock"></i>
+                            <span>${timeString}</span>
+                        </div>
+                        <div class="event-date">
+                            <i class="fas fa-calendar"></i>
+                            <span>${displayDate}</span>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <h3 class="event-title">${event.title}</h3>
+                        <div class="event-instructor">
+                            <i class="fas fa-user"></i>
+                            <span>${event.instructor}</span>
+                        </div>
+                        ${event.description ? `<p class="event-description">${event.description}</p>` : ''}
+                        <div class="event-countdown">
+                            <i class="fas fa-hourglass-half"></i>
+                            <span>${countdownText}</span>
+                        </div>
+                    </div>
+                    <div class="event-footer">
+                        <div class="event-status ${eventStatus}">
+                            ${eventStatus === 'ongoing' ? '進行中' : eventStatus === 'past' ? '已結束' : '即將開始'}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 顯示錯誤訊息
+        function showError(message) {
+            const container = document.getElementById('eventsContainer');
+            container.innerHTML = `
+                <div class="no-events">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>載入失敗</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
 
         // 點擊外部關閉設置畫面
         const settingsOverlay = document.getElementById('settingsOverlay');
