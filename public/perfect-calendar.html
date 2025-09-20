@@ -1884,11 +1884,26 @@
         }
 
         @keyframes statsPulse {
-            0% { transform: scale(1); }
-            25% { transform: scale(1.05); }
-            50% { transform: scale(0.98); }
-            75% { transform: scale(1.02); }
-            100% { transform: scale(1); }
+            0% { 
+                transform: scale(1) rotate(0deg);
+                filter: brightness(1);
+            }
+            25% { 
+                transform: scale(1.08) rotate(1deg);
+                filter: brightness(1.1);
+            }
+            50% { 
+                transform: scale(0.95) rotate(-1deg);
+                filter: brightness(0.9);
+            }
+            75% { 
+                transform: scale(1.03) rotate(0.5deg);
+                filter: brightness(1.05);
+            }
+            100% { 
+                transform: scale(1) rotate(0deg);
+                filter: brightness(1);
+            }
         }
 
         .stats-item-updated {
@@ -3710,7 +3725,9 @@
         }
 
         .event-card.charging {
-            animation: chargingPulse 0.5s ease-in-out infinite;
+            animation: chargingPulse 0.6s ease-in-out infinite;
+            transform: scale(1.02);
+            box-shadow: 0 8px 30px rgba(184, 134, 11, 0.4);
         }
 
         .event-card.charging::before {
@@ -3722,10 +3739,13 @@
             bottom: 0;
             background: linear-gradient(90deg, 
                 transparent 0%, 
-                rgba(184, 134, 11, 0.3) 50%, 
+                rgba(184, 134, 11, 0.4) 30%,
+                rgba(255, 215, 0, 0.6) 50%, 
+                rgba(184, 134, 11, 0.4) 70%,
                 transparent 100%);
-            animation: chargingSweep 1s ease-in-out infinite;
+            animation: chargingSweep 0.8s ease-in-out infinite;
             z-index: 1;
+            border-radius: inherit;
         }
 
         .event-card.charging::after {
@@ -3733,35 +3753,80 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 40px;
-            height: 40px;
-            margin: -20px 0 0 -20px;
-            border: 3px solid rgba(184, 134, 11, 0.3);
-            border-top: 3px solid #b8860b;
+            width: 50px;
+            height: 50px;
+            margin: -25px 0 0 -25px;
+            border: 4px solid rgba(184, 134, 11, 0.2);
+            border-top: 4px solid #b8860b;
+            border-right: 4px solid #daa520;
             border-radius: 50%;
-            animation: chargingSpin 1s linear infinite;
+            animation: chargingSpin 0.8s linear infinite;
             z-index: 2;
+            box-shadow: 0 0 20px rgba(184, 134, 11, 0.5);
         }
 
         @keyframes chargingPulse {
             0%, 100% { 
-                transform: scale(1);
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                transform: scale(1.02);
+                box-shadow: 0 8px 30px rgba(184, 134, 11, 0.4);
             }
             50% { 
-                transform: scale(1.02);
-                box-shadow: 0 6px 20px rgba(184, 134, 11, 0.3);
+                transform: scale(1.05);
+                box-shadow: 0 12px 40px rgba(184, 134, 11, 0.6);
             }
         }
 
         @keyframes chargingSweep {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+            0% { 
+                transform: translateX(-100%) scaleY(1);
+                opacity: 0.8;
+            }
+            50% {
+                transform: translateX(0%) scaleY(1.2);
+                opacity: 1;
+            }
+            100% { 
+                transform: translateX(100%) scaleY(1);
+                opacity: 0.8;
+            }
         }
 
         @keyframes chargingSpin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% { 
+                transform: rotate(0deg) scale(1);
+                opacity: 0.8;
+            }
+            50% {
+                transform: rotate(180deg) scale(1.1);
+                opacity: 1;
+            }
+            100% { 
+                transform: rotate(360deg) scale(1);
+                opacity: 0.8;
+            }
+        }
+
+        @keyframes successPulse {
+            0% { 
+                transform: scale(1);
+                box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+            }
+            25% { 
+                transform: scale(1.1);
+                box-shadow: 0 8px 25px rgba(40, 167, 69, 0.6);
+            }
+            50% { 
+                transform: scale(1.05);
+                box-shadow: 0 12px 35px rgba(40, 167, 69, 0.8);
+            }
+            75% { 
+                transform: scale(1.08);
+                box-shadow: 0 10px 30px rgba(40, 167, 69, 0.7);
+            }
+            100% { 
+                transform: scale(1);
+                box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+            }
         }
 
         /* 講師底色 */
@@ -6775,6 +6840,9 @@ async function loadTodayEvents() {
         let chargingStartTime = 0;
 
         document.addEventListener('mousedown', function(e) {
+            // 確保 e.target 有 closest 方法
+            if (!e.target || typeof e.target.closest !== 'function') return;
+            
             const eventCard = e.target.closest('.event-card');
             if (eventCard && !eventCard.classList.contains('charging')) {
                 const title = eventCard.dataset.eventTitle;
@@ -6787,7 +6855,7 @@ async function loadTodayEvents() {
                     chargingStartTime = Date.now();
                     isCharging = true;
                     
-                    // 1秒後開始集氣充能效果
+                    // 0.5秒後開始集氣充能效果
                     longPressTimer = setTimeout(() => {
                         if (isCharging) {
                             eventCard.classList.add('charging');
@@ -6801,21 +6869,23 @@ async function loadTodayEvents() {
                                 }
                             }, 1000);
                             
-                            // 2秒後跳出載入畫面
+                            // 1.5秒後跳出載入畫面
                             setTimeout(() => {
                                 if (isCharging) {
                                     console.log('🚀 跳出載入畫面');
                                     eventCard.classList.remove('charging');
                                     handleDirectAttendance(title, instructor, start, end);
                                 }
-                            }, 2000);
+                            }, 1500);
                         }
-                    }, 1000);
+                    }, 500);
                 }
             }
         });
 
         document.addEventListener('mouseup', function(e) {
+            if (!e.target || typeof e.target.closest !== 'function') return;
+            
             const eventCard = e.target.closest('.event-card');
             if (eventCard && longPressTimer) {
                 clearTimeout(longPressTimer);
@@ -6827,6 +6897,8 @@ async function loadTodayEvents() {
         });
 
         document.addEventListener('mouseleave', function(e) {
+            if (!e.target || typeof e.target.closest !== 'function') return;
+            
             const eventCard = e.target.closest('.event-card');
             if (eventCard && longPressTimer) {
                 clearTimeout(longPressTimer);
@@ -6839,6 +6911,8 @@ async function loadTodayEvents() {
 
         // 觸控設備支援
         document.addEventListener('touchstart', function(e) {
+            if (!e.target || typeof e.target.closest !== 'function') return;
+            
             const eventCard = e.target.closest('.event-card');
             if (eventCard && !eventCard.classList.contains('charging')) {
                 const title = eventCard.dataset.eventTitle;
@@ -6867,14 +6941,16 @@ async function loadTodayEvents() {
                                     eventCard.classList.remove('charging');
                                     handleDirectAttendance(title, instructor, start, end);
                                 }
-                            }, 2000);
+                            }, 1500);
                         }
-                    }, 1000);
+                    }, 500);
                 }
             }
         });
 
         document.addEventListener('touchend', function(e) {
+            if (!e.target || typeof e.target.closest !== 'function') return;
+            
             const eventCard = e.target.closest('.event-card');
             if (eventCard && longPressTimer) {
                 clearTimeout(longPressTimer);
@@ -7951,6 +8027,9 @@ async function loadTodayEvents() {
                     studentItem.querySelector('.absent-btn').style.animation = '';
                 }
             }, 600);
+            
+            // 更新統計
+            updateAttendanceStats();
         }
 
         // 更新簽到統計
