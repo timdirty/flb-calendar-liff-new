@@ -695,6 +695,262 @@
             font-size: 0.9rem;
         }
 
+        /* 事件操作按鈕樣式 */
+        .event-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+        }
+
+        .attendance-btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+        }
+
+        .attendance-btn:hover {
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        }
+
+        /* 彈出式視窗樣式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow: hidden;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-body {
+            padding: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .course-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .course-info h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .course-info p {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .students-section h4 {
+            margin: 0 0 15px 0;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .students-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .student-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .student-item:hover {
+            border-color: #e9ecef;
+        }
+
+        .student-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .attendance-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .attendance-btn-small {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-present {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-present:hover {
+            background: #218838;
+        }
+
+        .btn-absent {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-absent:hover {
+            background: #c82333;
+        }
+
+        .btn-leave {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-leave:hover {
+            background: #e0a800;
+        }
+
+        .attendance-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-present {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-absent {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-leave {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-pending {
+            background: #e2e3e5;
+            color: #6c757d;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            background: #f8f9fa;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
         .btn-secondary {
             background: rgba(108, 117, 125, 0.9);
             color: rgba(255, 255, 255, 0.9);
@@ -2857,10 +3113,39 @@
         </div>
     </div>
 
-    <!-- 重新整理浮動按鈕 -->
-    <div id="refreshButton" class="refresh-button" title="重新整理行事曆">
-        <i class="fas fa-sync-alt"></i>
-    </div>
+        <!-- 重新整理浮動按鈕 -->
+        <div id="refreshButton" class="refresh-button" title="重新整理行事曆">
+            <i class="fas fa-sync-alt"></i>
+        </div>
+
+        <!-- 簽到彈出式視窗 -->
+        <div id="attendanceModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-user-check"></i> 學生簽到</h3>
+                    <button class="modal-close" onclick="closeAttendanceModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="course-info">
+                        <h4 id="modalCourseName">課程名稱</h4>
+                        <p><strong>講師：</strong><span id="modalInstructor">講師名稱</span></p>
+                        <p><strong>時間：</strong><span id="modalTime">課程時間</span></p>
+                    </div>
+                    <div class="students-section">
+                        <h4><i class="fas fa-users"></i> 學生列表</h4>
+                        <div id="studentsList" class="students-list">
+                            <div class="loading">載入中...</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeAttendanceModal()">關閉</button>
+                    <button class="btn btn-primary" onclick="saveAttendance()">儲存簽到</button>
+                </div>
+            </div>
+        </div>
 
     <script>
         // 全域變數
@@ -3837,6 +4122,207 @@
             } else {
                 return `${minutes}分鐘`;
             }
+        }
+
+        // FLB 簽到系統 SDK
+        class FLBAttendanceSDK {
+            constructor(baseURL = 'https://liff-sttendence-0908-production.up.railway.app') {
+                this.baseURL = baseURL;
+            }
+
+            async _makeRequest(endpoint, method = 'GET', data = null) {
+                const url = `${this.baseURL}${endpoint}`;
+                const options = {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                };
+
+                if (data) {
+                    options.body = JSON.stringify(data);
+                }
+
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (error) {
+                    console.error('API 請求失敗:', error);
+                    throw error;
+                }
+            }
+
+            async getStudents(course, time, date = null) {
+                if (!date) {
+                    const today = new Date();
+                    date = today.toISOString().split('T')[0];
+                }
+                return await this._makeRequest('/api/course-students', 'POST', {
+                    course: course,
+                    time: time,
+                    date: date
+                });
+            }
+
+            async markStudentAttendance(studentName, present, teacherName, courseName, date = null) {
+                if (!date) {
+                    const today = new Date();
+                    date = today.toISOString().split('T')[0];
+                }
+                return await this._makeRequest('/api/student-attendance', 'POST', {
+                    studentName: studentName,
+                    date: date,
+                    present: present,
+                    teacherName: teacherName,
+                    courseName: courseName
+                });
+            }
+        }
+
+        // 初始化簽到系統
+        const attendanceSDK = new FLBAttendanceSDK();
+        let currentAttendanceData = {
+            courseName: '',
+            instructor: '',
+            time: '',
+            students: []
+        };
+
+        // 開啟簽到彈出式視窗
+        async function openAttendanceModal(courseName, instructor, time) {
+            console.log('開啟簽到視窗:', { courseName, instructor, time });
+            
+            // 設置課程資訊
+            document.getElementById('modalCourseName').textContent = courseName;
+            document.getElementById('modalInstructor').textContent = instructor;
+            document.getElementById('modalTime').textContent = time;
+            
+            // 儲存當前課程資訊
+            currentAttendanceData.courseName = courseName;
+            currentAttendanceData.instructor = instructor;
+            currentAttendanceData.time = time;
+            
+            // 顯示彈出式視窗
+            const modal = document.getElementById('attendanceModal');
+            modal.classList.add('show');
+            
+            // 載入學生列表
+            await loadStudentsList(courseName, time);
+        }
+
+        // 關閉簽到彈出式視窗
+        function closeAttendanceModal() {
+            const modal = document.getElementById('attendanceModal');
+            modal.classList.remove('show');
+            currentAttendanceData.students = [];
+        }
+
+        // 載入學生列表
+        async function loadStudentsList(courseName, time) {
+            const studentsList = document.getElementById('studentsList');
+            studentsList.innerHTML = '<div class="loading">載入中...</div>';
+            
+            try {
+                const result = await attendanceSDK.getStudents(courseName, time);
+                console.log('學生列表結果:', result);
+                
+                if (result.success && result.students) {
+                    currentAttendanceData.students = result.students;
+                    renderStudentsList(result.students);
+                } else {
+                    studentsList.innerHTML = '<div class="loading">無法載入學生列表</div>';
+                }
+            } catch (error) {
+                console.error('載入學生列表失敗:', error);
+                studentsList.innerHTML = '<div class="loading">載入失敗，請稍後再試</div>';
+            }
+        }
+
+        // 渲染學生列表
+        function renderStudentsList(students) {
+            const studentsList = document.getElementById('studentsList');
+            
+            if (!students || students.length === 0) {
+                studentsList.innerHTML = '<div class="loading">沒有學生資料</div>';
+                return;
+            }
+            
+            const html = students.map(student => {
+                const attendanceStatus = student.hasAttendanceToday;
+                let statusClass = 'status-pending';
+                let statusText = '未簽到';
+                
+                if (attendanceStatus === true) {
+                    statusClass = 'status-present';
+                    statusText = '出席';
+                } else if (attendanceStatus === false) {
+                    statusClass = 'status-absent';
+                    statusText = '缺席';
+                } else if (attendanceStatus === 'leave') {
+                    statusClass = 'status-leave';
+                    statusText = '請假';
+                }
+                
+                return `
+                    <div class="student-item">
+                        <div class="student-name">${student.name}</div>
+                        <div class="attendance-controls">
+                            <span class="attendance-status ${statusClass}">${statusText}</span>
+                            <button class="attendance-btn-small btn-present" onclick="markAttendance('${student.name}', true)">
+                                出席
+                            </button>
+                            <button class="attendance-btn-small btn-absent" onclick="markAttendance('${student.name}', false)">
+                                缺席
+                            </button>
+                            <button class="attendance-btn-small btn-leave" onclick="markAttendance('${student.name}', 'leave')">
+                                請假
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            studentsList.innerHTML = html;
+        }
+
+        // 標記學生簽到
+        async function markAttendance(studentName, status) {
+            try {
+                const present = status === true;
+                const result = await attendanceSDK.markStudentAttendance(
+                    studentName, 
+                    present, 
+                    currentAttendanceData.instructor, 
+                    currentAttendanceData.courseName
+                );
+                
+                if (result.success) {
+                    // 更新本地狀態
+                    const student = currentAttendanceData.students.find(s => s.name === studentName);
+                    if (student) {
+                        student.hasAttendanceToday = status;
+                    }
+                    
+                    // 重新渲染列表
+                    renderStudentsList(currentAttendanceData.students);
+                    
+                    console.log('簽到成功:', result);
+                } else {
+                    alert('簽到失敗: ' + (result.error || '未知錯誤'));
+                }
+            } catch (error) {
+                console.error('簽到錯誤:', error);
+                alert('簽到失敗: ' + error.message);
+            }
+        }
+
+        // 儲存簽到
+        function saveAttendance() {
+            alert('簽到已儲存！');
+            closeAttendanceModal();
         }
 
         // 強制重新整理行事曆
@@ -5357,6 +5843,13 @@ async function loadTodayEvents() {
                     </div>
                     
                     ${lessonButton}
+                    
+                    <div class="event-actions">
+                        <button class="action-btn attendance-btn" onclick="openAttendanceModal('${event.title}', '${event.instructor}', '${timeString}')" title="學生簽到">
+                            <i class="fas fa-user-check"></i>
+                            簽到
+                        </button>
+                    </div>
                 </div>
             `;
         }
