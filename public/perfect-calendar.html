@@ -7148,12 +7148,7 @@ async function loadTodayEvents() {
                         padding: 12px 16px;
                         border: 1px solid ${statusStyles.border};
                         border-radius: 12px;
-                        background: 
-                            radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.08) 0%, transparent 70%),
-                            linear-gradient(135deg, 
-                                rgba(255, 255, 255, 0.85) 0%, 
-                                rgba(248, 249, 250, 0.75) 50%,
-                                rgba(255, 255, 255, 0.85) 100%);
+                        background: ${statusStyles.background};
                         backdrop-filter: blur(25px);
                         -webkit-backdrop-filter: blur(25px);
                         transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -7168,6 +7163,26 @@ async function loadTodayEvents() {
                         margin-bottom: 8px;
                         animation: cardSlideIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
                     ">
+                        <!-- 狀態標籤 - 右上角 -->
+                        <div style="
+                            position: absolute;
+                            top: 8px;
+                            right: 8px;
+                            z-index: 10;
+                            background: ${statusStyles.statusColor};
+                            color: white;
+                            padding: 4px 8px;
+                            border-radius: 12px;
+                            font-size: 0.75rem;
+                            font-weight: 600;
+                            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+                            display: flex;
+                            align-items: center;
+                            gap: 4px;
+                        ">
+                            <span style="font-size: 0.8rem;">${statusStyles.emoji}</span>
+                            <span>${statusText}</span>
+                        </div>
                         <div style="display: flex; align-items: center; gap: 12px;">
                             <div style="
                                 width: 32px;
@@ -7185,25 +7200,9 @@ async function loadTodayEvents() {
                             ">
                                 ${student.name.charAt(0)}
                             </div>
-                            <div style="flex: 1;">
+                            <div style="flex: 1; padding-right: 80px;">
                                 <div class="student-name" style="font-weight: 600; color: rgba(0, 0, 0, 0.9); font-size: 0.95rem; margin-bottom: 2px;">${student.name}</div>
-                                ${student.id ? `<div style="color: rgba(0, 0, 0, 0.6); font-size: 0.8rem; margin-bottom: 4px;">${student.id}</div>` : ''}
-                                <div style="
-                                    font-size: 0.8rem;
-                                    color: ${statusStyles.statusColor};
-                                    font-weight: 600;
-                                    display: flex;
-                                    align-items: center;
-                                    gap: 4px;
-                                    padding: 2px 8px;
-                                    background: ${statusStyles.background};
-                                    border-radius: 12px;
-                                    border: 1px solid ${statusStyles.border};
-                                    width: fit-content;
-                                ">
-                                    <span style="font-size: 0.9rem;">${statusStyles.emoji}</span>
-                                    <span>${statusText}</span>
-                                </div>
+                                ${student.id ? `<div style="color: rgba(0, 0, 0, 0.6); font-size: 0.8rem;">${student.id}</div>` : ''}
                             </div>
                         </div>
                         <div style="display: flex; gap: 8px;">

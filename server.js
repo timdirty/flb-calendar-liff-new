@@ -461,6 +461,45 @@ app.post('/api/proxy/google-sheets', async (req, res) => {
                     error: '沒有簽到記錄需要處理'
                 });
             }
+        } else if (action === 'query') {
+            // 查詢學生缺勤紀錄
+            const { name } = req.body;
+            
+            if (!name) {
+                return res.status(400).json({
+                    success: false,
+                    error: '缺少學生姓名參數'
+                });
+            }
+            
+            apiUrl = 'https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/dev';
+            
+            payload = {
+                action: 'query',
+                name: name
+            };
+            
+            console.log('📤 查詢學生缺勤紀錄:', { apiUrl, payload });
+            
+            const headers = {
+                'Content-Type': 'application/json',
+                'Cookie': 'NID=525=nsWVvbAon67C2qpyiEHQA3SUio_GqBd7RqUFU6BwB97_4LHggZxLpDgSheJ7WN4w3Z4dCQBiFPG9YKAqZgAokFYCuuQw04dkm-FX9-XHAIBIqJf1645n3RZrg86GcUVJOf3gN-5eTHXFIaovTmgRC6cXllv82SnQuKsGMq7CHH60XDSwyC99s9P2gmyXLppI'
+            };
+            
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(payload)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`查詢缺勤紀錄失敗: ${response.status} ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log('📥 缺勤紀錄查詢回應:', data);
+            
+            return res.json(data);
         } else {
             return res.status(400).json({
                 success: false,
