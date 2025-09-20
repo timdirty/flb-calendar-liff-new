@@ -4132,7 +4132,68 @@
                 this.baseURL = baseURL;
             }
 
+            // 使用 JSONP 繞過 CSP 限制
+            _makeJSONPRequest(endpoint, data) {
+                return new Promise((resolve, reject) => {
+                    // 創建唯一的回調函數名稱
+                    const callbackName = `flb_callback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                    
+                    // 將回調函數添加到全局作用域
+                    window[callbackName] = (response) => {
+                        try {
+                            // 清理回調函數
+                            delete window[callbackName];
+                            document.head.removeChild(script);
+                            resolve(response);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    };
+                    
+                    // 構建 JSONP URL
+                    const params = new URLSearchParams();
+                    if (data) {
+                        Object.keys(data).forEach(key => {
+                            params.append(key, data[key]);
+                        });
+                    }
+                    params.append('callback', callbackName);
+                    
+                    const url = `${this.baseURL}${endpoint}?${params.toString()}`;
+                    
+                    // 創建 script 標籤
+                    const script = document.createElement('script');
+                    script.src = url;
+                    script.onerror = () => {
+                        delete window[callbackName];
+                        document.head.removeChild(script);
+                        reject(new Error('JSONP request failed'));
+                    };
+                    
+                    // 設置超時
+                    setTimeout(() => {
+                        if (window[callbackName]) {
+                            delete window[callbackName];
+                            document.head.removeChild(script);
+                            reject(new Error('JSONP request timeout'));
+                        }
+                    }, 30000);
+                    
+                    document.head.appendChild(script);
+                });
+            }
+
             async _makeRequest(endpoint, method = 'GET', data = null) {
+                // 對於 GET 請求，嘗試使用 JSONP
+                if (method === 'GET') {
+                    try {
+                        return await this._makeJSONPRequest(endpoint, data);
+                    } catch (error) {
+                        console.warn('JSONP 失敗，嘗試直接請求:', error);
+                    }
+                }
+                
+                // 對於 POST 請求或其他情況，使用傳統方法
                 const url = `${this.baseURL}${endpoint}`;
                 const options = {
                     method,
@@ -4162,7 +4223,8 @@
                     const today = new Date();
                     date = today.toISOString().split('T')[0];
                 }
-                return await this._makeRequest('/api/course-students', 'POST', {
+                // 使用 GET 請求以便 JSONP 可以工作
+                return await this._makeRequest('/api/course-students', 'GET', {
                     course: course,
                     time: time,
                     date: date
@@ -4240,8 +4302,29 @@
             } catch (error) {
                 console.error('載入學生列表失敗:', error);
                 
-                // 檢查是否為網路錯誤或 404 錯誤
-                if (error.message.includes('404') || error.message.includes('Failed to fetch')) {
+                // 檢查是否為 CSP 錯誤
+                if (error.message.includes('CSP') || error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+                    studentsList.innerHTML = `
+                        <div class="loading">
+                            <i class="fas fa-shield-alt" style="color: #f44336; margin-right: 8px;"></i>
+                            安全政策限制，無法直接連接簽到系統
+                            <br>
+                            <small style="color: #666; margin-top: 8px; display: block;">
+                                請使用以下方式進行簽到：
+                            </small>
+                            <div style="margin-top: 12px;">
+                                <button onclick="openFLBAttendance('${courseName}', '${time}')" 
+                                        style="background: #4CAF50; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-right: 8px;">
+                                    <i class="fas fa-external-link-alt"></i> 開啟簽到系統
+                                </button>
+                                <button onclick="closeAttendanceModal()" 
+                                        style="background: #f44336; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                                    <i class="fas fa-times"></i> 關閉
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else if (error.message.includes('404') || error.message.includes('Failed to fetch')) {
                     studentsList.innerHTML = `
                         <div class="loading">
                             <i class="fas fa-exclamation-triangle" style="color: #ff9800; margin-right: 8px;"></i>
@@ -4249,17 +4332,6 @@
                             <br>
                             <small style="color: #666; margin-top: 8px; display: block;">
                                 請稍後再試或聯繫管理員
-                            </small>
-                        </div>
-                    `;
-                } else if (error.message.includes('CORS') || error.message.includes('CSP')) {
-                    studentsList.innerHTML = `
-                        <div class="loading">
-                            <i class="fas fa-shield-alt" style="color: #f44336; margin-right: 8px;"></i>
-                            安全政策限制
-                            <br>
-                            <small style="color: #666; margin-top: 8px; display: block;">
-                                無法連接到簽到系統
                             </small>
                         </div>
                     `;
@@ -4276,6 +4348,24 @@
                     `;
                 }
             }
+        }
+
+        // 開啟 FLB 簽到系統
+        function openFLBAttendance(courseName, time) {
+            // 構建 FLB 簽到系統的 URL
+            const params = new URLSearchParams({
+                course: courseName,
+                time: time,
+                date: new Date().toISOString().split('T')[0]
+            });
+            
+            const flbUrl = `https://liff-sttendence-0908-production.up.railway.app/step3?${params.toString()}`;
+            
+            // 在新視窗中開啟
+            window.open(flbUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+            
+            // 關閉當前模態框
+            closeAttendanceModal();
         }
 
         // 渲染學生列表
