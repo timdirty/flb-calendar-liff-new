@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+/Users/apple/Library/CloudStorage/SynologyDrive-樂程坊計畫/課程資料/Cursor/FLB簽到系統（line）<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -436,6 +436,51 @@
                 transform: translateX(100%);
                 opacity: 0;
             }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* 學生狀態樣式 */
+        .student-item.present {
+            border-color: #28a745;
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(32, 201, 151, 0.1));
+        }
+
+        .student-item.absent {
+            border-color: #dc3545;
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.1), rgba(231, 76, 60, 0.1));
+        }
+
+        .student-item.leave {
+            border-color: #ffc107;
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(243, 156, 18, 0.1));
         }
 
         /* 浮動按鈕 */
@@ -1049,8 +1094,17 @@
                     return;
                 }
 
-                // 顯示課程選擇對話框
-                showCourseSelectionDialog(todayEvents);
+                // 如果只有一個課程，直接開啟簽到系統
+                if (todayEvents.length === 1) {
+                    const event = todayEvents[0];
+                    const { courseName, timeInfo } = parseCourseTitle(event.title);
+                    const finalTimeString = timeInfo || `${new Date(event.start).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${new Date(event.end).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
+                    
+                    await openNativeAttendanceSystem(finalInstructor, courseName, finalTimeString, event.start, event.end);
+                } else {
+                    // 多個課程時顯示選擇對話框
+                    showCourseSelectionDialog(todayEvents);
+                }
             } catch (error) {
                 console.error('❌ 快速簽到失敗:', error);
                 alert('快速簽到失敗: ' + error.message);
@@ -1182,21 +1236,11 @@
                 const finalCourseName = courseName;
                 const finalTimeString = timeInfo || `${new Date(start).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${new Date(end).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
                 
-                // 構建簽到系統URL
-                const attendanceUrl = `https://liff.line.me/1657746214-wPgd2qQn?step=3&teacher=${encodeURIComponent(finalInstructor)}&course=${encodeURIComponent(finalCourseName)}&time=${encodeURIComponent(finalTimeString)}`;
-                
-                // 開啟簽到系統
-                if (typeof liff !== 'undefined' && liff.isInClient()) {
-                    liff.openWindow({
-                        url: attendanceUrl,
-                        external: false
-                    });
-                } else {
-                    window.open(attendanceUrl, '_blank', 'noopener,noreferrer');
-                }
-
                 // 關閉對話框
                 closeCourseDialog();
+                
+                // 開啟原生簽到系統
+                await openNativeAttendanceSystem(finalInstructor, finalCourseName, finalTimeString, start, end);
                 
                 console.log('✅ 開啟課程簽到:', { finalInstructor, finalCourseName, finalTimeString });
             } catch (error) {
@@ -1476,23 +1520,8 @@
                 const finalCourseName = courseName;
                 const finalTimeString = timeInfo || `${new Date(start).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${new Date(end).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
                 
-                // 構建簽到系統URL
-                const attendanceUrl = `https://liff.line.me/1657746214-wPgd2qQn?step=3&teacher=${encodeURIComponent(instructor)}&course=${encodeURIComponent(finalCourseName)}&time=${encodeURIComponent(finalTimeString)}`;
-                
-                // 開啟簽到系統
-                if (typeof liff !== 'undefined' && liff.isInClient()) {
-                    liff.openWindow({
-                        url: attendanceUrl,
-                        external: false
-                    });
-                    console.log('✅ 使用 LIFF 開啟直接簽到');
-                } else {
-                    window.open(attendanceUrl, '_blank', 'noopener,noreferrer');
-                    console.log('✅ 使用一般方式開啟直接簽到');
-                }
-                
-                // 顯示成功訊息
-                showSuccessMessage(`已開啟 ${instructor} 的 ${finalCourseName} 簽到`);
+                // 開啟原生簽到系統
+                await openNativeAttendanceSystem(matchedInstructor, finalCourseName, finalTimeString, start, end);
                 
             } catch (error) {
                 console.error('❌ 直接簽到失敗:', error);
@@ -1500,6 +1529,390 @@
             }
         }
 
+        // 開啟原生簽到系統
+        async function openNativeAttendanceSystem(teacher, course, time, start, end) {
+            try {
+                console.log('🎯 開啟原生簽到系統:', { teacher, course, time, start, end });
+                
+                // 創建簽到系統模態框
+                const modal = document.createElement('div');
+                modal.id = 'attendanceModal';
+                modal.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.8);
+                    z-index: 10000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    animation: fadeIn 0.3s ease-out;
+                `;
+                
+                modal.innerHTML = `
+                    <div style="
+                        background: white;
+                        border-radius: 15px;
+                        padding: 30px;
+                        max-width: 90%;
+                        max-height: 90%;
+                        width: 800px;
+                        overflow-y: auto;
+                        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+                        animation: slideInUp 0.3s ease-out;
+                    ">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2 style="margin: 0; color: #333; font-size: 1.5rem;">
+                                <i class="fas fa-calendar-check" style="color: #667eea; margin-right: 10px;"></i>
+                                課程簽到系統
+                            </h2>
+                            <button id="closeAttendanceModal" style="
+                                background: none;
+                                border: none;
+                                font-size: 1.5rem;
+                                color: #999;
+                                cursor: pointer;
+                                padding: 5px;
+                                border-radius: 50%;
+                                width: 40px;
+                                height: 40px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                            ">×</button>
+                        </div>
+                        
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div>
+                                    <label style="font-weight: bold; color: #666; font-size: 0.9rem;">講師</label>
+                                    <div style="font-size: 1.1rem; color: #333;">${teacher}</div>
+                                </div>
+                                <div>
+                                    <label style="font-weight: bold; color: #666; font-size: 0.9rem;">課程</label>
+                                    <div style="font-size: 1.1rem; color: #333;">${course}</div>
+                                </div>
+                                <div>
+                                    <label style="font-weight: bold; color: #666; font-size: 0.9rem;">時間</label>
+                                    <div style="font-size: 1.1rem; color: #333;">${time}</div>
+                                </div>
+                                <div>
+                                    <label style="font-weight: bold; color: #666; font-size: 0.9rem;">日期</label>
+                                    <div style="font-size: 1.1rem; color: #333;">${new Date(start).toLocaleDateString('zh-TW')}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="attendanceContent">
+                            <div style="text-align: center; padding: 40px;">
+                                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #667eea; margin-bottom: 15px;"></i>
+                                <p style="color: #666; margin: 0;">載入學生名單中...</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                
+                // 添加關閉按鈕事件
+                document.getElementById('closeAttendanceModal').addEventListener('click', () => {
+                    closeAttendanceModal();
+                });
+                
+                // 點擊背景關閉
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeAttendanceModal();
+                    }
+                });
+                
+                // 載入學生名單
+                await loadCourseStudents(teacher, course, time, start, end);
+                
+            } catch (error) {
+                console.error('❌ 開啟原生簽到系統失敗:', error);
+                alert('開啟簽到系統失敗: ' + error.message);
+            }
+        }
+        
+        // 載入課程學生名單
+        async function loadCourseStudents(teacher, course, time, start, end) {
+            try {
+                console.log('📚 載入課程學生名單:', { teacher, course, time });
+                
+                // 模擬學生名單（實際應用中應該從 API 獲取）
+                const students = await getCourseStudents(teacher, course, time);
+                
+                const content = document.getElementById('attendanceContent');
+                if (!content) return;
+                
+                if (students.length === 0) {
+                    content.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #666;">
+                            <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 15px; color: #ddd;"></i>
+                            <h3 style="margin: 0 0 10px 0;">暫無學生名單</h3>
+                            <p style="margin: 0;">此課程目前沒有學生註冊</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                content.innerHTML = `
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="margin: 0 0 15px 0; color: #333;">
+                            <i class="fas fa-users" style="color: #667eea; margin-right: 8px;"></i>
+                            學生名單 (${students.length} 人)
+                        </h3>
+                    </div>
+                    
+                    <div id="studentsList" style="display: grid; gap: 15px; margin-bottom: 20px;">
+                        ${students.map(student => `
+                            <div class="student-item" data-student-id="${student.id}" style="
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                padding: 15px 20px;
+                                border: 2px solid #e9ecef;
+                                border-radius: 10px;
+                                background: white;
+                                transition: all 0.3s ease;
+                            ">
+                                <div style="display: flex; align-items: center; gap: 15px;">
+                                    <div style="
+                                        width: 40px;
+                                        height: 40px;
+                                        border-radius: 50%;
+                                        background: linear-gradient(135deg, #667eea, #764ba2);
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        color: white;
+                                        font-weight: bold;
+                                        font-size: 1.1rem;
+                                    ">
+                                        ${student.name.charAt(0)}
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: bold; color: #333; font-size: 1.1rem;">${student.name}</div>
+                                        <div style="color: #666; font-size: 0.9rem;">${student.id}</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 10px;">
+                                    <button class="attendance-btn present-btn" data-student-id="${student.id}" style="
+                                        background: linear-gradient(135deg, #28a745, #20c997);
+                                        color: white;
+                                        border: none;
+                                        padding: 8px 16px;
+                                        border-radius: 20px;
+                                        cursor: pointer;
+                                        font-size: 0.9rem;
+                                        font-weight: 500;
+                                        transition: all 0.3s ease;
+                                    ">
+                                        <i class="fas fa-check"></i> 出席
+                                    </button>
+                                    <button class="attendance-btn absent-btn" data-student-id="${student.id}" style="
+                                        background: linear-gradient(135deg, #dc3545, #e74c3c);
+                                        color: white;
+                                        border: none;
+                                        padding: 8px 16px;
+                                        border-radius: 20px;
+                                        cursor: pointer;
+                                        font-size: 0.9rem;
+                                        font-weight: 500;
+                                        transition: all 0.3s ease;
+                                    ">
+                                        <i class="fas fa-times"></i> 缺席
+                                    </button>
+                                    <button class="attendance-btn leave-btn" data-student-id="${student.id}" style="
+                                        background: linear-gradient(135deg, #ffc107, #f39c12);
+                                        color: white;
+                                        border: none;
+                                        padding: 8px 16px;
+                                        border-radius: 20px;
+                                        cursor: pointer;
+                                        font-size: 0.9rem;
+                                        font-weight: 500;
+                                        transition: all 0.3s ease;
+                                    ">
+                                        <i class="fas fa-calendar-times"></i> 請假
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                        <div style="color: #666;">
+                            <span id="attendanceStats">已簽到: 0 / ${students.length}</span>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button id="saveAttendance" style="
+                                background: linear-gradient(135deg, #667eea, #764ba2);
+                                color: white;
+                                border: none;
+                                padding: 12px 24px;
+                                border-radius: 25px;
+                                cursor: pointer;
+                                font-weight: 600;
+                                transition: all 0.3s ease;
+                            ">
+                                <i class="fas fa-save"></i> 儲存簽到記錄
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                // 添加事件監聽器
+                setupAttendanceEventListeners(teacher, course, time, start, end);
+                
+            } catch (error) {
+                console.error('❌ 載入學生名單失敗:', error);
+                const content = document.getElementById('attendanceContent');
+                if (content) {
+                    content.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #dc3545;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                            <h3 style="margin: 0 0 10px 0;">載入失敗</h3>
+                            <p style="margin: 0;">無法載入學生名單，請稍後再試</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        // 獲取課程學生名單（模擬 API）
+        async function getCourseStudents(teacher, course, time) {
+            // 模擬延遲
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // 模擬學生名單
+            const mockStudents = [
+                { id: 'S001', name: '張小明' },
+                { id: 'S002', name: '李美華' },
+                { id: 'S003', name: '王大偉' },
+                { id: 'S004', name: '陳小芳' },
+                { id: 'S005', name: '林志強' },
+                { id: 'S006', name: '黃淑芬' },
+                { id: 'S007', name: '劉建國' },
+                { id: 'S008', name: '吳雅婷' }
+            ];
+            
+            return mockStudents;
+        }
+        
+        // 設置簽到事件監聽器
+        function setupAttendanceEventListeners(teacher, course, time, start, end) {
+            const attendanceData = new Map();
+            
+            // 出席按鈕
+            document.querySelectorAll('.present-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const studentId = this.dataset.studentId;
+                    attendanceData.set(studentId, 'present');
+                    updateStudentStatus(studentId, 'present');
+                    updateAttendanceStats();
+                });
+            });
+            
+            // 缺席按鈕
+            document.querySelectorAll('.absent-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const studentId = this.dataset.studentId;
+                    attendanceData.set(studentId, 'absent');
+                    updateStudentStatus(studentId, 'absent');
+                    updateAttendanceStats();
+                });
+            });
+            
+            // 請假按鈕
+            document.querySelectorAll('.leave-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const studentId = this.dataset.studentId;
+                    attendanceData.set(studentId, 'leave');
+                    updateStudentStatus(studentId, 'leave');
+                    updateAttendanceStats();
+                });
+            });
+            
+            // 儲存按鈕
+            document.getElementById('saveAttendance').addEventListener('click', async function() {
+                await saveAttendanceRecords(teacher, course, time, start, end, attendanceData);
+            });
+        }
+        
+        // 更新學生狀態
+        function updateStudentStatus(studentId, status) {
+            const studentItem = document.querySelector(`[data-student-id="${studentId}"]`);
+            if (!studentItem) return;
+            
+            // 移除所有狀態樣式
+            studentItem.classList.remove('present', 'absent', 'leave');
+            
+            // 添加新狀態樣式
+            studentItem.classList.add(status);
+            
+            // 更新按鈕狀態
+            const buttons = studentItem.querySelectorAll('.attendance-btn');
+            buttons.forEach(btn => {
+                btn.style.opacity = '0.5';
+                btn.disabled = true;
+            });
+            
+            // 高亮選中的按鈕
+            const selectedBtn = studentItem.querySelector(`.${status}-btn`);
+            if (selectedBtn) {
+                selectedBtn.style.opacity = '1';
+                selectedBtn.style.transform = 'scale(1.05)';
+            }
+        }
+        
+        // 更新簽到統計
+        function updateAttendanceStats() {
+            const stats = document.getElementById('attendanceStats');
+            if (!stats) return;
+            
+            const totalStudents = document.querySelectorAll('.student-item').length;
+            const attendedStudents = document.querySelectorAll('.student-item.present, .student-item.absent, .student-item.leave').length;
+            
+            stats.textContent = `已簽到: ${attendedStudents} / ${totalStudents}`;
+        }
+        
+        // 儲存簽到記錄
+        async function saveAttendanceRecords(teacher, course, time, start, end, attendanceData) {
+            try {
+                console.log('💾 儲存簽到記錄:', { teacher, course, time, attendanceData });
+                
+                // 模擬 API 調用
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // 顯示成功訊息
+                showSuccessMessage(`簽到記錄已儲存！共 ${attendanceData.size} 筆記錄`);
+                
+                // 關閉模態框
+                closeAttendanceModal();
+                
+            } catch (error) {
+                console.error('❌ 儲存簽到記錄失敗:', error);
+                alert('儲存簽到記錄失敗: ' + error.message);
+            }
+        }
+        
+        // 關閉簽到模態框
+        function closeAttendanceModal() {
+            const modal = document.getElementById('attendanceModal');
+            if (modal) {
+                modal.style.animation = 'fadeOut 0.3s ease-in';
+                setTimeout(() => {
+                    if (modal.parentNode) {
+                        document.body.removeChild(modal);
+                    }
+                }, 300);
+            }
+        }
+        
         // 顯示成功訊息
         function showSuccessMessage(message) {
             // 創建臨時提示訊息
