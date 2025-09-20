@@ -650,9 +650,9 @@
         /* 即將到來課程的高亮樣式 */
         .event-card.upcoming-event {
             position: relative;
-            background: linear-gradient(135deg, #FF8C42 0%, #FF6B35 100%);
+            background: rgba(255, 140, 66, 0.05); /* 非常淡的橘色背景 */
             border: 2px solid #FF8C42;
-            box-shadow: 0 6px 20px rgba(255, 140, 66, 0.3);
+            box-shadow: 0 4px 15px rgba(255, 140, 66, 0.2);
             transform: scale(1.01);
             transition: all 0.3s ease;
         }
@@ -667,45 +667,44 @@
             background: linear-gradient(45deg, #FF8C42, #FF6B35, #FF8C42, #FF6B35);
             border-radius: 10px;
             z-index: -1;
-            opacity: 0.8;
+            opacity: 0.3; /* 非常淡的邊框效果 */
             transition: opacity 0.3s ease;
         }
 
         .event-card.upcoming-event:hover::before {
-            opacity: 1;
+            opacity: 0.5; /* hover時稍微加深 */
         }
 
         .event-card.upcoming-event .event-title {
-            color: white;
+            color: inherit; /* 保持原始文字顏色 */
             font-weight: 700;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .event-card.upcoming-event .event-instructor {
-            color: rgba(255, 255, 255, 0.9);
+            color: inherit; /* 保持原始文字顏色 */
             font-weight: 600;
         }
 
         .event-card.upcoming-event .event-detail {
-            color: rgba(255, 255, 255, 0.9);
+            color: inherit; /* 保持原始文字顏色 */
         }
 
         .event-card.upcoming-event .event-detail i {
-            color: rgba(255, 255, 255, 0.8);
+            color: inherit; /* 保持原始文字顏色 */
         }
 
         .event-card.upcoming-event .event-description {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 140, 66, 0.08); /* 非常淡的橘色背景 */
             border-radius: 8px;
             padding: 12px;
         }
 
         .event-card.upcoming-event .event-description h4 {
-            color: white;
+            color: inherit; /* 保持原始文字顏色 */
         }
 
         .event-card.upcoming-event .event-description p {
-            color: rgba(255, 255, 255, 0.9);
+            color: inherit; /* 保持原始文字顏色 */
         }
 
         /* 即將到來課程標記 */
