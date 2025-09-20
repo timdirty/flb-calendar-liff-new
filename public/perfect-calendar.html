@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://script.google.com https://api.line.me https://api-data.line.me https://liffsdk.line-scdn.net https://liff-sttendence-0908-production.up.railway.app">
     <title>講師行事曆檢視</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -498,7 +497,7 @@
             border: 2px solid rgba(255, 215, 0, 0.3);
             border-radius: 12px;
             font-size: 1rem;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             background: rgba(255, 255, 255, 0.9);
             color: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(10px);
@@ -508,15 +507,32 @@
                 inset 0 1px 0 rgba(255, 255, 255, 0.2);
             position: relative;
             z-index: 2;
+            will-change: transform, box-shadow, border-color;
         }
 
         select:focus, input:focus {
             outline: none;
-            border-color: rgba(255, 215, 0, 0.6);
+            border-color: rgba(255, 215, 0, 0.8);
             box-shadow: 
                 0 0 0 3px rgba(255, 215, 0, 0.2),
-                0 4px 20px rgba(0, 0, 0, 0.15),
+                0 8px 25px rgba(0, 0, 0, 0.2),
+                0 0 20px rgba(255, 215, 0, 0.4),
                 inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        select:hover, input:hover {
+            border-color: rgba(255, 215, 0, 0.5);
+            box-shadow: 
+                0 6px 20px rgba(0, 0, 0, 0.15),
+                0 0 10px rgba(255, 215, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        select:active, input:active {
+            transform: translateY(0) scale(1.01);
+            transition: all 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
 
@@ -534,7 +550,7 @@
             font-size: 0.95rem;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             text-decoration: none;
             display: inline-block;
             text-align: center;
@@ -548,6 +564,8 @@
                 0 6px 20px rgba(0, 0, 0, 0.15),
                 inset 0 1px 0 rgba(255, 255, 255, 0.2);
             z-index: 2;
+            transform: translateZ(0);
+            will-change: transform, box-shadow, border-color;
         }
 
         .btn::before {
@@ -557,12 +575,61 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            z-index: 1;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            z-index: 0;
         }
 
         .btn:hover::before {
             left: 100%;
+        }
+
+        .btn:hover::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            border-color: rgba(255, 215, 0, 0.8);
+            box-shadow: 
+                0 12px 30px rgba(0, 0, 0, 0.3),
+                0 0 30px rgba(255, 215, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            color: rgba(255, 215, 0, 1);
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(-1px) scale(1.02);
+            transition: all 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 
+                0 6px 20px rgba(0, 0, 0, 0.3),
+                0 0 15px rgba(255, 215, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .btn:focus {
+            outline: none;
+            border-color: rgba(255, 215, 0, 0.8);
+            box-shadow: 
+                0 0 0 3px rgba(255, 215, 0, 0.2),
+                0 8px 25px rgba(0, 0, 0, 0.3),
+                0 0 20px rgba(255, 215, 0, 0.3);
         }
 
 
@@ -696,262 +763,6 @@
             font-size: 0.9rem;
         }
 
-        /* 事件操作按鈕樣式 */
-        .event-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid rgba(0, 0, 0, 0.1);
-        }
-
-        .action-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-        }
-
-        .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-
-        .action-btn:active {
-            transform: translateY(0);
-        }
-
-        .attendance-btn {
-            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
-        }
-
-        .attendance-btn:hover {
-            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
-        }
-
-        /* 彈出式視窗樣式 */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-            backdrop-filter: blur(5px);
-        }
-
-        .modal-overlay.show {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 600px;
-            width: 90%;
-            max-height: 80vh;
-            overflow: hidden;
-            animation: modalSlideIn 0.3s ease-out;
-        }
-
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: scale(0.9) translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
-
-        .modal-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-header h3 {
-            margin: 0;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 5px;
-            border-radius: 50%;
-            transition: background-color 0.3s ease;
-        }
-
-        .modal-close:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .modal-body {
-            padding: 20px;
-            max-height: 60vh;
-            overflow-y: auto;
-        }
-
-        .course-info {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .course-info h4 {
-            margin: 0 0 10px 0;
-            color: #333;
-        }
-
-        .course-info p {
-            margin: 5px 0;
-            color: #666;
-        }
-
-        .students-section h4 {
-            margin: 0 0 15px 0;
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .students-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .student-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
-        }
-
-        .student-item:hover {
-            border-color: #e9ecef;
-        }
-
-        .student-name {
-            font-weight: 600;
-            color: #333;
-        }
-
-        .attendance-controls {
-            display: flex;
-            gap: 10px;
-        }
-
-        .attendance-btn-small {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .btn-present {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-present:hover {
-            background: #218838;
-        }
-
-        .btn-absent {
-            background: #dc3545;
-            color: white;
-        }
-
-        .btn-absent:hover {
-            background: #c82333;
-        }
-
-        .btn-leave {
-            background: #ffc107;
-            color: #212529;
-        }
-
-        .btn-leave:hover {
-            background: #e0a800;
-        }
-
-        .attendance-status {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .status-present {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-absent {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .status-leave {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .status-pending {
-            background: #e2e3e5;
-            color: #6c757d;
-        }
-
-        .modal-footer {
-            padding: 20px;
-            background: #f8f9fa;
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #666;
-        }
-
         .btn-secondary {
             background: rgba(108, 117, 125, 0.9);
             color: rgba(255, 255, 255, 0.9);
@@ -1050,13 +861,28 @@
                 0 0 0 1px rgba(255, 215, 0, 0.2);
             border: 2px solid rgba(255, 215, 0, 0.3);
             margin-bottom: 15px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             position: relative;
             opacity: 0;
             transform: translateY(20px);
-            animation: slideUp 0.6s ease-out forwards;
+            animation: slideUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
             z-index: 3;
             overflow: hidden;
+            will-change: transform, box-shadow, opacity;
+        }
+
+        .event-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9),
+                0 0 0 1px rgba(255, 215, 0, 0.4);
+            border-color: rgba(255, 215, 0, 0.5);
+        }
+
+        .event-card:active {
+            transform: translateY(-2px) scale(1.01);
+            transition: all 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
         .event-card::before {
@@ -1837,10 +1663,11 @@
                 0 8px 32px rgba(0, 0, 0, 0.1),
                 0 2px 8px rgba(0, 0, 0, 0.05),
                 inset 0 1px 0 rgba(255, 255, 255, 0.3);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             z-index: 1000;
             user-select: none;
             overflow: hidden;
+            will-change: transform, box-shadow;
         }
 
         .refresh-button::before {
@@ -1904,6 +1731,85 @@
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
+        }
+
+        /* 新增的動畫效果 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.8;
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+            20%, 40%, 60%, 80% { transform: translateX(2px); }
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 215, 0, 0.4);
+            }
+        }
+
+        /* 微交互效果 */
+        .smooth-hover {
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .smooth-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .bounce-in {
+            animation: scaleIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .pulse-effect {
+            animation: pulse 2s infinite;
+        }
+
+        .shake-effect {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        .glow-effect {
+            animation: glow 2s ease-in-out infinite;
         }
 
         /* 響應式設計 */
@@ -2703,11 +2609,15 @@
         @keyframes slideUp {
             0% { 
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(40px) scale(0.95);
+            }
+            50% { 
+                opacity: 0.8;
+                transform: translateY(-5px) scale(1.02);
             }
             100% { 
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateY(0) scale(1);
             }
         }
 
@@ -2842,29 +2752,43 @@
         }
 
         .stats-text span.animate {
-            animation: counterBounce 0.6s ease-out;
+            animation: counterBounce 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
         @keyframes counterBounce {
-            0% {
-                transform: scale(1);
-                color: rgba(51, 51, 51, 0.8);
+            0% { 
+                transform: scale(1); 
+                color: rgba(51, 51, 51, 0.8); 
+                text-shadow: none;
             }
-            30% {
-                transform: scale(1.2);
-                color: #2196F3;
-                font-weight: bold;
-                text-shadow: 0 0 8px rgba(33, 150, 243, 0.4);
+            20% { 
+                transform: scale(1.3); 
+                color: #2196F3; 
+                font-weight: bold; 
+                text-shadow: 0 0 12px rgba(33, 150, 243, 0.6);
             }
-            70% {
-                transform: scale(1.1);
-                color: #1976D2;
-                font-weight: bold;
+            40% { 
+                transform: scale(1.15); 
+                color: #1976D2; 
+                font-weight: bold; 
+                text-shadow: 0 0 8px rgba(25, 118, 210, 0.4);
+            }
+            60% { 
+                transform: scale(1.25); 
+                color: #1565C0; 
+                font-weight: bold; 
+                text-shadow: 0 0 10px rgba(21, 101, 192, 0.5);
+            }
+            80% { 
+                transform: scale(1.05); 
+                color: #1976D2; 
+                font-weight: bold; 
                 text-shadow: 0 0 6px rgba(25, 118, 210, 0.3);
             }
-            100% {
-                transform: scale(1);
-                color: rgba(51, 51, 51, 0.8);
+            100% { 
+                transform: scale(1); 
+                color: rgba(51, 51, 51, 0.8); 
+                text-shadow: none;
             }
         }
 
@@ -2920,16 +2844,16 @@
             <div class="loading-spinner"></div>
             <div class="loading-text">🚀 載入中...</div>
             <div class="loading-subtitle">正在初始化系統，請稍候</div>
-                <div class="loading-progress">
-                    <div class="loading-progress-bar" id="loadingProgressBar"></div>
-                </div>
-                <div class="loading-percentage" id="loadingPercentage">0%</div>
+            <div class="loading-progress">
+                <div class="loading-progress-bar" id="loadingProgressBar"></div>
+            </div>
+            <div class="loading-percentage" id="loadingPercentage">0%</div>
             <div class="loading-logs" id="loadingLogs">
                 <div class="loading-log-item info">
                     <span class="loading-log-icon">ℹ️</span>
                     <span>系統初始化中...</span>
+                </div>
             </div>
-        </div>
         </div>
         <div class="loading-signature">Tim感恩戴德🙏🏻</div>
     </div>
@@ -3114,39 +3038,10 @@
         </div>
     </div>
 
-        <!-- 重新整理浮動按鈕 -->
-        <div id="refreshButton" class="refresh-button" title="重新整理行事曆">
-            <i class="fas fa-sync-alt"></i>
-        </div>
-
-        <!-- 簽到彈出式視窗 -->
-        <div id="attendanceModal" class="modal-overlay">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3><i class="fas fa-user-check"></i> 學生簽到</h3>
-                    <button class="modal-close" id="closeAttendanceModal">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="course-info">
-                        <h4 id="modalCourseName">課程名稱</h4>
-                        <p><strong>講師：</strong><span id="modalInstructor">講師名稱</span></p>
-                        <p><strong>時間：</strong><span id="modalTime">課程時間</span></p>
-                    </div>
-                    <div class="students-section">
-                        <h4><i class="fas fa-users"></i> 學生列表</h4>
-                        <div id="studentsList" class="students-list">
-                            <div class="loading">載入中...</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" id="closeAttendanceModalBtn">關閉</button>
-                    <button class="btn btn-primary" id="saveAttendanceBtn">儲存簽到</button>
-                </div>
-            </div>
-        </div>
+    <!-- 重新整理浮動按鈕 -->
+    <div id="refreshButton" class="refresh-button" title="重新整理行事曆">
+        <i class="fas fa-sync-alt"></i>
+    </div>
 
     <script>
         // 全域變數
@@ -3415,7 +3310,6 @@
                         console.log('🔄 系統初始化完成，開始綁定按鈕...');
                         bindViewButtons();
                         bindRefreshButton();
-                        bindAttendanceEventListeners();
                         
                         // 設置今日按鈕的預設按下效果
                         updateViewButtonStates();
@@ -3825,7 +3719,7 @@
                         // 比對失敗，顯示全部講師
                         console.log('比對失敗，將顯示全部講師');
                         if (instructorSelect) {
-                        instructorSelect.value = ''; // 選擇全部講師
+                            instructorSelect.value = ''; // 選擇全部講師
                             // 立即更新統計和渲染事件
                             updateStats();
                             renderEvents();
@@ -3838,7 +3732,7 @@
                         // 比對失敗，顯示全部講師
                         console.log('比對失敗，將顯示全部講師');
                         if (instructorSelect) {
-                        instructorSelect.value = ''; // 選擇全部講師
+                            instructorSelect.value = ''; // 選擇全部講師
                             // 立即更新統計和渲染事件
                             updateStats();
                             renderEvents();
@@ -3874,12 +3768,12 @@
 
         // 自動滑動到行事曆區域（所有裝置）
         function autoScrollToCalendar() {
-                // 延遲一點時間確保頁面完全載入
-                setTimeout(() => {
+            // 延遲一點時間確保頁面完全載入
+            setTimeout(() => {
                 // 滑動到視圖按鈕區域，讓今日本週每月按鈕切齊頂部
-                    const viewButtons = document.querySelector('.view-buttons');
+                const viewButtons = document.querySelector('.view-buttons');
                 
-                    if (viewButtons) {
+                if (viewButtons) {
                     // 計算視圖按鈕的位置，讓按鈕齊平頂部
                     const viewButtonsRect = viewButtons.getBoundingClientRect();
                     const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
@@ -3904,9 +3798,9 @@
                         });
                         console.log(`已自動滑動到主內容區域，篩選區塊高度: ${controlHeight}px`);
                     }
-                    }
-                }, 1000);
-            }
+                }
+            }, 1000);
+        }
 
         // 自動滾動到視圖按鈕（通用函數）
         function autoScrollToViewButtons() {
@@ -4124,1120 +4018,6 @@
             } else {
                 return `${minutes}分鐘`;
             }
-        }
-
-        // FLB Google Sheets API SDK
-        class FLBGoogleSheetsAPI {
-            constructor() {
-                this.FLB_API_URL = 'https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/exec';
-                this.ATTENDANCE_API_URL = 'https://script.google.com/macros/s/AKfycbzm0GD-T09Botbs52e8PyeVuA5slJh6Z0AQ7I0uUiGZiE6aWhTO2D0d3XHFrdLNv90uCw/exec';
-                this.LINK_CALENDAR_API_URL = 'https://script.google.com/macros/s/AKfycbzFwsd8I_5WJdl8jU_gycSKFxR836GhOzIHEU1bGj9mH70ESbJPj-uTD_YC9lEbo--v_A/exec';
-                this.REPORT_API_URL = 'https://script.google.com/macros/s/AKfycbyfoNl1EBk5Wjv6rbAadCb0ZxZLupVl90PVGYUar-qNqVDEa0PbXzwC4t9DL39sVQ-aJQ/exec';
-            }
-
-            // 主要請求方法 - 現在直接拋出錯誤，因為我們使用新視窗
-            async _makeRequest(url, data, timeout = 30000) {
-                // 直接拋出錯誤，強制使用新視窗
-                throw new Error('API 請求失敗，請使用新視窗進行簽到');
-            }
-
-            // 獲取學生簽到狀態
-            async getStudentAttendance(course, period) {
-                try {
-                    const response = await this._makeRequest(this.ATTENDANCE_API_URL, {
-                        action: 'getRosterAttendance',
-                        course: course,
-                        period: period
-                    });
-
-                    return response;
-                } catch (error) {
-                    console.error('獲取學生簽到狀態失敗:', error);
-                    throw error;
-                }
-            }
-
-            // 記錄學生簽到
-            async markStudentAttendance(studentName, date, present, teacherName, courseName) {
-                try {
-                    const response = await this._makeRequest(this.FLB_API_URL, {
-                        action: 'markAttendance',
-                        studentName: studentName,
-                        date: date,
-                        present: present,
-                        teacherName: teacherName,
-                        courseName: courseName
-                    });
-
-                    return response;
-                } catch (error) {
-                    console.error('記錄學生簽到失敗:', error);
-                    throw error;
-                }
-            }
-
-            // 提交講師簽到報告
-            async submitTeacherReport(teacherWebApi, teacherName, courseName, courseTime, date, studentCount, courseContent, assistantCount) {
-                try {
-                    const response = await this._makeRequest(teacherWebApi, {
-                        action: 'submitTeacherReport',
-                        teacherName: teacherName,
-                        courseName: courseName,
-                        courseTime: courseTime,
-                        date: date,
-                        studentCount: studentCount,
-                        courseContent: courseContent,
-                        assistantCount: assistantCount
-                    });
-
-                    return response;
-                } catch (error) {
-                    console.error('提交講師簽到報告失敗:', error);
-                    throw error;
-                }
-            }
-
-            // 獲取講師列表
-            async getTeachers() {
-                try {
-                    const response = await this._makeRequest(this.FLB_API_URL, {
-                        action: 'getTeacherList'
-                    });
-
-                    return response;
-                } catch (error) {
-                    console.error('獲取講師列表失敗:', error);
-                    throw error;
-                }
-            }
-
-            // 獲取講師課程
-            async getTeacherCourses(teacher) {
-                try {
-                    const response = await this._makeRequest(this.FLB_API_URL, {
-                        action: 'getCoursesByTeacher',
-                        teacher: teacher
-                    });
-
-                    return response;
-                } catch (error) {
-                    console.error('獲取講師課程失敗:', error);
-                    throw error;
-                }
-            }
-        }
-
-        // 初始化簽到系統
-        const attendanceSDK = new FLBGoogleSheetsAPI();
-        let currentAttendanceData = {
-            courseName: '',
-            instructor: '',
-            time: '',
-            students: []
-        };
-
-        // 開啟簽到彈出式視窗
-        async function openAttendanceModal(courseName, instructor, time) {
-            console.log('開啟簽到視窗:', { courseName, instructor, time });
-            
-            // 設置課程資訊
-            document.getElementById('modalCourseName').textContent = courseName;
-            document.getElementById('modalInstructor').textContent = instructor;
-            document.getElementById('modalTime').textContent = time;
-            
-            // 儲存當前課程資訊
-            currentAttendanceData.courseName = courseName;
-            currentAttendanceData.instructor = instructor;
-            currentAttendanceData.time = time;
-            currentAttendanceData.date = new Date().toISOString().split('T')[0]; // 添加日期
-            
-            // 顯示彈出式視窗
-            const modal = document.getElementById('attendanceModal');
-            modal.classList.add('show');
-            
-            // 載入學生列表
-            await loadStudentsList(courseName, time);
-        }
-
-        // 關閉簽到彈出式視窗
-        function closeAttendanceModal() {
-            const modal = document.getElementById('attendanceModal');
-            modal.classList.remove('show');
-            currentAttendanceData.students = [];
-        }
-
-        // 載入學生列表
-        async function loadStudentsList(courseName, time) {
-            const studentsList = document.getElementById('studentsList');
-            studentsList.innerHTML = '<div class="loading">載入中...</div>';
-            
-            try {
-                // 解析課程名稱和時間
-                const course = parseCourseFromTitle(courseName);
-                const courseInfo = parseCourseAndTimeFromTitle(courseName);
-                
-                // 使用解析後的時間格式
-                const period = (courseInfo && courseInfo.time) ? courseInfo.time : time;
-                
-                console.log('載入學生列表:', { course, period });
-                
-                const result = await attendanceSDK.getStudentAttendance(course, period);
-                console.log('學生列表結果:', result);
-                
-                if (result.success && result.students) {
-                    // 轉換數據格式以符合現有的渲染邏輯
-                    const students = result.students.map(student => {
-                        const todayAttendance = student.attendance.find(att => att.date === currentAttendanceData.date);
-                        return {
-                            name: student.name,
-                            hasAttendanceToday: todayAttendance ? todayAttendance.present : null,
-                            attendanceTime: todayAttendance ? todayAttendance.time : null
-                        };
-                    });
-                    
-                    currentAttendanceData.students = students;
-                    renderStudentsList(students);
-                } else {
-                    // 如果 API 回應不成功，顯示錯誤訊息
-                    studentsList.innerHTML = `
-                        <div class="loading">
-                            <i class="fas fa-exclamation-triangle" style="color: #f44336; margin-right: 8px;"></i>
-                            無法載入學生資料
-                            <br>
-                            <small style="color: #666; margin-top: 8px; display: block;">
-                                請檢查課程信息是否正確
-                            </small>
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('載入學生列表失敗:', error);
-                studentsList.innerHTML = `
-                    <div class="loading">
-                        <i class="fas fa-exclamation-triangle" style="color: #f44336; margin-right: 8px;"></i>
-                        載入失敗: ${error.message}
-                        <br>
-                        <small style="color: #666; margin-top: 8px; display: block;">
-                            請稍後再試或檢查網路連接
-                        </small>
-                    </div>
-                `;
-            }
-        }
-
-        // 解析課程名稱（從完整標題中提取課程代碼）
-        function parseCourseFromTitle(title) {
-            if (!title) return '';
-            // 提取課程代碼（例如：從 "SPM 六 9:30-11:00 到府 第2週" 提取 "SPM"）
-            const match = title.match(/^([A-Z]+)/);
-            return match ? match[1] : title;
-        }
-
-        // 顯示 FLB 簽到系統選項
-        function showFLBAttendanceOption(courseName, time) {
-            const studentsList = document.getElementById('studentsList');
-            
-            // 解析課程信息
-            const course = parseCourseFromTitle(courseName);
-            const courseInfo = parseCourseAndTimeFromTitle(courseName);
-            
-            // 安全地獲取課程信息，避免 null 錯誤
-            const displayCourse = (courseInfo && courseInfo.course) ? courseInfo.course : course;
-            const displayTime = (courseInfo && courseInfo.time) ? courseInfo.time : time;
-            const displayLocation = (courseInfo && courseInfo.location) ? courseInfo.location : '未指定';
-            
-            studentsList.innerHTML = `
-                <div class="attendance-option">
-                    <div class="attendance-header">
-                        <i class="fas fa-calendar-check" style="color: #4CAF50; font-size: 24px; margin-bottom: 12px;"></i>
-                        <h3 style="margin: 0 0 8px 0; color: #333;">簽到系統</h3>
-                        <p style="margin: 0 0 16px 0; color: #666; font-size: 14px;">
-                            由於安全政策限制，請使用新視窗進行簽到
-                        </p>
-                    </div>
-                    
-                    <div class="course-info" style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                            <span style="font-weight: bold; color: #333;">課程：</span>
-                            <span style="color: #666;">${displayCourse}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                            <span style="font-weight: bold; color: #333;">時間：</span>
-                            <span style="color: #666;">${displayTime}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="font-weight: bold; color: #333;">地點：</span>
-                            <span style="color: #666;">${displayLocation}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="attendance-actions" style="display: flex; gap: 12px; justify-content: center;">
-                        <button onclick="openFLBAttendance('${courseName}', '${time}')" 
-                                class="btn-primary" 
-                                style="background: linear-gradient(135deg, #4CAF50, #45a049); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3); transition: all 0.3s ease;">
-                            <i class="fas fa-external-link-alt" style="margin-right: 8px;"></i>
-                            開啟簽到系統
-                        </button>
-                        <button onclick="closeAttendanceModal()" 
-                                class="btn-secondary" 
-                                style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3); transition: all 0.3s ease;">
-                            <i class="fas fa-times" style="margin-right: 8px;"></i>
-                            關閉
-                        </button>
-                    </div>
-                    
-                    <div class="attendance-note" style="margin-top: 16px; padding: 12px; background: #e3f2fd; border-radius: 8px; border-left: 4px solid #2196F3;">
-                        <i class="fas fa-info-circle" style="color: #2196F3; margin-right: 8px;"></i>
-                        <small style="color: #1976D2;">
-                            新視窗將開啟 FLB 簽到系統，完成簽到後可關閉視窗返回行事曆
-                        </small>
-                    </div>
-                </div>
-            `;
-        }
-
-        // 開啟 FLB 簽到系統
-        function openFLBAttendance(courseName, time) {
-            // 解析課程信息
-            const course = parseCourseFromTitle(courseName);
-            const courseInfo = parseCourseAndTimeFromTitle(courseName);
-            
-            // 安全地獲取課程信息，避免 null 錯誤
-            const displayCourse = (courseInfo && courseInfo.course) ? courseInfo.course : course;
-            const displayTime = (courseInfo && courseInfo.time) ? courseInfo.time : time;
-            const displayLocation = (courseInfo && courseInfo.location) ? courseInfo.location : '未指定';
-            
-            // 創建程式內簽到界面
-            createInternalCheckinInterface(displayCourse, displayTime, displayLocation);
-        }
-
-        // 創建程式內簽到界面
-        function createInternalCheckinInterface(course, time, location) {
-            // 關閉現有的簽到模態框
-            closeAttendanceModal();
-            
-            // 創建遮罩層
-            const overlay = document.createElement('div');
-            overlay.id = 'checkin-overlay';
-            overlay.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 10000;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                backdrop-filter: blur(5px);
-            `;
-            
-            // 創建簽到容器
-            const container = document.createElement('div');
-            container.id = 'checkin-container';
-            container.style.cssText = `
-                background: white;
-                border-radius: 16px;
-                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-                width: 90%;
-                max-width: 800px;
-                height: 80%;
-                max-height: 600px;
-                display: flex;
-                flex-direction: column;
-                overflow: hidden;
-                position: relative;
-                animation: checkinSlideIn 0.3s ease-out;
-            `;
-            
-            // 創建標題欄
-            const header = document.createElement('div');
-            header.style.cssText = `
-                background: linear-gradient(135deg, #4CAF50, #45a049);
-                color: white;
-                padding: 20px;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                flex-shrink: 0;
-            `;
-            
-            header.innerHTML = `
-                <div>
-                    <h3 style="margin: 0; font-size: 20px; font-weight: bold;">
-                        <i class="fas fa-calendar-check" style="margin-right: 10px;"></i>
-                        學生簽到系統
-                    </h3>
-                    <div style="font-size: 14px; opacity: 0.9; margin-top: 5px;">
-                        ${course} • ${time} • ${location}
-                    </div>
-                </div>
-                <button id="close-checkin" style="
-                    background: rgba(255, 255, 255, 0.2);
-                    border: none;
-                    color: white;
-                    width: 36px;
-                    height: 36px;
-                    border-radius: 50%;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 18px;
-                    transition: background 0.2s ease;
-                " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-            
-            // 創建內容區域
-            const content = document.createElement('div');
-            content.style.cssText = `
-                flex: 1;
-                padding: 20px;
-                overflow-y: auto;
-                display: flex;
-                flex-direction: column;
-                gap: 20px;
-            `;
-            
-            // 課程信息卡片
-            const courseInfoCard = document.createElement('div');
-            courseInfoCard.style.cssText = `
-                background: #f8f9fa;
-                border-radius: 12px;
-                padding: 20px;
-                border-left: 4px solid #4CAF50;
-            `;
-            courseInfoCard.innerHTML = `
-                <h4 style="margin: 0 0 15px 0; color: #333; font-size: 18px;">
-                    <i class="fas fa-info-circle" style="margin-right: 8px; color: #4CAF50;"></i>
-                    課程信息
-                </h4>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div>
-                        <strong>課程名稱：</strong>${course}
-                    </div>
-                    <div>
-                        <strong>上課時間：</strong>${time}
-                    </div>
-                    <div>
-                        <strong>上課地點：</strong>${location}
-                    </div>
-                    <div>
-                        <strong>講師：</strong>${currentAttendanceData.instructor}
-                    </div>
-                </div>
-            `;
-            
-            // 學生列表區域
-            const studentsSection = document.createElement('div');
-            studentsSection.style.cssText = `
-                background: white;
-                border-radius: 12px;
-                border: 1px solid #e0e0e0;
-                padding: 20px;
-            `;
-            studentsSection.innerHTML = `
-                <h4 style="margin: 0 0 15px 0; color: #333; font-size: 18px;">
-                    <i class="fas fa-users" style="margin-right: 8px; color: #4CAF50;"></i>
-                    學生簽到列表
-                </h4>
-                <div id="students-checkin-list" style="min-height: 200px; display: flex; align-items: center; justify-content: center; color: #666;">
-                    <div style="text-align: center;">
-                        <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 10px; color: #4CAF50;"></i>
-                        <div>載入學生資料中...</div>
-                    </div>
-                </div>
-            `;
-            
-            // 操作按鈕區域
-            const actionsSection = document.createElement('div');
-            actionsSection.style.cssText = `
-                display: flex;
-                gap: 15px;
-                justify-content: flex-end;
-                padding-top: 20px;
-                border-top: 1px solid #e0e0e0;
-            `;
-            actionsSection.innerHTML = `
-                <button id="cancel-checkin" style="
-                    background: #6c757d;
-                    color: white;
-                    border: none;
-                    padding: 12px 24px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-size: 14px;
-                    font-weight: bold;
-                    transition: background 0.2s ease;
-                " onmouseover="this.style.background='#5a6268'" onmouseout="this.style.background='#6c757d'">
-                    <i class="fas fa-times" style="margin-right: 5px;"></i>
-                    取消
-                </button>
-                <button id="save-checkin" style="
-                    background: #4CAF50;
-                    color: white;
-                    border: none;
-                    padding: 12px 24px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-size: 14px;
-                    font-weight: bold;
-                    transition: background 0.2s ease;
-                " onmouseover="this.style.background='#45a049'" onmouseout="this.style.background='#4CAF50'">
-                    <i class="fas fa-save" style="margin-right: 5px;"></i>
-                    儲存簽到
-                </button>
-            `;
-            
-            // 組裝界面
-            content.appendChild(courseInfoCard);
-            content.appendChild(studentsSection);
-            container.appendChild(header);
-            container.appendChild(content);
-            container.appendChild(actionsSection);
-            overlay.appendChild(container);
-            
-            // 添加到頁面
-            document.body.appendChild(overlay);
-            
-            // 添加動畫樣式
-            if (!document.getElementById('checkin-styles')) {
-                const styles = document.createElement('style');
-                styles.id = 'checkin-styles';
-                styles.textContent = `
-                    @keyframes checkinSlideIn {
-                        from {
-                            opacity: 0;
-                            transform: scale(0.9) translateY(-20px);
-                        }
-                        to {
-                            opacity: 1;
-                            transform: scale(1) translateY(0);
-                        }
-                    }
-                    #checkin-container {
-                        transition: all 0.3s ease;
-                    }
-                `;
-                document.head.appendChild(styles);
-            }
-            
-            // 保存課程信息到全局變量
-            window.currentCheckinCourse = { course, time, location };
-            
-            // 載入學生資料
-            loadStudentsForCheckin(course, time);
-            
-            // 綁定事件
-            document.getElementById('close-checkin').onclick = () => {
-                closeInternalCheckin();
-            };
-            
-            document.getElementById('cancel-checkin').onclick = () => {
-                closeInternalCheckin();
-            };
-            
-            document.getElementById('save-checkin').onclick = () => {
-                saveCheckinData();
-            };
-            
-            // 點擊遮罩關閉
-            overlay.onclick = (e) => {
-                if (e.target === overlay) {
-                    closeInternalCheckin();
-                }
-            };
-            
-            // ESC 鍵關閉
-            const handleEsc = (e) => {
-                if (e.key === 'Escape') {
-                    closeInternalCheckin();
-                    document.removeEventListener('keydown', handleEsc);
-                }
-            };
-            document.addEventListener('keydown', handleEsc);
-        }
-
-        // 載入學生資料
-        async function loadStudentsForCheckin(course, time) {
-            const studentsList = document.getElementById('students-checkin-list');
-            
-            try {
-                // 顯示載入狀態
-                studentsList.innerHTML = `
-                    <div style="text-align: center; color: #666;">
-                        <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 10px; color: #4CAF50;"></i>
-                        <div>正在載入學生資料...</div>
-                    </div>
-                `;
-                
-                // 使用 fetch API 調用 Google Sheets API
-                const response = await fetch('https://script.google.com/macros/s/AKfycbzm0GD-T09Botbs52e8PyeVuA5slJh6Z0AQ7I0uUiGZiE6aWhTO2D0d3XHFrdLNv90uCw/exec', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'getRosterAttendance',
-                        course: course,
-                        period: time
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log('API 回應:', data);
-                
-                if (data.success && data.students) {
-                    // 處理學生資料
-                    const students = data.students.map(student => {
-                        const todayAttendance = student.attendance.find(att => att.date === new Date().toISOString().split('T')[0]);
-                        return {
-                            name: student.name,
-                            present: todayAttendance ? todayAttendance.present : null,
-                            time: todayAttendance ? todayAttendance.time : null,
-                            attendance: student.attendance
-                        };
-                    });
-                    
-                    // 渲染學生列表
-                    renderStudentsCheckinList(students);
-                } else {
-                    throw new Error(data.error || '無法獲取學生資料');
-                }
-                
-            } catch (error) {
-                console.error('載入學生資料失敗:', error);
-                studentsList.innerHTML = `
-                    <div style="text-align: center; color: #f44336;">
-                        <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 10px;"></i>
-                        <div>載入失敗</div>
-                        <div style="font-size: 14px; color: #666; margin-top: 8px;">
-                            ${error.message}
-                        </div>
-                        <button id="retry-load-students" style="
-                            background: #4CAF50;
-                            color: white;
-                            border: none;
-                            padding: 8px 16px;
-                            border-radius: 6px;
-                            cursor: pointer;
-                            font-size: 12px;
-                            margin-top: 10px;
-                        ">
-                            <i class="fas fa-redo"></i> 重新載入
-                        </button>
-                    </div>
-                `;
-                
-                // 綁定重新載入按鈕事件
-                document.getElementById('retry-load-students').onclick = () => {
-                    loadStudentsForCheckin(course, time);
-                };
-            }
-        }
-
-        // JSONP 請求函數
-        function makeJSONPRequest(url, data) {
-            return new Promise((resolve, reject) => {
-                // 創建唯一的回調函數名稱
-                const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
-                
-                // 將數據轉換為 URL 參數
-                const params = new URLSearchParams();
-                Object.keys(data).forEach(key => {
-                    params.append(key, data[key]);
-                });
-                params.append('callback', callbackName);
-                
-                // 創建 script 標籤
-                const script = document.createElement('script');
-                script.src = url + '?' + params.toString();
-                
-                // 設置全局回調函數
-                window[callbackName] = function(response) {
-                    // 清理
-                    document.head.removeChild(script);
-                    delete window[callbackName];
-                    resolve(response);
-                };
-                
-                // 設置錯誤處理
-                script.onerror = function() {
-                    document.head.removeChild(script);
-                    delete window[callbackName];
-                    reject(new Error('JSONP request failed'));
-                };
-                
-                // 設置超時
-                setTimeout(() => {
-                    if (window[callbackName]) {
-                        document.head.removeChild(script);
-                        delete window[callbackName];
-                        reject(new Error('JSONP request timeout'));
-                    }
-                }, 30000);
-                
-                // 添加到頁面
-                document.head.appendChild(script);
-            });
-        }
-
-        // 渲染學生簽到列表
-        function renderStudentsCheckinList(students) {
-            const studentsList = document.getElementById('students-checkin-list');
-            
-            studentsList.innerHTML = students.map(student => `
-                <div class="student-item" style="
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    padding: 15px;
-                    border: 1px solid #e0e0e0;
-                    border-radius: 8px;
-                    margin-bottom: 10px;
-                    background: white;
-                    transition: all 0.2s ease;
-                ">
-                    <div style="display: flex; align-items: center; gap: 15px;">
-                        <div style="
-                            width: 40px;
-                            height: 40px;
-                            border-radius: 50%;
-                            background: #4CAF50;
-                            color: white;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            font-weight: bold;
-                            font-size: 16px;
-                        ">
-                            ${student.name.charAt(0)}
-                        </div>
-                        <div>
-                            <div class="student-name" style="font-weight: bold; color: #333; font-size: 16px;">${student.name}</div>
-                            <div class="student-status" style="color: #666; font-size: 14px;">
-                                ${student.present === null ? '未簽到' : 
-                                  student.present ? '已簽到' : '缺席'}
-                                ${student.time ? ` (${student.time})` : ''}
-                            </div>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="present-btn" data-student-name="${student.name}" style="
-                            background: #4CAF50;
-                            color: white;
-                            border: none;
-                            padding: 8px 16px;
-                            border-radius: 6px;
-                            cursor: pointer;
-                            font-size: 12px;
-                            font-weight: bold;
-                            transition: background 0.2s ease;
-                        ">
-                            <i class="fas fa-check"></i> 出席
-                        </button>
-                        <button class="absent-btn" data-student-name="${student.name}" style="
-                            background: #f44336;
-                            color: white;
-                            border: none;
-                            padding: 8px 16px;
-                            border-radius: 6px;
-                            cursor: pointer;
-                            font-size: 12px;
-                            font-weight: bold;
-                            transition: background 0.2s ease;
-                        ">
-                            <i class="fas fa-times"></i> 缺席
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-            
-            // 綁定事件委派
-            bindCheckinButtonEvents();
-        }
-
-        // 綁定簽到按鈕事件
-        function bindCheckinButtonEvents() {
-            const studentsList = document.getElementById('students-checkin-list');
-            
-            // 移除舊的事件監聽器
-            studentsList.removeEventListener('click', handleCheckinButtonClick);
-            
-            // 添加新的事件監聽器
-            studentsList.addEventListener('click', handleCheckinButtonClick);
-        }
-
-        // 處理簽到按鈕點擊
-        function handleCheckinButtonClick(event) {
-            const target = event.target.closest('.present-btn, .absent-btn');
-            if (!target) return;
-            
-            const studentName = target.getAttribute('data-student-name');
-            if (!studentName) return;
-            
-            if (target.classList.contains('present-btn')) {
-                markStudentPresent(studentName);
-            } else if (target.classList.contains('absent-btn')) {
-                markStudentAbsent(studentName);
-            }
-        }
-
-        // 標記學生出席
-        async function markStudentPresent(studentName) {
-            try {
-                // 獲取當前課程信息
-                const courseInfo = getCurrentCourseInfo();
-                if (!courseInfo) {
-                    showNotification('無法獲取課程信息', 'error');
-                    return;
-                }
-                
-                // 使用 fetch API 更新簽到狀態
-                const response = await fetch('https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/dev', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'update',
-                        name: studentName,
-                        date: new Date().toISOString().split('T')[0],
-                        present: true
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log('簽到 API 回應:', data);
-                
-                if (data.success) {
-                    // 更新本地狀態
-                    updateLocalAttendanceStatus(studentName, true);
-                    showNotification(`${studentName} 已標記為出席`, 'success');
-                } else {
-                    throw new Error(data.message || '簽到失敗');
-                }
-                
-            } catch (error) {
-                console.error('標記出席失敗:', error);
-                showNotification(`標記出席失敗: ${error.message}`, 'error');
-            }
-        }
-
-        // 標記學生缺席
-        async function markStudentAbsent(studentName) {
-            try {
-                // 獲取當前課程信息
-                const courseInfo = getCurrentCourseInfo();
-                if (!courseInfo) {
-                    showNotification('無法獲取課程信息', 'error');
-                    return;
-                }
-                
-                // 使用 fetch API 更新簽到狀態
-                const response = await fetch('https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/dev', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'update',
-                        name: studentName,
-                        date: new Date().toISOString().split('T')[0],
-                        present: false
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log('簽到 API 回應:', data);
-                
-                if (data.success) {
-                    // 更新本地狀態
-                    updateLocalAttendanceStatus(studentName, false);
-                    showNotification(`${studentName} 已標記為缺席`, 'warning');
-                } else {
-                    throw new Error(data.message || '簽到失敗');
-                }
-                
-            } catch (error) {
-                console.error('標記缺席失敗:', error);
-                showNotification(`標記缺席失敗: ${error.message}`, 'error');
-            }
-        }
-
-        // 更新本地簽到狀態
-        function updateLocalAttendanceStatus(studentName, present) {
-            // 更新學生列表中的狀態
-            const studentsList = document.getElementById('students-checkin-list');
-            const studentItems = studentsList.querySelectorAll('.student-item');
-            
-            studentItems.forEach(item => {
-                const nameElement = item.querySelector('.student-name');
-                if (nameElement && nameElement.textContent === studentName) {
-                    const statusElement = item.querySelector('.student-status');
-                    const presentBtn = item.querySelector('.present-btn');
-                    const absentBtn = item.querySelector('.absent-btn');
-                    
-                    if (statusElement) {
-                        statusElement.textContent = present ? '已簽到' : '缺席';
-                        statusElement.style.color = present ? '#4CAF50' : '#f44336';
-                    }
-                    
-                    // 更新按鈕狀態
-                    if (presentBtn && absentBtn) {
-                        if (present) {
-                            presentBtn.style.background = '#4CAF50';
-                            presentBtn.style.color = 'white';
-                            absentBtn.style.background = '#f5f5f5';
-                            absentBtn.style.color = '#666';
-                        } else {
-                            absentBtn.style.background = '#f44336';
-                            absentBtn.style.color = 'white';
-                            presentBtn.style.background = '#f5f5f5';
-                            presentBtn.style.color = '#666';
-                        }
-                    }
-                }
-            });
-        }
-
-        // 獲取當前課程信息
-        function getCurrentCourseInfo() {
-            return window.currentCheckinCourse || null;
-        }
-
-        // 儲存簽到資料
-        function saveCheckinData() {
-            showNotification('簽到資料已儲存', 'success');
-            closeInternalCheckin();
-        }
-
-        // 關閉程式內簽到界面
-        function closeInternalCheckin() {
-            const overlay = document.getElementById('checkin-overlay');
-            if (overlay) {
-                overlay.style.animation = 'checkinSlideIn 0.3s ease-out reverse';
-                setTimeout(() => {
-                    if (document.body.contains(overlay)) {
-                        document.body.removeChild(overlay);
-                    }
-                }, 300);
-            }
-        }
-
-        // 顯示通知訊息
-        function showNotification(message, type = 'info') {
-            // 創建通知元素
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 12px 20px;
-                border-radius: 8px;
-                color: white;
-                font-weight: bold;
-                z-index: 10000;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                transform: translateX(100%);
-                transition: transform 0.3s ease;
-            `;
-            
-            // 根據類型設置樣式
-            switch (type) {
-                case 'success':
-                    notification.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
-                    break;
-                case 'error':
-                    notification.style.background = 'linear-gradient(135deg, #f44336, #d32f2f)';
-                    break;
-                case 'warning':
-                    notification.style.background = 'linear-gradient(135deg, #ff9800, #f57c00)';
-                    break;
-                default:
-                    notification.style.background = 'linear-gradient(135deg, #2196F3, #1976D2)';
-            }
-            
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            
-            // 顯示動畫
-            setTimeout(() => {
-                notification.style.transform = 'translateX(0)';
-            }, 100);
-            
-            // 自動隱藏
-            setTimeout(() => {
-                notification.style.transform = 'translateX(100%)';
-                setTimeout(() => {
-                    if (document.body.contains(notification)) {
-                        document.body.removeChild(notification);
-                    }
-                }, 300);
-            }, 3000);
-        }
-
-        // 渲染學生列表
-        function renderStudentsList(students) {
-            const studentsList = document.getElementById('studentsList');
-            
-            if (!students || students.length === 0) {
-                studentsList.innerHTML = '<div class="loading">沒有學生資料</div>';
-                return;
-            }
-            
-            const html = students.map(student => {
-                const attendanceStatus = student.hasAttendanceToday;
-                let statusClass = 'status-pending';
-                let statusText = '未簽到';
-                
-                if (attendanceStatus === true) {
-                    statusClass = 'status-present';
-                    statusText = '出席';
-                } else if (attendanceStatus === false) {
-                    statusClass = 'status-absent';
-                    statusText = '缺席';
-                } else if (attendanceStatus === 'leave') {
-                    statusClass = 'status-leave';
-                    statusText = '請假';
-                }
-                
-                return `
-                    <div class="student-item">
-                        <div class="student-name">${student.name}</div>
-                        <div class="attendance-controls">
-                            <span class="attendance-status ${statusClass}">${statusText}</span>
-                            <button class="attendance-btn-small btn-present mark-attendance-btn" data-student-name="${student.name}" data-status="true">
-                                出席
-                            </button>
-                            <button class="attendance-btn-small btn-absent mark-attendance-btn" data-student-name="${student.name}" data-status="false">
-                                缺席
-                            </button>
-                            <button class="attendance-btn-small btn-leave mark-attendance-btn" data-student-name="${student.name}" data-status="leave">
-                                請假
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
-            studentsList.innerHTML = html;
-        }
-
-        // 標記學生簽到
-        async function markAttendance(studentName, status) {
-            try {
-                // 轉換狀態格式
-                let present;
-                if (status === true || status === 'true') {
-                    present = true;
-                } else if (status === false || status === 'false') {
-                    present = false;
-                } else if (status === 'leave') {
-                    present = 'leave';
-                } else {
-                    present = status;
-                }
-                
-                // 解析課程名稱
-                const course = parseCourseFromTitle(currentAttendanceData.courseName);
-                
-                const result = await attendanceSDK.markStudentAttendance(
-                    studentName,
-                    currentAttendanceData.date,
-                    present,
-                    currentAttendanceData.instructor,
-                    course
-                );
-                
-                if (result.success) {
-                    // 更新本地狀態
-                    const student = currentAttendanceData.students.find(s => s.name === studentName);
-                    if (student) {
-                        student.hasAttendanceToday = present;
-                        student.attendanceTime = present === true ? new Date().toLocaleTimeString() : null;
-                    }
-                    
-                    // 重新渲染列表
-                    renderStudentsList(currentAttendanceData.students);
-                    
-                    // 顯示成功通知
-                    showNotification('簽到成功', 'success');
-                    console.log('簽到成功:', result);
-                } else {
-                    showNotification('簽到失敗: ' + (result.error || '未知錯誤'), 'error');
-                }
-            } catch (error) {
-                console.error('簽到錯誤:', error);
-                showNotification('簽到失敗: ' + error.message, 'error');
-            }
-        }
-
-        // 儲存簽到
-        function saveAttendance() {
-            alert('簽到已儲存！');
-            closeAttendanceModal();
-        }
-
-        // 綁定簽到按鈕事件監聽器
-        function bindAttendanceEventListeners() {
-            // 綁定簽到按鈕點擊事件
-            document.addEventListener('click', function(event) {
-                if (event.target.closest('.attendance-modal-btn')) {
-                    const button = event.target.closest('.attendance-modal-btn');
-                    const courseName = button.getAttribute('data-course-name');
-                    const instructor = button.getAttribute('data-instructor');
-                    const time = button.getAttribute('data-time');
-                    
-                    // 設置講師信息
-                    currentAttendanceData.instructor = instructor;
-                    
-                    // 直接開啟 FLB 簽到系統
-                    openFLBAttendance(courseName, time);
-                }
-            });
-
-            // 綁定關閉按鈕事件
-            document.addEventListener('click', function(event) {
-                if (event.target.closest('#closeAttendanceModal') || event.target.closest('#closeAttendanceModalBtn')) {
-                    closeAttendanceModal();
-                }
-            });
-
-            // 綁定儲存按鈕事件
-            document.addEventListener('click', function(event) {
-                if (event.target.closest('#saveAttendanceBtn')) {
-                    saveAttendance();
-                }
-            });
-
-            // 綁定學生簽到按鈕事件
-            document.addEventListener('click', function(event) {
-                if (event.target.closest('.mark-attendance-btn')) {
-                    const button = event.target.closest('.mark-attendance-btn');
-                    const studentName = button.getAttribute('data-student-name');
-                    const status = button.getAttribute('data-status') === 'true' ? true : 
-                                  button.getAttribute('data-status') === 'false' ? false : 'leave';
-                    markAttendance(studentName, status);
-                }
-            });
-
-            console.log('✅ 簽到事件監聽器已綁定');
         }
 
         // 強制重新整理行事曆
@@ -5671,7 +4451,7 @@
 
 // 載入當日事件（直接載入完整數據）
 async function loadTodayEvents() {
-            try {
+    try {
         console.log('🚀 開始載入完整事件數據...');
         addLoadingLog('🌐 正在連接 CalDAV 伺服器...', 'info');
         
@@ -6444,32 +5224,11 @@ async function loadTodayEvents() {
             container.innerHTML = filteredEvents.map(event => createEventCard(event)).join('');
             
             // 觸發事件卡片動畫（移除延遲）
-                animateEventCards();
-                // 更新倒數計時
-                updateAllCountdowns();
+            animateEventCards();
+            // 更新倒數計時
+            updateAllCountdowns();
         }
-
-        // 從標題解析課程名稱、時間和地點
-        function parseCourseAndTimeFromTitle(title) {
-            if (!title) return null;
-            
-            // 匹配格式：SPIKE 六 16:00-18:00 第2週 代課
-            // 課程：SPIKE
-            // 時間：六 16:00-18:00（包含星期幾，但不包含週次和地點）
-            const courseTimeRegex = /^([A-Z]+)\s+([一二三四五六日]\s+\d{1,2}:\d{2}-\d{1,2}:\d{2})(?:\s+[^第]*)?(?:\s+第\d+週)?(?:\s+.*)?$/;
-            const match = title.match(courseTimeRegex);
-            
-            if (match) {
-                return {
-                    course: match[1],     // SPIKE
-                    time: match[2],       // 六 16:00-18:00
-                    location: '未指定'    // 預設地點
-                };
-            }
-            
-            return null;
-        }
-
+        
         // 從標題解析時間
         function parseTimeFromTitle(title) {
             // 匹配格式如 "18:30-20:30", "14:30-15:30", "16:30-17:30", "1630-1730" 等
@@ -6492,7 +5251,7 @@ async function loadTodayEvents() {
             }
             return null;
         }
-
+        
         // 從標題解析日期（根據星期幾）
         function parseDateFromTitle(title, baseDate = new Date()) {
             // 直接使用 CalDAV 的日期，不重新計算
@@ -6646,18 +5405,16 @@ async function loadTodayEvents() {
             const isUpcomingEventFlag = isUpcomingEvent(event);
             const timeUntilEvent = isUpcomingEventFlag ? getTimeUntilEvent(event) : null;
             
-            // 從標題解析課程名稱、時間和地點
-            const courseTimeInfo = parseCourseAndTimeFromTitle(event.title);
+            // 從標題解析時間
+            const titleTime = parseTimeFromTitle(event.title);
             
             // 統一使用 CalDAV 的日期，確保日期正確
             const displayDate = startDate.toLocaleDateString('zh-TW');
             let timeString;
-            let courseName = event.title; // 預設使用完整標題
             
-            if (courseTimeInfo) {
-                // 使用解析出的課程名稱、時間和地點
-                courseName = `${courseTimeInfo.course} ${courseTimeInfo.time} ${courseTimeInfo.location}`;
-                timeString = courseTimeInfo.time;
+            if (titleTime) {
+                // 使用標題解析的時間，但日期使用 CalDAV
+                timeString = titleTime.timeString;
             } else {
                 // 使用 CalDAV 的時間
                 timeString = `${startDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })} - ${endDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })}`;
@@ -6714,16 +5471,16 @@ async function loadTodayEvents() {
                 `;
             }
             
-        // 處理位置資訊
-        let location = event.location;
-        if (!location || location === 'nan' || location === 'null' || location === '' || location.trim() === '') {
+            // 處理位置資訊
+            let location = event.location;
+            if (!location || location === 'nan' || location === 'null' || location === '' || location.trim() === '') {
                 location = '樂程坊 FunLearnBar';
             }
         
             // 統一地址為樂程坊 FunLearnBar
             if (location === '站前教室' || location === '台北市中正區開封街1段2號9樓' || location === '台北市中正區開封街一段2號9樓') {
                 location = '樂程坊 FunLearnBar';
-        }
+            }
             
             // 講師底色
             const instructorColor = instructorColors[event.instructor] || '#667eea';
@@ -6762,7 +5519,7 @@ async function loadTodayEvents() {
                                class="location-link"
                                title="點擊查看地圖">
                                 <i class="fas fa-map-marked-alt location-map-icon"></i>
-                                <span>${location}</span>
+                            <span>${location}</span>
                                 <i class="fas fa-external-link-alt location-external-icon"></i>
                             </a>
                         </div>
@@ -6781,17 +5538,6 @@ async function loadTodayEvents() {
                     </div>
                     
                     ${lessonButton}
-                    
-                    <div class="event-actions">
-                        <button class="action-btn attendance-btn attendance-modal-btn" 
-                                data-course-name="${courseName}" 
-                                data-instructor="${event.instructor}" 
-                                data-time="${timeString}" 
-                                title="學生簽到">
-                            <i class="fas fa-user-check"></i>
-                            簽到
-                        </button>
-                    </div>
                 </div>
             `;
         }
@@ -6816,7 +5562,7 @@ async function loadTodayEvents() {
             }
             
             // 應用時段篩選
-                if (timeFilter) {
+            if (timeFilter) {
                 filteredEvents = filteredEvents.filter(event => {
                     const eventDate = new Date(event.start);
                     const hour = eventDate.getHours();
@@ -6831,10 +5577,10 @@ async function loadTodayEvents() {
                             return true;
                     }
                 });
-                }
-                
+            }
+            
             // 應用指定日期篩選
-                if (dateFilter) {
+            if (dateFilter) {
                 filteredEvents = filteredEvents.filter(event => {
                     const eventDate = new Date(event.start);
                     const filterDate = new Date(dateFilter);
@@ -6845,7 +5591,7 @@ async function loadTodayEvents() {
             }
             
             // 應用視圖篩選（今日/本週/本月/全部）
-                const now = new Date();
+            const now = new Date();
             filteredEvents = filteredEvents.filter(event => {
                 const eventDate = new Date(event.start);
                 
@@ -6966,10 +5712,10 @@ async function loadTodayEvents() {
         const settingsOverlay = document.getElementById('settingsOverlay');
         if (settingsOverlay) {
             settingsOverlay.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeSettings();
-                }
-            });
+            if (e.target === this) {
+                closeSettings();
+            }
+        });
         }
     </script>
 </body>

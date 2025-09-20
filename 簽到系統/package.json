@@ -1,0 +1,29 @@
+{
+  "name": "flb-attendance-system",
+  "version": "1.0.0",
+  "description": "FLB講師簽到系統",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.0",
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "flb",
+    "attendance",
+    "line",
+    "liff",
+    "google-sheets"
+  ],
+  "author": "FLB Team",
+  "license": "MIT"
+}
