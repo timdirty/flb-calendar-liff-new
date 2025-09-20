@@ -4367,6 +4367,11 @@
             const course = parseCourseFromTitle(courseName);
             const courseInfo = parseCourseAndTimeFromTitle(courseName);
             
+            // 安全地獲取課程信息，避免 null 錯誤
+            const displayCourse = (courseInfo && courseInfo.course) ? courseInfo.course : course;
+            const displayTime = (courseInfo && courseInfo.time) ? courseInfo.time : time;
+            const displayLocation = (courseInfo && courseInfo.location) ? courseInfo.location : '未指定';
+            
             studentsList.innerHTML = `
                 <div class="attendance-option">
                     <div class="attendance-header">
@@ -4380,15 +4385,15 @@
                     <div class="course-info" style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                             <span style="font-weight: bold; color: #333;">課程：</span>
-                            <span style="color: #666;">${courseInfo.course || course}</span>
+                            <span style="color: #666;">${displayCourse}</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                             <span style="font-weight: bold; color: #333;">時間：</span>
-                            <span style="color: #666;">${courseInfo.time || time}</span>
+                            <span style="color: #666;">${displayTime}</span>
                         </div>
                         <div style="display: flex; justify-content: space-between;">
                             <span style="font-weight: bold; color: #333;">地點：</span>
-                            <span style="color: #666;">${courseInfo.location || '未指定'}</span>
+                            <span style="color: #666;">${displayLocation}</span>
                         </div>
                     </div>
                     
@@ -4423,12 +4428,17 @@
             const course = parseCourseFromTitle(courseName);
             const courseInfo = parseCourseAndTimeFromTitle(courseName);
             
+            // 安全地獲取課程信息，避免 null 錯誤
+            const displayCourse = (courseInfo && courseInfo.course) ? courseInfo.course : course;
+            const displayTime = (courseInfo && courseInfo.time) ? courseInfo.time : time;
+            const displayLocation = (courseInfo && courseInfo.location) ? courseInfo.location : '未指定';
+            
             // 構建 FLB 簽到系統的 URL
             const params = new URLSearchParams({
-                course: courseInfo.course || course,
-                time: courseInfo.time || time,
+                course: displayCourse,
+                time: displayTime,
                 date: new Date().toISOString().split('T')[0],
-                location: courseInfo.location || '未指定'
+                location: displayLocation
             });
             
             // 使用 Google Apps Script 的 step3 頁面
