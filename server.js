@@ -925,15 +925,6 @@ app.use((error, req, res, next) => {
     });
 });
 
-// 啟動服務器
-app.listen(PORT, () => {
-    console.log(`🚀 FLB講師行事曆LIFF應用運行在端口 ${PORT}`);
-    console.log(`🌐 主頁面: http://localhost:${PORT}`);
-    console.log(`🔧 API端點: http://localhost:${PORT}/api/teachers`);
-    console.log(`🔗 代理端點: http://localhost:${PORT}/api/google-script`);
-    console.log(`📊 健康檢查: http://localhost:${PORT}/api/health`);
-    console.log(`🌍 環境: ${process.env.NODE_ENV || 'development'}`);
-});
 
 // 優雅關閉
 process.on('SIGINT', () => {
@@ -1083,15 +1074,6 @@ app.use((error, req, res, next) => {
     });
 });
 
-// 啟動服務器
-app.listen(PORT, () => {
-    console.log(`🚀 FLB講師行事曆LIFF應用運行在端口 ${PORT}`);
-    console.log(`🌐 主頁面: http://localhost:${PORT}`);
-    console.log(`🔧 API端點: http://localhost:${PORT}/api/teachers`);
-    console.log(`🔗 代理端點: http://localhost:${PORT}/api/google-script`);
-    console.log(`📊 健康檢查: http://localhost:${PORT}/api/health`);
-    console.log(`🌍 環境: ${process.env.NODE_ENV || 'development'}`);
-});
 
 // 優雅關閉
 process.on('SIGINT', () => {
@@ -1143,4 +1125,38 @@ app.get('/api/google-script', async (req, res) => {
         res.status(500).json({ error: '代理請求失敗' });
     }
 });
+// 啟動服務器
+const server = app.listen(PORT, () => {
+    console.log(`🚀 FLB講師行事曆LIFF應用運行在端口 ${PORT}`);
+    console.log(`🌐 主頁面: http://localhost:${PORT}`);
+    console.log(`🔧 API端點: http://localhost:${PORT}/api/teachers`);
+    console.log(`🔗 代理端點: http://localhost:${PORT}/api/google-script`);
+    console.log(`📊 健康檢查: http://localhost:${PORT}/api/health`);
+    console.log(`🌍 環境: ${process.env.NODE_ENV || 'development'}`);
+});
+
+// 處理端口衝突
+server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+        console.log(`⚠️ 端口 ${PORT} 已被使用，嘗試使用其他端口...`);
+        const newPort = PORT + 1;
+        const newServer = app.listen(newPort, () => {
+            console.log(`🚀 FLB講師行事曆LIFF應用運行在端口 ${newPort}`);
+            console.log(`🌐 主頁面: http://localhost:${newPort}`);
+            console.log(`🔧 API端點: http://localhost:${newPort}/api/teachers`);
+            console.log(`🔗 代理端點: http://localhost:${newPort}/api/google-script`);
+            console.log(`📊 健康檢查: http://localhost:${newPort}/api/health`);
+            console.log(`🌍 環境: ${process.env.NODE_ENV || 'development'}`);
+        });
+        
+        newServer.on('error', (err) => {
+            console.error('❌ 無法啟動服務器:', err);
+            process.exit(1);
+        });
+    } else {
+        console.error('❌ 服務器錯誤:', err);
+        process.exit(1);
+    }
+});
+
 module.exports = app;
