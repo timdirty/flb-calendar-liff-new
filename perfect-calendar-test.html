@@ -1394,7 +1394,7 @@
             "補課": ["補課", "調課", "延後", "提前"]
         };
 
-        // 從時間資訊中移除特殊事件類型
+        // 從時間資訊中移除特殊事件類型和週次
         function removeSpecialEventTypes(timeInfo) {
             if (!timeInfo) return timeInfo;
             
@@ -1409,10 +1409,23 @@
                 });
             });
             
+            // 移除週次（第X週、第X周、Week X等）
+            const weekPatterns = [
+                /第\d+週/g,
+                /第\d+周/g,
+                /Week\s*\d+/gi,
+                /週\d+/g,
+                /周\d+/g
+            ];
+            
+            weekPatterns.forEach(pattern => {
+                cleanedTimeInfo = cleanedTimeInfo.replace(pattern, ' ').trim();
+            });
+            
             // 清理多餘的空白
             cleanedTimeInfo = cleanedTimeInfo.replace(/\s+/g, ' ').trim();
             
-            console.log(`🧹 清理特殊事件: "${timeInfo}" → "${cleanedTimeInfo}"`);
+            console.log(`🧹 清理特殊事件和週次: "${timeInfo}" → "${cleanedTimeInfo}"`);
             return cleanedTimeInfo;
         }
 
@@ -1813,9 +1826,9 @@
                                             font-size: 0.9rem;
                                             font-weight: 500;
                                             transition: all 0.3s ease;
-                                            opacity: ${currentStatus ? '0.5' : '1'};
-                                            ${currentStatus === 'present' ? 'transform: scale(1.05);' : ''}
-                                        " ${currentStatus ? 'disabled' : ''}>
+                                            opacity: 1;
+                                            ${currentStatus === 'present' ? 'transform: scale(1.05); box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);' : ''}
+                                        ">
                                             <i class="fas fa-check"></i> 出席
                                         </button>
                                         <button class="attendance-btn absent-btn" data-student-id="${student.id}" style="
@@ -1828,25 +1841,10 @@
                                             font-size: 0.9rem;
                                             font-weight: 500;
                                             transition: all 0.3s ease;
-                                            opacity: ${currentStatus ? '0.5' : '1'};
-                                            ${currentStatus === 'absent' ? 'transform: scale(1.05);' : ''}
-                                        " ${currentStatus ? 'disabled' : ''}>
+                                            opacity: 1;
+                                            ${currentStatus === 'absent' ? 'transform: scale(1.05); box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);' : ''}
+                                        ">
                                             <i class="fas fa-times"></i> 缺席
-                                        </button>
-                                        <button class="attendance-btn leave-btn" data-student-id="${student.id}" style="
-                                            background: linear-gradient(135deg, #ffc107, #f39c12);
-                                            color: white;
-                                            border: none;
-                                            padding: 8px 16px;
-                                            border-radius: 20px;
-                                            cursor: pointer;
-                                            font-size: 0.9rem;
-                                            font-weight: 500;
-                                            transition: all 0.3s ease;
-                                            opacity: ${currentStatus ? '0.5' : '1'};
-                                            ${currentStatus === 'leave' ? 'transform: scale(1.05);' : ''}
-                                        " ${currentStatus ? 'disabled' : ''}>
-                                            <i class="fas fa-calendar-times"></i> 請假
                                         </button>
                                     </div>
                                 </div>
@@ -1996,15 +1994,6 @@
                 });
             });
             
-            // 請假按鈕
-            document.querySelectorAll('.leave-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const studentId = this.dataset.studentId;
-                    attendanceData.set(studentId, 'leave');
-                    updateStudentStatus(studentId, 'leave');
-                    updateAttendanceStats();
-                });
-            });
             
             // 儲存按鈕
             document.getElementById('saveAttendance').addEventListener('click', async function() {
