@@ -986,8 +986,6 @@ app.get('/api/google-script', async (req, res) => {
     }
 });
 
-module.exports = app;
-
 // 測試 CalDAV 連接
 app.get('/api/test-caldav', async (req, res) => {
     try {
@@ -1145,5 +1143,4 @@ app.get('/api/google-script', async (req, res) => {
         res.status(500).json({ error: '代理請求失敗' });
     }
 });
-
 module.exports = app;
