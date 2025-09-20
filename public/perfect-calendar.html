@@ -615,37 +615,6 @@
             border: 2px solid rgba(255, 193, 7, 1);
         }
 
-        .btn-export {
-            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-        }
-
-        .btn-export:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
-        }
-
-        .btn-export:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 10px rgba(76, 175, 80, 0.3);
-        }
-
-        .btn-export i {
-            font-size: 1rem;
-        }
 
         /* 即將到來課程的高亮樣式 */
         .event-card.upcoming-event {
@@ -1839,15 +1808,6 @@
                 justify-content: center;
             }
 
-            .btn-export {
-                padding: 8px 12px;
-                font-size: 0.75rem;
-                min-height: 36px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 6px;
-            }
             
             .btn-primary.active {
                 color: rgba(0, 0, 0, 0.9) !important; /* 確保選中時字體為深色 */
@@ -2044,12 +2004,6 @@
                 min-height: 32px;
             }
 
-            .btn-export {
-                padding: 6px 8px;
-                font-size: 0.7rem;
-                min-height: 32px;
-                gap: 4px;
-            }
             
             .btn-primary.active {
                 color: rgba(0, 0, 0, 0.9) !important; /* 確保選中時字體為深色 */
@@ -2800,12 +2754,6 @@
                         <input type="date" id="dateFilter" />
                 </div>
                 <div class="control-group">
-                        <button id="exportCalendarBtn" class="btn btn-export" title="匯出行事曆到手機">
-                            <i class="fas fa-download"></i>
-                            匯出行事曆
-                        </button>
-                    </div>
-                    <div class="control-group">
                         <div class="view-buttons">
                             <button class="btn btn-primary active" data-view="today">今日</button>
                             <button class="btn btn-primary" data-view="week">本週</button>
@@ -3181,7 +3129,6 @@
                         console.log('🔄 系統初始化完成，開始綁定按鈕...');
                         bindViewButtons();
                         bindRefreshButton();
-                        bindExportButton();
                         
                         // 設置今日按鈕的預設按下效果
                         updateViewButtonStates();
@@ -3822,179 +3769,6 @@
             forceRefresh();
         }
 
-        // 綁定匯出行事曆按鈕事件
-        function bindExportButton() {
-            const exportButton = document.getElementById('exportCalendarBtn');
-            if (exportButton) {
-                // 移除舊的事件監聽器
-                exportButton.removeEventListener('click', handleExportClick);
-                // 添加新的事件監聽器
-                exportButton.addEventListener('click', handleExportClick);
-                console.log('✅ 匯出行事曆按鈕事件已綁定');
-            } else {
-                console.warn('⚠️ 匯出行事曆按鈕元素未找到');
-            }
-        }
-
-        // 匯出按鈕點擊處理函數
-        function handleExportClick(event) {
-            event.preventDefault();
-            event.stopPropagation();
-            console.log('📥 匯出行事曆按鈕被點擊');
-            exportCalendar();
-        }
-
-        // 匯出行事曆功能
-        function exportCalendar() {
-            try {
-                console.log('📥 開始匯出行事曆...');
-                
-                // 獲取當前篩選後的事件
-                const filteredEvents = getFilteredEvents();
-                
-                if (filteredEvents.length === 0) {
-                    alert('目前沒有可匯出的事件，請調整篩選條件後再試。');
-                    return;
-                }
-
-                // 生成 iCal 格式的內容
-                const icalContent = generateICalContent(filteredEvents);
-                
-                // 創建下載連結
-                const blob = new Blob([icalContent], { type: 'text/calendar;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                
-                // 創建下載連結
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `講師行事曆_${new Date().toISOString().split('T')[0]}.ics`;
-                
-                // 觸發下載
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                // 清理 URL 物件
-                URL.revokeObjectURL(url);
-                
-                console.log('✅ 行事曆匯出完成');
-                
-                // 顯示成功訊息
-                showExportSuccessMessage();
-                
-            } catch (error) {
-                console.error('❌ 匯出行事曆失敗:', error);
-                alert('匯出行事曆時發生錯誤，請稍後再試。');
-            }
-        }
-
-        // 生成 iCal 格式內容
-        function generateICalContent(events) {
-            const now = new Date();
-            const timestamp = now.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-            
-            let ical = [
-                'BEGIN:VCALENDAR',
-                'VERSION:2.0',
-                'PRODID:-//講師行事曆系統//講師行事曆檢視//ZH',
-                'CALSCALE:GREGORIAN',
-                'METHOD:PUBLISH',
-                'X-WR-CALNAME:講師行事曆',
-                'X-WR-CALDESC:講師行事曆檢視系統匯出',
-                'X-WR-TIMEZONE:Asia/Taipei'
-            ];
-
-            events.forEach(event => {
-                if (!event || !event.start) return;
-
-                const startDate = new Date(event.start);
-                const endDate = event.end ? new Date(event.end) : new Date(startDate.getTime() + 60 * 60 * 1000); // 預設1小時
-                
-                // 格式化日期為 iCal 格式
-                const formatDate = (date) => {
-                    return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-                };
-
-                const startFormatted = formatDate(startDate);
-                const endFormatted = formatDate(endDate);
-                const createdFormatted = formatDate(now);
-
-                // 清理事件標題和描述
-                const title = (event.title || '未命名事件').replace(/[,;\\]/g, '\\$&');
-                const description = (event.description || '').replace(/[,;\\]/g, '\\$&');
-                const location = (event.location || '').replace(/[,;\\]/g, '\\$&');
-                const instructor = (event.instructor || '').replace(/[,;\\]/g, '\\$&');
-
-                ical.push('BEGIN:VEVENT');
-                ical.push(`UID:${event.id || Date.now() + Math.random()}@instructor-calendar.local`);
-                ical.push(`DTSTART:${startFormatted}`);
-                ical.push(`DTEND:${endFormatted}`);
-                ical.push(`DTSTAMP:${createdFormatted}`);
-                ical.push(`SUMMARY:${title}`);
-                ical.push(`DESCRIPTION:${description}\\n講師: ${instructor}`);
-                ical.push(`LOCATION:${location}`);
-                ical.push(`STATUS:CONFIRMED`);
-                ical.push(`TRANSP:OPAQUE`);
-                ical.push('END:VEVENT');
-            });
-
-            ical.push('END:VCALENDAR');
-            
-            return ical.join('\r\n');
-        }
-
-        // 顯示匯出成功訊息
-        function showExportSuccessMessage() {
-            // 創建成功訊息元素
-            const successMsg = document.createElement('div');
-            successMsg.style.cssText = `
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: linear-gradient(135deg, #4CAF50, #45a049);
-                color: white;
-                padding: 20px 30px;
-                border-radius: 12px;
-                box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
-                z-index: 10000;
-                font-size: 16px;
-                font-weight: 600;
-                text-align: center;
-                animation: fadeInOut 3s ease-in-out;
-            `;
-            
-            successMsg.innerHTML = `
-                <i class="fas fa-check-circle" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
-                行事曆已成功匯出！
-                <br>
-                <small style="opacity: 0.9; font-size: 14px;">請檢查您的下載資料夾</small>
-            `;
-            
-            // 添加動畫樣式
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes fadeInOut {
-                    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-                    20% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
-                    80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-                    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-                }
-            `;
-            document.head.appendChild(style);
-            
-            document.body.appendChild(successMsg);
-            
-            // 3秒後移除訊息
-            setTimeout(() => {
-                if (successMsg.parentNode) {
-                    successMsg.parentNode.removeChild(successMsg);
-                }
-                if (style.parentNode) {
-                    style.parentNode.removeChild(style);
-                }
-            }, 3000);
-        }
 
         // 計算每位講師的下一個即將到來的課程
         function getUpcomingEventsByInstructor() {
