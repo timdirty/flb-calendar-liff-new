@@ -4127,7 +4127,7 @@
 
         // FLB 簽到系統 SDK
         class FLBAttendanceSDK {
-            constructor(baseURL = 'https://liff-sttendence-0908-production.up.railway.app') {
+            constructor(baseURL = '/api/attendance') {
                 this.baseURL = baseURL;
             }
 
@@ -4161,7 +4161,7 @@
                     const today = new Date();
                     date = today.toISOString().split('T')[0];
                 }
-                return await this._makeRequest('/api/course-students', 'POST', {
+                return await this._makeRequest('/course-students', 'POST', {
                     course: course,
                     time: time,
                     date: date
@@ -4173,7 +4173,7 @@
                     const today = new Date();
                     date = today.toISOString().split('T')[0];
                 }
-                return await this._makeRequest('/api/student-attendance', 'POST', {
+                return await this._makeRequest('/student-attendance', 'POST', {
                     studentName: studentName,
                     date: date,
                     present: present,

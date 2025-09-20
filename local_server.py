@@ -498,6 +498,200 @@ def internal_error(error):
         "timestamp": datetime.now().isoformat()
     }), 500
 
+# FLB 簽到系統代理端點
+FLB_API_BASE_URL = "https://liff-sttendence-0908-production.up.railway.app"
+
+@app.route('/api/attendance/course-students', methods=['POST'])
+def get_course_students():
+    """代理獲取課程學生列表"""
+    try:
+        data = request.get_json()
+        print(f"[{datetime.now()}] POST /api/attendance/course-students - {data}")
+        
+        # 轉發請求到 FLB API
+        response = requests.post(
+            f"{FLB_API_BASE_URL}/api/course-students",
+            json=data,
+            headers={'Content-Type': 'application/json'},
+            timeout=30
+        )
+        
+        response.raise_for_status()
+        result = response.json()
+        print(f"[{datetime.now()}] FLB API 回應: {result}")
+        return jsonify(result)
+        
+    except requests.exceptions.RequestException as e:
+        print(f"[{datetime.now()}] FLB API 請求失敗: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'API 請求失敗: {str(e)}'
+        }), 500
+    except Exception as e:
+        print(f"[{datetime.now()}] 伺服器錯誤: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'伺服器錯誤: {str(e)}'
+        }), 500
+
+@app.route('/api/attendance/student-attendance', methods=['POST'])
+def mark_student_attendance():
+    """代理學生簽到"""
+    try:
+        data = request.get_json()
+        print(f"[{datetime.now()}] POST /api/attendance/student-attendance - {data}")
+        
+        # 轉發請求到 FLB API
+        response = requests.post(
+            f"{FLB_API_BASE_URL}/api/student-attendance",
+            json=data,
+            headers={'Content-Type': 'application/json'},
+            timeout=30
+        )
+        
+        response.raise_for_status()
+        result = response.json()
+        print(f"[{datetime.now()}] FLB API 回應: {result}")
+        return jsonify(result)
+        
+    except requests.exceptions.RequestException as e:
+        print(f"[{datetime.now()}] FLB API 請求失敗: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'API 請求失敗: {str(e)}'
+        }), 500
+    except Exception as e:
+        print(f"[{datetime.now()}] 伺服器錯誤: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'伺服器錯誤: {str(e)}'
+        }), 500
+
+@app.route('/api/attendance/teachers', methods=['GET'])
+def get_attendance_teachers():
+    """代理獲取講師列表"""
+    try:
+        print(f"[{datetime.now()}] GET /api/attendance/teachers")
+        
+        response = requests.get(
+            f"{FLB_API_BASE_URL}/api/teachers",
+            timeout=30
+        )
+        
+        response.raise_for_status()
+        result = response.json()
+        print(f"[{datetime.now()}] FLB API 回應: {result}")
+        return jsonify(result)
+        
+    except requests.exceptions.RequestException as e:
+        print(f"[{datetime.now()}] FLB API 請求失敗: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'API 請求失敗: {str(e)}'
+        }), 500
+    except Exception as e:
+        print(f"[{datetime.now()}] 伺服器錯誤: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'伺服器錯誤: {str(e)}'
+        }), 500
+
+@app.route('/api/attendance/courses', methods=['POST'])
+def get_attendance_courses():
+    """代理獲取課程列表"""
+    try:
+        data = request.get_json()
+        print(f"[{datetime.now()}] POST /api/attendance/courses - {data}")
+        
+        response = requests.post(
+            f"{FLB_API_BASE_URL}/api/courses",
+            json=data,
+            headers={'Content-Type': 'application/json'},
+            timeout=30
+        )
+        
+        response.raise_for_status()
+        result = response.json()
+        print(f"[{datetime.now()}] FLB API 回應: {result}")
+        return jsonify(result)
+        
+    except requests.exceptions.RequestException as e:
+        print(f"[{datetime.now()}] FLB API 請求失敗: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'API 請求失敗: {str(e)}'
+        }), 500
+    except Exception as e:
+        print(f"[{datetime.now()}] 伺服器錯誤: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'伺服器錯誤: {str(e)}'
+        }), 500
+
+@app.route('/api/attendance/teacher-report', methods=['POST'])
+def teacher_checkin():
+    """代理講師簽到"""
+    try:
+        data = request.get_json()
+        print(f"[{datetime.now()}] POST /api/attendance/teacher-report - {data}")
+        
+        response = requests.post(
+            f"{FLB_API_BASE_URL}/api/teacher-report",
+            json=data,
+            headers={'Content-Type': 'application/json'},
+            timeout=30
+        )
+        
+        response.raise_for_status()
+        result = response.json()
+        print(f"[{datetime.now()}] FLB API 回應: {result}")
+        return jsonify(result)
+        
+    except requests.exceptions.RequestException as e:
+        print(f"[{datetime.now()}] FLB API 請求失敗: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'API 請求失敗: {str(e)}'
+        }), 500
+    except Exception as e:
+        print(f"[{datetime.now()}] 伺服器錯誤: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'伺服器錯誤: {str(e)}'
+        }), 500
+
+@app.route('/api/attendance/direct-step3', methods=['POST'])
+def get_direct_step3_url():
+    """代理獲取直接跳轉 URL"""
+    try:
+        data = request.get_json()
+        print(f"[{datetime.now()}] POST /api/attendance/direct-step3 - {data}")
+        
+        response = requests.post(
+            f"{FLB_API_BASE_URL}/api/direct-step3",
+            json=data,
+            headers={'Content-Type': 'application/json'},
+            timeout=30
+        )
+        
+        response.raise_for_status()
+        result = response.json()
+        print(f"[{datetime.now()}] FLB API 回應: {result}")
+        return jsonify(result)
+        
+    except requests.exceptions.RequestException as e:
+        print(f"[{datetime.now()}] FLB API 請求失敗: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'API 請求失敗: {str(e)}'
+        }), 500
+    except Exception as e:
+        print(f"[{datetime.now()}] 伺服器錯誤: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'伺服器錯誤: {str(e)}'
+        }), 500
+
 if __name__ == '__main__':
     print("🚀 啟動本地 Flask 伺服器...")
     
@@ -515,6 +709,13 @@ if __name__ == '__main__':
     print("📅 行事曆頁面: http://localhost:5001/perfect-calendar.html")
     print("🔍 調試信息: http://localhost:5001/api/debug")
     print("❤️ 健康檢查: http://localhost:5001/api/health")
+    print("\n📋 簽到系統代理端點:")
+    print("  - POST /api/attendance/course-students")
+    print("  - POST /api/attendance/student-attendance")
+    print("  - GET  /api/attendance/teachers")
+    print("  - POST /api/attendance/courses")
+    print("  - POST /api/attendance/teacher-report")
+    print("  - POST /api/attendance/direct-step3")
     print("\n按 Ctrl+C 停止伺服器")
     
     app.run(
