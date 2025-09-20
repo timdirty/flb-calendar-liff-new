@@ -4126,99 +4126,30 @@
             }
         }
 
-        // FLB 簽到系統 SDK
-        class FLBAttendanceSDK {
-            constructor(baseURL = 'https://liff-sttendence-0908-production.up.railway.app') {
-                this.baseURL = baseURL;
+        // FLB Google Sheets API SDK
+        class FLBGoogleSheetsAPI {
+            constructor() {
+                this.FLB_API_URL = 'https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/exec';
+                this.ATTENDANCE_API_URL = 'https://script.google.com/macros/s/AKfycbzm0GD-T09Botbs52e8PyeVuA5slJh6Z0AQ7I0uUiGZiE6aWhTO2D0d3XHFrdLNv90uCw/exec';
+                this.LINK_CALENDAR_API_URL = 'https://script.google.com/macros/s/AKfycbzFwsd8I_5WJdl8jU_gycSKFxR836GhOzIHEU1bGj9mH70ESbJPj-uTD_YC9lEbo--v_A/exec';
+                this.REPORT_API_URL = 'https://script.google.com/macros/s/AKfycbyfoNl1EBk5Wjv6rbAadCb0ZxZLupVl90PVGYUar-qNqVDEa0PbXzwC4t9DL39sVQ-aJQ/exec';
             }
 
-            // 使用 JSONP 繞過 CSP 限制
-            _makeJSONPRequest(endpoint, data) {
-                return new Promise((resolve, reject) => {
-                    // 創建唯一的回調函數名稱
-                    const callbackName = `flb_callback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-                    
-                    // 將回調函數添加到全局作用域
-                    window[callbackName] = (response) => {
-                        try {
-                            // 清理回調函數
-                            delete window[callbackName];
-                            document.head.removeChild(script);
-                            resolve(response);
-                        } catch (error) {
-                            reject(error);
-                        }
-                    };
-                    
-                    // 構建 JSONP URL
-                    const params = new URLSearchParams();
-                    if (data) {
-                        Object.keys(data).forEach(key => {
-                            params.append(key, data[key]);
-                        });
-                    }
-                    params.append('callback', callbackName);
-                    
-                    const url = `${this.baseURL}${endpoint}?${params.toString()}`;
-                    
-                    // 創建 script 標籤
-                    const script = document.createElement('script');
-                    script.src = url;
-                    script.onerror = () => {
-                        delete window[callbackName];
-                        document.head.removeChild(script);
-                        reject(new Error('JSONP request failed'));
-                    };
-                    
-                    // 設置超時
-                    setTimeout(() => {
-                        if (window[callbackName]) {
-                            delete window[callbackName];
-                            document.head.removeChild(script);
-                            reject(new Error('JSONP request timeout'));
-                        }
-                    }, 30000);
-                    
-                    document.head.appendChild(script);
-                });
-            }
-
-            async _makeRequest(endpoint, method = 'GET', data = null) {
-                // 對於 GET 請求，嘗試使用 JSONP
-                if (method === 'GET') {
-                    try {
-                        return await this._makeJSONPRequest(endpoint, data);
-                    } catch (error) {
-                        console.warn('JSONP 失敗，嘗試直接請求:', error);
-                    }
-                }
-                
-                // 對於 POST 請求或其他情況，使用傳統方法
-                let url = `${this.baseURL}${endpoint}`;
-                const options = {
-                    method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                };
-
-                // 對於 GET 請求，將 data 作為查詢參數
-                if (method === 'GET' && data) {
-                    const params = new URLSearchParams();
-                    Object.keys(data).forEach(key => {
-                        params.append(key, data[key]);
-                    });
-                    url += `?${params.toString()}`;
-                } else if (data) {
-                    // 只有 POST 請求才添加 body
-                    options.body = JSON.stringify(data);
-                }
-
+            async _makeRequest(url, data, timeout = 30000) {
                 try {
-                    const response = await fetch(url, options);
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Cookie': 'NID=525=nsWVvbAon67C2qpyiEHQA3SUio_GqBd7RqUFU6BwB97_4LHggZxLpDgSheJ7WN4w3Z4dCQBiFPG9YKAqZgAokFYCuuQw04dkm-FX9-XHAIBIqJf1645n3RZrg86GcUVJOf3gN-5eTHXFIaovTmgRC6cXllv82SnQuKsGMq7CHH60XDSwyC99s9P2gmyXLppI'
+                        },
+                        body: JSON.stringify(data)
+                    });
+
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
+
                     return await response.json();
                 } catch (error) {
                     console.error('API 請求失敗:', error);
@@ -4226,55 +4157,94 @@
                 }
             }
 
-            async getStudents(course, time, date = null) {
-                if (!date) {
-                    const today = new Date();
-                    date = today.toISOString().split('T')[0];
+            // 獲取學生簽到狀態
+            async getStudentAttendance(course, period) {
+                try {
+                    const response = await this._makeRequest(this.ATTENDANCE_API_URL, {
+                        action: 'getRosterAttendance',
+                        course: course,
+                        period: period
+                    });
+
+                    return response;
+                } catch (error) {
+                    console.error('獲取學生簽到狀態失敗:', error);
+                    throw error;
                 }
-                // 根據 API 文件，使用 POST 請求
-                return await this._makeRequest('/api/course-students', 'POST', {
-                    course: course,
-                    time: time,
-                    date: date
-                });
             }
 
-            async markStudentAttendance(course, time, date, studentName, status) {
-                // 根據 API 文件，使用正確的參數格式
-                return await this._makeRequest('/api/student-attendance', 'POST', {
-                    course: course,
-                    time: time,
-                    date: date,
-                    studentName: studentName,
-                    status: status
-                });
+            // 記錄學生簽到
+            async markStudentAttendance(studentName, date, present, teacherName, courseName) {
+                try {
+                    const response = await this._makeRequest(this.FLB_API_URL, {
+                        action: 'markAttendance',
+                        studentName: studentName,
+                        date: date,
+                        present: present,
+                        teacherName: teacherName,
+                        courseName: courseName
+                    });
+
+                    return response;
+                } catch (error) {
+                    console.error('記錄學生簽到失敗:', error);
+                    throw error;
+                }
             }
 
-            async submitTeacherReport(teacher, course, time, date, courseContent, studentCount, attendanceCount) {
-                // 根據 API 文件，添加講師簽到功能
-                return await this._makeRequest('/api/teacher-report', 'POST', {
-                    teacher: teacher,
-                    course: course,
-                    time: time,
-                    date: date,
-                    courseContent: courseContent,
-                    studentCount: studentCount,
-                    attendanceCount: attendanceCount
-                });
+            // 提交講師簽到報告
+            async submitTeacherReport(teacherWebApi, teacherName, courseName, courseTime, date, studentCount, courseContent, assistantCount) {
+                try {
+                    const response = await this._makeRequest(teacherWebApi, {
+                        action: 'submitTeacherReport',
+                        teacherName: teacherName,
+                        courseName: courseName,
+                        courseTime: courseTime,
+                        date: date,
+                        studentCount: studentCount,
+                        courseContent: courseContent,
+                        assistantCount: assistantCount
+                    });
+
+                    return response;
+                } catch (error) {
+                    console.error('提交講師簽到報告失敗:', error);
+                    throw error;
+                }
             }
 
-            async directStep3(teacher, course, time) {
-                // 根據 API 文件，添加直接跳轉功能
-                return await this._makeRequest('/api/direct-step3', 'POST', {
-                    teacher: teacher,
-                    course: course,
-                    time: time
-                });
+            // 獲取講師列表
+            async getTeachers() {
+                try {
+                    const response = await this._makeRequest(this.FLB_API_URL, {
+                        action: 'getTeacherList'
+                    });
+
+                    return response;
+                } catch (error) {
+                    console.error('獲取講師列表失敗:', error);
+                    throw error;
+                }
+            }
+
+            // 獲取講師課程
+            async getTeacherCourses(teacher) {
+                try {
+                    const response = await this._makeRequest(this.FLB_API_URL, {
+                        action: 'getCoursesByTeacher',
+                        teacher: teacher
+                    });
+
+                    return response;
+                } catch (error) {
+                    console.error('獲取講師課程失敗:', error);
+                    throw error;
+                }
             }
         }
 
         // 初始化簽到系統
-        const attendanceSDK = new FLBAttendanceSDK();
+        const attendanceSDK = new FLBGoogleSheetsAPI();
         let currentAttendanceData = {
             courseName: '',
             instructor: '',
@@ -4318,14 +4288,28 @@
             studentsList.innerHTML = '<div class="loading">載入中...</div>';
             
             try {
-                // 使用當前日期
-                const date = currentAttendanceData.date || new Date().toISOString().split('T')[0];
-                const result = await attendanceSDK.getStudents(courseName, time, date);
+                // 解析課程名稱和時間
+                const course = parseCourseFromTitle(courseName);
+                const period = time;
+                
+                console.log('載入學生列表:', { course, period });
+                
+                const result = await attendanceSDK.getStudentAttendance(course, period);
                 console.log('學生列表結果:', result);
                 
                 if (result.success && result.students) {
-                    currentAttendanceData.students = result.students;
-                    renderStudentsList(result.students);
+                    // 轉換數據格式以符合現有的渲染邏輯
+                    const students = result.students.map(student => {
+                        const todayAttendance = student.attendance.find(att => att.date === currentAttendanceData.date);
+                        return {
+                            name: student.name,
+                            hasAttendanceToday: todayAttendance ? todayAttendance.present : null,
+                            attendanceTime: todayAttendance ? todayAttendance.time : null
+                        };
+                    });
+                    
+                    currentAttendanceData.students = students;
+                    renderStudentsList(students);
                 } else {
                     // 如果 API 回應不成功，直接顯示新視窗選項
                     showFLBAttendanceOption(courseName, time);
@@ -4335,6 +4319,14 @@
                 // 任何錯誤都直接顯示新視窗選項
                 showFLBAttendanceOption(courseName, time);
             }
+        }
+
+        // 解析課程名稱（從完整標題中提取課程代碼）
+        function parseCourseFromTitle(title) {
+            if (!title) return '';
+            // 提取課程代碼（例如：從 "SPM 六 9:30-11:00 到府 第2週" 提取 "SPM"）
+            const match = title.match(/^([A-Z]+)/);
+            return match ? match[1] : title;
         }
 
         // 顯示 FLB 簽到系統選項
@@ -4430,20 +4422,35 @@
         // 標記學生簽到
         async function markAttendance(studentName, status) {
             try {
-                // 根據 API 文件，使用正確的參數格式
+                // 轉換狀態格式
+                let present;
+                if (status === true || status === 'true') {
+                    present = true;
+                } else if (status === false || status === 'false') {
+                    present = false;
+                } else if (status === 'leave') {
+                    present = 'leave';
+                } else {
+                    present = status;
+                }
+                
+                // 解析課程名稱
+                const course = parseCourseFromTitle(currentAttendanceData.courseName);
+                
                 const result = await attendanceSDK.markStudentAttendance(
-                    currentAttendanceData.courseName,
-                    currentAttendanceData.time,
-                    currentAttendanceData.date,
                     studentName,
-                    status
+                    currentAttendanceData.date,
+                    present,
+                    currentAttendanceData.instructor,
+                    course
                 );
                 
                 if (result.success) {
                     // 更新本地狀態
                     const student = currentAttendanceData.students.find(s => s.name === studentName);
                     if (student) {
-                        student.hasAttendanceToday = status;
+                        student.hasAttendanceToday = present;
+                        student.attendanceTime = present === true ? new Date().toLocaleTimeString() : null;
                     }
                     
                     // 重新渲染列表
