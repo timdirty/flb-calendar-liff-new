@@ -4625,6 +4625,9 @@
                 document.head.appendChild(styles);
             }
             
+            // 保存課程信息到全局變量
+            window.currentCheckinCourse = { course, time, location };
+            
             // 載入學生資料
             loadStudentsForCheckin(course, time);
             
@@ -4659,20 +4662,80 @@
         }
 
         // 載入學生資料
-        function loadStudentsForCheckin(course, time) {
+        async function loadStudentsForCheckin(course, time) {
             const studentsList = document.getElementById('students-checkin-list');
             
-            // 模擬學生資料（實際應用中應該從 API 獲取）
-            const mockStudents = [
-                { name: '張小明', present: null, time: null },
-                { name: '李小花', present: null, time: null },
-                { name: '王大華', present: null, time: null },
-                { name: '陳小美', present: null, time: null },
-                { name: '林志明', present: null, time: null }
-            ];
-            
-            // 渲染學生列表
-            renderStudentsCheckinList(mockStudents);
+            try {
+                // 顯示載入狀態
+                studentsList.innerHTML = `
+                    <div style="text-align: center; color: #666;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 10px; color: #4CAF50;"></i>
+                        <div>正在載入學生資料...</div>
+                    </div>
+                `;
+                
+                // 調用 Google Sheets API 獲取學生資料
+                const response = await fetch('https://script.google.com/macros/s/AKfycbzm0GD-T09Botbs52e8PyeVuA5slJh6Z0AQ7I0uUiGZiE6aWhTO2D0d3XHFrdLNv90uCw/exec', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'getRosterAttendance',
+                        course: course,
+                        period: time
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('API 回應:', data);
+                
+                if (data.success && data.students) {
+                    // 處理學生資料
+                    const students = data.students.map(student => {
+                        const todayAttendance = student.attendance.find(att => att.date === new Date().toISOString().split('T')[0]);
+                        return {
+                            name: student.name,
+                            present: todayAttendance ? todayAttendance.present : null,
+                            time: todayAttendance ? todayAttendance.time : null,
+                            attendance: student.attendance
+                        };
+                    });
+                    
+                    // 渲染學生列表
+                    renderStudentsCheckinList(students);
+                } else {
+                    throw new Error(data.error || '無法獲取學生資料');
+                }
+                
+            } catch (error) {
+                console.error('載入學生資料失敗:', error);
+                studentsList.innerHTML = `
+                    <div style="text-align: center; color: #f44336;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 10px;"></i>
+                        <div>載入失敗</div>
+                        <div style="font-size: 14px; color: #666; margin-top: 8px;">
+                            ${error.message}
+                        </div>
+                        <button onclick="loadStudentsForCheckin('${course}', '${time}')" style="
+                            background: #4CAF50;
+                            color: white;
+                            border: none;
+                            padding: 8px 16px;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-size: 12px;
+                            margin-top: 10px;
+                        ">
+                            <i class="fas fa-redo"></i> 重新載入
+                        </button>
+                    </div>
+                `;
+            }
         }
 
         // 渲染學生簽到列表
@@ -4748,15 +4811,102 @@
         }
 
         // 標記學生出席
-        function markStudentPresent(studentName) {
-            showNotification(`${studentName} 已標記為出席`, 'success');
-            // 這裡可以添加實際的簽到邏輯
+        async function markStudentPresent(studentName) {
+            try {
+                // 獲取當前課程信息
+                const courseInfo = getCurrentCourseInfo();
+                if (!courseInfo) {
+                    showNotification('無法獲取課程信息', 'error');
+                    return;
+                }
+                
+                // 調用 API 記錄學生出席
+                const response = await fetch('https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/exec', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'markAttendance',
+                        studentName: studentName,
+                        date: new Date().toISOString().split('T')[0],
+                        present: true,
+                        teacherName: currentAttendanceData.instructor,
+                        courseName: courseInfo.course
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('簽到 API 回應:', data);
+                
+                if (data.success) {
+                    showNotification(`${studentName} 已標記為出席`, 'success');
+                    // 重新載入學生列表以更新狀態
+                    loadStudentsForCheckin(courseInfo.course, courseInfo.time);
+                } else {
+                    throw new Error(data.error || '簽到失敗');
+                }
+                
+            } catch (error) {
+                console.error('標記出席失敗:', error);
+                showNotification(`標記出席失敗: ${error.message}`, 'error');
+            }
         }
 
         // 標記學生缺席
-        function markStudentAbsent(studentName) {
-            showNotification(`${studentName} 已標記為缺席`, 'warning');
-            // 這裡可以添加實際的簽到邏輯
+        async function markStudentAbsent(studentName) {
+            try {
+                // 獲取當前課程信息
+                const courseInfo = getCurrentCourseInfo();
+                if (!courseInfo) {
+                    showNotification('無法獲取課程信息', 'error');
+                    return;
+                }
+                
+                // 調用 API 記錄學生缺席
+                const response = await fetch('https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/exec', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'markAttendance',
+                        studentName: studentName,
+                        date: new Date().toISOString().split('T')[0],
+                        present: false,
+                        teacherName: currentAttendanceData.instructor,
+                        courseName: courseInfo.course
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('簽到 API 回應:', data);
+                
+                if (data.success) {
+                    showNotification(`${studentName} 已標記為缺席`, 'warning');
+                    // 重新載入學生列表以更新狀態
+                    loadStudentsForCheckin(courseInfo.course, courseInfo.time);
+                } else {
+                    throw new Error(data.error || '簽到失敗');
+                }
+                
+            } catch (error) {
+                console.error('標記缺席失敗:', error);
+                showNotification(`標記缺席失敗: ${error.message}`, 'error');
+            }
+        }
+
+        // 獲取當前課程信息
+        function getCurrentCourseInfo() {
+            return window.currentCheckinCourse || null;
         }
 
         // 儲存簽到資料
