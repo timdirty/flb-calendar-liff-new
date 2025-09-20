@@ -4855,16 +4855,23 @@
                     return;
                 }
                 
-                // 模擬更新簽到狀態（因為 API 目前只支援讀取）
-                console.log(`模擬標記 ${studentName} 為出席`);
+                // 使用真實的 API 更新簽到狀態
+                const data = await makeJSONPRequest('https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/dev', {
+                    action: 'update',
+                    name: studentName,
+                    date: new Date().toISOString().split('T')[0],
+                    present: true
+                });
                 
-                // 更新本地狀態
-                updateLocalAttendanceStatus(studentName, true);
+                console.log('簽到 API 回應:', data);
                 
-                showNotification(`${studentName} 已標記為出席 (模擬模式)`, 'success');
-                
-                // 顯示提示信息
-                showNotification('注意：目前為模擬模式，實際簽到狀態請手動記錄', 'info');
+                if (data.success) {
+                    // 更新本地狀態
+                    updateLocalAttendanceStatus(studentName, true);
+                    showNotification(`${studentName} 已標記為出席`, 'success');
+                } else {
+                    throw new Error(data.message || '簽到失敗');
+                }
                 
             } catch (error) {
                 console.error('標記出席失敗:', error);
@@ -4882,16 +4889,23 @@
                     return;
                 }
                 
-                // 模擬更新簽到狀態（因為 API 目前只支援讀取）
-                console.log(`模擬標記 ${studentName} 為缺席`);
+                // 使用真實的 API 更新簽到狀態
+                const data = await makeJSONPRequest('https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/dev', {
+                    action: 'update',
+                    name: studentName,
+                    date: new Date().toISOString().split('T')[0],
+                    present: false
+                });
                 
-                // 更新本地狀態
-                updateLocalAttendanceStatus(studentName, false);
+                console.log('簽到 API 回應:', data);
                 
-                showNotification(`${studentName} 已標記為缺席 (模擬模式)`, 'warning');
-                
-                // 顯示提示信息
-                showNotification('注意：目前為模擬模式，實際簽到狀態請手動記錄', 'info');
+                if (data.success) {
+                    // 更新本地狀態
+                    updateLocalAttendanceStatus(studentName, false);
+                    showNotification(`${studentName} 已標記為缺席`, 'warning');
+                } else {
+                    throw new Error(data.message || '簽到失敗');
+                }
                 
             } catch (error) {
                 console.error('標記缺席失敗:', error);
