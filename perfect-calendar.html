@@ -650,24 +650,29 @@
         /* 即將到來課程的高亮樣式 */
         .event-card.upcoming-event {
             position: relative;
-            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
-            border: 3px solid #FF6B35;
-            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
-            transform: scale(1.02);
-            animation: upcomingPulse 2s ease-in-out infinite;
+            background: linear-gradient(135deg, #FF8C42 0%, #FF6B35 100%);
+            border: 2px solid #FF8C42;
+            box-shadow: 0 6px 20px rgba(255, 140, 66, 0.3);
+            transform: scale(1.01);
+            transition: all 0.3s ease;
         }
 
         .event-card.upcoming-event::before {
             content: '';
             position: absolute;
-            top: -3px;
-            left: -3px;
-            right: -3px;
-            bottom: -3px;
-            background: linear-gradient(45deg, #FF6B35, #F7931E, #FF6B35, #F7931E);
-            border-radius: 12px;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #FF8C42, #FF6B35, #FF8C42, #FF6B35);
+            border-radius: 10px;
             z-index: -1;
-            animation: upcomingGlow 2s ease-in-out infinite;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .event-card.upcoming-event:hover::before {
+            opacity: 1;
         }
 
         .event-card.upcoming-event .event-title {
@@ -687,15 +692,6 @@
 
         .event-card.upcoming-event .event-detail i {
             color: rgba(255, 255, 255, 0.8);
-        }
-
-        .event-card.upcoming-event .countdown-timer {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            font-weight: 600;
-            border-radius: 8px;
-            padding: 8px 12px;
-            margin: 8px 0;
         }
 
         .event-card.upcoming-event .event-description {
@@ -718,50 +714,17 @@
             align-items: center;
             gap: 6px;
             background: rgba(255, 255, 255, 0.9);
-            color: #FF6B35;
+            color: #FF8C42;
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 700;
             margin-left: 8px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            animation: upcomingBadgePulse 1.5s ease-in-out infinite;
         }
 
         .upcoming-badge i {
             font-size: 0.9rem;
-        }
-
-        /* 動畫效果 */
-        @keyframes upcomingPulse {
-            0%, 100% { 
-                box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
-                transform: scale(1.02);
-            }
-            50% { 
-                box-shadow: 0 12px 35px rgba(255, 107, 53, 0.6);
-                transform: scale(1.03);
-            }
-        }
-
-        @keyframes upcomingGlow {
-            0%, 100% { 
-                opacity: 0.8;
-            }
-            50% { 
-                opacity: 1;
-            }
-        }
-
-        @keyframes upcomingBadgePulse {
-            0%, 100% { 
-                transform: scale(1);
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            }
-            50% { 
-                transform: scale(1.05);
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            }
         }
 
         .btn-secondary {
@@ -5612,7 +5575,7 @@ async function loadTodayEvents() {
                          data-start-time="${event.start}" 
                          data-end-time="${event.end}">
                         <i class="fas fa-clock countdown-icon"></i>
-                        <span class="countdown-text">${isUpcomingEventFlag && timeUntilEvent ? `距離上課還有 ${timeUntilEvent}` : '計算中...'}</span>
+                        <span class="countdown-text">計算中...</span>
                     </div>
                     
                     <div class="event-description">
