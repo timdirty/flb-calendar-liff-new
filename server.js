@@ -988,10 +988,6 @@ app.get('/api/google-script', async (req, res) => {
 
 module.exports = app;
 
-        });
-    }
-});
-
 // 測試 CalDAV 連接
 app.get('/api/test-caldav', async (req, res) => {
     try {
