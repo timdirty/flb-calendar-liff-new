@@ -2064,6 +2064,7 @@
             font-size: 0.85rem;
             color: rgba(51, 51, 51, 0.9);
             text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+            flex-wrap: nowrap;
         }
 
         .floating-stats-item {
@@ -2082,6 +2083,39 @@
         .floating-stats-item .value {
             color: rgba(51, 51, 51, 0.8);
             font-weight: 700;
+        }
+
+        .floating-filter-buttons {
+            display: flex;
+            gap: 8px;
+            margin-left: 15px;
+        }
+
+        .floating-filter-btn {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            color: #333333;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .floating-filter-btn:hover {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(255, 215, 0, 0.3));
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+        }
+
+        .floating-filter-btn.active {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #333333;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
+            transform: translateY(-1px);
         }
 
         /* 響應式設計 */
@@ -3643,6 +3677,11 @@
             <div class="floating-stats-item">
                 <i class="fas fa-calendar-alt icon"></i>
                 <span class="value" id="floatingDateRange">日期: -</span>
+            </div>
+            <div class="floating-filter-buttons">
+                <button class="floating-filter-btn" data-filter="today">今日</button>
+                <button class="floating-filter-btn" data-filter="week">本週</button>
+                <button class="floating-filter-btn" data-filter="month">本月</button>
             </div>
         </div>
     </div>
@@ -6893,14 +6932,14 @@ async function loadTodayEvents() {
                 modal.innerHTML = `
                     <div class="attendance-modal-content" style="
                         background: 
-                            radial-gradient(circle at 20% 80%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
-                            radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.08) 0%, transparent 50%),
+                            radial-gradient(circle at 20% 80%, rgba(255, 215, 0, 0.15) 0%, transparent 50%),
+                            radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.12) 0%, transparent 50%),
                             linear-gradient(135deg, 
-                                rgba(0, 0, 0, 0.95) 0%, 
-                                rgba(15, 15, 15, 0.92) 25%,
-                                rgba(25, 25, 25, 0.9) 50%,
-                                rgba(15, 15, 15, 0.92) 75%,
-                                rgba(0, 0, 0, 0.95) 100%);
+                                rgba(255, 255, 255, 0.95) 0%, 
+                                rgba(248, 248, 248, 0.92) 25%,
+                                rgba(252, 252, 252, 0.9) 50%,
+                                rgba(248, 248, 248, 0.92) 75%,
+                                rgba(255, 255, 255, 0.95) 100%);
                         backdrop-filter: blur(20px);
                         -webkit-backdrop-filter: blur(20px);
                         border-radius: 25px;
@@ -6919,15 +6958,15 @@ async function loadTodayEvents() {
                         overflow: hidden;
                     ">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                            <h2 style="margin: 0; color: rgba(255, 255, 255, 0.95); font-size: 1.5rem; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);">
+                            <h2 style="margin: 0; color: #333333; font-size: 1.5rem; text-shadow: none;">
                                 <i class="fas fa-calendar-check" style="color: #ffd700; margin-right: 10px; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);"></i>
                                 課程簽到系統
                             </h2>
                             <button id="closeAttendanceModal" class="close-attendance-modal" style="
-                                background: rgba(255, 255, 255, 0.1);
-                                border: 1px solid rgba(255, 215, 0, 0.3);
+                                background: rgba(255, 255, 255, 0.2);
+                                border: 1px solid rgba(255, 215, 0, 0.4);
                                 font-size: 1.5rem;
-                                color: rgba(255, 255, 255, 0.8);
+                                color: #333333;
                                 cursor: pointer;
                                 padding: 5px;
                                 border-radius: 50%;
@@ -6959,15 +6998,15 @@ async function loadTodayEvents() {
                                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
                         ">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.9rem;">
-                                <div style="color: rgba(255, 255, 255, 0.9);"><strong style="color: #ffd700;">講師:</strong> ${teacher}</div>
-                                <div style="color: rgba(255, 255, 255, 0.9);"><strong style="color: #ffd700;">課程:</strong> ${course}</div>
-                                <div style="color: rgba(255, 255, 255, 0.9);"><strong style="color: #ffd700;">時間:</strong> ${time}</div>
-                                <div style="color: rgba(255, 255, 255, 0.9);"><strong style="color: #ffd700;">日期:</strong> ${new Date(start).toLocaleDateString('zh-TW')}</div>
+                                <div style="color: #333333;"><strong style="color: #ffd700;">講師:</strong> ${teacher}</div>
+                                <div style="color: #333333;"><strong style="color: #ffd700;">課程:</strong> ${course}</div>
+                                <div style="color: #333333;"><strong style="color: #ffd700;">時間:</strong> ${time}</div>
+                                <div style="color: #333333;"><strong style="color: #ffd700;">日期:</strong> ${new Date(start).toLocaleDateString('zh-TW')}</div>
                             </div>
                         </div>
                         
                         <div id="attendanceContent">
-                            <div style="text-align: center; padding: 60px 40px; color: rgba(255, 255, 255, 0.8);">
+                            <div style="text-align: center; padding: 60px 40px; color: #333333;">
                                 <!-- 卡牌載入動畫 -->
                                 <div style="
                                     display: flex;
@@ -7997,6 +8036,64 @@ async function loadTodayEvents() {
             
             // 監聽統計更新事件
             document.addEventListener('statsUpdated', updateFloatingMenuContent);
+            
+            // 初始化篩選按鈕
+            initializeFloatingFilterButtons();
+        }
+        
+        // 初始化懸浮選單篩選按鈕
+        function initializeFloatingFilterButtons() {
+            const filterButtons = document.querySelectorAll('.floating-filter-btn');
+            
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const filter = this.getAttribute('data-filter');
+                    
+                    // 移除所有按鈕的 active 類別
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // 添加當前按鈕的 active 類別
+                    this.classList.add('active');
+                    
+                    // 執行篩選
+                    applyDateFilter(filter);
+                });
+            });
+        }
+        
+        // 應用日期篩選
+        function applyDateFilter(filter) {
+            const today = new Date();
+            let startDate, endDate;
+            
+            switch(filter) {
+                case 'today':
+                    startDate = new Date(today);
+                    endDate = new Date(today);
+                    break;
+                case 'week':
+                    startDate = new Date(today);
+                    startDate.setDate(today.getDate() - today.getDay()); // 本週開始（週日）
+                    endDate = new Date(startDate);
+                    endDate.setDate(startDate.getDate() + 6); // 本週結束（週六）
+                    break;
+                case 'month':
+                    startDate = new Date(today.getFullYear(), today.getMonth(), 1); // 本月第一天
+                    endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0); // 本月最後一天
+                    break;
+                default:
+                    return;
+            }
+            
+            // 更新日期範圍篩選
+            if (window.updateDateRange) {
+                window.updateDateRange(startDate, endDate);
+            }
+            
+            // 觸發事件重新載入
+            if (window.loadEvents) {
+                window.loadEvents();
+            }
         }
 
     </script>
