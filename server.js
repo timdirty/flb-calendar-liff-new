@@ -371,11 +371,66 @@ app.post('/api/proxy/google-sheets', async (req, res) => {
                 period: cleanPeriod
             };
         } else if (action === 'updateAttendance') {
-            apiUrl = 'https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/exec';
-            payload = {
-                action: 'updateAttendance',
-                records: records
-            };
+            // 使用學生簽到 API (dev 版本)
+            apiUrl = 'https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/dev';
+            
+            // 處理多筆簽到記錄
+            if (records && records.length > 0) {
+                // 如果有多筆記錄，逐一處理
+                const results = [];
+                for (const record of records) {
+                    const singlePayload = {
+                        action: 'update',
+                        name: record.studentId || record.studentName,
+                        date: record.date,
+                        present: record.present
+                    };
+                    
+                    console.log('📤 發送單筆簽到記錄:', singlePayload);
+                    
+                    try {
+                        const singleResponse = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Cookie': 'NID=525=nsWVvbAon67C2qpyiEHQA3SUio_GqBd7RqUFU6BwB97_4LHggZxLpDgSheJ7WN4w3Z4dCQBiFPG9YKAqZgAokFYCuuQw04dkm-FX9-XHAIBIqJf1645n3RZrg86GcUVJOf3gN-5eTHXFIaovTmgRC6cXllv82SnQuKsGMq7CHH60XDSwyC99s9P2gmyXLppI'
+                            },
+                            body: JSON.stringify(singlePayload)
+                        });
+                        
+                        if (!singleResponse.ok) {
+                            throw new Error(`單筆簽到記錄 API 請求失敗: ${singleResponse.status} ${singleResponse.statusText}`);
+                        }
+                        
+                        const singleData = await singleResponse.json();
+                        results.push(singleData);
+                        
+                        // 避免 API 限制，稍作延遲
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        
+                    } catch (error) {
+                        console.error(`❌ 單筆簽到記錄失敗:`, error);
+                        results.push({
+                            success: false,
+                            error: error.message,
+                            record: record
+                        });
+                    }
+                }
+                
+                // 返回所有結果
+                const successCount = results.filter(r => r.success !== false).length;
+                return res.json({
+                    success: successCount > 0,
+                    message: `處理完成：${successCount}/${records.length} 筆記錄成功`,
+                    results: results
+                });
+            } else {
+                return res.status(400).json({
+                    success: false,
+                    error: '沒有簽到記錄需要處理'
+                });
+            }
         } else {
             return res.status(400).json({
                 success: false,

@@ -2072,10 +2072,17 @@
                 // 獲取今天的日期
                 const today = new Date().toISOString().split('T')[0];
                 
-                // 構建簽到記錄
+                // 構建簽到記錄（使用學生姓名）
                 const attendanceRecords = [];
                 for (const [studentId, status] of attendanceData) {
+                    // 獲取學生姓名
+                    const studentItem = document.querySelector(`[data-student-id="${studentId}"]`);
+                    const studentName = studentItem ? 
+                        studentItem.querySelector('.student-name')?.textContent || studentId : 
+                        studentId;
+                    
                     attendanceRecords.push({
+                        studentName: studentName,
                         studentId: studentId,
                         date: today,
                         present: status === 'present' ? true : status === 'absent' ? false : 'leave',
@@ -2116,7 +2123,8 @@
                 }
                 
                 // 顯示成功訊息
-                showSuccessMessage(`簽到記錄已儲存！共 ${attendanceData.size} 筆記錄`);
+                const successCount = data.results ? data.results.filter(r => r.success !== false).length : attendanceData.size;
+                showSuccessMessage(`簽到記錄已儲存！成功 ${successCount}/${attendanceData.size} 筆記錄`);
                 
                 // 關閉模態框
                 closeAttendanceModal();
