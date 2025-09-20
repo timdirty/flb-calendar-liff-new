@@ -4135,22 +4135,65 @@
                 this.REPORT_API_URL = 'https://script.google.com/macros/s/AKfycbyfoNl1EBk5Wjv6rbAadCb0ZxZLupVl90PVGYUar-qNqVDEa0PbXzwC4t9DL39sVQ-aJQ/exec';
             }
 
+            // 使用 JSONP 繞過 CORS 限制
+            _makeJSONPRequest(url, data) {
+                return new Promise((resolve, reject) => {
+                    // 創建唯一的回調函數名稱
+                    const callbackName = `flb_callback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                    
+                    // 將回調函數添加到全局作用域
+                    window[callbackName] = (response) => {
+                        try {
+                            // 清理回調函數
+                            delete window[callbackName];
+                            document.head.removeChild(script);
+                            resolve(response);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    };
+                    
+                    // 構建 JSONP URL
+                    const params = new URLSearchParams();
+                    if (data) {
+                        Object.keys(data).forEach(key => {
+                            params.append(key, data[key]);
+                        });
+                    }
+                    params.append('callback', callbackName);
+                    
+                    const jsonpUrl = `${url}?${params.toString()}`;
+                    
+                    // 創建 script 標籤
+                    const script = document.createElement('script');
+                    script.src = jsonpUrl;
+                    script.onerror = () => {
+                        delete window[callbackName];
+                        if (document.head.contains(script)) {
+                            document.head.removeChild(script);
+                        }
+                        reject(new Error('JSONP request failed'));
+                    };
+                    
+                    // 設置超時
+                    setTimeout(() => {
+                        if (window[callbackName]) {
+                            delete window[callbackName];
+                            if (document.head.contains(script)) {
+                                document.head.removeChild(script);
+                            }
+                            reject(new Error('JSONP request timeout'));
+                        }
+                    }, 30000);
+                    
+                    document.head.appendChild(script);
+                });
+            }
+
             async _makeRequest(url, data, timeout = 30000) {
                 try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Cookie': 'NID=525=nsWVvbAon67C2qpyiEHQA3SUio_GqBd7RqUFU6BwB97_4LHggZxLpDgSheJ7WN4w3Z4dCQBiFPG9YKAqZgAokFYCuuQw04dkm-FX9-XHAIBIqJf1645n3RZrg86GcUVJOf3gN-5eTHXFIaovTmgRC6cXllv82SnQuKsGMq7CHH60XDSwyC99s9P2gmyXLppI'
-                        },
-                        body: JSON.stringify(data)
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    return await response.json();
+                    // 使用 JSONP 繞過 CORS 限制
+                    return await this._makeJSONPRequest(url, data);
                 } catch (error) {
                     console.error('API 請求失敗:', error);
                     throw error;
