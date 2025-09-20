@@ -1812,6 +1812,147 @@
             animation: glow 2s ease-in-out infinite;
         }
 
+        /* 簽到系統懸浮選單 */
+        .attendance-menu {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            user-select: none;
+        }
+
+        .attendance-menu-button {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, 
+                rgba(76, 175, 80, 0.9) 0%, 
+                rgba(69, 160, 73, 0.8) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: rgba(255, 255, 255, 0.9);
+            box-shadow: 
+                0 8px 32px rgba(76, 175, 80, 0.3),
+                0 2px 8px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+            will-change: transform, box-shadow;
+        }
+
+        .attendance-menu-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.1) 0%,
+                rgba(255, 255, 255, 0.05) 50%,
+                rgba(255, 255, 255, 0.1) 100%);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .attendance-menu-button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .attendance-menu-button:hover {
+            transform: translateY(-3px) scale(1.1);
+            background: linear-gradient(135deg, 
+                rgba(76, 175, 80, 1) 0%, 
+                rgba(69, 160, 73, 0.9) 100%);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 
+                0 15px 45px rgba(76, 175, 80, 0.5),
+                0 6px 15px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+
+        .attendance-menu-button:hover::before {
+            opacity: 1;
+        }
+
+        .attendance-menu-button:hover::after {
+            width: 80px;
+            height: 80px;
+        }
+
+        .attendance-menu-button:active {
+            transform: translateY(-1px) scale(1.05);
+            transition: all 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            background: linear-gradient(135deg, 
+                rgba(76, 175, 80, 0.95) 0%, 
+                rgba(69, 160, 73, 0.85) 100%);
+            box-shadow: 
+                0 8px 25px rgba(76, 175, 80, 0.4),
+                0 3px 8px rgba(0, 0, 0, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        }
+
+        .attendance-menu-button i {
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            z-index: 1;
+        }
+
+        .attendance-menu-tooltip {
+            position: absolute;
+            left: 70px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            pointer-events: none;
+            z-index: 1001;
+        }
+
+        .attendance-menu-tooltip::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+            border-right: 6px solid rgba(0, 0, 0, 0.8);
+        }
+
+        .attendance-menu:hover .attendance-menu-tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(-50%) translateX(5px);
+        }
+
         /* 響應式設計 */
         @media (max-width: 768px) {
             /* 整個頁面可以滑動 */
@@ -2119,6 +2260,23 @@
                     0 6px 24px rgba(0, 122, 255, 0.25),
                     0 2px 6px rgba(0, 122, 255, 0.12),
                     inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            }
+
+            .attendance-menu {
+                bottom: 10px;
+                left: 10px;
+            }
+
+            .attendance-menu-button {
+                width: 45px;
+                height: 45px;
+                font-size: 18px;
+            }
+
+            .attendance-menu-tooltip {
+                left: 55px;
+                font-size: 11px;
+                padding: 5px 8px;
             }
         }
 
@@ -3038,10 +3196,20 @@
         </div>
     </div>
 
-    <!-- 重新整理浮動按鈕 -->
-    <div id="refreshButton" class="refresh-button" title="重新整理行事曆">
-        <i class="fas fa-sync-alt"></i>
-    </div>
+     <!-- 重新整理浮動按鈕 -->
+     <div id="refreshButton" class="refresh-button" title="重新整理行事曆">
+         <i class="fas fa-sync-alt"></i>
+     </div>
+
+     <!-- 簽到系統懸浮選單 -->
+     <div id="attendanceMenu" class="attendance-menu" title="簽到系統">
+         <div class="attendance-menu-button">
+             <i class="fas fa-calendar-check"></i>
+         </div>
+         <div class="attendance-menu-tooltip">
+             <span>簽到系統</span>
+         </div>
+     </div>
 
     <script>
         // 全域變數
@@ -3310,6 +3478,7 @@
                         console.log('🔄 系統初始化完成，開始綁定按鈕...');
                         bindViewButtons();
                         bindRefreshButton();
+                        bindAttendanceMenu();
                         
                         // 設置今日按鈕的預設按下效果
                         updateViewButtonStates();
@@ -3939,6 +4108,42 @@
                 console.log('✅ 重新整理按鈕事件已綁定');
             } else {
                 console.warn('⚠️ 重新整理按鈕元素未找到');
+            }
+        }
+
+        // 綁定簽到系統選單事件
+        function bindAttendanceMenu() {
+            const attendanceMenu = document.getElementById('attendanceMenu');
+            if (attendanceMenu) {
+                // 移除舊的事件監聽器
+                attendanceMenu.removeEventListener('click', handleAttendanceMenuClick);
+                // 添加新的事件監聽器
+                attendanceMenu.addEventListener('click', handleAttendanceMenuClick);
+                console.log('✅ 簽到系統選單事件已綁定');
+            } else {
+                console.warn('⚠️ 簽到系統選單元素未找到');
+            }
+        }
+
+        // 處理簽到系統選單點擊
+        function handleAttendanceMenuClick(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            console.log('📋 簽到系統選單被點擊');
+            
+            // 跳轉到簽到系統
+            const attendanceUrl = 'https://liff-sttendence-0908-production.up.railway.app/';
+            
+            // 在新視窗中開啟簽到系統
+            window.open(attendanceUrl, '_blank', 'noopener,noreferrer');
+            
+            // 添加點擊動畫效果
+            const button = event.currentTarget.querySelector('.attendance-menu-button');
+            if (button) {
+                button.style.transform = 'translateY(-1px) scale(0.95)';
+                setTimeout(() => {
+                    button.style.transform = '';
+                }, 150);
             }
         }
 
