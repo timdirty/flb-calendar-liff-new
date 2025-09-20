@@ -406,7 +406,9 @@ app.post('/api/proxy/google-sheets', async (req, res) => {
                         action: 'update',
                         name: record.studentName,
                         date: record.date,
-                        present: record.present
+                        present: record.present,
+                        course: record.course,
+                        period: record.period
                     };
                     
                     console.log('📤 發送單筆簽到記錄:', singlePayload);
