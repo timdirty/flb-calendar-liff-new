@@ -331,6 +331,11 @@ app.get('/test', (req, res) => {
     res.sendFile(path.join(__dirname, 'perfect-calendar-test.html'));
 });
 
+// 測試功能驗證頁面
+app.get('/test-functionality', (req, res) => {
+    res.sendFile(path.join(__dirname, 'test-system-functionality.html'));
+});
+
 // 正式版本路由
 app.get('/calendar', (req, res) => {
     res.sendFile(path.join(__dirname, 'perfect-calendar.html'));

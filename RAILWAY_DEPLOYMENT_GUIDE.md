@@ -33,6 +33,14 @@ https://your-app-name.railway.app/
 - **特色**：基本功能展示
 - **用途**：預設入口
 
+#### 🔍 測試功能驗證頁面
+```
+https://your-app-name.railway.app/test-functionality
+```
+- **功能**：自動化測試系統各項功能
+- **特色**：API 連接測試、CSP 合規性檢查、功能驗證
+- **用途**：系統健康檢查和故障排除
+
 ## 🔧 部署狀態檢查
 
 ### 1. 檢查部署狀態

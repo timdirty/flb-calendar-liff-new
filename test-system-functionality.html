@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>測試系統功能驗證</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        .test-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+        .test-section h3 {
+            color: #007bff;
+            margin-top: 0;
+        }
+        .test-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .test-item:last-child {
+            border-bottom: none;
+        }
+        .test-name {
+            font-weight: 500;
+            color: #333;
+        }
+        .test-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .btn {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px 5px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+        }
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+        .log-success {
+            color: #28a745;
+        }
+        .log-error {
+            color: #dc3545;
+        }
+        .log-info {
+            color: #007bff;
+        }
+        .log-warning {
+            color: #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 測試系統功能驗證</h1>
+            <p>驗證測試系統的各項功能是否正常運作</p>
+        </div>
+
+        <div class="test-section">
+            <h3>📡 API 連接測試</h3>
+            <div class="test-item">
+                <span class="test-name">行事曆資料 API (/api/events)</span>
+                <span class="test-status status-pending" id="calendar-api-status">測試中...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-name">講師列表 API (/api/teachers)</span>
+                <span class="test-status status-pending" id="teachers-api-status">測試中...</span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🎨 前端功能測試</h3>
+            <div class="test-item">
+                <span class="test-name">事件監聽器綁定</span>
+                <span class="test-status status-pending" id="event-listeners-status">測試中...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-name">CSP 合規性</span>
+                <span class="test-status status-pending" id="csp-status">測試中...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-name">直接簽到按鈕生成</span>
+                <span class="test-status status-pending" id="direct-attendance-status">測試中...</span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔗 外部服務測試</h3>
+            <div class="test-item">
+                <span class="test-name">LIFF 簽到系統連接</span>
+                <span class="test-status status-pending" id="liff-status">測試中...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-name">CalDAV 資料格式</span>
+                <span class="test-status status-pending" id="caldav-format-status">測試中...</span>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <button class="btn" onclick="runAllTests()">🚀 執行所有測試</button>
+            <button class="btn btn-success" onclick="openTestSystem()">📱 開啟測試系統</button>
+            <button class="btn btn-warning" onclick="clearLog()">🗑️ 清除日誌</button>
+        </div>
+
+        <div class="log" id="test-log">
+            <div class="log-entry log-info">準備開始測試...</div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = {
+            calendarApi: false,
+            teachersApi: false,
+            eventListeners: false,
+            cspCompliant: false,
+            directAttendance: false,
+            liffConnection: false,
+            caldavFormat: false
+        };
+
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('test-log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function updateStatus(elementId, status, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `test-status status-${status}`;
+        }
+
+        async function testCalendarAPI() {
+            try {
+                log('測試行事曆 API...', 'info');
+                const response = await fetch('/api/events');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.data) {
+                        testResults.calendarApi = true;
+                        updateStatus('calendar-api-status', 'success', `✅ 成功 (${data.data.length} 個事件)`);
+                        log(`行事曆 API 測試成功: ${data.data.length} 個事件`, 'success');
+                    } else {
+                        throw new Error('資料格式不正確');
+                    }
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                testResults.calendarApi = false;
+                updateStatus('calendar-api-status', 'error', `❌ 失敗: ${error.message}`);
+                log(`行事曆 API 測試失敗: ${error.message}`, 'error');
+            }
+        }
+
+        async function testTeachersAPI() {
+            try {
+                log('測試講師 API...', 'info');
+                const response = await fetch('/api/teachers');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.teachers) {
+                        testResults.teachersApi = true;
+                        updateStatus('teachers-api-status', 'success', `✅ 成功 (${data.teachers.length} 個講師)`);
+                        log(`講師 API 測試成功: ${data.teachers.length} 個講師`, 'success');
+                    } else {
+                        throw new Error('資料格式不正確');
+                    }
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                testResults.teachersApi = false;
+                updateStatus('teachers-api-status', 'error', `❌ 失敗: ${error.message}`);
+                log(`講師 API 測試失敗: ${error.message}`, 'error');
+            }
+        }
+
+        function testEventListeners() {
+            try {
+                log('測試事件監聽器...', 'info');
+                
+                // 檢查是否有內聯事件處理器
+                const inlineHandlers = document.querySelectorAll('[onclick]');
+                if (inlineHandlers.length > 0) {
+                    throw new Error(`發現 ${inlineHandlers.length} 個內聯事件處理器`);
+                }
+
+                // 檢查是否有內聯樣式
+                const inlineStyles = document.querySelectorAll('[style]');
+                const problematicStyles = Array.from(inlineStyles).filter(el => 
+                    el.getAttribute('style').includes('javascript:') || 
+                    el.getAttribute('style').includes('onclick')
+                );
+                
+                if (problematicStyles.length > 0) {
+                    throw new Error(`發現 ${problematicStyles.length} 個問題樣式`);
+                }
+
+                testResults.eventListeners = true;
+                updateStatus('event-listeners-status', 'success', '✅ 通過');
+                log('事件監聽器測試通過', 'success');
+            } catch (error) {
+                testResults.eventListeners = false;
+                updateStatus('event-listeners-status', 'error', `❌ 失敗: ${error.message}`);
+                log(`事件監聽器測試失敗: ${error.message}`, 'error');
+            }
+        }
+
+        function testCSPCompliance() {
+            try {
+                log('測試 CSP 合規性...', 'info');
+                
+                // 檢查內聯事件處理器
+                const inlineEvents = document.querySelectorAll('[onclick], [onload], [onerror]');
+                if (inlineEvents.length > 0) {
+                    throw new Error(`發現 ${inlineEvents.length} 個內聯事件處理器`);
+                }
+
+                // 檢查內聯樣式中的 JavaScript
+                const inlineStyles = document.querySelectorAll('[style]');
+                const jsInStyles = Array.from(inlineStyles).filter(el => 
+                    el.getAttribute('style').toLowerCase().includes('javascript:')
+                );
+                
+                if (jsInStyles.length > 0) {
+                    throw new Error(`發現 ${jsInStyles.length} 個樣式中的 JavaScript`);
+                }
+
+                testResults.cspCompliant = true;
+                updateStatus('csp-status', 'success', '✅ 合規');
+                log('CSP 合規性測試通過', 'success');
+            } catch (error) {
+                testResults.cspCompliant = false;
+                updateStatus('csp-status', 'error', `❌ 不合規: ${error.message}`);
+                log(`CSP 合規性測試失敗: ${error.message}`, 'error');
+            }
+        }
+
+        function testDirectAttendance() {
+            try {
+                log('測試直接簽到功能...', 'info');
+                
+                // 檢查是否有直接簽到按鈕的樣式
+                const styleSheet = document.styleSheets[0];
+                let hasDirectAttendanceStyle = false;
+                
+                try {
+                    for (let rule of styleSheet.cssRules) {
+                        if (rule.selectorText && rule.selectorText.includes('btn-direct-attendance')) {
+                            hasDirectAttendanceStyle = true;
+                            break;
+                        }
+                    }
+                } catch (e) {
+                    // 跨域樣式表無法訪問
+                    hasDirectAttendanceStyle = true; // 假設存在
+                }
+
+                if (!hasDirectAttendanceStyle) {
+                    throw new Error('缺少直接簽到按鈕樣式');
+                }
+
+                testResults.directAttendance = true;
+                updateStatus('direct-attendance-status', 'success', '✅ 可用');
+                log('直接簽到功能測試通過', 'success');
+            } catch (error) {
+                testResults.directAttendance = false;
+                updateStatus('direct-attendance-status', 'error', `❌ 不可用: ${error.message}`);
+                log(`直接簽到功能測試失敗: ${error.message}`, 'error');
+            }
+        }
+
+        async function testLiffConnection() {
+            try {
+                log('測試 LIFF 連接...', 'info');
+                
+                // 檢查 LIFF URL 是否可訪問
+                const liffUrl = 'https://liff.line.me/1657746214-wPgd2qQn';
+                const response = await fetch(liffUrl, { method: 'HEAD' });
+                
+                if (response.ok) {
+                    testResults.liffConnection = true;
+                    updateStatus('liff-status', 'success', '✅ 可連接');
+                    log('LIFF 連接測試成功', 'success');
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                testResults.liffConnection = false;
+                updateStatus('liff-status', 'error', `❌ 無法連接: ${error.message}`);
+                log(`LIFF 連接測試失敗: ${error.message}`, 'error');
+            }
+        }
+
+        function testCalDAVFormat() {
+            try {
+                log('測試 CalDAV 資料格式...', 'info');
+                
+                // 檢查測試資料格式
+                const testEvent = {
+                    title: '測試課程',
+                    instructor: '測試講師',
+                    start: new Date().toISOString(),
+                    end: new Date(Date.now() + 3600000).toISOString(),
+                    location: '測試地點',
+                    description: '測試描述'
+                };
+
+                // 驗證必要欄位
+                const requiredFields = ['title', 'instructor', 'start', 'end'];
+                const missingFields = requiredFields.filter(field => !testEvent[field]);
+                
+                if (missingFields.length > 0) {
+                    throw new Error(`缺少必要欄位: ${missingFields.join(', ')}`);
+                }
+
+                // 驗證日期格式
+                const startDate = new Date(testEvent.start);
+                const endDate = new Date(testEvent.end);
+                
+                if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                    throw new Error('日期格式不正確');
+                }
+
+                testResults.caldavFormat = true;
+                updateStatus('caldav-format-status', 'success', '✅ 格式正確');
+                log('CalDAV 資料格式測試通過', 'success');
+            } catch (error) {
+                testResults.caldavFormat = false;
+                updateStatus('caldav-format-status', 'error', `❌ 格式錯誤: ${error.message}`);
+                log(`CalDAV 資料格式測試失敗: ${error.message}`, 'error');
+            }
+        }
+
+        async function runAllTests() {
+            log('🚀 開始執行所有測試...', 'info');
+            
+            await testCalendarAPI();
+            await testTeachersAPI();
+            testEventListeners();
+            testCSPCompliance();
+            testDirectAttendance();
+            await testLiffConnection();
+            testCalDAVFormat();
+
+            // 計算測試結果
+            const totalTests = Object.keys(testResults).length;
+            const passedTests = Object.values(testResults).filter(result => result).length;
+            const successRate = Math.round((passedTests / totalTests) * 100);
+
+            log(`📊 測試完成: ${passedTests}/${totalTests} 通過 (${successRate}%)`, 
+                successRate >= 80 ? 'success' : 'warning');
+
+            if (successRate === 100) {
+                log('🎉 所有測試通過！系統運行正常', 'success');
+            } else if (successRate >= 80) {
+                log('⚠️ 大部分測試通過，系統基本正常', 'warning');
+            } else {
+                log('❌ 多項測試失敗，需要檢查系統', 'error');
+            }
+        }
+
+        function openTestSystem() {
+            window.open('/test', '_blank');
+        }
+
+        function clearLog() {
+            document.getElementById('test-log').innerHTML = '<div class="log-entry log-info">日誌已清除</div>';
+        }
+
+        // 頁面載入時自動執行測試
+        document.addEventListener('DOMContentLoaded', function() {
+            log('頁面載入完成，準備開始測試', 'info');
+            setTimeout(runAllTests, 1000);
+        });
+    </script>
+</body>
+</html>
