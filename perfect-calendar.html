@@ -4483,25 +4483,224 @@
             
             // 構建 FLB 簽到系統的 URL
             const params = new URLSearchParams({
+                teacher: currentAttendanceData.instructor,
                 course: displayCourse,
-                time: displayTime,
-                date: new Date().toISOString().split('T')[0],
-                location: displayLocation
+                time: displayTime
             });
             
-            // 使用 Google Apps Script 的 step3 頁面
-            const flbUrl = `https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/exec?step=3&${params.toString()}`;
+            // 使用第三步驟直接訪問 API
+            const flbUrl = `https://liff-sttendence-0908-production.up.railway.app/step3?${params.toString()}`;
             
-            // 開啟新視窗
-            const newWindow = window.open(flbUrl, '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes,menubar=no,toolbar=no,location=no,status=no');
+            // 創建彈出式 iframe 選單
+            createPopupIframe(flbUrl, displayCourse, displayTime, displayLocation);
+        }
+
+        // 創建彈出式 iframe 選單
+        function createPopupIframe(url, course, time, location) {
+            // 關閉現有的簽到模態框
+            closeAttendanceModal();
             
-            if (newWindow) {
-                // 顯示成功訊息
-                showNotification('簽到系統已開啟', 'success');
-                closeAttendanceModal();
-            } else {
-                // 顯示錯誤訊息
-                showNotification('無法開啟簽到系統，請檢查彈出視窗設定', 'error');
+            // 創建遮罩層
+            const overlay = document.createElement('div');
+            overlay.id = 'flb-popup-overlay';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 10000;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                backdrop-filter: blur(5px);
+            `;
+            
+            // 創建彈出容器
+            const popup = document.createElement('div');
+            popup.id = 'flb-popup-container';
+            popup.style.cssText = `
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+                width: 90%;
+                max-width: 900px;
+                height: 80%;
+                max-height: 700px;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                position: relative;
+                animation: popupSlideIn 0.3s ease-out;
+            `;
+            
+            // 創建標題欄
+            const header = document.createElement('div');
+            header.style.cssText = `
+                background: linear-gradient(135deg, #4CAF50, #45a049);
+                color: white;
+                padding: 16px 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-shrink: 0;
+            `;
+            
+            header.innerHTML = `
+                <div>
+                    <h3 style="margin: 0; font-size: 18px; font-weight: bold;">
+                        <i class="fas fa-calendar-check" style="margin-right: 8px;"></i>
+                        簽到系統
+                    </h3>
+                    <div style="font-size: 14px; opacity: 0.9; margin-top: 4px;">
+                        ${course} • ${time} • ${location}
+                    </div>
+                </div>
+                <button id="close-flb-popup" style="
+                    background: rgba(255, 255, 255, 0.2);
+                    border: none;
+                    color: white;
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 50%;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 16px;
+                    transition: background 0.2s ease;
+                " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            // 創建載入指示器
+            const loading = document.createElement('div');
+            loading.id = 'flb-loading';
+            loading.style.cssText = `
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 200px;
+                color: #666;
+            `;
+            loading.innerHTML = `
+                <div class="spinner" style="
+                    width: 40px;
+                    height: 40px;
+                    border: 4px solid #f3f3f3;
+                    border-top: 4px solid #4CAF50;
+                    border-radius: 50%;
+                    animation: spin 1s linear infinite;
+                    margin-bottom: 16px;
+                "></div>
+                <div>載入簽到系統中...</div>
+            `;
+            
+            // 創建 iframe 容器
+            const iframeContainer = document.createElement('div');
+            iframeContainer.style.cssText = `
+                flex: 1;
+                position: relative;
+                display: none;
+            `;
+            
+            const iframe = document.createElement('iframe');
+            iframe.id = 'flb-iframe';
+            iframe.style.cssText = `
+                width: 100%;
+                height: 100%;
+                border: none;
+                border-radius: 0 0 16px 16px;
+            `;
+            iframe.src = url;
+            
+            // 組裝彈出選單
+            iframeContainer.appendChild(iframe);
+            popup.appendChild(header);
+            popup.appendChild(loading);
+            popup.appendChild(iframeContainer);
+            overlay.appendChild(popup);
+            
+            // 添加到頁面
+            document.body.appendChild(overlay);
+            
+            // 添加動畫樣式
+            if (!document.getElementById('flb-popup-styles')) {
+                const styles = document.createElement('style');
+                styles.id = 'flb-popup-styles';
+                styles.textContent = `
+                    @keyframes popupSlideIn {
+                        from {
+                            opacity: 0;
+                            transform: scale(0.9) translateY(-20px);
+                        }
+                        to {
+                            opacity: 1;
+                            transform: scale(1) translateY(0);
+                        }
+                    }
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                    #flb-popup-container {
+                        transition: all 0.3s ease;
+                    }
+                `;
+                document.head.appendChild(styles);
+            }
+            
+            // 監聽 iframe 載入完成
+            iframe.onload = () => {
+                loading.style.display = 'none';
+                iframeContainer.style.display = 'block';
+            };
+            
+            iframe.onerror = () => {
+                loading.innerHTML = `
+                    <i class="fas fa-exclamation-triangle" style="color: #f44336; font-size: 40px; margin-bottom: 16px;"></i>
+                    <div>載入失敗</div>
+                    <div style="font-size: 14px; color: #666; margin-top: 8px;">
+                        無法載入簽到系統，請檢查網路連接
+                    </div>
+                `;
+            };
+            
+            // 關閉按鈕事件
+            document.getElementById('close-flb-popup').onclick = () => {
+                closePopupIframe();
+            };
+            
+            // 點擊遮罩關閉
+            overlay.onclick = (e) => {
+                if (e.target === overlay) {
+                    closePopupIframe();
+                }
+            };
+            
+            // ESC 鍵關閉
+            const handleEsc = (e) => {
+                if (e.key === 'Escape') {
+                    closePopupIframe();
+                    document.removeEventListener('keydown', handleEsc);
+                }
+            };
+            document.addEventListener('keydown', handleEsc);
+        }
+
+        // 關閉彈出式 iframe
+        function closePopupIframe() {
+            const overlay = document.getElementById('flb-popup-overlay');
+            if (overlay) {
+                overlay.style.animation = 'popupSlideIn 0.3s ease-out reverse';
+                setTimeout(() => {
+                    if (document.body.contains(overlay)) {
+                        document.body.removeChild(overlay);
+                    }
+                }, 300);
             }
         }
 
