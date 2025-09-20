@@ -5978,7 +5978,8 @@ async function loadTodayEvents() {
         }
 
         // 切換檢視模式
-        function switchView(view) {
+        // 設置為全局函數
+        window.switchView = function switchView(view) {
             // 將英文視圖轉換為中文
             const viewMap = {
                 'today': '今日',
@@ -6014,7 +6015,7 @@ async function loadTodayEvents() {
             // 更新統計資訊（包括日期範圍）
             updateStats();
             renderEvents();
-        }
+        };
 
 
         // 通用篩選函數，根據當前篩選條件篩選事件（不包含視圖篩選）
@@ -8201,6 +8202,8 @@ async function loadTodayEvents() {
         
         // 應用日期篩選
         function applyDateFilter(filter) {
+            console.log('🔄 懸浮選單篩選:', filter);
+            
             // 找到對應的篩選按鈕並更新狀態
             const filterButtons = document.querySelectorAll('.filter-btn, .floating-filter-btn');
             const targetButton = Array.from(filterButtons).find(btn => 
@@ -8212,6 +8215,12 @@ async function loadTodayEvents() {
             filterButtons.forEach(btn => btn.classList.remove('active'));
             if (targetButton) {
                 targetButton.classList.add('active');
+            }
+            
+            // 直接切換視圖
+            if (window.switchView) {
+                console.log('🔄 切換視圖到:', filter);
+                window.switchView(filter);
             }
             
             // 執行篩選邏輯
