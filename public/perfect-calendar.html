@@ -4133,86 +4133,12 @@
                 this.ATTENDANCE_API_URL = 'https://script.google.com/macros/s/AKfycbzm0GD-T09Botbs52e8PyeVuA5slJh6Z0AQ7I0uUiGZiE6aWhTO2D0d3XHFrdLNv90uCw/exec';
                 this.LINK_CALENDAR_API_URL = 'https://script.google.com/macros/s/AKfycbzFwsd8I_5WJdl8jU_gycSKFxR836GhOzIHEU1bGj9mH70ESbJPj-uTD_YC9lEbo--v_A/exec';
                 this.REPORT_API_URL = 'https://script.google.com/macros/s/AKfycbyfoNl1EBk5Wjv6rbAadCb0ZxZLupVl90PVGYUar-qNqVDEa0PbXzwC4t9DL39sVQ-aJQ/exec';
-                this.pendingRequests = new Map();
             }
 
-            // 使用 iframe 繞過 CSP 限制
-            _makeIframeRequest(url, data) {
-                return new Promise((resolve, reject) => {
-                    // 創建唯一的請求 ID
-                    const requestId = `flb_request_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-                    
-                    // 存儲請求信息
-                    this.pendingRequests.set(requestId, { resolve, reject });
-                    
-                    // 創建 iframe
-                    const iframe = document.createElement('iframe');
-                    iframe.style.display = 'none';
-                    iframe.style.width = '0';
-                    iframe.style.height = '0';
-                    iframe.style.border = 'none';
-                    
-                    // 構建 URL
-                    const params = new URLSearchParams();
-                    if (data) {
-                        Object.keys(data).forEach(key => {
-                            params.append(key, data[key]);
-                        });
-                    }
-                    params.append('requestId', requestId);
-                    
-                    const iframeUrl = `${url}?${params.toString()}`;
-                    iframe.src = iframeUrl;
-                    
-                    // 設置超時
-                    const timeoutId = setTimeout(() => {
-                        this.pendingRequests.delete(requestId);
-                        document.body.removeChild(iframe);
-                        reject(new Error('Iframe request timeout'));
-                    }, 30000);
-                    
-                    // 監聽 iframe 載入完成
-                    iframe.onload = () => {
-                        clearTimeout(timeoutId);
-                        // 嘗試從 iframe 獲取數據
-                        try {
-                            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                            const responseText = iframeDoc.body.textContent || iframeDoc.body.innerText;
-                            if (responseText) {
-                                const response = JSON.parse(responseText);
-                                this.pendingRequests.delete(requestId);
-                                document.body.removeChild(iframe);
-                                resolve(response);
-                            } else {
-                                throw new Error('No response from iframe');
-                            }
-                        } catch (error) {
-                            this.pendingRequests.delete(requestId);
-                            document.body.removeChild(iframe);
-                            reject(new Error('Failed to parse iframe response: ' + error.message));
-                        }
-                    };
-                    
-                    iframe.onerror = () => {
-                        clearTimeout(timeoutId);
-                        this.pendingRequests.delete(requestId);
-                        document.body.removeChild(iframe);
-                        reject(new Error('Iframe request failed'));
-                    };
-                    
-                    document.body.appendChild(iframe);
-                });
-            }
-
+            // 主要請求方法 - 現在直接拋出錯誤，因為我們使用新視窗
             async _makeRequest(url, data, timeout = 30000) {
-                try {
-                    // 使用 iframe 繞過 CSP 限制
-                    return await this._makeIframeRequest(url, data);
-                } catch (error) {
-                    console.error('API 請求失敗:', error);
-                    // 如果 iframe 方法失敗，回退到新視窗方法
-                    throw new Error('API 請求失敗，請使用新視窗進行簽到');
-                }
+                // 直接拋出錯誤，強制使用新視窗
+                throw new Error('API 請求失敗，請使用新視窗進行簽到');
             }
 
             // 獲取學生簽到狀態
@@ -4668,7 +4594,12 @@
                     const courseName = button.getAttribute('data-course-name');
                     const instructor = button.getAttribute('data-instructor');
                     const time = button.getAttribute('data-time');
-                    openAttendanceModal(courseName, instructor, time);
+                    
+                    // 設置講師信息
+                    currentAttendanceData.instructor = instructor;
+                    
+                    // 直接開啟 FLB 簽到系統
+                    openFLBAttendance(courseName, time);
                 }
             });
 
