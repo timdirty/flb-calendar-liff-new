@@ -5534,20 +5534,22 @@ async function loadTodayEvents() {
                 updateAllCountdowns();
         }
 
-        // 從標題解析課程名稱和時間
+        // 從標題解析課程名稱、時間和地點
         function parseCourseAndTimeFromTitle(title) {
             if (!title) return null;
             
             // 匹配格式：SPM 六 9:30-11:00 到府 第2週
             // 課程：SPM
-            // 時間：六 9:30-11:00
-            const courseTimeRegex = /^([A-Z]+)\s+([一二三四五六日]\s+\d{1,2}:\d{2}-\d{1,2}:\d{2})/;
-            const match = title.match(courseTimeRegex);
+            // 時間：9:30-11:00
+            // 地點：到府
+            const courseTimeLocationRegex = /^([A-Z]+)\s+[一二三四五六日]\s+(\d{1,2}:\d{2}-\d{1,2}:\d{2})\s+([^第]+?)(?:\s+第\d+週)?$/;
+            const match = title.match(courseTimeLocationRegex);
             
             if (match) {
                 return {
-                    course: match[1], // SPM
-                    time: match[2]    // 六 9:30-11:00
+                    course: match[1],     // SPM
+                    time: match[2],       // 9:30-11:00
+                    location: match[3]    // 到府
                 };
             }
             
@@ -5730,7 +5732,7 @@ async function loadTodayEvents() {
             const isUpcomingEventFlag = isUpcomingEvent(event);
             const timeUntilEvent = isUpcomingEventFlag ? getTimeUntilEvent(event) : null;
             
-            // 從標題解析課程名稱和時間
+            // 從標題解析課程名稱、時間和地點
             const courseTimeInfo = parseCourseAndTimeFromTitle(event.title);
             
             // 統一使用 CalDAV 的日期，確保日期正確
@@ -5739,8 +5741,8 @@ async function loadTodayEvents() {
             let courseName = event.title; // 預設使用完整標題
             
             if (courseTimeInfo) {
-                // 使用解析出的課程名稱和時間
-                courseName = courseTimeInfo.course;
+                // 使用解析出的課程名稱、時間和地點
+                courseName = `${courseTimeInfo.course} ${courseTimeInfo.time} ${courseTimeInfo.location}`;
                 timeString = courseTimeInfo.time;
             } else {
                 // 使用 CalDAV 的時間
