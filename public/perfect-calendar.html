@@ -1845,6 +1845,26 @@
         .liquid-button:hover::before {
             animation: shimmer2 0.8s infinite;
         }
+        
+        /* CSP 兼容的 hover 效果 */
+        .close-attendance-modal:hover {
+            background: rgba(220, 53, 69, 0.1) !important;
+            color: #dc3545 !important;
+        }
+        
+        .present-btn:hover {
+            transform: scale(1.05) !important;
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.5) !important;
+        }
+        
+        .absent-btn:hover {
+            transform: scale(1.05) !important;
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.5) !important;
+        }
+        
+        .refresh-students-btn:hover {
+            background: rgba(102, 126, 234, 1) !important;
+        }
 
         /* 微交互效果 */
         .smooth-hover {
@@ -3102,16 +3122,16 @@
             <div class="loading-spinner"></div>
             <div class="loading-text">🚀 載入中...</div>
             <div class="loading-subtitle">正在初始化系統，請稍候</div>
-            <div class="loading-progress">
-                <div class="loading-progress-bar" id="loadingProgressBar"></div>
-            </div>
-            <div class="loading-percentage" id="loadingPercentage">0%</div>
+                <div class="loading-progress">
+                    <div class="loading-progress-bar" id="loadingProgressBar"></div>
+                </div>
+                <div class="loading-percentage" id="loadingPercentage">0%</div>
             <div class="loading-logs" id="loadingLogs">
                 <div class="loading-log-item info">
                     <span class="loading-log-icon">ℹ️</span>
                     <span>系統初始化中...</span>
-                </div>
             </div>
+        </div>
         </div>
         <div class="loading-signature">Tim感恩戴德🙏🏻</div>
     </div>
@@ -3191,8 +3211,8 @@
                 <div class="control-group">
                         <label for="dateFilter">指定日期</label>
                         <input type="date" id="dateFilter" />
-                </div>
-                <div class="control-group">
+                    </div>
+                    <div class="control-group">
                         <div class="view-buttons">
                             <button class="btn btn-primary active" data-view="today">今日</button>
                             <button class="btn btn-primary" data-view="week">本週</button>
@@ -3248,7 +3268,7 @@
         <div class="settings-modal">
             <div class="settings-header">
                 <h2><i class="fas fa-palette"></i> 顏色設置</h2>
-                <button class="close-settings" onclick="closeSettings()">
+                <button class="close-settings" id="closeSettingsBtn">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -3290,7 +3310,7 @@
                 </div>
             </div>
 
-            <button class="save-settings" onclick="saveSettings()">
+            <button class="save-settings" id="saveSettingsBtn">
                 <i class="fas fa-save"></i> 儲存設置
             </button>
         </div>
@@ -3308,8 +3328,8 @@
          </div>
          <div class="attendance-menu-tooltip">
              <span>簽到系統</span>
-         </div>
-     </div>
+        </div>
+    </div>
 
     <script>
         // 全域變數
@@ -3988,7 +4008,7 @@
                         // 比對失敗，顯示全部講師
                         console.log('比對失敗，將顯示全部講師');
                         if (instructorSelect) {
-                            instructorSelect.value = ''; // 選擇全部講師
+                        instructorSelect.value = ''; // 選擇全部講師
                             // 立即更新統計和渲染事件
                             updateStats();
                             renderEvents();
@@ -4001,7 +4021,7 @@
                         // 比對失敗，顯示全部講師
                         console.log('比對失敗，將顯示全部講師');
                         if (instructorSelect) {
-                            instructorSelect.value = ''; // 選擇全部講師
+                        instructorSelect.value = ''; // 選擇全部講師
                             // 立即更新統計和渲染事件
                             updateStats();
                             renderEvents();
@@ -4037,12 +4057,12 @@
 
         // 自動滑動到行事曆區域（所有裝置）
         function autoScrollToCalendar() {
-            // 延遲一點時間確保頁面完全載入
-            setTimeout(() => {
+                // 延遲一點時間確保頁面完全載入
+                setTimeout(() => {
                 // 滑動到視圖按鈕區域，讓今日本週每月按鈕切齊頂部
-                const viewButtons = document.querySelector('.view-buttons');
+                    const viewButtons = document.querySelector('.view-buttons');
                 
-                if (viewButtons) {
+                    if (viewButtons) {
                     // 計算視圖按鈕的位置，讓按鈕齊平頂部
                     const viewButtonsRect = viewButtons.getBoundingClientRect();
                     const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
@@ -4067,9 +4087,9 @@
                         });
                         console.log(`已自動滑動到主內容區域，篩選區塊高度: ${controlHeight}px`);
                     }
-                }
-            }, 1000);
-        }
+                    }
+                }, 1000);
+            }
 
         // 自動滾動到視圖按鈕（通用函數）
         function autoScrollToViewButtons() {
@@ -4773,7 +4793,7 @@
 
 // 載入當日事件（直接載入完整數據）
 async function loadTodayEvents() {
-    try {
+            try {
         console.log('🚀 開始載入完整事件數據...');
         addLoadingLog('🌐 正在連接 CalDAV 伺服器...', 'info');
         
@@ -5546,11 +5566,11 @@ async function loadTodayEvents() {
             container.innerHTML = filteredEvents.map(event => createEventCard(event)).join('');
             
             // 觸發事件卡片動畫（移除延遲）
-            animateEventCards();
-            // 更新倒數計時
-            updateAllCountdowns();
+                animateEventCards();
+                // 更新倒數計時
+                updateAllCountdowns();
         }
-        
+
         // 從標題解析時間
         function parseTimeFromTitle(title) {
             // 匹配格式如 "18:30-20:30", "14:30-15:30", "16:30-17:30", "1630-1730" 等
@@ -5573,7 +5593,7 @@ async function loadTodayEvents() {
             }
             return null;
         }
-        
+
         // 從標題解析日期（根據星期幾）
         function parseDateFromTitle(title, baseDate = new Date()) {
             // 直接使用 CalDAV 的日期，不重新計算
@@ -5793,16 +5813,16 @@ async function loadTodayEvents() {
                 `;
             }
             
-            // 處理位置資訊
-            let location = event.location;
-            if (!location || location === 'nan' || location === 'null' || location === '' || location.trim() === '') {
+        // 處理位置資訊
+        let location = event.location;
+        if (!location || location === 'nan' || location === 'null' || location === '' || location.trim() === '') {
                 location = '樂程坊 FunLearnBar';
             }
         
             // 統一地址為樂程坊 FunLearnBar
             if (location === '站前教室' || location === '台北市中正區開封街1段2號9樓' || location === '台北市中正區開封街一段2號9樓') {
                 location = '樂程坊 FunLearnBar';
-            }
+        }
             
             // 講師底色
             const instructorColor = instructorColors[event.instructor] || '#667eea';
@@ -5841,7 +5861,7 @@ async function loadTodayEvents() {
                                class="location-link"
                                title="點擊查看地圖">
                                 <i class="fas fa-map-marked-alt location-map-icon"></i>
-                            <span>${location}</span>
+                                <span>${location}</span>
                                 <i class="fas fa-external-link-alt location-external-icon"></i>
                             </a>
                         </div>
@@ -5864,7 +5884,10 @@ async function loadTodayEvents() {
                     <!-- 直接簽到按鈕 -->
                     <div class="attendance-section">
                         <button class="direct-attendance-btn liquid-button" 
-                                onclick="handleDirectAttendance('${event.title.replace(/'/g, "\\'")}', '${event.instructor.replace(/'/g, "\\'")}', '${event.start}', '${event.end}')"
+                                data-event-title="${event.title.replace(/'/g, "\\'")}"
+                                data-event-instructor="${event.instructor.replace(/'/g, "\\'")}"
+                                data-event-start="${event.start}"
+                                data-event-end="${event.end}"
                                 title="直接進行課程簽到">
                             <i class="fas fa-calendar-check"></i> 直接簽到
                         </button>
@@ -5893,7 +5916,7 @@ async function loadTodayEvents() {
             }
             
             // 應用時段篩選
-            if (timeFilter) {
+                if (timeFilter) {
                 filteredEvents = filteredEvents.filter(event => {
                     const eventDate = new Date(event.start);
                     const hour = eventDate.getHours();
@@ -5908,10 +5931,10 @@ async function loadTodayEvents() {
                             return true;
                     }
                 });
-            }
-            
+                }
+                
             // 應用指定日期篩選
-            if (dateFilter) {
+                if (dateFilter) {
                 filteredEvents = filteredEvents.filter(event => {
                     const eventDate = new Date(event.start);
                     const filterDate = new Date(dateFilter);
@@ -5922,7 +5945,7 @@ async function loadTodayEvents() {
             }
             
             // 應用視圖篩選（今日/本週/本月/全部）
-            const now = new Date();
+                const now = new Date();
             filteredEvents = filteredEvents.filter(event => {
                 const eventDate = new Date(event.start);
                 
@@ -6048,6 +6071,32 @@ async function loadTodayEvents() {
             }
           });
           }
+
+        // 設置按鈕事件監聽器
+        document.addEventListener('DOMContentLoaded', function() {
+            // 關閉設置按鈕
+            const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+            if (closeSettingsBtn) {
+                closeSettingsBtn.addEventListener('click', closeSettings);
+            }
+
+            // 儲存設置按鈕
+            const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+            if (saveSettingsBtn) {
+                saveSettingsBtn.addEventListener('click', saveSettings);
+            }
+        });
+
+        // 直接簽到按鈕事件監聽器（使用事件委派）
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('direct-attendance-btn')) {
+                const title = e.target.dataset.eventTitle;
+                const instructor = e.target.dataset.eventInstructor;
+                const start = e.target.dataset.eventStart;
+                const end = e.target.dataset.eventEnd;
+                handleDirectAttendance(title, instructor, start, end);
+            }
+        });
 
         // ==================== 簽到系統功能 ====================
         
@@ -6335,7 +6384,7 @@ async function loadTodayEvents() {
                                 <i class="fas fa-calendar-check" style="color: #667eea; margin-right: 10px;"></i>
                                 課程簽到系統
                             </h2>
-                            <button id="closeAttendanceModal" style="
+                            <button id="closeAttendanceModal" class="close-attendance-modal" style="
                                 background: none;
                                 border: none;
                                 font-size: 1.5rem;
@@ -6349,7 +6398,7 @@ async function loadTodayEvents() {
                                 align-items: center;
                                 justify-content: center;
                                 transition: all 0.3s ease;
-                            " onmouseover="this.style.background='rgba(220, 53, 69, 0.1)'; this.style.color='#dc3545'" onmouseout="this.style.background='none'; this.style.color='#666'">
+                            ">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
@@ -6418,9 +6467,12 @@ async function loadTodayEvents() {
                 document.body.appendChild(modal);
                 
                 // 設置關閉按鈕事件
-                document.getElementById('closeAttendanceModal').addEventListener('click', function() {
-                    modal.remove();
-                });
+                const closeBtn = document.getElementById('closeAttendanceModal');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function() {
+                        modal.remove();
+                    });
+                }
                 
                 // 點擊背景關閉
                 modal.addEventListener('click', function(e) {
@@ -6630,7 +6682,7 @@ async function loadTodayEvents() {
                                 -webkit-backdrop-filter: blur(10px);
                                 box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
                                 ${currentStatus === 'present' ? 'transform: scale(1.05); box-shadow: 0 8px 25px rgba(40, 167, 69, 0.5);' : ''}
-                            " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 8px 25px rgba(40, 167, 69, 0.5)'" onmouseout="this.style.transform='${currentStatus === 'present' ? 'scale(1.05)' : 'scale(1)'}'; this.style.boxShadow='${currentStatus === 'present' ? '0 8px 25px rgba(40, 167, 69, 0.5)' : '0 4px 15px rgba(40, 167, 69, 0.3)'}'">
+                            ">
                                 <span style="margin-right: 8px; font-size: 1rem;">✅</span> 出席
                             </button>
                             <button class="attendance-btn absent-btn liquid-button" data-student-id="${student.id}" style="
@@ -6650,7 +6702,7 @@ async function loadTodayEvents() {
                                 -webkit-backdrop-filter: blur(10px);
                                 box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
                                 ${currentStatus === 'absent' ? 'transform: scale(1.05); box-shadow: 0 8px 25px rgba(220, 53, 69, 0.5);' : ''}
-                            " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 8px 25px rgba(220, 53, 69, 0.5)'" onmouseout="this.style.transform='${currentStatus === 'absent' ? 'scale(1.05)' : 'scale(1)'}'; this.style.boxShadow='${currentStatus === 'absent' ? '0 8px 25px rgba(220, 53, 69, 0.5)' : '0 4px 15px rgba(220, 53, 69, 0.3)'}'">
+                            ">
                                 <span style="margin-right: 8px; font-size: 1rem;">❌</span> 缺席
                             </button>
                         </div>
@@ -6682,7 +6734,7 @@ async function loadTodayEvents() {
                         統計載入中...
                     </div>
                     <div style="display: flex; gap: 10px;">
-                        <button id="refreshStudents" style="
+                        <button id="refreshStudents" class="refresh-students-btn" style="
                             background: rgba(102, 126, 234, 0.8);
                             color: white;
                             border: none;
@@ -6692,7 +6744,7 @@ async function loadTodayEvents() {
                             font-size: 0.85rem;
                             font-weight: 600;
                             transition: all 0.3s ease;
-                        " onmouseover="this.style.background='rgba(102, 126, 234, 1)'" onmouseout="this.style.background='rgba(102, 126, 234, 0.8)'">
+                        ">
                             <i class="fas fa-sync-alt" style="margin-right: 5px;"></i> 重新載入
                         </button>
                     </div>
@@ -6969,6 +7021,6 @@ async function loadTodayEvents() {
             }
         }
 
-     </script>
-  </body>
+    </script>
+</body>
   </html>
