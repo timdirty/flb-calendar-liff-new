@@ -393,9 +393,50 @@ app.post('/api/proxy/google-sheets', async (req, res) => {
             console.log('📥 Google Sheets API 回應:', data);
             
             return res.json(data);
-        } else if (action === 'updateAttendance') {
+        } else if (action === 'updateAttendance' || action === 'update') {
             // 使用學生簽到 API (dev 版本)
             apiUrl = 'https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/dev';
+            
+            // 處理單筆簽到記錄
+            if (req.body.action === 'update' && req.body.name) {
+                const singlePayload = {
+                    action: 'update',
+                    name: req.body.name,
+                    date: req.body.date,
+                    present: req.body.present,
+                    course: req.body.course,
+                    period: req.body.period
+                };
+                
+                console.log('📤 發送單筆簽到記錄:', singlePayload);
+                
+                try {
+                    const singleResponse = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Cookie': 'NID=525=nsWVvbAon67C2qpyiEHQA3SUio_GqBd7RqUFU6BwB97_4LHggZxLpDgSheJ7WN4w3Z4dCQBiFPG9YKAqZgAokFYCuuQw04dkm-FX9-XHAIBIqJf1645n3RZrg86GcUVJOf3gN-5eTHXFIaovTmgRC6cXllv82SnQuKsGMq7CHH60XDSwyC99s9P2gmyXLppI'
+                        },
+                        body: JSON.stringify(singlePayload)
+                    });
+                    
+                    if (!singleResponse.ok) {
+                        throw new Error(`單筆簽到記錄 API 請求失敗: ${singleResponse.status} ${singleResponse.statusText}`);
+                    }
+                    
+                    const singleData = await singleResponse.json();
+                    console.log('📥 單筆簽到記錄 API 回應:', singleData);
+                    
+                    return res.json(singleData);
+                    
+                } catch (error) {
+                    console.error('❌ 單筆簽到記錄失敗:', error);
+                    return res.status(500).json({
+                        success: false,
+                        error: error.message
+                    });
+                }
+            }
             
             // 處理多筆簽到記錄
             if (records && records.length > 0) {
