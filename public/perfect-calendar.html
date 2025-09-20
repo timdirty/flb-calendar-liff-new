@@ -2061,7 +2061,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 20px;
+            gap: 12px;
             font-size: 0.85rem;
             color: rgba(51, 51, 51, 0.9);
             text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
@@ -2088,7 +2088,7 @@
 
         .floating-filter-buttons {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             align-items: center;
             justify-content: center;
         }
@@ -2097,14 +2097,15 @@
             background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
             border: 1px solid rgba(255, 215, 0, 0.4);
             color: #333333;
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-size: 0.75rem;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
+            white-space: nowrap;
         }
 
         .floating-filter-btn:hover {
@@ -2329,34 +2330,39 @@
             }
             
             .attendance-student-item {
-                flex-direction: row !important;
-                align-items: center !important;
-                padding: 15px 18px !important;
-                gap: 15px !important;
-                min-height: 70px !important;
-                margin-bottom: 12px !important;
+                flex-direction: column !important;
+                align-items: stretch !important;
+                padding: 12px 15px !important;
+                gap: 10px !important;
+                min-height: auto !important;
+                margin-bottom: 10px !important;
+                width: 100% !important;
+                max-width: 100% !important;
             }
             
             .attendance-student-item .student-info {
                 display: flex !important;
                 align-items: center !important;
-                gap: 12px !important;
+                gap: 10px !important;
                 flex: 1 !important;
                 min-width: 0 !important;
+                margin-bottom: 8px !important;
             }
             
             .attendance-student-item .student-actions {
                 display: flex !important;
-                gap: 10px !important;
-                justify-content: flex-end !important;
+                gap: 8px !important;
+                justify-content: center !important;
                 flex-shrink: 0 !important;
+                width: 100% !important;
             }
             
             .attendance-btn {
                 flex: 1 !important;
-                padding: 14px 18px !important;
-                font-size: 0.9rem !important;
-                min-height: 48px !important;
+                padding: 10px 12px !important;
+                font-size: 0.8rem !important;
+                min-height: 40px !important;
+                max-width: 120px !important;
             }
             
             .attendance-stats {
@@ -2386,9 +2392,11 @@
             }
             
             .attendance-student-item {
-                padding: 12px 15px !important;
-                min-height: 65px !important;
-                margin-bottom: 10px !important;
+                padding: 10px 12px !important;
+                min-height: auto !important;
+                margin-bottom: 8px !important;
+                width: 100% !important;
+                max-width: 100% !important;
             }
             
             .attendance-student-item .student-info {
@@ -2416,10 +2424,11 @@
             }
             
             .attendance-btn {
-                padding: 10px 12px !important;
-                font-size: 0.8rem !important;
-                min-height: 40px !important;
-                min-width: 65px !important;
+                padding: 8px 10px !important;
+                font-size: 0.75rem !important;
+                min-height: 36px !important;
+                min-width: 60px !important;
+                max-width: 100px !important;
             }
             
             .attendance-stats .stats-grid {
@@ -7357,30 +7366,10 @@ async function loadTodayEvents() {
                         margin-bottom: 8px;
                         animation: cardSlideIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
                     ">
-                        <!-- 狀態標籤 - 右上角 -->
-                        <div style="
-                            position: absolute;
-                            top: 8px;
-                            right: 8px;
-                            z-index: 10;
-                            background: ${statusStyles.statusColor};
-                            color: white;
-                            padding: 4px 8px;
-                            border-radius: 12px;
-                            font-size: 0.75rem;
-                            font-weight: 600;
-                            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-                            display: flex;
-                            align-items: center;
-                            gap: 4px;
-                        ">
-                            <span style="font-size: 0.8rem;">${statusStyles.emoji}</span>
-                            <span>${statusText}</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                             <div style="
-                                width: 32px;
-                                height: 32px;
+                                width: 28px;
+                                height: 28px;
                                 border-radius: 50%;
                                 background: linear-gradient(135deg, #ffd700, #ffed4e);
                                 color: rgba(0, 0, 0, 0.8);
@@ -7388,15 +7377,31 @@ async function loadTodayEvents() {
                                 align-items: center;
                                 justify-content: center;
                                 font-weight: bold;
-                                font-size: 0.9rem;
-                                box-shadow: 0 3px 12px rgba(255, 215, 0, 0.3);
+                                font-size: 0.8rem;
+                                box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
                                 text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
                             ">
                                 ${student.name.charAt(0)}
                             </div>
-                            <div style="flex: 1; padding-right: 80px;">
-                                <div class="student-name" style="font-weight: 600; color: rgba(0, 0, 0, 0.9); font-size: 0.95rem; margin-bottom: 2px;">${student.name}</div>
-                                ${student.id ? `<div style="color: rgba(0, 0, 0, 0.6); font-size: 0.8rem;">${student.id}</div>` : ''}
+                            <div style="flex: 1;">
+                                <div class="student-name" style="font-weight: 600; color: rgba(0, 0, 0, 0.9); font-size: 0.85rem; margin-bottom: 4px;">${student.name}</div>
+                                <!-- 狀態標籤 - 名字下方 -->
+                                <div style="
+                                    background: ${statusStyles.statusColor};
+                                    color: white;
+                                    padding: 2px 6px;
+                                    border-radius: 8px;
+                                    font-size: 0.65rem;
+                                    font-weight: 600;
+                                    display: inline-flex;
+                                    align-items: center;
+                                    gap: 3px;
+                                    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+                                ">
+                                    <span style="font-size: 0.7rem;">${statusStyles.emoji}</span>
+                                    <span>${statusText}</span>
+                                </div>
+                                ${student.id ? `<div style="color: rgba(0, 0, 0, 0.6); font-size: 0.7rem; margin-top: 2px;">${student.id}</div>` : ''}
                             </div>
                         </div>
                         <div style="display: flex; gap: 8px;">
@@ -7607,12 +7612,12 @@ async function loadTodayEvents() {
                 
                 const today = new Date().toISOString().split('T')[0];
                 const attendanceRecord = {
-                    course: course,
-                    period: time,
                     action: 'update',
                     name: studentName,
                     date: today,
-                    present: status === 'present'
+                    present: status === 'present',
+                    course: course,
+                    period: time
                 };
                 
                 console.log('📤 發送簽到記錄:', attendanceRecord);
@@ -8139,6 +8144,18 @@ async function loadTodayEvents() {
                     window.loadEvents();
                 }
             }
+            
+            // 滾動到第一筆行事曆
+            setTimeout(() => {
+                const firstEvent = document.querySelector('.event-card');
+                if (firstEvent) {
+                    firstEvent.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start',
+                        inline: 'nearest'
+                    });
+                }
+            }, 500);
         }
 
     </script>
