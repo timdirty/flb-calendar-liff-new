@@ -2087,18 +2087,32 @@
                 const data = await response.json();
                 console.log('📥 代理 API 回應:', data);
                 
+                // 檢查是否有成功的記錄
+                if (data.results && data.results.length > 0) {
+                    const successResults = data.results.filter(r => r.success === true);
+                    const failedResults = data.results.filter(r => r.success === false);
+                    
+                    if (successResults.length > 0) {
+                        // 有成功的記錄，更新UI
+                        updateStudentStatus(studentId, status);
+                        updateAttendanceStats();
+                        
+                        const statusText = status === 'present' ? '出席' : '缺席';
+                        showSuccessMessage(`${studentName} 已標記為 ${statusText}！`);
+                        return;
+                    } else if (failedResults.length > 0) {
+                        // 所有記錄都失敗，顯示錯誤
+                        console.error('❌ API 返回失敗:', data);
+                        const errorMessage = failedResults[0].error || '未知錯誤';
+                        alert(`儲存失敗: ${errorMessage}\n\n請重試。`);
+                        return;
+                    }
+                }
+                
+                // 如果沒有 results 或 success 為 false
                 if (!data.success) {
                     console.error('❌ API 返回失敗:', data);
-                    
-                    // 檢查是否有詳細的錯誤訊息
-                    let errorMessage = data.error || '未知錯誤';
-                    if (data.results && data.results.length > 0) {
-                        const failedResults = data.results.filter(r => r.success === false);
-                        if (failedResults.length > 0) {
-                            errorMessage = failedResults[0].error || errorMessage;
-                        }
-                    }
-                    
+                    const errorMessage = data.error || data.message || '未知錯誤';
                     alert(`儲存失敗: ${errorMessage}\n\n請重試。`);
                     return;
                 }

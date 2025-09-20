@@ -443,11 +443,15 @@ app.post('/api/proxy/google-sheets', async (req, res) => {
                 }
                 
                 // 返回所有結果
-                const successCount = results.filter(r => r.success !== false).length;
+                const successCount = results.filter(r => r.success === true).length;
+                const failedCount = results.filter(r => r.success === false).length;
+                
                 return res.json({
                     success: successCount > 0,
                     message: `處理完成：${successCount}/${records.length} 筆記錄成功`,
-                    results: results
+                    results: results,
+                    successCount: successCount,
+                    failedCount: failedCount
                 });
             } else {
                 return res.status(400).json({
