@@ -3697,40 +3697,71 @@
             background: linear-gradient(135deg, var(--minecraft-color) 0%, #55efc4 100%);
         }
 
-        /* 直接簽到按鈕樣式 */
-        .attendance-section {
-            margin-top: 15px;
-            text-align: center;
-        }
-
-        .direct-attendance-btn {
-            background: linear-gradient(135deg, rgba(40, 167, 69, 0.8), rgba(32, 201, 151, 0.7));
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 12px 24px;
-            border-radius: 30px;
+        /* 長按簽到效果 */
+        .event-card {
             cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 700;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
             position: relative;
             overflow: hidden;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
         }
 
-        .direct-attendance-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.5);
+        .event-card:hover .long-press-hint {
+            opacity: 1 !important;
         }
 
-        .direct-attendance-btn:active {
-            transform: scale(0.95);
+        .event-card.charging {
+            animation: chargingPulse 0.5s ease-in-out infinite;
         }
 
-        .direct-attendance-btn i {
-            margin-right: 8px;
+        .event-card.charging::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(184, 134, 11, 0.3) 50%, 
+                transparent 100%);
+            animation: chargingSweep 1s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        .event-card.charging::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40px;
+            height: 40px;
+            margin: -20px 0 0 -20px;
+            border: 3px solid rgba(184, 134, 11, 0.3);
+            border-top: 3px solid #b8860b;
+            border-radius: 50%;
+            animation: chargingSpin 1s linear infinite;
+            z-index: 2;
+        }
+
+        @keyframes chargingPulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            }
+            50% { 
+                transform: scale(1.02);
+                box-shadow: 0 6px 20px rgba(184, 134, 11, 0.3);
+            }
+        }
+
+        @keyframes chargingSweep {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes chargingSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         /* 講師底色 */
@@ -6473,7 +6504,11 @@ async function loadTodayEvents() {
             const instructorStyle = instructorColors[event.instructor] ? 'custom-color' : '';
             
             return `
-                <div class="event-card ${isCancelledEvent ? 'cancelled-event' : ''} ${isSubstituteEvent ? 'substitute-event' : ''} ${isExperienceEvent ? 'experience-event' : ''} ${isUpcomingEventFlag ? 'upcoming-event' : ''}">
+                <div class="event-card ${isCancelledEvent ? 'cancelled-event' : ''} ${isSubstituteEvent ? 'substitute-event' : ''} ${isExperienceEvent ? 'experience-event' : ''} ${isUpcomingEventFlag ? 'upcoming-event' : ''}"
+                     data-event-title="${event.title.replace(/'/g, "\\'")}"
+                     data-event-instructor="${event.instructor.replace(/'/g, "\\'")}"
+                     data-event-start="${event.start}"
+                     data-event-end="${event.end}">
                     <div class="event-header">
                         <div>
                             <div class="event-title">
@@ -6525,16 +6560,16 @@ async function loadTodayEvents() {
                     
                     ${lessonButton}
                     
-                    <!-- 直接簽到按鈕 -->
-                    <div class="attendance-section">
-                        <button class="direct-attendance-btn liquid-button" 
-                                data-event-title="${event.title.replace(/'/g, "\\'")}"
-                                data-event-instructor="${event.instructor.replace(/'/g, "\\'")}"
-                                data-event-start="${event.start}"
-                                data-event-end="${event.end}"
-                                title="直接進行課程簽到">
-                            <i class="fas fa-calendar-check"></i> 直接簽到
-                        </button>
+                    <!-- 長按提示 -->
+                    <div class="long-press-hint" style="
+                        text-align: center; 
+                        margin-top: 10px; 
+                        font-size: 0.75rem; 
+                        color: rgba(51, 51, 51, 0.6);
+                        opacity: 0;
+                        transition: opacity 0.3s ease;
+                    ">
+                        <i class="fas fa-hand-pointer"></i> 長按此方塊進行簽到
                     </div>
                 </div>
             `;
@@ -6734,14 +6769,119 @@ async function loadTodayEvents() {
             }
         });
 
-        // 直接簽到按鈕事件監聽器（使用事件委派）
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('direct-attendance-btn')) {
-                const title = e.target.dataset.eventTitle;
-                const instructor = e.target.dataset.eventInstructor;
-                const start = e.target.dataset.eventStart;
-                const end = e.target.dataset.eventEnd;
-                handleDirectAttendance(title, instructor, start, end);
+        // 長按簽到事件監聽器
+        let longPressTimer = null;
+        let isCharging = false;
+        let chargingStartTime = 0;
+
+        document.addEventListener('mousedown', function(e) {
+            const eventCard = e.target.closest('.event-card');
+            if (eventCard && !eventCard.classList.contains('charging')) {
+                const title = eventCard.dataset.eventTitle;
+                const instructor = eventCard.dataset.eventInstructor;
+                const start = eventCard.dataset.eventStart;
+                const end = eventCard.dataset.eventEnd;
+                
+                if (title && instructor && start && end) {
+                    // 開始長按計時
+                    chargingStartTime = Date.now();
+                    isCharging = true;
+                    
+                    // 1秒後開始集氣充能效果
+                    longPressTimer = setTimeout(() => {
+                        if (isCharging) {
+                            eventCard.classList.add('charging');
+                            console.log('🔋 開始集氣充能...');
+                            
+                            // 1秒後開始載入學生資料
+                            setTimeout(() => {
+                                if (isCharging) {
+                                    console.log('📚 開始載入學生資料...');
+                                    // 這裡可以預先載入一些資料
+                                }
+                            }, 1000);
+                            
+                            // 2秒後跳出載入畫面
+                            setTimeout(() => {
+                                if (isCharging) {
+                                    console.log('🚀 跳出載入畫面');
+                                    eventCard.classList.remove('charging');
+                                    handleDirectAttendance(title, instructor, start, end);
+                                }
+                            }, 2000);
+                        }
+                    }, 1000);
+                }
+            }
+        });
+
+        document.addEventListener('mouseup', function(e) {
+            const eventCard = e.target.closest('.event-card');
+            if (eventCard && longPressTimer) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+                isCharging = false;
+                eventCard.classList.remove('charging');
+                console.log('❌ 長按中斷');
+            }
+        });
+
+        document.addEventListener('mouseleave', function(e) {
+            const eventCard = e.target.closest('.event-card');
+            if (eventCard && longPressTimer) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+                isCharging = false;
+                eventCard.classList.remove('charging');
+                console.log('❌ 長按中斷（滑鼠離開）');
+            }
+        });
+
+        // 觸控設備支援
+        document.addEventListener('touchstart', function(e) {
+            const eventCard = e.target.closest('.event-card');
+            if (eventCard && !eventCard.classList.contains('charging')) {
+                const title = eventCard.dataset.eventTitle;
+                const instructor = eventCard.dataset.eventInstructor;
+                const start = eventCard.dataset.eventStart;
+                const end = eventCard.dataset.eventEnd;
+                
+                if (title && instructor && start && end) {
+                    chargingStartTime = Date.now();
+                    isCharging = true;
+                    
+                    longPressTimer = setTimeout(() => {
+                        if (isCharging) {
+                            eventCard.classList.add('charging');
+                            console.log('🔋 開始集氣充能...');
+                            
+                            setTimeout(() => {
+                                if (isCharging) {
+                                    console.log('📚 開始載入學生資料...');
+                                }
+                            }, 1000);
+                            
+                            setTimeout(() => {
+                                if (isCharging) {
+                                    console.log('🚀 跳出載入畫面');
+                                    eventCard.classList.remove('charging');
+                                    handleDirectAttendance(title, instructor, start, end);
+                                }
+                            }, 2000);
+                        }
+                    }, 1000);
+                }
+            }
+        });
+
+        document.addEventListener('touchend', function(e) {
+            const eventCard = e.target.closest('.event-card');
+            if (eventCard && longPressTimer) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+                isCharging = false;
+                eventCard.classList.remove('charging');
+                console.log('❌ 長按中斷（觸控結束）');
             }
         });
 
