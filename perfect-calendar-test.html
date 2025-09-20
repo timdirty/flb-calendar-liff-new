@@ -1016,16 +1016,36 @@
                     return;
                 }
 
-                // 獲取今日事件
+                // 獲取可用講師列表並進行模糊比對
+                const availableInstructors = await getAvailableInstructors();
+                const matchedInstructor = findMatchingInstructor(selectedInstructor, availableInstructors);
+                
+                if (!matchedInstructor) {
+                    const errorMsg = `講師 "${selectedInstructor}" 不存在。可用的講師：${availableInstructors.join(', ')}`;
+                    console.error('❌', errorMsg);
+                    alert(errorMsg);
+                    return;
+                }
+
+                // 如果找到匹配的講師，使用匹配的名稱
+                const finalInstructor = matchedInstructor !== selectedInstructor ? matchedInstructor : selectedInstructor;
+                if (matchedInstructor !== selectedInstructor) {
+                    console.log(`🔄 講師名稱已修正: "${selectedInstructor}" → "${matchedInstructor}"`);
+                }
+
+                // 獲取今日事件（使用模糊比對）
                 const todayEvents = allEvents.filter(event => {
                     const eventDate = new Date(event.start);
                     const today = new Date();
-                    return eventDate.toDateString() === today.toDateString() && 
-                           event.instructor === selectedInstructor;
+                    const isToday = eventDate.toDateString() === today.toDateString();
+                    
+                    // 使用模糊比對來匹配講師
+                    const eventInstructorMatch = findMatchingInstructor(event.instructor, [finalInstructor]);
+                    return isToday && eventInstructorMatch === finalInstructor;
                 });
 
                 if (todayEvents.length === 0) {
-                    alert('今日沒有該講師的課程');
+                    alert(`今日沒有 ${finalInstructor} 的課程`);
                     return;
                 }
 
@@ -1136,10 +1156,28 @@
         async function selectCourseForAttendance(title, start, end) {
             try {
                 const selectedInstructor = document.getElementById('instructorSelect').value;
+                
+                // 獲取可用講師列表並進行模糊比對
+                const availableInstructors = await getAvailableInstructors();
+                const matchedInstructor = findMatchingInstructor(selectedInstructor, availableInstructors);
+                
+                if (!matchedInstructor) {
+                    const errorMsg = `講師 "${selectedInstructor}" 不存在。可用的講師：${availableInstructors.join(', ')}`;
+                    console.error('❌', errorMsg);
+                    alert(errorMsg);
+                    return;
+                }
+
+                // 使用匹配的講師名稱
+                const finalInstructor = matchedInstructor !== selectedInstructor ? matchedInstructor : selectedInstructor;
+                if (matchedInstructor !== selectedInstructor) {
+                    console.log(`🔄 講師名稱已修正: "${selectedInstructor}" → "${matchedInstructor}"`);
+                }
+                
                 const timeString = `${new Date(start).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${new Date(end).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
                 
                 // 構建簽到系統URL
-                const attendanceUrl = `https://liff.line.me/1657746214-wPgd2qQn?step=3&teacher=${encodeURIComponent(selectedInstructor)}&course=${encodeURIComponent(title)}&time=${encodeURIComponent(timeString)}`;
+                const attendanceUrl = `https://liff.line.me/1657746214-wPgd2qQn?step=3&teacher=${encodeURIComponent(finalInstructor)}&course=${encodeURIComponent(title)}&time=${encodeURIComponent(timeString)}`;
                 
                 // 開啟簽到系統
                 if (typeof liff !== 'undefined' && liff.isInClient()) {
@@ -1154,7 +1192,7 @@
                 // 關閉對話框
                 closeCourseDialog();
                 
-                console.log('✅ 開啟課程簽到:', { selectedInstructor, title, timeString });
+                console.log('✅ 開啟課程簽到:', { finalInstructor, title, timeString });
             } catch (error) {
                 console.error('❌ 選擇課程簽到失敗:', error);
                 alert('選擇課程簽到失敗: ' + error.message);
@@ -1178,8 +1216,25 @@
                     return;
                 }
 
+                // 獲取可用講師列表並進行模糊比對
+                const availableInstructors = await getAvailableInstructors();
+                const matchedInstructor = findMatchingInstructor(selectedInstructor, availableInstructors);
+                
+                if (!matchedInstructor) {
+                    const errorMsg = `講師 "${selectedInstructor}" 不存在。可用的講師：${availableInstructors.join(', ')}`;
+                    console.error('❌', errorMsg);
+                    alert(errorMsg);
+                    return;
+                }
+
+                // 使用匹配的講師名稱
+                const finalInstructor = matchedInstructor !== selectedInstructor ? matchedInstructor : selectedInstructor;
+                if (matchedInstructor !== selectedInstructor) {
+                    console.log(`🔄 講師名稱已修正: "${selectedInstructor}" → "${matchedInstructor}"`);
+                }
+
                 // 構建報表查詢URL
-                const reportUrl = `https://liff.line.me/1657746214-wPgd2qQn?step=report&teacher=${encodeURIComponent(selectedInstructor)}`;
+                const reportUrl = `https://liff.line.me/1657746214-wPgd2qQn?step=report&teacher=${encodeURIComponent(finalInstructor)}`;
                 
                 // 開啟報表查詢
                 if (typeof liff !== 'undefined' && liff.isInClient()) {
@@ -1191,17 +1246,131 @@
                     window.open(reportUrl, '_blank', 'noopener,noreferrer');
                 }
 
-                console.log('✅ 開啟簽到報表:', selectedInstructor);
+                console.log('✅ 開啟簽到報表:', finalInstructor);
             } catch (error) {
                 console.error('❌ 開啟簽到報表失敗:', error);
                 alert('開啟簽到報表失敗: ' + error.message);
             }
         }
 
+        // 模糊比對講師名稱
+        function findMatchingInstructor(targetInstructor, availableInstructors) {
+            if (!targetInstructor || !availableInstructors || availableInstructors.length === 0) {
+                return null;
+            }
+
+            const target = targetInstructor.trim().toLowerCase();
+            
+            // 1. 完全匹配（不區分大小寫）
+            let exactMatch = availableInstructors.find(instructor => 
+                instructor.toLowerCase() === target
+            );
+            if (exactMatch) {
+                console.log(`✅ 完全匹配找到講師: ${exactMatch}`);
+                return exactMatch;
+            }
+
+            // 2. 包含匹配
+            let containsMatch = availableInstructors.find(instructor => 
+                instructor.toLowerCase().includes(target) || target.includes(instructor.toLowerCase())
+            );
+            if (containsMatch) {
+                console.log(`✅ 包含匹配找到講師: ${containsMatch}`);
+                return containsMatch;
+            }
+
+            // 3. 模糊匹配（使用 Levenshtein 距離）
+            let bestMatch = null;
+            let bestScore = Infinity;
+            const threshold = 3; // 最大編輯距離
+
+            for (const instructor of availableInstructors) {
+                const distance = levenshteinDistance(target, instructor.toLowerCase());
+                if (distance <= threshold && distance < bestScore) {
+                    bestScore = distance;
+                    bestMatch = instructor;
+                }
+            }
+
+            if (bestMatch) {
+                console.log(`✅ 模糊匹配找到講師: ${bestMatch} (距離: ${bestScore})`);
+                return bestMatch;
+            }
+
+            console.log(`❌ 找不到匹配的講師: ${targetInstructor}`);
+            return null;
+        }
+
+        // Levenshtein 距離算法
+        function levenshteinDistance(str1, str2) {
+            const matrix = [];
+            const len1 = str1.length;
+            const len2 = str2.length;
+
+            for (let i = 0; i <= len2; i++) {
+                matrix[i] = [i];
+            }
+
+            for (let j = 0; j <= len1; j++) {
+                matrix[0][j] = j;
+            }
+
+            for (let i = 1; i <= len2; i++) {
+                for (let j = 1; j <= len1; j++) {
+                    if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+
+            return matrix[len2][len1];
+        }
+
+        // 獲取可用講師列表
+        async function getAvailableInstructors() {
+            try {
+                const response = await fetch('/api/teachers');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.teachers) {
+                        return data.teachers.map(teacher => teacher.name);
+                    }
+                }
+            } catch (error) {
+                console.warn('無法獲取講師列表，使用預設列表:', error);
+            }
+            
+            // 返回預設講師列表
+            return ['Yoki', 'Tim', 'Ted', 'Agnes', 'Hansen', 'James', 'Ivan', 'Xian', 'Eason', 'Bella', 'Gillian', 'Daniel', 'Philp', 'Tony', 'Jacky', 'Weinie', 'test', 'Dirty', 'Melody'];
+        }
+
         // 處理直接簽到
         async function handleDirectAttendance(title, instructor, start, end) {
             try {
                 console.log('🎯 處理直接簽到:', { title, instructor, start, end });
+                
+                // 獲取可用講師列表並進行模糊比對
+                const availableInstructors = await getAvailableInstructors();
+                const matchedInstructor = findMatchingInstructor(instructor, availableInstructors);
+                
+                if (!matchedInstructor) {
+                    const errorMsg = `講師 "${instructor}" 不存在。可用的講師：${availableInstructors.join(', ')}`;
+                    console.error('❌', errorMsg);
+                    alert(errorMsg);
+                    return;
+                }
+
+                // 如果找到匹配的講師，使用匹配的名稱
+                if (matchedInstructor !== instructor) {
+                    console.log(`🔄 講師名稱已修正: "${instructor}" → "${matchedInstructor}"`);
+                    instructor = matchedInstructor;
+                }
                 
                 const timeString = `${new Date(start).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${new Date(end).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
                 

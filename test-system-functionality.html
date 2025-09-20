@@ -176,6 +176,10 @@
                 <span class="test-name">CalDAV 資料格式</span>
                 <span class="test-status status-pending" id="caldav-format-status">測試中...</span>
             </div>
+            <div class="test-item">
+                <span class="test-name">模糊比對功能</span>
+                <span class="test-status status-pending" id="fuzzy-matching-status">測試中...</span>
+            </div>
         </div>
 
         <div style="text-align: center; margin: 30px 0;">
@@ -197,7 +201,8 @@
             cspCompliant: false,
             directAttendance: false,
             liffConnection: false,
-            caldavFormat: false
+            caldavFormat: false,
+            fuzzyMatching: false
         };
 
         function log(message, type = 'info') {
@@ -418,6 +423,116 @@
             }
         }
 
+        // 測試模糊比對功能
+        function testFuzzyMatching() {
+            try {
+                log('測試模糊比對功能...', 'info');
+                
+                // 模擬模糊比對函數
+                function levenshteinDistance(str1, str2) {
+                    const matrix = [];
+                    const len1 = str1.length;
+                    const len2 = str2.length;
+
+                    for (let i = 0; i <= len2; i++) {
+                        matrix[i] = [i];
+                    }
+
+                    for (let j = 0; j <= len1; j++) {
+                        matrix[0][j] = j;
+                    }
+
+                    for (let i = 1; i <= len2; i++) {
+                        for (let j = 1; j <= len1; j++) {
+                            if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                                matrix[i][j] = matrix[i - 1][j - 1];
+                            } else {
+                                matrix[i][j] = Math.min(
+                                    matrix[i - 1][j - 1] + 1,
+                                    matrix[i][j - 1] + 1,
+                                    matrix[i - 1][j] + 1
+                                );
+                            }
+                        }
+                    }
+
+                    return matrix[len2][len1];
+                }
+
+                function findMatchingInstructor(targetInstructor, availableInstructors) {
+                    if (!targetInstructor || !availableInstructors || availableInstructors.length === 0) {
+                        return null;
+                    }
+
+                    const target = targetInstructor.trim().toLowerCase();
+                    
+                    // 1. 完全匹配（不區分大小寫）
+                    let exactMatch = availableInstructors.find(instructor => 
+                        instructor.toLowerCase() === target
+                    );
+                    if (exactMatch) return exactMatch;
+
+                    // 2. 包含匹配
+                    let containsMatch = availableInstructors.find(instructor => 
+                        instructor.toLowerCase().includes(target) || target.includes(instructor.toLowerCase())
+                    );
+                    if (containsMatch) return containsMatch;
+
+                    // 3. 模糊匹配（使用 Levenshtein 距離）
+                    let bestMatch = null;
+                    let bestScore = Infinity;
+                    const threshold = 3;
+
+                    for (const instructor of availableInstructors) {
+                        const distance = levenshteinDistance(target, instructor.toLowerCase());
+                        if (distance <= threshold && distance < bestScore) {
+                            bestScore = distance;
+                            bestMatch = instructor;
+                        }
+                    }
+
+                    return bestMatch;
+                }
+
+                // 測試案例
+                const availableInstructors = ['Yoki', 'Tim', 'Ted', 'Agnes', 'Hansen', 'James', 'Ivan', 'Xian', 'Eason', 'Bella', 'Gillian', 'Daniel', 'Philp', 'Tony', 'Jacky', 'Weinie', 'test', 'Dirty', 'Melody'];
+                
+                const testCases = [
+                    { input: 'TED', expected: 'Ted' },
+                    { input: 'ted', expected: 'Ted' },
+                    { input: 'BELLA', expected: 'Bella' },
+                    { input: 'bella', expected: 'Bella' },
+                    { input: 'AGNES', expected: 'Agnes' },
+                    { input: 'agnes', expected: 'Agnes' },
+                    { input: 'Tim', expected: 'Tim' },
+                    { input: 'tim', expected: 'Tim' }
+                ];
+
+                let passedTests = 0;
+                for (const testCase of testCases) {
+                    const result = findMatchingInstructor(testCase.input, availableInstructors);
+                    if (result === testCase.expected) {
+                        passedTests++;
+                        log(`✅ 模糊比對測試通過: "${testCase.input}" → "${result}"`, 'success');
+                    } else {
+                        log(`❌ 模糊比對測試失敗: "${testCase.input}" → "${result}" (期望: "${testCase.expected}")`, 'error');
+                    }
+                }
+
+                if (passedTests === testCases.length) {
+                    testResults.fuzzyMatching = true;
+                    updateStatus('fuzzy-matching-status', 'success', '✅ 通過');
+                    log('模糊比對功能測試通過', 'success');
+                } else {
+                    throw new Error(`${passedTests}/${testCases.length} 個測試案例通過`);
+                }
+            } catch (error) {
+                testResults.fuzzyMatching = false;
+                updateStatus('fuzzy-matching-status', 'error', `❌ 失敗: ${error.message}`);
+                log(`模糊比對功能測試失敗: ${error.message}`, 'error');
+            }
+        }
+
         async function runAllTests() {
             log('🚀 開始執行所有測試...', 'info');
             
@@ -428,6 +543,7 @@
             testDirectAttendance();
             await testLiffConnection();
             testCalDAVFormat();
+            testFuzzyMatching();
 
             // 計算測試結果
             const totalTests = Object.keys(testResults).length;
