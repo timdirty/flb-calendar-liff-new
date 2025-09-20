@@ -7187,14 +7187,32 @@ async function loadTodayEvents() {
                             </div>
                             <div style="flex: 1;">
                                 <div class="student-name" style="font-weight: 600; color: rgba(0, 0, 0, 0.9); font-size: 0.95rem; margin-bottom: 2px;">${student.name}</div>
-                                ${student.id ? `<div style="color: rgba(0, 0, 0, 0.6); font-size: 0.8rem;">${student.id}</div>` : ''}
+                                ${student.id ? `<div style="color: rgba(0, 0, 0, 0.6); font-size: 0.8rem; margin-bottom: 4px;">${student.id}</div>` : ''}
+                                <div style="
+                                    font-size: 0.8rem;
+                                    color: ${statusStyles.statusColor};
+                                    font-weight: 600;
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 4px;
+                                    padding: 2px 8px;
+                                    background: ${statusStyles.background};
+                                    border-radius: 12px;
+                                    border: 1px solid ${statusStyles.border};
+                                    width: fit-content;
+                                ">
+                                    <span style="font-size: 0.9rem;">${statusStyles.emoji}</span>
+                                    <span>${statusText}</span>
+                                </div>
                             </div>
                         </div>
                         <div style="display: flex; gap: 8px;">
                             <button class="attendance-btn present-btn liquid-button" data-student-id="${student.id}" style="
-                                background: linear-gradient(135deg, rgba(40, 167, 69, 0.9), rgba(32, 201, 151, 0.8));
+                                background: ${currentStatus === 'present' 
+                                    ? 'linear-gradient(135deg, rgba(40, 167, 69, 1), rgba(32, 201, 151, 0.9))' 
+                                    : 'linear-gradient(135deg, rgba(40, 167, 69, 0.6), rgba(32, 201, 151, 0.5))'};
                                 color: white;
-                                border: 1px solid rgba(255, 255, 255, 0.4);
+                                border: 1px solid ${currentStatus === 'present' ? 'rgba(40, 167, 69, 0.8)' : 'rgba(255, 255, 255, 0.4)'};
                                 padding: 8px 16px;
                                 border-radius: 20px;
                                 cursor: pointer;
@@ -7206,15 +7224,19 @@ async function loadTodayEvents() {
                                 overflow: hidden;
                                 backdrop-filter: blur(15px);
                                 -webkit-backdrop-filter: blur(15px);
-                                box-shadow: 0 3px 12px rgba(40, 167, 69, 0.3);
-                                ${currentStatus === 'present' ? 'transform: scale(1.05); box-shadow: 0 6px 20px rgba(40, 167, 69, 0.5);' : ''}
+                                box-shadow: ${currentStatus === 'present' 
+                                    ? '0 6px 20px rgba(40, 167, 69, 0.5)' 
+                                    : '0 3px 12px rgba(40, 167, 69, 0.3)'};
+                                transform: ${currentStatus === 'present' ? 'scale(1.05)' : 'scale(1)'};
                             ">
                                 <span style="margin-right: 6px; font-size: 0.9rem;">✅</span> 出席
                             </button>
                             <button class="attendance-btn absent-btn liquid-button" data-student-id="${student.id}" style="
-                                background: linear-gradient(135deg, rgba(220, 53, 69, 0.9), rgba(231, 76, 60, 0.8));
+                                background: ${currentStatus === 'absent' 
+                                    ? 'linear-gradient(135deg, rgba(220, 53, 69, 1), rgba(231, 76, 60, 0.9))' 
+                                    : 'linear-gradient(135deg, rgba(220, 53, 69, 0.6), rgba(231, 76, 60, 0.5))'};
                                 color: white;
-                                border: 1px solid rgba(255, 255, 255, 0.4);
+                                border: 1px solid ${currentStatus === 'absent' ? 'rgba(220, 53, 69, 0.8)' : 'rgba(255, 255, 255, 0.4)'};
                                 padding: 8px 16px;
                                 border-radius: 20px;
                                 cursor: pointer;
@@ -7226,8 +7248,10 @@ async function loadTodayEvents() {
                                 overflow: hidden;
                                 backdrop-filter: blur(15px);
                                 -webkit-backdrop-filter: blur(15px);
-                                box-shadow: 0 3px 12px rgba(220, 53, 69, 0.3);
-                                ${currentStatus === 'absent' ? 'transform: scale(1.05); box-shadow: 0 6px 20px rgba(220, 53, 69, 0.5);' : ''}
+                                box-shadow: ${currentStatus === 'absent' 
+                                    ? '0 6px 20px rgba(220, 53, 69, 0.5)' 
+                                    : '0 3px 12px rgba(220, 53, 69, 0.3)'};
+                                transform: ${currentStatus === 'absent' ? 'scale(1.05)' : 'scale(1)'};
                             ">
                                 <span style="margin-right: 6px; font-size: 0.9rem;">❌</span> 缺席
                             </button>
