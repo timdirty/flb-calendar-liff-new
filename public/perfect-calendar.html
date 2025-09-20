@@ -6365,8 +6365,16 @@ async function loadTodayEvents() {
                 `;
                 
                 modal.innerHTML = `
-                    <div class="glassmorphism" style="
-                        background: rgba(255, 255, 255, 0.9);
+                    <div class="attendance-modal-content" style="
+                        background: 
+                            radial-gradient(circle at 20% 80%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+                            radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.08) 0%, transparent 50%),
+                            linear-gradient(135deg, 
+                                rgba(0, 0, 0, 0.95) 0%, 
+                                rgba(15, 15, 15, 0.92) 25%,
+                                rgba(25, 25, 25, 0.9) 50%,
+                                rgba(15, 15, 15, 0.92) 75%,
+                                rgba(0, 0, 0, 0.95) 100%);
                         backdrop-filter: blur(20px);
                         -webkit-backdrop-filter: blur(20px);
                         border-radius: 25px;
@@ -6375,20 +6383,25 @@ async function loadTodayEvents() {
                         max-height: 90%;
                         width: 800px;
                         overflow-y: auto;
-                        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-                        animation: slideInUp 0.3s ease-out;
-                        border: 1px solid rgba(255, 255, 255, 0.3);
+                        box-shadow: 
+                            0 20px 60px rgba(0, 0, 0, 0.4),
+                            0 0 0 1px rgba(255, 215, 0, 0.2),
+                            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                        animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+                        border: 1px solid rgba(255, 215, 0, 0.3);
+                        position: relative;
+                        overflow: hidden;
                     ">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                            <h2 style="margin: 0; color: #333; font-size: 1.5rem;">
-                                <i class="fas fa-calendar-check" style="color: #667eea; margin-right: 10px;"></i>
+                            <h2 style="margin: 0; color: rgba(255, 255, 255, 0.95); font-size: 1.5rem; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);">
+                                <i class="fas fa-calendar-check" style="color: #ffd700; margin-right: 10px; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);"></i>
                                 課程簽到系統
                             </h2>
                             <button id="closeAttendanceModal" class="close-attendance-modal" style="
-                                background: none;
-                                border: none;
+                                background: rgba(255, 255, 255, 0.1);
+                                border: 1px solid rgba(255, 215, 0, 0.3);
                                 font-size: 1.5rem;
-                                color: #666;
+                                color: rgba(255, 255, 255, 0.8);
                                 cursor: pointer;
                                 padding: 5px;
                                 border-radius: 50%;
@@ -6398,31 +6411,47 @@ async function loadTodayEvents() {
                                 align-items: center;
                                 justify-content: center;
                                 transition: all 0.3s ease;
+                                backdrop-filter: blur(10px);
+                                -webkit-backdrop-filter: blur(10px);
                             ">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
                         
-                        <div style="margin-bottom: 20px; padding: 15px; background: rgba(102, 126, 234, 0.1); border-radius: 10px; border-left: 4px solid #667eea;">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9rem;">
-                                <div><strong>講師:</strong> ${teacher}</div>
-                                <div><strong>課程:</strong> ${course}</div>
-                                <div><strong>時間:</strong> ${time}</div>
-                                <div><strong>日期:</strong> ${new Date(start).toLocaleDateString('zh-TW')}</div>
+                        <div style="
+                            margin-bottom: 20px; 
+                            padding: 20px; 
+                            background: 
+                                radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.05) 0%, transparent 70%),
+                                linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+                            border-radius: 15px; 
+                            border: 1px solid rgba(255, 215, 0, 0.3);
+                            backdrop-filter: blur(10px);
+                            -webkit-backdrop-filter: blur(10px);
+                            box-shadow: 
+                                0 8px 32px rgba(0, 0, 0, 0.2),
+                                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                        ">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.9rem;">
+                                <div style="color: rgba(255, 255, 255, 0.9);"><strong style="color: #ffd700;">講師:</strong> ${teacher}</div>
+                                <div style="color: rgba(255, 255, 255, 0.9);"><strong style="color: #ffd700;">課程:</strong> ${course}</div>
+                                <div style="color: rgba(255, 255, 255, 0.9);"><strong style="color: #ffd700;">時間:</strong> ${time}</div>
+                                <div style="color: rgba(255, 255, 255, 0.9);"><strong style="color: #ffd700;">日期:</strong> ${new Date(start).toLocaleDateString('zh-TW')}</div>
                             </div>
                         </div>
                         
                         <div id="attendanceContent">
-                            <div style="text-align: center; padding: 60px 40px; color: #666;">
+                            <div style="text-align: center; padding: 60px 40px; color: rgba(255, 255, 255, 0.8);">
                                 <div style="
                                     width: 60px;
                                     height: 60px;
-                                    border: 4px solid #f3f3f3;
-                                    border-top: 4px solid #667eea;
+                                    border: 4px solid rgba(255, 215, 0, 0.2);
+                                    border-top: 4px solid #ffd700;
                                     border-radius: 50%;
                                     animation: spin 1s linear infinite;
                                     margin: 0 auto 20px;
                                     position: relative;
+                                    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
                                 ">
                                     <div style="
                                         position: absolute;
@@ -6431,23 +6460,25 @@ async function loadTodayEvents() {
                                         transform: translate(-50%, -50%);
                                         width: 30px;
                                         height: 30px;
-                                        background: linear-gradient(45deg, #667eea, #764ba2);
+                                        background: linear-gradient(45deg, #ffd700, #ffed4e);
                                         border-radius: 50%;
                                         animation: pulse 1.5s ease-in-out infinite;
+                                        box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
                                     "></div>
                                 </div>
-                                <h3 style="margin: 0; color: #333; animation: fadeIn 0.6s ease-out;">
-                                    <i class="fas fa-users" style="margin-right: 8px; color: #667eea;"></i>
+                                <h3 style="margin: 0; color: rgba(255, 255, 255, 0.95); animation: fadeIn 0.6s ease-out; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);">
+                                    <i class="fas fa-users" style="margin-right: 8px; color: #ffd700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);"></i>
                                     載入學生名單中...
                                 </h3>
                                 <div style="
                                     width: 200px;
                                     height: 4px;
-                                    background: linear-gradient(90deg, #667eea, #764ba2);
+                                    background: linear-gradient(90deg, rgba(255, 215, 0, 0.3), rgba(255, 215, 0, 0.1));
                                     margin: 20px auto 0;
                                     border-radius: 2px;
                                     position: relative;
                                     overflow: hidden;
+                                    box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
                                 ">
                                     <div style="
                                         position: absolute;
@@ -6455,7 +6486,7 @@ async function loadTodayEvents() {
                                         left: -100%;
                                         width: 100%;
                                         height: 100%;
-                                        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+                                        background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.8), transparent);
                                         animation: shimmer 2s infinite;
                                     "></div>
                                 </div>
@@ -6513,29 +6544,87 @@ async function loadTodayEvents() {
                 if (data.success && data.students) {
                     displayStudents(data.students, teacher, course, time, start, end);
                 } else {
-                    // 使用模擬資料
-                    console.warn('⚠️ 使用模擬學生資料');
-                    const mockStudents = [
-                        { id: 'S001', name: '張小明', attendance: [] },
-                        { id: 'S002', name: '李小花', attendance: [] },
-                        { id: 'S003', name: '王大華', attendance: [] },
-                        { id: 'S004', name: '陳小美', attendance: [] },
-                        { id: 'S005', name: '林志明', attendance: [] }
-                    ];
-                    displayStudents(mockStudents, teacher, course, time, start, end);
+                    // 顯示錯誤訊息，不使用模擬資料
+                    console.error('❌ 無法載入學生資料:', data);
+                    const attendanceContent = document.getElementById('attendanceContent');
+                    if (attendanceContent) {
+                        attendanceContent.innerHTML = `
+                            <div style="text-align: center; padding: 60px 40px; color: rgba(255, 255, 255, 0.8);">
+                                <div style="
+                                    width: 60px;
+                                    height: 60px;
+                                    border: 4px solid rgba(220, 53, 69, 0.3);
+                                    border-top: 4px solid #dc3545;
+                                    border-radius: 50%;
+                                    animation: spin 1s linear infinite;
+                                    margin: 0 auto 20px;
+                                    box-shadow: 0 0 20px rgba(220, 53, 69, 0.3);
+                                "></div>
+                                <h3 style="margin: 0; color: rgba(255, 255, 255, 0.95); text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);">
+                                    <i class="fas fa-exclamation-triangle" style="color: #dc3545; margin-right: 8px;"></i>
+                                    無法載入學生資料
+                                </h3>
+                                <p style="margin: 10px 0; color: rgba(255, 255, 255, 0.7);">
+                                    請檢查課程名稱和時間是否正確，或稍後再試
+                                </p>
+                                <button onclick="location.reload()" style="
+                                    background: linear-gradient(135deg, rgba(255, 215, 0, 0.8), rgba(255, 215, 0, 0.6));
+                                    color: rgba(0, 0, 0, 0.8);
+                                    border: 1px solid rgba(255, 215, 0, 0.5);
+                                    padding: 10px 20px;
+                                    border-radius: 20px;
+                                    cursor: pointer;
+                                    font-weight: 600;
+                                    margin-top: 15px;
+                                    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+                                ">
+                                    <i class="fas fa-redo" style="margin-right: 5px;"></i> 重新載入
+                                </button>
+                            </div>
+                        `;
+                    }
                 }
                 
             } catch (error) {
                 console.error('❌ 載入學生失敗:', error);
-                // 使用模擬資料
-                const mockStudents = [
-                    { id: 'S001', name: '張小明', attendance: [] },
-                    { id: 'S002', name: '李小花', attendance: [] },
-                    { id: 'S003', name: '王大華', attendance: [] },
-                    { id: 'S004', name: '陳小美', attendance: [] },
-                    { id: 'S005', name: '林志明', attendance: [] }
-                ];
-                displayStudents(mockStudents, teacher, course, time, start, end);
+                // 顯示錯誤訊息，不使用模擬資料
+                const attendanceContent = document.getElementById('attendanceContent');
+                if (attendanceContent) {
+                    attendanceContent.innerHTML = `
+                        <div style="text-align: center; padding: 60px 40px; color: rgba(255, 255, 255, 0.8);">
+                            <div style="
+                                width: 60px;
+                                height: 60px;
+                                border: 4px solid rgba(220, 53, 69, 0.3);
+                                border-top: 4px solid #dc3545;
+                                border-radius: 50%;
+                                animation: spin 1s linear infinite;
+                                margin: 0 auto 20px;
+                                box-shadow: 0 0 20px rgba(220, 53, 69, 0.3);
+                            "></div>
+                            <h3 style="margin: 0; color: rgba(255, 255, 255, 0.95); text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);">
+                                <i class="fas fa-exclamation-triangle" style="color: #dc3545; margin-right: 8px;"></i>
+                                載入學生資料時發生錯誤
+                            </h3>
+                            <p style="margin: 10px 0; color: rgba(255, 255, 255, 0.7);">
+                                錯誤訊息: ${error.message}
+                            </p>
+                            <button onclick="location.reload()" style="
+                                background: linear-gradient(135deg, rgba(255, 215, 0, 0.8), rgba(255, 215, 0, 0.6));
+                                color: rgba(0, 0, 0, 0.8);
+                                border: 1px solid rgba(255, 215, 0, 0.5);
+                                padding: 10px 20px;
+                                border-radius: 20px;
+                                cursor: pointer;
+                                font-weight: 600;
+                                margin-top: 15px;
+                                box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+                            ">
+                                <i class="fas fa-redo" style="margin-right: 5px;"></i> 重新載入
+                            </button>
+                        </div>
+                    `;
+                }
             }
         }
 
@@ -6616,40 +6705,50 @@ async function loadTodayEvents() {
                 }
                 
                 return `
-                    <div class="student-item glassmorphism ${currentStatus ? currentStatus : ''}" data-student-id="${student.id}" style="
+                    <div class="student-item attendance-student-item ${currentStatus ? currentStatus : ''}" data-student-id="${student.id}" style="
                         display: flex;
                         justify-content: space-between;
                         align-items: center;
                         padding: 20px;
                         border: 2px solid ${statusStyles.border};
                         border-radius: 20px;
-                        background: ${statusStyles.background};
+                        background: 
+                            radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.05) 0%, transparent 70%),
+                            linear-gradient(135deg, 
+                                rgba(0, 0, 0, 0.8) 0%, 
+                                rgba(15, 15, 15, 0.75) 50%,
+                                rgba(0, 0, 0, 0.8) 100%);
                         backdrop-filter: blur(20px);
                         -webkit-backdrop-filter: blur(20px);
                         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
                         animation: fadeIn 0.6s ease-out;
                         position: relative;
                         overflow: hidden;
-                        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+                        box-shadow: 
+                            0 8px 32px rgba(0, 0, 0, 0.3),
+                            0 0 0 1px rgba(255, 215, 0, 0.2),
+                            inset 0 1px 0 rgba(255, 255, 255, 0.1);
                     ">
                         <div style="display: flex; align-items: center; gap: 15px;">
                             <div style="
                                 width: 40px;
                                 height: 40px;
                                 border-radius: 50%;
-                                background: linear-gradient(135deg, #667eea, #764ba2);
-                                color: white;
+                                background: linear-gradient(135deg, #ffd700, #ffed4e);
+                                color: rgba(0, 0, 0, 0.8);
                                 display: flex;
                                 align-items: center;
                                 justify-content: center;
                                 font-weight: bold;
                                 font-size: 1.1rem;
+                                box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+                                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
                             ">
                                 ${student.name.charAt(0)}
                             </div>
                             <div style="flex: 1;">
-                                <div class="student-name" style="font-weight: bold; color: #333; font-size: 1.1rem; margin-bottom: 4px;">${student.name}</div>
-                                <div style="color: #666; font-size: 0.9rem; margin-bottom: 6px;">${student.id}</div>
+                                <div class="student-name" style="font-weight: bold; color: rgba(255, 255, 255, 0.95); font-size: 1.1rem; margin-bottom: 4px; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);">${student.name}</div>
+                                <div style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; margin-bottom: 6px; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);">${student.id}</div>
                                 <div style="
                                     display: flex;
                                     align-items: center;
@@ -6657,7 +6756,7 @@ async function loadTodayEvents() {
                                     font-size: 0.9rem;
                                     font-weight: 600;
                                     color: ${statusStyles.statusColor};
-                                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+                                    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
                                 ">
                                     <span style="font-size: 1.1rem;">${statusStyles.emoji}</span>
                                     <span>${statusText}</span>
@@ -6712,8 +6811,8 @@ async function loadTodayEvents() {
             
             attendanceContent.innerHTML = `
                 <div style="margin-bottom: 20px;">
-                    <h3 style="margin: 0 0 15px 0; color: #333; font-size: 1.2rem;">
-                        <i class="fas fa-users" style="color: #667eea; margin-right: 8px;"></i>
+                    <h3 style="margin: 0 0 15px 0; color: rgba(255, 255, 255, 0.95); font-size: 1.2rem; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);">
+                        <i class="fas fa-users" style="color: #ffd700; margin-right: 8px; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);"></i>
                         學生名單 (${students.length} 人)
                     </h3>
                     <div id="studentsList" style="display: flex; flex-direction: column; gap: 15px;">
@@ -6725,25 +6824,37 @@ async function loadTodayEvents() {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    padding: 15px;
-                    background: rgba(102, 126, 234, 0.1);
-                    border-radius: 10px;
+                    padding: 20px;
+                    background: 
+                        radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.05) 0%, transparent 70%),
+                        linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+                    border-radius: 15px;
                     margin-top: 20px;
+                    border: 1px solid rgba(255, 215, 0, 0.3);
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                    box-shadow: 
+                        0 8px 32px rgba(0, 0, 0, 0.2),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
                 ">
-                    <div id="attendanceStats" style="font-size: 0.9rem; color: #666;">
+                    <div id="attendanceStats" style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.9); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);">
                         統計載入中...
                     </div>
                     <div style="display: flex; gap: 10px;">
                         <button id="refreshStudents" class="refresh-students-btn" style="
-                            background: rgba(102, 126, 234, 0.8);
-                            color: white;
-                            border: none;
+                            background: linear-gradient(135deg, rgba(255, 215, 0, 0.8), rgba(255, 215, 0, 0.6));
+                            color: rgba(0, 0, 0, 0.8);
+                            border: 1px solid rgba(255, 215, 0, 0.5);
                             padding: 8px 16px;
                             border-radius: 20px;
                             cursor: pointer;
                             font-size: 0.85rem;
                             font-weight: 600;
                             transition: all 0.3s ease;
+                            backdrop-filter: blur(10px);
+                            -webkit-backdrop-filter: blur(10px);
+                            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+                            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
                         ">
                             <i class="fas fa-sync-alt" style="margin-right: 5px;"></i> 重新載入
                         </button>
@@ -7011,11 +7122,11 @@ async function loadTodayEvents() {
             if (attendanceStats) {
                 attendanceStats.innerHTML = `
                     <div style="display: flex; gap: 15px; align-items: center;">
-                        <span style="color: #28a745;"><i class="fas fa-check-circle"></i> 出席: ${presentCount}</span>
-                        <span style="color: #dc3545;"><i class="fas fa-times-circle"></i> 缺席: ${absentCount}</span>
-                        <span style="color: #ffc107;"><i class="fas fa-exclamation-triangle"></i> 請假: ${leaveCount}</span>
-                        <span style="color: #6c757d;"><i class="fas fa-clock"></i> 待簽: ${pendingCount}</span>
-                        <span style="color: #333; font-weight: bold;">總計: ${totalCount}</span>
+                        <span style="color: #28a745; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);"><i class="fas fa-check-circle"></i> 出席: ${presentCount}</span>
+                        <span style="color: #dc3545; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);"><i class="fas fa-times-circle"></i> 缺席: ${absentCount}</span>
+                        <span style="color: #ffc107; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);"><i class="fas fa-exclamation-triangle"></i> 請假: ${leaveCount}</span>
+                        <span style="color: #6c757d; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);"><i class="fas fa-clock"></i> 待簽: ${pendingCount}</span>
+                        <span style="color: rgba(255, 255, 255, 0.95); font-weight: bold; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);">總計: ${totalCount}</span>
                     </div>
                 `;
             }
