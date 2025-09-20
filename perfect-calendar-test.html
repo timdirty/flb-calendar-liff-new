@@ -1445,10 +1445,18 @@
                 /([一二三四五六日])\s+(\d{1,2}:\d{2})-(\d{1,2}:\d{2})\s+(.+)/,
                 // 六 16:00-18:00
                 /([一二三四五六日])\s+(\d{1,2}:\d{2})-(\d{1,2}:\d{2})/,
+                // 六 1530-1700 到府 (沒有冒號的格式)
+                /([一二三四五六日])\s+(\d{3,4})-(\d{3,4})\s+(.+)/,
+                // 六 1530-1700
+                /([一二三四五六日])\s+(\d{3,4})-(\d{3,4})/,
                 // 16:00-18:00 到府
                 /(\d{1,2}:\d{2})-(\d{1,2}:\d{2})\s+(.+)/,
                 // 16:00-18:00
                 /(\d{1,2}:\d{2})-(\d{1,2}:\d{2})/,
+                // 1530-1700 到府 (沒有冒號的格式)
+                /(\d{3,4})-(\d{3,4})\s+(.+)/,
+                // 1530-1700
+                /(\d{3,4})-(\d{3,4})/,
                 // 第X週
                 /第(\d+)週/,
                 // 請假
@@ -1477,8 +1485,11 @@
                         const week = match[4];
                         const location = match[5] || '';
                         
-                        // 轉換時間格式：16:00 -> 1600
-                        const formatTime = (time) => time.replace(':', '');
+                        // 轉換時間格式：09:30 -> 0930, 16:00 -> 1600
+                        const formatTime = (time) => {
+                            const [hours, minutes] = time.split(':');
+                            return hours.padStart(2, '0') + minutes;
+                        };
                         const formattedStartTime = formatTime(startTime);
                         const formattedEndTime = formatTime(endTime);
                         
@@ -1492,8 +1503,29 @@
                         const endTime = match[3];
                         const location = match[4] || '';
                         
-                        // 轉換時間格式：16:00 -> 1600
-                        const formatTime = (time) => time.replace(':', '');
+                        // 轉換時間格式：09:30 -> 0930, 16:00 -> 1600
+                        const formatTime = (time) => {
+                            const [hours, minutes] = time.split(':');
+                            return hours.padStart(2, '0') + minutes;
+                        };
+                        const formattedStartTime = formatTime(startTime);
+                        const formattedEndTime = formatTime(endTime);
+                        
+                        courseName = fullTitle.replace(new RegExp(`${weekday}\\s+${startTime}-${endTime}\\s*${location}.*$`), '').trim();
+                        timeInfo = `${weekday} ${formattedStartTime}-${formattedEndTime}${location ? ' ' + location : ''}`;
+                        break;
+                    } else if (pattern.source.includes('一二三四五六日') && pattern.source.includes('\\d{3,4}')) {
+                        // 處理星期和沒有冒號的時間格式：六 1530-1700 到府
+                        const weekday = match[1];
+                        const startTime = match[2];
+                        const endTime = match[3];
+                        const location = match[4] || '';
+                        
+                        // 確保時間格式正確（補零）
+                        const formatTime = (time) => {
+                            const timeStr = time.toString();
+                            return timeStr.padStart(4, '0');
+                        };
                         const formattedStartTime = formatTime(startTime);
                         const formattedEndTime = formatTime(endTime);
                         
@@ -1506,13 +1538,33 @@
                         const startTime = match[2];
                         const endTime = match[3];
                         
-                        // 轉換時間格式：16:00 -> 1600
-                        const formatTime = (time) => time.replace(':', '');
+                        // 轉換時間格式：09:30 -> 0930, 16:00 -> 1600
+                        const formatTime = (time) => {
+                            const [hours, minutes] = time.split(':');
+                            return hours.padStart(2, '0') + minutes;
+                        };
                         const formattedStartTime = formatTime(startTime);
                         const formattedEndTime = formatTime(endTime);
                         
                         courseName = fullTitle.replace(new RegExp(`${weekday}\\s+${startTime}-${endTime}.*$`), '').trim();
                         timeInfo = `${weekday} ${formattedStartTime}-${formattedEndTime}`;
+                        break;
+                    } else if (pattern.source.includes('\\d{3,4}') && !pattern.source.includes('一二三四五六日')) {
+                        // 處理沒有冒號的純時間格式：1530-1700 到府
+                        const startTime = match[1];
+                        const endTime = match[2];
+                        const location = match[3] || '';
+                        
+                        // 確保時間格式正確（補零）
+                        const formatTime = (time) => {
+                            const timeStr = time.toString();
+                            return timeStr.padStart(4, '0');
+                        };
+                        const formattedStartTime = formatTime(startTime);
+                        const formattedEndTime = formatTime(endTime);
+                        
+                        courseName = fullTitle.replace(new RegExp(`${startTime}-${endTime}\\s*${location}.*$`), '').trim();
+                        timeInfo = `${formattedStartTime}-${formattedEndTime}${location ? ' ' + location : ''}`;
                         break;
                     } else if (pattern.source.includes('\\d{1,2}:\\d{2}')) {
                         // 處理只有時間的情況：16:00-18:00 到府
@@ -1520,8 +1572,11 @@
                         const endTime = match[2];
                         const location = match[3] || '';
                         
-                        // 轉換時間格式：16:00 -> 1600
-                        const formatTime = (time) => time.replace(':', '');
+                        // 轉換時間格式：09:30 -> 0930, 16:00 -> 1600
+                        const formatTime = (time) => {
+                            const [hours, minutes] = time.split(':');
+                            return hours.padStart(2, '0') + minutes;
+                        };
                         const formattedStartTime = formatTime(startTime);
                         const formattedEndTime = formatTime(endTime);
                         
