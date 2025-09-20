@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>講師行事曆檢視系統 - 測試版 (含簽到功能)</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255, 215, 0, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255, 215, 0, 0.08) 0%, transparent 50%),
+                linear-gradient(135deg, 
+                    rgba(0, 0, 0, 0.98) 0%, 
+                    rgba(15, 15, 15, 0.95) 25%,
+                    rgba(25, 25, 25, 0.92) 50%,
+                    rgba(15, 15, 15, 0.95) 75%,
+                    rgba(0, 0, 0, 0.98) 100%);
+            background-size: 100% 100%, 100% 100%, 100% 100%, 400% 400%;
+            animation: gradientShift 20s ease infinite, subtleGlow 8s ease-in-out infinite;
+            min-height: 100vh;
+            color: rgba(255, 255, 255, 0.95);
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(45deg, transparent 30%, rgba(255, 215, 0, 0.03) 50%, transparent 70%),
+                linear-gradient(-45deg, transparent 30%, rgba(255, 215, 0, 0.02) 50%, transparent 70%);
+            animation: shimmer 12s linear infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes subtleGlow {
+            0%, 100% { 
+                background-position: 0% 0%, 0% 0%, 0% 0%, 0% 50%;
+            }
+            50% { 
+                background-position: 0% 0%, 0% 0%, 0% 0%, 100% 50%;
+            }
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 215, 0, 0.2),
+                0 0 0 1px rgba(255, 215, 0, 0.1);
+            position: relative;
+            z-index: 2;
+        }
+
+        /* 測試版標識 */
+        .test-banner {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+            color: white;
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* 頂部標題區域 */
+        .header {
+            background: linear-gradient(135deg, 
+                rgba(0, 0, 0, 0.8) 0%, 
+                rgba(20, 20, 20, 0.9) 50%,
+                rgba(0, 0, 0, 0.8) 100%);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            padding: 30px;
+            margin-bottom: 25px;
+            border-radius: 25px;
+            border: 2px solid rgba(255, 215, 0, 0.4);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 215, 0, 0.3),
+                0 0 0 1px rgba(255, 215, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            animation: headerFloat 6s ease-in-out infinite;
+        }
+
+        @keyframes headerFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+            animation: headerShimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes headerShimmer {
+            0% { left: -100%; }
+            50% { left: 100%; }
+            100% { left: 100%; }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #FFD700, #FFA500, #FFD700);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            margin-bottom: 10px;
+            animation: textShimmer 3s ease-in-out infinite;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+        }
+
+        @keyframes textShimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .header p {
+            text-align: center;
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 20px;
+        }
+
+        /* 統計資訊區域 */
+        .stats-section {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stats-card {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+            transition: all 0.3s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 0.2);
+        }
+
+        .stats-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #FFD700;
+            margin-bottom: 5px;
+        }
+
+        .stats-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* 控制區域 */
+        .control-section {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            margin-bottom: 25px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            min-width: 80px;
+        }
+
+        select, input {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            padding: 10px 15px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        /* 視圖按鈕 */
+        .view-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 165, 0, 0.1));
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(255, 165, 0, 0.3));
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn.active {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.5);
+        }
+
+        /* 事件卡片 */
+        .events-container {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .event-card {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 0.2);
+            border-color: rgba(255, 215, 0, 0.4);
+        }
+
+        .event-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #FFD700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .event-instructor {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 8px;
+        }
+
+        .event-detail {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .event-description {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .event-description h4 {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 5px;
+        }
+
+        .event-description p {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.4;
+        }
+
+        /* 簽到系統整合區域 */
+        .attendance-section {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .attendance-section h3 {
+            color: #00ff00;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .attendance-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-attendance {
+            background: linear-gradient(135deg, #00ff00, #00cc00);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-attendance:hover {
+            background: linear-gradient(135deg, #00cc00, #009900);
+            transform: translateY(-2px);
+        }
+
+        /* 浮動按鈕 */
+        .refresh-button {
+            position: fixed;
+            bottom: 30px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: rgba(255, 255, 255, 0.9);
+            box-shadow: 
+                0 8px 32px rgba(255, 255, 255, 0.3),
+                0 2px 8px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+            will-change: transform, box-shadow;
+        }
+
+        .attendance-menu {
+            position: fixed;
+            bottom: 30px;
+            left: 20px;
+            z-index: 1000;
+            user-select: none;
+        }
+
+        .attendance-menu-button {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, 
+                rgba(76, 175, 80, 0.9) 0%, 
+                rgba(69, 160, 73, 0.8) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: rgba(255, 255, 255, 0.9);
+            box-shadow: 
+                0 8px 32px rgba(76, 175, 80, 0.3),
+                0 2px 8px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+            will-change: transform, box-shadow;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .control-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .view-buttons {
+                justify-content: center;
+            }
+            
+            .stats-section {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 測試版標識 -->
+        <div class="test-banner">
+            <i class="fas fa-flask"></i> 測試版本 - 整合簽到系統功能
+        </div>
+
+        <!-- 頂部標題區域 -->
+        <div class="header">
+            <h1><i class="fas fa-calendar-alt"></i> 講師行事曆檢視系統</h1>
+            <p>整合簽到功能的完整解決方案</p>
+        </div>
+
+        <!-- 統計資訊區域 -->
+        <div class="stats-section">
+            <div class="stats-card">
+                <div class="stats-number" id="totalEvents">0</div>
+                <div class="stats-label">總事件數</div>
+            </div>
+            <div class="stats-card">
+                <div class="stats-number" id="instructorCount">0</div>
+                <div class="stats-label">講師數量</div>
+            </div>
+            <div class="stats-card">
+                <div class="stats-number" id="dateRange">-</div>
+                <div class="stats-label">日期範圍</div>
+            </div>
+        </div>
+
+        <!-- 控制區域 -->
+        <div class="control-section">
+            <div class="control-group">
+                <label for="instructorSelect">講師：</label>
+                <select id="instructorSelect">
+                    <option value="">載入中...</option>
+                </select>
+                
+                <label for="timeFilter">時段：</label>
+                <select id="timeFilter">
+                    <option value="">全部時段</option>
+                </select>
+                
+                <label for="dateFilter">日期：</label>
+                <input type="date" id="dateFilter">
+            </div>
+            
+            <div class="view-buttons">
+                <button class="btn active" data-view="today">今日</button>
+                <button class="btn" data-view="week">本週</button>
+                <button class="btn" data-view="month">本月</button>
+                <button class="btn" data-view="all">全部</button>
+            </div>
+        </div>
+
+        <!-- 簽到系統整合區域 -->
+        <div class="attendance-section">
+            <h3><i class="fas fa-calendar-check"></i> 快速簽到功能</h3>
+            <div class="attendance-buttons">
+                <button class="btn-attendance" onclick="openAttendanceSystem()">
+                    <i class="fas fa-sign-in-alt"></i> 開啟簽到系統
+                </button>
+                <button class="btn-attendance" onclick="quickAttendance()">
+                    <i class="fas fa-bolt"></i> 快速簽到
+                </button>
+                <button class="btn-attendance" onclick="viewAttendanceReport()">
+                    <i class="fas fa-chart-bar"></i> 查看報表
+                </button>
+            </div>
+        </div>
+
+        <!-- 事件列表區域 -->
+        <div class="events-container" id="eventsContainer">
+            <div style="text-align: center; padding: 40px; color: rgba(255, 255, 255, 0.6);">
+                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 15px;"></i>
+                <p>載入行事曆資料中...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 重新整理浮動按鈕 -->
+    <div id="refreshButton" class="refresh-button" title="重新整理行事曆">
+        <i class="fas fa-sync-alt"></i>
+    </div>
+
+    <!-- 簽到系統懸浮選單 -->
+    <div id="attendanceMenu" class="attendance-menu" title="簽到系統">
+        <div class="attendance-menu-button">
+            <i class="fas fa-calendar-check"></i>
+        </div>
+        <div class="attendance-menu-tooltip">
+            <span>簽到系統</span>
+        </div>
+    </div>
+
+    <script>
+        // 全域變數
+        let allEvents = [];
+        let currentView = '今日';
+        let currentInstructor = '';
+        let currentTimeFilter = '';
+        let currentDateFilter = '';
+
+        // 初始化系統
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 測試版系統初始化開始');
+            initializeSystem();
+        });
+
+        async function initializeSystem() {
+            try {
+                console.log('📅 開始載入行事曆資料...');
+                await loadCalendarData();
+                
+                console.log('👥 開始載入講師列表...');
+                await loadInstructors();
+                
+                console.log('🎛️ 初始化控制項...');
+                initializeControls();
+                
+                console.log('📊 更新統計資訊...');
+                updateStats();
+                
+                console.log('🎨 渲染事件...');
+                renderEvents();
+                
+                console.log('✅ 測試版系統初始化完成');
+            } catch (error) {
+                console.error('❌ 系統初始化失敗:', error);
+                showError('系統初始化失敗，請重新整理頁面');
+            }
+        }
+
+        // 載入行事曆資料
+        async function loadCalendarData() {
+            try {
+                const response = await fetch('/api/calendar');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                if (data.success && data.events) {
+                    allEvents = data.events;
+                    console.log(`✅ 載入 ${allEvents.length} 個事件`);
+                } else {
+                    throw new Error(data.error || '載入行事曆資料失敗');
+                }
+            } catch (error) {
+                console.error('❌ 載入行事曆資料失敗:', error);
+                // 使用測試資料
+                allEvents = generateTestEvents();
+                console.log('📝 使用測試資料');
+            }
+        }
+
+        // 載入講師列表
+        async function loadInstructors() {
+            try {
+                const response = await fetch('/api/instructors');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                if (data.success && data.instructors) {
+                    populateInstructorDropdown(data.instructors);
+                    console.log(`✅ 載入 ${data.instructors.length} 個講師`);
+                } else {
+                    throw new Error(data.error || '載入講師列表失敗');
+                }
+            } catch (error) {
+                console.error('❌ 載入講師列表失敗:', error);
+                // 使用測試講師
+                const testInstructors = ['Tim', 'BELLA', 'AGNES', 'Hansen', 'Eason'];
+                populateInstructorDropdown(testInstructors);
+                console.log('📝 使用測試講師資料');
+            }
+        }
+
+        // 填充講師下拉選單
+        function populateInstructorDropdown(instructors) {
+            const select = document.getElementById('instructorSelect');
+            select.innerHTML = '<option value="">全部講師</option>';
+            
+            instructors.forEach(instructor => {
+                const option = document.createElement('option');
+                option.value = instructor;
+                option.textContent = instructor;
+                select.appendChild(option);
+            });
+        }
+
+        // 初始化控制項
+        function initializeControls() {
+            // 講師選擇
+            document.getElementById('instructorSelect').addEventListener('change', function() {
+                currentInstructor = this.value;
+                updateStats();
+                renderEvents();
+            });
+
+            // 時段篩選
+            document.getElementById('timeFilter').addEventListener('change', function() {
+                currentTimeFilter = this.value;
+                updateStats();
+                renderEvents();
+            });
+
+            // 日期篩選
+            document.getElementById('dateFilter').addEventListener('change', function() {
+                currentDateFilter = this.value;
+                updateStats();
+                renderEvents();
+            });
+
+            // 視圖按鈕
+            document.querySelectorAll('.view-buttons .btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    document.querySelectorAll('.view-buttons .btn').forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    currentView = this.dataset.view;
+                    updateStats();
+                    renderEvents();
+                });
+            });
+
+            // 重新整理按鈕
+            document.getElementById('refreshButton').addEventListener('click', function() {
+                forceRefresh();
+            });
+
+            // 簽到系統選單
+            document.getElementById('attendanceMenu').addEventListener('click', function() {
+                openAttendanceSystem();
+            });
+        }
+
+        // 更新統計資訊
+        function updateStats() {
+            const filteredEvents = getFilteredEvents();
+            
+            document.getElementById('totalEvents').textContent = filteredEvents.length;
+            document.getElementById('instructorCount').textContent = getUniqueInstructors(filteredEvents).length;
+            document.getElementById('dateRange').textContent = getDateRange(filteredEvents);
+        }
+
+        // 獲取篩選後的事件
+        function getFilteredEvents() {
+            let filtered = [...allEvents];
+
+            // 講師篩選
+            if (currentInstructor) {
+                filtered = filtered.filter(event => event.instructor === currentInstructor);
+            }
+
+            // 時段篩選
+            if (currentTimeFilter) {
+                filtered = filtered.filter(event => {
+                    const hour = new Date(event.start).getHours();
+                    switch (currentTimeFilter) {
+                        case 'morning': return hour >= 6 && hour < 12;
+                        case 'afternoon': return hour >= 12 && hour < 18;
+                        case 'evening': return hour >= 18 && hour < 24;
+                        default: return true;
+                    }
+                });
+            }
+
+            // 日期篩選
+            if (currentDateFilter) {
+                const filterDate = new Date(currentDateFilter);
+                filtered = filtered.filter(event => {
+                    const eventDate = new Date(event.start);
+                    return eventDate.toDateString() === filterDate.toDateString();
+                });
+            }
+
+            // 視圖篩選
+            const now = new Date();
+            switch (currentView) {
+                case '今日':
+                    filtered = filtered.filter(event => {
+                        const eventDate = new Date(event.start);
+                        return eventDate.toDateString() === now.toDateString();
+                    });
+                    break;
+                case '本週':
+                    const weekStart = new Date(now);
+                    weekStart.setDate(now.getDate() - now.getDay());
+                    const weekEnd = new Date(weekStart);
+                    weekEnd.setDate(weekStart.getDate() + 6);
+                    filtered = filtered.filter(event => {
+                        const eventDate = new Date(event.start);
+                        return eventDate >= weekStart && eventDate <= weekEnd;
+                    });
+                    break;
+                case '本月':
+                    filtered = filtered.filter(event => {
+                        const eventDate = new Date(event.start);
+                        return eventDate.getMonth() === now.getMonth() && eventDate.getFullYear() === now.getFullYear();
+                    });
+                    break;
+                case '全部':
+                    // 不進行額外篩選
+                    break;
+            }
+
+            return filtered;
+        }
+
+        // 獲取唯一講師列表
+        function getUniqueInstructors(events) {
+            const instructors = new Set();
+            events.forEach(event => {
+                if (event.instructor) {
+                    instructors.add(event.instructor);
+                }
+            });
+            return Array.from(instructors);
+        }
+
+        // 獲取日期範圍
+        function getDateRange(events) {
+            if (events.length === 0) return '-';
+            
+            const dates = events.map(event => new Date(event.start)).sort((a, b) => a - b);
+            const startDate = dates[0];
+            const endDate = dates[dates.length - 1];
+            
+            if (startDate.toDateString() === endDate.toDateString()) {
+                return startDate.toLocaleDateString('zh-TW');
+            } else {
+                return `${startDate.toLocaleDateString('zh-TW')} - ${endDate.toLocaleDateString('zh-TW')}`;
+            }
+        }
+
+        // 渲染事件
+        function renderEvents() {
+            const container = document.getElementById('eventsContainer');
+            const filteredEvents = getFilteredEvents();
+
+            if (filteredEvents.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: rgba(255, 255, 255, 0.6);">
+                        <i class="fas fa-calendar-times" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                        <p>沒有找到符合條件的事件</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredEvents.map(event => createEventCard(event)).join('');
+        }
+
+        // 創建事件卡片
+        function createEventCard(event) {
+            const startDate = new Date(event.start);
+            const endDate = new Date(event.end);
+            
+            const timeString = `${startDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${endDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
+            const dateString = startDate.toLocaleDateString('zh-TW', { 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit',
+                weekday: 'long'
+            });
+
+            return `
+                <div class="event-card">
+                    <div class="event-title">
+                        <i class="fas fa-calendar-day"></i>
+                        ${event.title || '未命名事件'}
+                    </div>
+                    <div class="event-instructor">
+                        <i class="fas fa-user"></i> ${event.instructor || '未知講師'}
+                    </div>
+                    <div class="event-detail">
+                        <i class="fas fa-clock"></i> ${timeString}
+                    </div>
+                    <div class="event-detail">
+                        <i class="fas fa-calendar"></i> ${dateString}
+                    </div>
+                    ${event.location ? `
+                        <div class="event-detail">
+                            <i class="fas fa-map-marker-alt"></i> ${event.location}
+                        </div>
+                    ` : ''}
+                    ${event.description ? `
+                        <div class="event-description">
+                            <h4>說明</h4>
+                            <p>${event.description}</p>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        // 生成測試事件
+        function generateTestEvents() {
+            const now = new Date();
+            const events = [];
+            
+            for (let i = 0; i < 10; i++) {
+                const eventDate = new Date(now);
+                eventDate.setDate(now.getDate() + i);
+                
+                events.push({
+                    title: `測試課程 ${i + 1}`,
+                    instructor: ['Tim', 'BELLA', 'AGNES', 'Hansen', 'Eason'][i % 5],
+                    start: eventDate.toISOString(),
+                    end: new Date(eventDate.getTime() + 2 * 60 * 60 * 1000).toISOString(),
+                    location: `教室 ${i + 1}`,
+                    description: `這是第 ${i + 1} 個測試課程的描述`
+                });
+            }
+            
+            return events;
+        }
+
+        // 簽到系統功能
+        function openAttendanceSystem() {
+            const attendanceUrl = 'https://liff.line.me/1657746214-wPgd2qQn';
+            
+            try {
+                if (typeof liff !== 'undefined' && liff.isInClient()) {
+                    liff.openWindow({
+                        url: attendanceUrl,
+                        external: false
+                    });
+                    console.log('✅ 使用 LIFF 在 LINE 內開啟簽到系統');
+                } else {
+                    window.open(attendanceUrl, '_blank', 'noopener,noreferrer');
+                    console.log('✅ 使用一般方式開啟簽到系統');
+                }
+            } catch (error) {
+                console.error('❌ 開啟簽到系統失敗:', error);
+                window.open(attendanceUrl, '_blank', 'noopener,noreferrer');
+            }
+        }
+
+        // 快速簽到功能
+        async function quickAttendance() {
+            try {
+                // 獲取當前選中的講師
+                const selectedInstructor = document.getElementById('instructorSelect').value;
+                if (!selectedInstructor) {
+                    alert('請先選擇講師');
+                    return;
+                }
+
+                // 獲取今日事件
+                const todayEvents = allEvents.filter(event => {
+                    const eventDate = new Date(event.start);
+                    const today = new Date();
+                    return eventDate.toDateString() === today.toDateString() && 
+                           event.instructor === selectedInstructor;
+                });
+
+                if (todayEvents.length === 0) {
+                    alert('今日沒有該講師的課程');
+                    return;
+                }
+
+                // 顯示課程選擇對話框
+                showCourseSelectionDialog(todayEvents);
+            } catch (error) {
+                console.error('❌ 快速簽到失敗:', error);
+                alert('快速簽到失敗: ' + error.message);
+            }
+        }
+
+        // 顯示課程選擇對話框
+        function showCourseSelectionDialog(events) {
+            const dialog = document.createElement('div');
+            dialog.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+            `;
+
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: rgba(0, 0, 0, 0.9);
+                border: 2px solid #00ff00;
+                border-radius: 15px;
+                padding: 30px;
+                max-width: 500px;
+                width: 90%;
+                max-height: 80vh;
+                overflow-y: auto;
+            `;
+
+            content.innerHTML = `
+                <h3 style="color: #00ff00; margin-bottom: 20px; text-align: center;">
+                    <i class="fas fa-calendar-check"></i> 選擇要簽到的課程
+                </h3>
+                <div id="courseList">
+                    ${events.map((event, index) => `
+                        <div style="
+                            background: rgba(0, 255, 0, 0.1);
+                            border: 1px solid rgba(0, 255, 0, 0.3);
+                            border-radius: 10px;
+                            padding: 15px;
+                            margin-bottom: 10px;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                        " onclick="selectCourseForAttendance('${event.title}', '${event.start}', '${event.end}')">
+                            <div style="font-weight: bold; color: #00ff00; margin-bottom: 5px;">
+                                ${event.title}
+                            </div>
+                            <div style="color: rgba(255, 255, 255, 0.8); font-size: 0.9rem;">
+                                ${new Date(event.start).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - 
+                                ${new Date(event.end).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                            ${event.location ? `<div style="color: rgba(255, 255, 255, 0.6); font-size: 0.8rem;">${event.location}</div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button onclick="closeCourseDialog()" style="
+                        background: rgba(255, 255, 255, 0.1);
+                        border: 1px solid rgba(255, 255, 255, 0.3);
+                        color: white;
+                        padding: 10px 20px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                    ">取消</button>
+                </div>
+            `;
+
+            dialog.appendChild(content);
+            document.body.appendChild(dialog);
+
+            // 存儲對話框引用
+            window.currentCourseDialog = dialog;
+        }
+
+        // 選擇課程進行簽到
+        async function selectCourseForAttendance(title, start, end) {
+            try {
+                const selectedInstructor = document.getElementById('instructorSelect').value;
+                const timeString = `${new Date(start).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${new Date(end).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
+                
+                // 構建簽到系統URL
+                const attendanceUrl = `https://liff.line.me/1657746214-wPgd2qQn?step=3&teacher=${encodeURIComponent(selectedInstructor)}&course=${encodeURIComponent(title)}&time=${encodeURIComponent(timeString)}`;
+                
+                // 開啟簽到系統
+                if (typeof liff !== 'undefined' && liff.isInClient()) {
+                    liff.openWindow({
+                        url: attendanceUrl,
+                        external: false
+                    });
+                } else {
+                    window.open(attendanceUrl, '_blank', 'noopener,noreferrer');
+                }
+
+                // 關閉對話框
+                closeCourseDialog();
+                
+                console.log('✅ 開啟課程簽到:', { selectedInstructor, title, timeString });
+            } catch (error) {
+                console.error('❌ 選擇課程簽到失敗:', error);
+                alert('選擇課程簽到失敗: ' + error.message);
+            }
+        }
+
+        // 關閉課程選擇對話框
+        function closeCourseDialog() {
+            if (window.currentCourseDialog) {
+                document.body.removeChild(window.currentCourseDialog);
+                window.currentCourseDialog = null;
+            }
+        }
+
+        // 查看簽到報表
+        async function viewAttendanceReport() {
+            try {
+                const selectedInstructor = document.getElementById('instructorSelect').value;
+                if (!selectedInstructor) {
+                    alert('請先選擇講師');
+                    return;
+                }
+
+                // 構建報表查詢URL
+                const reportUrl = `https://liff.line.me/1657746214-wPgd2qQn?step=report&teacher=${encodeURIComponent(selectedInstructor)}`;
+                
+                // 開啟報表查詢
+                if (typeof liff !== 'undefined' && liff.isInClient()) {
+                    liff.openWindow({
+                        url: reportUrl,
+                        external: false
+                    });
+                } else {
+                    window.open(reportUrl, '_blank', 'noopener,noreferrer');
+                }
+
+                console.log('✅ 開啟簽到報表:', selectedInstructor);
+            } catch (error) {
+                console.error('❌ 開啟簽到報表失敗:', error);
+                alert('開啟簽到報表失敗: ' + error.message);
+            }
+        }
+
+        // 強制重新整理
+        async function forceRefresh() {
+            console.log('🔄 開始強制重新整理...');
+            
+            const refreshButton = document.getElementById('refreshButton');
+            refreshButton.style.transform = 'rotate(360deg)';
+            refreshButton.style.opacity = '0.7';
+            
+            try {
+                await loadCalendarData();
+                await loadInstructors();
+                updateStats();
+                renderEvents();
+                
+                console.log('✅ 重新整理完成');
+            } catch (error) {
+                console.error('❌ 重新整理失敗:', error);
+            } finally {
+                setTimeout(() => {
+                    refreshButton.style.transform = '';
+                    refreshButton.style.opacity = '';
+                }, 1000);
+            }
+        }
+
+        // 錯誤處理
+        function showError(message) {
+            console.error('❌ 錯誤:', message);
+            alert('錯誤: ' + message);
+        }
+    </script>
+</body>
+</html>
