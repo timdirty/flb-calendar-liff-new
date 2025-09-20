@@ -5866,7 +5866,6 @@ async function loadTodayEvents() {
             // 匹配格式：SPM 六 9:30-11:00 到府 第2週
             // 課程：SPM
             // 時間：六 9:30-11:00 到府（包含星期幾和地點，但不包含週次）
-            // 地點：到府
             const courseTimeLocationRegex = /^([A-Z]+)\s+([一二三四五六日]\s+\d{1,2}:\d{2}-\d{1,2}:\d{2}\s+[^第]+?)(?:\s+第\d+週)?$/;
             const match = title.match(courseTimeLocationRegex);
             
