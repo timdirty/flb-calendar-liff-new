@@ -1865,6 +1865,21 @@
         .refresh-students-btn:hover {
             background: rgba(102, 126, 234, 1) !important;
         }
+        
+        /* 重新載入按鈕動畫 */
+        @keyframes refreshSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .refresh-students-btn.loading {
+            animation: refreshSpin 1s linear infinite;
+            pointer-events: none;
+        }
+        
+        .refresh-students-btn.loading i {
+            animation: refreshSpin 1s linear infinite;
+        }
 
         /* 微交互效果 */
         .smooth-hover {
@@ -6722,11 +6737,11 @@ async function loadTodayEvents() {
                         border: 2px solid ${statusStyles.border};
                         border-radius: 20px;
                         background: 
-                            radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.05) 0%, transparent 70%),
+                            radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.1) 0%, transparent 70%),
                             linear-gradient(135deg, 
-                                rgba(0, 0, 0, 0.8) 0%, 
-                                rgba(15, 15, 15, 0.75) 50%,
-                                rgba(0, 0, 0, 0.8) 100%);
+                                rgba(255, 255, 255, 0.95) 0%, 
+                                rgba(248, 249, 250, 0.9) 50%,
+                                rgba(255, 255, 255, 0.95) 100%);
                         backdrop-filter: blur(20px);
                         -webkit-backdrop-filter: blur(20px);
                         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -6734,9 +6749,9 @@ async function loadTodayEvents() {
                         position: relative;
                         overflow: hidden;
                         box-shadow: 
-                            0 8px 32px rgba(0, 0, 0, 0.3),
-                            0 0 0 1px rgba(255, 215, 0, 0.2),
-                            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                            0 8px 32px rgba(0, 0, 0, 0.15),
+                            0 0 0 1px rgba(255, 215, 0, 0.3),
+                            inset 0 1px 0 rgba(255, 255, 255, 0.8);
                     ">
                         <div style="display: flex; align-items: center; gap: 15px;">
                             <div style="
@@ -6756,8 +6771,8 @@ async function loadTodayEvents() {
                                 ${student.name.charAt(0)}
                             </div>
                             <div style="flex: 1;">
-                                <div class="student-name" style="font-weight: bold; color: rgba(255, 255, 255, 0.95); font-size: 1.1rem; margin-bottom: 4px; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);">${student.name}</div>
-                                <div style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; margin-bottom: 6px; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);">${student.id}</div>
+                                <div class="student-name" style="font-weight: bold; color: rgba(0, 0, 0, 0.9); font-size: 1.1rem; margin-bottom: 4px;">${student.name}</div>
+                                ${student.id ? `<div style="color: rgba(0, 0, 0, 0.6); font-size: 0.9rem; margin-bottom: 6px;">${student.id}</div>` : ''}
                                 <div style="
                                     display: flex;
                                     align-items: center;
@@ -6765,7 +6780,6 @@ async function loadTodayEvents() {
                                     font-size: 0.9rem;
                                     font-weight: 600;
                                     color: ${statusStyles.statusColor};
-                                    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
                                 ">
                                     <span style="font-size: 1.1rem;">${statusStyles.emoji}</span>
                                     <span>${statusText}</span>
@@ -6877,7 +6891,20 @@ async function loadTodayEvents() {
             
             // 重新載入按鈕事件
             document.getElementById('refreshStudents').addEventListener('click', function() {
-                loadCourseStudents(teacher, course, time, start, end);
+                // 添加載入動畫
+                this.classList.add('loading');
+                this.innerHTML = '<i class="fas fa-sync-alt" style="margin-right: 5px;"></i> 載入中...';
+                this.disabled = true;
+                
+                // 載入學生資料
+                loadCourseStudents(teacher, course, time, start, end).finally(() => {
+                    // 移除載入動畫
+                    setTimeout(() => {
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-sync-alt" style="margin-right: 5px;"></i> 重新載入';
+                        this.disabled = false;
+                    }, 1000);
+                });
             });
         }
 
