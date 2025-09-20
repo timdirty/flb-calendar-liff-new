@@ -382,6 +382,62 @@
             transform: translateY(-2px);
         }
 
+        /* 事件卡片中的直接簽到按鈕 */
+        .event-actions {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 215, 0, 0.2);
+            text-align: center;
+        }
+
+        .btn-direct-attendance {
+            background: linear-gradient(135deg, #00ff00, #00cc00);
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-direct-attendance:hover {
+            background: linear-gradient(135deg, #00cc00, #009900);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 255, 0, 0.3);
+        }
+
+        .btn-direct-attendance:active {
+            transform: translateY(0);
+        }
+
+        /* 動畫效果 */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
         /* 浮動按鈕 */
         .refresh-button {
             position: fixed;
@@ -527,13 +583,13 @@
         <div class="attendance-section">
             <h3><i class="fas fa-calendar-check"></i> 快速簽到功能</h3>
             <div class="attendance-buttons">
-                <button class="btn-attendance" onclick="openAttendanceSystem()">
+                <button class="btn-attendance" id="openAttendanceBtn">
                     <i class="fas fa-sign-in-alt"></i> 開啟簽到系統
                 </button>
-                <button class="btn-attendance" onclick="quickAttendance()">
+                <button class="btn-attendance" id="quickAttendanceBtn">
                     <i class="fas fa-bolt"></i> 快速簽到
                 </button>
-                <button class="btn-attendance" onclick="viewAttendanceReport()">
+                <button class="btn-attendance" id="viewReportBtn">
                     <i class="fas fa-chart-bar"></i> 查看報表
                 </button>
             </div>
@@ -604,14 +660,15 @@
         // 載入行事曆資料
         async function loadCalendarData() {
             try {
-                const response = await fetch('/api/calendar');
+                console.log('🚀 開始載入完整事件數據...');
+                const response = await fetch('/api/events');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
                 
-                if (data.success && data.events) {
-                    allEvents = data.events;
+                if (data.success && data.data) {
+                    allEvents = data.data;
                     console.log(`✅ 載入 ${allEvents.length} 個事件`);
                 } else {
                     throw new Error(data.error || '載入行事曆資料失敗');
@@ -627,15 +684,16 @@
         // 載入講師列表
         async function loadInstructors() {
             try {
-                const response = await fetch('/api/instructors');
+                const response = await fetch('/api/teachers');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
                 
-                if (data.success && data.instructors) {
-                    populateInstructorDropdown(data.instructors);
-                    console.log(`✅ 載入 ${data.instructors.length} 個講師`);
+                if (data.success && data.teachers) {
+                    const instructorNames = data.teachers.map(teacher => teacher.name);
+                    populateInstructorDropdown(instructorNames);
+                    console.log(`✅ 載入 ${instructorNames.length} 個講師`);
                 } else {
                     throw new Error(data.error || '載入講師列表失敗');
                 }
@@ -703,6 +761,19 @@
             // 簽到系統選單
             document.getElementById('attendanceMenu').addEventListener('click', function() {
                 openAttendanceSystem();
+            });
+
+            // 簽到功能按鈕
+            document.getElementById('openAttendanceBtn').addEventListener('click', function() {
+                openAttendanceSystem();
+            });
+
+            document.getElementById('quickAttendanceBtn').addEventListener('click', function() {
+                quickAttendance();
+            });
+
+            document.getElementById('viewReportBtn').addEventListener('click', function() {
+                viewAttendanceReport();
             });
         }
 
@@ -821,6 +892,20 @@
             }
 
             container.innerHTML = filteredEvents.map(event => createEventCard(event)).join('');
+            
+            // 添加直接簽到按鈕的事件監聽器
+            setTimeout(() => {
+                const directAttendanceBtns = container.querySelectorAll('.btn-direct-attendance');
+                directAttendanceBtns.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const title = this.dataset.eventTitle;
+                        const instructor = this.dataset.eventInstructor;
+                        const start = this.dataset.eventStart;
+                        const end = this.dataset.eventEnd;
+                        handleDirectAttendance(title, instructor, start, end);
+                    });
+                });
+            }, 100);
         }
 
         // 創建事件卡片
@@ -836,8 +921,13 @@
                 weekday: 'long'
             });
 
+            // 檢查是否為今日課程
+            const today = new Date();
+            const isToday = startDate.toDateString() === today.toDateString();
+            const isFuture = startDate > today;
+
             return `
-                <div class="event-card">
+                <div class="event-card" data-event-title="${event.title || '未命名事件'}" data-event-instructor="${event.instructor || '未知講師'}" data-event-start="${event.start}" data-event-end="${event.end}">
                     <div class="event-title">
                         <i class="fas fa-calendar-day"></i>
                         ${event.title || '未命名事件'}
@@ -860,6 +950,13 @@
                         <div class="event-description">
                             <h4>說明</h4>
                             <p>${event.description}</p>
+                        </div>
+                    ` : ''}
+                    ${(isToday || isFuture) ? `
+                        <div class="event-actions">
+                            <button class="btn-attendance btn-direct-attendance" data-event-title="${event.title || '未命名事件'}" data-event-instructor="${event.instructor || '未知講師'}" data-event-start="${event.start}" data-event-end="${event.end}">
+                                <i class="fas fa-sign-in-alt"></i> 直接簽到
+                            </button>
                         </div>
                     ` : ''}
                 </div>
@@ -982,7 +1079,7 @@
                             margin-bottom: 10px;
                             cursor: pointer;
                             transition: all 0.3s ease;
-                        " onclick="selectCourseForAttendance('${event.title}', '${event.start}', '${event.end}')">
+                        " data-course-title="${event.title}" data-course-start="${event.start}" data-course-end="${event.end}">
                             <div style="font-weight: bold; color: #00ff00; margin-bottom: 5px;">
                                 ${event.title}
                             </div>
@@ -995,7 +1092,7 @@
                     `).join('')}
                 </div>
                 <div style="text-align: center; margin-top: 20px;">
-                    <button onclick="closeCourseDialog()" style="
+                    <button id="closeCourseDialogBtn" style="
                         background: rgba(255, 255, 255, 0.1);
                         border: 1px solid rgba(255, 255, 255, 0.3);
                         color: white;
@@ -1011,6 +1108,28 @@
 
             // 存儲對話框引用
             window.currentCourseDialog = dialog;
+
+            // 添加事件監聽器
+            setTimeout(() => {
+                // 課程選擇事件
+                const courseItems = dialog.querySelectorAll('[data-course-title]');
+                courseItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        const title = this.dataset.courseTitle;
+                        const start = this.dataset.courseStart;
+                        const end = this.dataset.courseEnd;
+                        selectCourseForAttendance(title, start, end);
+                    });
+                });
+
+                // 取消按鈕事件
+                const closeBtn = dialog.querySelector('#closeCourseDialogBtn');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function() {
+                        closeCourseDialog();
+                    });
+                }
+            }, 100);
         }
 
         // 選擇課程進行簽到
@@ -1077,6 +1196,71 @@
                 console.error('❌ 開啟簽到報表失敗:', error);
                 alert('開啟簽到報表失敗: ' + error.message);
             }
+        }
+
+        // 處理直接簽到
+        async function handleDirectAttendance(title, instructor, start, end) {
+            try {
+                console.log('🎯 處理直接簽到:', { title, instructor, start, end });
+                
+                const timeString = `${new Date(start).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${new Date(end).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
+                
+                // 構建簽到系統URL
+                const attendanceUrl = `https://liff.line.me/1657746214-wPgd2qQn?step=3&teacher=${encodeURIComponent(instructor)}&course=${encodeURIComponent(title)}&time=${encodeURIComponent(timeString)}`;
+                
+                // 開啟簽到系統
+                if (typeof liff !== 'undefined' && liff.isInClient()) {
+                    liff.openWindow({
+                        url: attendanceUrl,
+                        external: false
+                    });
+                    console.log('✅ 使用 LIFF 開啟直接簽到');
+                } else {
+                    window.open(attendanceUrl, '_blank', 'noopener,noreferrer');
+                    console.log('✅ 使用一般方式開啟直接簽到');
+                }
+                
+                // 顯示成功訊息
+                showSuccessMessage(`已開啟 ${instructor} 的 ${title} 簽到`);
+                
+            } catch (error) {
+                console.error('❌ 直接簽到失敗:', error);
+                alert('直接簽到失敗: ' + error.message);
+            }
+        }
+
+        // 顯示成功訊息
+        function showSuccessMessage(message) {
+            // 創建臨時提示訊息
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #00ff00, #00cc00);
+                color: #000;
+                padding: 15px 20px;
+                border-radius: 8px;
+                font-weight: bold;
+                z-index: 10000;
+                box-shadow: 0 4px 12px rgba(0, 255, 0, 0.3);
+                animation: slideInRight 0.3s ease-out;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            // 3秒後自動移除
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.style.animation = 'slideOutRight 0.3s ease-in';
+                    setTimeout(() => {
+                        if (toast.parentNode) {
+                            document.body.removeChild(toast);
+                        }
+                    }, 300);
+                }
+            }, 3000);
         }
 
         // 強制重新整理
