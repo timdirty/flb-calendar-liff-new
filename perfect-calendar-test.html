@@ -1911,20 +1911,6 @@
                         <div style="color: #666;">
                             <span id="attendanceStats">已簽到: 0 / ${students.length}</span>
                         </div>
-                        <div style="display: flex; gap: 10px;">
-                            <button id="saveAttendance" style="
-                                background: linear-gradient(135deg, #667eea, #764ba2);
-                                color: white;
-                                border: none;
-                                padding: 12px 24px;
-                                border-radius: 25px;
-                                cursor: pointer;
-                                font-weight: 600;
-                                transition: all 0.3s ease;
-                            ">
-                                <i class="fas fa-save"></i> 儲存簽到記錄
-                            </button>
-                        </div>
                     </div>
                 `;
                 
@@ -2027,51 +2013,98 @@
         
         // 設置簽到事件監聽器
         function setupAttendanceEventListeners(teacher, course, time, start, end) {
-            const attendanceData = new Map();
-            
             // 出席按鈕
             document.querySelectorAll('.present-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
+                btn.addEventListener('click', async function() {
                     const studentId = this.dataset.studentId;
-                    const currentStatus = attendanceData.get(studentId);
+                    const studentItem = document.querySelector(`[data-student-id="${studentId}"]`);
+                    const studentName = studentItem ? 
+                        studentItem.querySelector('.student-name')?.textContent || studentId : 
+                        studentId;
                     
-                    // 如果已經是出席狀態，則取消選擇
-                    if (currentStatus === 'present') {
-                        attendanceData.delete(studentId);
-                        updateStudentStatus(studentId, null);
-                    } else {
-                        // 設定為出席狀態
-                        attendanceData.set(studentId, 'present');
-                        updateStudentStatus(studentId, 'present');
-                    }
-                    updateAttendanceStats();
+                    // 立即發送出席記錄
+                    await saveSingleAttendanceRecord(teacher, course, time, start, end, studentId, studentName, 'present');
                 });
             });
             
             // 缺席按鈕
             document.querySelectorAll('.absent-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
+                btn.addEventListener('click', async function() {
                     const studentId = this.dataset.studentId;
-                    const currentStatus = attendanceData.get(studentId);
+                    const studentItem = document.querySelector(`[data-student-id="${studentId}"]`);
+                    const studentName = studentItem ? 
+                        studentItem.querySelector('.student-name')?.textContent || studentId : 
+                        studentId;
                     
-                    // 如果已經是缺席狀態，則取消選擇
-                    if (currentStatus === 'absent') {
-                        attendanceData.delete(studentId);
-                        updateStudentStatus(studentId, null);
-                    } else {
-                        // 設定為缺席狀態
-                        attendanceData.set(studentId, 'absent');
-                        updateStudentStatus(studentId, 'absent');
-                    }
-                    updateAttendanceStats();
+                    // 立即發送缺席記錄
+                    await saveSingleAttendanceRecord(teacher, course, time, start, end, studentId, studentName, 'absent');
                 });
             });
-            
-            
-            // 儲存按鈕
-            document.getElementById('saveAttendance').addEventListener('click', async function() {
-                await saveAttendanceRecords(teacher, course, time, start, end, attendanceData);
-            });
+        }
+        
+        // 儲存單筆簽到記錄
+        async function saveSingleAttendanceRecord(teacher, course, time, start, end, studentId, studentName, status) {
+            try {
+                console.log('💾 立即儲存單筆簽到記錄:', { teacher, course, time, studentId, studentName, status });
+                
+                // 獲取今天的日期
+                const today = new Date().toISOString().split('T')[0];
+                
+                // 構建單筆簽到記錄
+                const attendanceRecord = {
+                    studentName: studentName,
+                    studentId: studentId,
+                    date: today,
+                    present: status === 'present' ? true : false,
+                    teacher: teacher,
+                    course: course,
+                    time: time
+                };
+                
+                console.log('📤 準備儲存的單筆記錄:', attendanceRecord);
+                
+                // 使用後端代理 API
+                const proxyUrl = '/api/proxy/google-sheets';
+                const payload = {
+                    action: 'updateAttendance',
+                    records: [attendanceRecord] // 包裝成陣列
+                };
+                
+                console.log('📤 發送代理請求:', { proxyUrl, payload });
+                
+                const response = await fetch(proxyUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`代理 API 請求失敗: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('📥 代理 API 回應:', data);
+                
+                if (!data.success) {
+                    console.error('❌ API 返回失敗:', data);
+                    alert(`儲存失敗: ${data.error || '未知錯誤'}\n\n請重試。`);
+                    return;
+                }
+                
+                // 更新學生狀態顯示
+                updateStudentStatus(studentId, status);
+                updateAttendanceStats();
+                
+                // 顯示成功訊息
+                const statusText = status === 'present' ? '出席' : '缺席';
+                showSuccessMessage(`${studentName} 已標記為 ${statusText}！`);
+                
+            } catch (error) {
+                console.error('❌ 儲存單筆簽到記錄失敗:', error);
+                alert(`儲存失敗: ${error.message}\n\n請重試。`);
+            }
         }
         
         // 更新學生狀態
