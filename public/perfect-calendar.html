@@ -1781,6 +1781,70 @@
                 box-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 215, 0, 0.4);
             }
         }
+        
+        @keyframes liquidFlow {
+            0% { transform: translateX(-100%) rotate(0deg); }
+            50% { transform: translateX(0%) rotate(180deg); }
+            100% { transform: translateX(100%) rotate(360deg); }
+        }
+        
+        @keyframes buttonPress {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes ripple {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(4); opacity: 0; }
+        }
+        
+        @keyframes shimmer2 {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        /* 液態毛玻璃效果 */
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .glassmorphism-dark {
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        
+        .liquid-button {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .liquid-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shimmer2 2s infinite;
+        }
+        
+        .liquid-button:hover::before {
+            animation: shimmer2 0.8s infinite;
+        }
 
         /* 微交互效果 */
         .smooth-hover {
@@ -2983,6 +3047,42 @@
 
         .lesson-button.minecraft {
             background: linear-gradient(135deg, var(--minecraft-color) 0%, #55efc4 100%);
+        }
+
+        /* 直接簽到按鈕樣式 */
+        .attendance-section {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .direct-attendance-btn {
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.8), rgba(32, 201, 151, 0.7));
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 12px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 700;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .direct-attendance-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.5);
+        }
+
+        .direct-attendance-btn:active {
+            transform: scale(0.95);
+        }
+
+        .direct-attendance-btn i {
+            margin-right: 8px;
         }
 
         /* 講師底色 */
@@ -5760,6 +5860,15 @@ async function loadTodayEvents() {
                     </div>
                     
                     ${lessonButton}
+                    
+                    <!-- 直接簽到按鈕 -->
+                    <div class="attendance-section">
+                        <button class="direct-attendance-btn liquid-button" 
+                                onclick="handleDirectAttendance('${event.title.replace(/'/g, "\\'")}', '${event.instructor.replace(/'/g, "\\'")}', '${event.start}', '${event.end}')"
+                                title="直接進行課程簽到">
+                            <i class="fas fa-calendar-check"></i> 直接簽到
+                        </button>
+                    </div>
                 </div>
             `;
         }
@@ -5939,6 +6048,927 @@ async function loadTodayEvents() {
             }
           });
           }
+
+        // ==================== 簽到系統功能 ====================
+        
+        // 特殊事件類型定義
+        const SPECIAL_EVENT_TYPES = {
+            "停課": ["停課", "取消", "暫停", "休息", "放假", "請假"],
+            "體驗": ["體驗", "體驗課", "體驗班", "體課", "體"],
+            "代課": ["代課", "代理", "支援", "代"],
+            "補課": ["補課", "調課", "延後", "提前"]
+        };
+
+        // 模糊匹配講師名稱
+        function findMatchingInstructor(targetInstructor, availableInstructors) {
+            if (!targetInstructor || !availableInstructors || availableInstructors.length === 0) {
+                return null;
+            }
+
+            const target = targetInstructor.trim().toLowerCase();
+            
+            // 1. 完全匹配（不區分大小寫）
+            let exactMatch = availableInstructors.find(instructor => 
+                instructor.toLowerCase() === target
+            );
+            if (exactMatch) {
+                console.log(`✅ 完全匹配找到講師: ${exactMatch}`);
+                return exactMatch;
+            }
+
+            // 2. 包含匹配
+            let containsMatch = availableInstructors.find(instructor => 
+                instructor.toLowerCase().includes(target) || target.includes(instructor.toLowerCase())
+            );
+            if (containsMatch) {
+                console.log(`✅ 包含匹配找到講師: ${containsMatch}`);
+                return containsMatch;
+            }
+
+            // 3. 模糊匹配（使用 Levenshtein 距離）
+            let bestMatch = null;
+            let bestScore = Infinity;
+            const threshold = 3; // 最大編輯距離
+
+            for (const instructor of availableInstructors) {
+                const distance = levenshteinDistance(target, instructor.toLowerCase());
+                if (distance <= threshold && distance < bestScore) {
+                    bestScore = distance;
+                    bestMatch = instructor;
+                }
+            }
+
+            if (bestMatch) {
+                console.log(`✅ 模糊匹配找到講師: ${bestMatch} (距離: ${bestScore})`);
+                return bestMatch;
+            }
+
+            console.log(`❌ 找不到匹配的講師: ${targetInstructor}`);
+            return null;
+        }
+
+        // Levenshtein 距離算法
+        function levenshteinDistance(str1, str2) {
+            const matrix = [];
+            const len1 = str1.length;
+            const len2 = str2.length;
+
+            for (let i = 0; i <= len2; i++) {
+                matrix[i] = [i];
+            }
+
+            for (let j = 0; j <= len1; j++) {
+                matrix[0][j] = j;
+            }
+
+            for (let i = 1; i <= len2; i++) {
+                for (let j = 1; j <= len1; j++) {
+                    if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+
+            return matrix[len2][len1];
+        }
+
+        // 移除特殊事件類型
+        function removeSpecialEventTypes(timeInfo) {
+            if (!timeInfo) return timeInfo;
+            
+            let cleanedTimeInfo = timeInfo;
+            
+            // 移除特殊事件類型
+            for (const [category, keywords] of Object.entries(SPECIAL_EVENT_TYPES)) {
+                for (const keyword of keywords) {
+                    const regex = new RegExp(`\\s*${keyword}\\s*`, 'gi');
+                    cleanedTimeInfo = cleanedTimeInfo.replace(regex, ' ');
+                }
+            }
+            
+            // 移除週數資訊
+            cleanedTimeInfo = cleanedTimeInfo.replace(/\s*第\d+週\s*/gi, ' ');
+            
+            // 清理多餘空格
+            cleanedTimeInfo = cleanedTimeInfo.replace(/\s+/g, ' ').trim();
+            
+            return cleanedTimeInfo;
+        }
+
+        // 解析課程標題
+        function parseCourseTitle(fullTitle) {
+            if (!fullTitle) {
+                return { courseName: '', timeInfo: '' };
+            }
+
+            console.log(`🔍 解析課程標題: "${fullTitle}"`);
+
+            // 定義多種課程標題格式的正則表達式
+            const patterns = [
+                // 格式1: "ESM 六 9:30-10:30 到府 第4週請假"
+                /^([A-Z]+)\s+([一二三四五六日])\s+(\d{1,2}:\d{2})-(\d{1,2}:\d{2})\s+(.+?)(?:\s+第\d+週.*)?$/,
+                // 格式2: "BOOST 六 1530-1700 到府"
+                /^([A-Z]+)\s+([一二三四五六日])\s+(\d{4})-(\d{4})\s+(.+?)(?:\s+第\d+週.*)?$/,
+                // 格式3: "SPIKE 六 9:30-10:30"
+                /^([A-Z]+)\s+([一二三四五六日])\s+(\d{1,2}:\d{2})-(\d{1,2}:\d{2})(?:\s+(.+?))?(?:\s+第\d+週.*)?$/,
+                // 格式4: "ESM 六 1530-1700"
+                /^([A-Z]+)\s+([一二三四五六日])\s+(\d{4})-(\d{4})(?:\s+(.+?))?(?:\s+第\d+週.*)?$/,
+                // 格式5: "ESM 六 0930-1100 到府"
+                /^([A-Z]+)\s+([一二三四五六日])\s+(\d{4})-(\d{4})\s+(.+?)(?:\s+第\d+週.*)?$/
+            ];
+
+            for (const pattern of patterns) {
+                const match = fullTitle.match(pattern);
+                if (match) {
+                    const courseName = match[1];
+                    const weekday = match[2];
+                    const startTime = match[3];
+                    const endTime = match[4];
+                    const location = match[5] || '';
+
+                    // 格式化時間
+                    const formattedStartTime = formatTime(startTime);
+                    const formattedEndTime = formatTime(endTime);
+
+                    // 構建時間資訊字串
+                    let timeInfo = `${weekday} ${formattedStartTime}-${formattedEndTime}`;
+                    if (location) {
+                        timeInfo += ` ${location}`;
+                    }
+
+                    // 移除特殊事件類型
+                    timeInfo = removeSpecialEventTypes(timeInfo);
+
+                    console.log(`✅ 解析成功: 課程="${courseName}", 時間資訊="${timeInfo}"`);
+                    return { courseName, timeInfo };
+                }
+            }
+
+            // 如果沒有匹配到任何格式，返回原始標題
+            console.log(`⚠️ 無法解析課程標題格式: "${fullTitle}"`);
+            return { courseName: fullTitle, timeInfo: '' };
+        }
+
+        // 格式化時間
+        function formatTime(timeStr) {
+            if (!timeStr) return '';
+            
+            // 如果已經是 HH:MM 格式，直接返回
+            if (timeStr.includes(':')) {
+                return timeStr;
+            }
+            
+            // 如果是 HHHH 格式，轉換為 HH:MM
+            if (timeStr.length === 4) {
+                const hours = timeStr.substring(0, 2).padStart(2, '0');
+                const minutes = timeStr.substring(2, 4).padStart(2, '0');
+                return `${hours}:${minutes}`;
+            }
+            
+            return timeStr;
+        }
+
+        // 獲取可用講師列表
+        async function getAvailableInstructors() {
+            try {
+                const response = await fetch('/api/teachers');
+                const data = await response.json();
+                
+                if (data.success && data.teachers) {
+                    return data.teachers.map(teacher => teacher.name);
+                } else {
+                    console.warn('⚠️ 無法獲取講師列表，使用預設列表');
+                    return ['Tim', 'Ted', 'Agnes', 'Hansen', 'James', 'Ivan', 'Xian', 'Eason', 'Bella', 'Gillian', 'Daniel', 'Philp', 'Tony', 'Jacky', 'Weinie', 'test', 'Dirty', 'Melody', '患水'];
+                }
+            } catch (error) {
+                console.error('❌ 獲取講師列表失敗:', error);
+                return ['Tim', 'Ted', 'Agnes', 'Hansen', 'James', 'Ivan', 'Xian', 'Eason', 'Bella', 'Gillian', 'Daniel', 'Philp', 'Tony', 'Jacky', 'Weinie', 'test', 'Dirty', 'Melody', '患水'];
+            }
+        }
+
+        // 處理直接簽到
+        async function handleDirectAttendance(title, instructor, start, end) {
+            try {
+                console.log('🎯 處理直接簽到:', { title, instructor, start, end });
+                
+                // 解析課程標題，分離課程名稱和時間資訊
+                const { courseName, timeInfo } = parseCourseTitle(title);
+                console.log(`📝 解析結果: 課程="${courseName}", 時間資訊="${timeInfo}"`);
+                
+                // 獲取可用講師列表並進行模糊比對
+                const availableInstructors = await getAvailableInstructors();
+                const matchedInstructor = findMatchingInstructor(instructor, availableInstructors);
+                
+                if (!matchedInstructor) {
+                    const errorMsg = `講師 "${instructor}" 不存在。可用的講師：${availableInstructors.join(', ')}`;
+                    console.error('❌', errorMsg);
+                    alert(errorMsg);
+                    return;
+                }
+
+                // 如果找到匹配的講師，使用匹配的名稱
+                if (matchedInstructor !== instructor) {
+                    console.log(`🔄 講師名稱已修正: "${instructor}" → "${matchedInstructor}"`);
+                    instructor = matchedInstructor;
+                }
+                
+                // 使用解析後的課程名稱和時間資訊
+                const finalCourseName = courseName;
+                const finalTimeString = timeInfo || `${new Date(start).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${new Date(end).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
+                
+                // 開啟原生簽到系統
+                await openNativeAttendanceSystem(matchedInstructor, finalCourseName, finalTimeString, start, end);
+                
+            } catch (error) {
+                console.error('❌ 直接簽到失敗:', error);
+                alert('直接簽到失敗: ' + error.message);
+            }
+        }
+
+        // 開啟原生簽到系統
+        async function openNativeAttendanceSystem(teacher, course, time, start, end) {
+            try {
+                console.log('🎯 開啟原生簽到系統:', { teacher, course, time, start, end });
+                
+                // 創建簽到系統模態框
+                const modal = document.createElement('div');
+                modal.id = 'attendanceModal';
+                modal.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.6);
+                    backdrop-filter: blur(20px);
+                    -webkit-backdrop-filter: blur(20px);
+                    z-index: 10000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    animation: fadeIn 0.3s ease-out;
+                `;
+                
+                modal.innerHTML = `
+                    <div class="glassmorphism" style="
+                        background: rgba(255, 255, 255, 0.9);
+                        backdrop-filter: blur(20px);
+                        -webkit-backdrop-filter: blur(20px);
+                        border-radius: 25px;
+                        padding: 30px;
+                        max-width: 90%;
+                        max-height: 90%;
+                        width: 800px;
+                        overflow-y: auto;
+                        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+                        animation: slideInUp 0.3s ease-out;
+                        border: 1px solid rgba(255, 255, 255, 0.3);
+                    ">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2 style="margin: 0; color: #333; font-size: 1.5rem;">
+                                <i class="fas fa-calendar-check" style="color: #667eea; margin-right: 10px;"></i>
+                                課程簽到系統
+                            </h2>
+                            <button id="closeAttendanceModal" style="
+                                background: none;
+                                border: none;
+                                font-size: 1.5rem;
+                                color: #666;
+                                cursor: pointer;
+                                padding: 5px;
+                                border-radius: 50%;
+                                width: 40px;
+                                height: 40px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                transition: all 0.3s ease;
+                            " onmouseover="this.style.background='rgba(220, 53, 69, 0.1)'; this.style.color='#dc3545'" onmouseout="this.style.background='none'; this.style.color='#666'">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px; padding: 15px; background: rgba(102, 126, 234, 0.1); border-radius: 10px; border-left: 4px solid #667eea;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9rem;">
+                                <div><strong>講師:</strong> ${teacher}</div>
+                                <div><strong>課程:</strong> ${course}</div>
+                                <div><strong>時間:</strong> ${time}</div>
+                                <div><strong>日期:</strong> ${new Date(start).toLocaleDateString('zh-TW')}</div>
+                            </div>
+                        </div>
+                        
+                        <div id="attendanceContent">
+                            <div style="text-align: center; padding: 60px 40px; color: #666;">
+                                <div style="
+                                    width: 60px;
+                                    height: 60px;
+                                    border: 4px solid #f3f3f3;
+                                    border-top: 4px solid #667eea;
+                                    border-radius: 50%;
+                                    animation: spin 1s linear infinite;
+                                    margin: 0 auto 20px;
+                                    position: relative;
+                                ">
+                                    <div style="
+                                        position: absolute;
+                                        top: 50%;
+                                        left: 50%;
+                                        transform: translate(-50%, -50%);
+                                        width: 30px;
+                                        height: 30px;
+                                        background: linear-gradient(45deg, #667eea, #764ba2);
+                                        border-radius: 50%;
+                                        animation: pulse 1.5s ease-in-out infinite;
+                                    "></div>
+                                </div>
+                                <h3 style="margin: 0; color: #333; animation: fadeIn 0.6s ease-out;">
+                                    <i class="fas fa-users" style="margin-right: 8px; color: #667eea;"></i>
+                                    載入學生名單中...
+                                </h3>
+                                <div style="
+                                    width: 200px;
+                                    height: 4px;
+                                    background: linear-gradient(90deg, #667eea, #764ba2);
+                                    margin: 20px auto 0;
+                                    border-radius: 2px;
+                                    position: relative;
+                                    overflow: hidden;
+                                ">
+                                    <div style="
+                                        position: absolute;
+                                        top: 0;
+                                        left: -100%;
+                                        width: 100%;
+                                        height: 100%;
+                                        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+                                        animation: shimmer 2s infinite;
+                                    "></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                
+                // 設置關閉按鈕事件
+                document.getElementById('closeAttendanceModal').addEventListener('click', function() {
+                    modal.remove();
+                });
+                
+                // 點擊背景關閉
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.remove();
+                    }
+                });
+                
+                // 載入學生名單
+                await loadCourseStudents(teacher, course, time, start, end);
+                
+            } catch (error) {
+                console.error('❌ 開啟簽到系統失敗:', error);
+                alert('開啟簽到系統失敗: ' + error.message);
+            }
+        }
+
+        // 載入課程學生
+        async function loadCourseStudents(teacher, course, time, start, end) {
+            try {
+                console.log('📚 載入課程學生:', { teacher, course, time, start, end });
+                
+                const response = await fetch('/api/proxy/google-sheets', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'getRosterAttendance',
+                        course: course,
+                        period: time
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('📊 學生資料回應:', data);
+                
+                if (data.success && data.students) {
+                    displayStudents(data.students, teacher, course, time, start, end);
+                } else {
+                    // 使用模擬資料
+                    console.warn('⚠️ 使用模擬學生資料');
+                    const mockStudents = [
+                        { id: 'S001', name: '張小明', attendance: [] },
+                        { id: 'S002', name: '李小花', attendance: [] },
+                        { id: 'S003', name: '王大華', attendance: [] },
+                        { id: 'S004', name: '陳小美', attendance: [] },
+                        { id: 'S005', name: '林志明', attendance: [] }
+                    ];
+                    displayStudents(mockStudents, teacher, course, time, start, end);
+                }
+                
+            } catch (error) {
+                console.error('❌ 載入學生失敗:', error);
+                // 使用模擬資料
+                const mockStudents = [
+                    { id: 'S001', name: '張小明', attendance: [] },
+                    { id: 'S002', name: '李小花', attendance: [] },
+                    { id: 'S003', name: '王大華', attendance: [] },
+                    { id: 'S004', name: '陳小美', attendance: [] },
+                    { id: 'S005', name: '林志明', attendance: [] }
+                ];
+                displayStudents(mockStudents, teacher, course, time, start, end);
+            }
+        }
+
+        // 顯示學生列表
+        function displayStudents(students, teacher, course, time, start, end) {
+            const attendanceContent = document.getElementById('attendanceContent');
+            if (!attendanceContent) return;
+            
+            const today = new Date().toISOString().split('T')[0];
+            
+            const studentsHtml = students.map(student => {
+                // 檢查今天的簽到狀態
+                const todayAttendance = student.attendance.find(record => record.date === today);
+                let currentStatus = null;
+                let statusText = '';
+                
+                if (todayAttendance) {
+                    if (todayAttendance.present === true) {
+                        currentStatus = 'present';
+                        statusText = '✅ 已出席';
+                    } else if (todayAttendance.present === false) {
+                        currentStatus = 'absent';
+                        statusText = '❌ 已缺席';
+                    } else if (todayAttendance.present === 'leave') {
+                        currentStatus = 'leave';
+                        statusText = '⚠️ 已請假';
+                    }
+                } else {
+                    currentStatus = 'pending';
+                    statusText = '⏰ 待簽到';
+                }
+                
+                // 根據狀態設定樣式
+                let statusStyles = {
+                    border: '#e9ecef',
+                    background: 'white',
+                    icon: 'fas fa-clock',
+                    iconColor: '#6c757d',
+                    statusColor: '#6c757d'
+                };
+                
+                if (currentStatus === 'present') {
+                    statusStyles = {
+                        border: '#28a745',
+                        background: 'linear-gradient(135deg, rgba(40, 167, 69, 0.25), rgba(32, 201, 151, 0.2))',
+                        icon: 'fas fa-check-circle',
+                        iconColor: '#28a745',
+                        statusColor: '#28a745',
+                        emoji: '✅'
+                    };
+                } else if (currentStatus === 'absent') {
+                    statusStyles = {
+                        border: '#dc3545',
+                        background: 'linear-gradient(135deg, rgba(220, 53, 69, 0.25), rgba(231, 76, 60, 0.2))',
+                        icon: 'fas fa-times-circle',
+                        iconColor: '#dc3545',
+                        statusColor: '#dc3545',
+                        emoji: '❌'
+                    };
+                } else if (currentStatus === 'leave') {
+                    statusStyles = {
+                        border: '#ffc107',
+                        background: 'linear-gradient(135deg, rgba(255, 193, 7, 0.25), rgba(243, 156, 18, 0.2))',
+                        icon: 'fas fa-exclamation-triangle',
+                        iconColor: '#ffc107',
+                        statusColor: '#ffc107',
+                        emoji: '⚠️'
+                    };
+                } else if (currentStatus === 'pending') {
+                    statusStyles = {
+                        border: '#6c757d',
+                        background: 'linear-gradient(135deg, rgba(108, 117, 125, 0.2), rgba(73, 80, 87, 0.15))',
+                        icon: 'fas fa-clock',
+                        iconColor: '#6c757d',
+                        statusColor: '#6c757d',
+                        emoji: '⏰'
+                    };
+                }
+                
+                return `
+                    <div class="student-item glassmorphism ${currentStatus ? currentStatus : ''}" data-student-id="${student.id}" style="
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        padding: 20px;
+                        border: 2px solid ${statusStyles.border};
+                        border-radius: 20px;
+                        background: ${statusStyles.background};
+                        backdrop-filter: blur(20px);
+                        -webkit-backdrop-filter: blur(20px);
+                        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                        animation: fadeIn 0.6s ease-out;
+                        position: relative;
+                        overflow: hidden;
+                        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+                    ">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="
+                                width: 40px;
+                                height: 40px;
+                                border-radius: 50%;
+                                background: linear-gradient(135deg, #667eea, #764ba2);
+                                color: white;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-weight: bold;
+                                font-size: 1.1rem;
+                            ">
+                                ${student.name.charAt(0)}
+                            </div>
+                            <div style="flex: 1;">
+                                <div class="student-name" style="font-weight: bold; color: #333; font-size: 1.1rem; margin-bottom: 4px;">${student.name}</div>
+                                <div style="color: #666; font-size: 0.9rem; margin-bottom: 6px;">${student.id}</div>
+                                <div style="
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 8px;
+                                    font-size: 0.9rem;
+                                    font-weight: 600;
+                                    color: ${statusStyles.statusColor};
+                                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+                                ">
+                                    <span style="font-size: 1.1rem;">${statusStyles.emoji}</span>
+                                    <span>${statusText}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="attendance-btn present-btn liquid-button" data-student-id="${student.id}" style="
+                                background: linear-gradient(135deg, rgba(40, 167, 69, 0.8), rgba(32, 201, 151, 0.7));
+                                color: white;
+                                border: 1px solid rgba(255, 255, 255, 0.3);
+                                padding: 12px 24px;
+                                border-radius: 30px;
+                                cursor: pointer;
+                                font-size: 0.9rem;
+                                font-weight: 700;
+                                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                                opacity: 1;
+                                position: relative;
+                                overflow: hidden;
+                                backdrop-filter: blur(10px);
+                                -webkit-backdrop-filter: blur(10px);
+                                box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+                                ${currentStatus === 'present' ? 'transform: scale(1.05); box-shadow: 0 8px 25px rgba(40, 167, 69, 0.5);' : ''}
+                            " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 8px 25px rgba(40, 167, 69, 0.5)'" onmouseout="this.style.transform='${currentStatus === 'present' ? 'scale(1.05)' : 'scale(1)'}'; this.style.boxShadow='${currentStatus === 'present' ? '0 8px 25px rgba(40, 167, 69, 0.5)' : '0 4px 15px rgba(40, 167, 69, 0.3)'}'">
+                                <span style="margin-right: 8px; font-size: 1rem;">✅</span> 出席
+                            </button>
+                            <button class="attendance-btn absent-btn liquid-button" data-student-id="${student.id}" style="
+                                background: linear-gradient(135deg, rgba(220, 53, 69, 0.8), rgba(231, 76, 60, 0.7));
+                                color: white;
+                                border: 1px solid rgba(255, 255, 255, 0.3);
+                                padding: 12px 24px;
+                                border-radius: 30px;
+                                cursor: pointer;
+                                font-size: 0.9rem;
+                                font-weight: 700;
+                                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                                opacity: 1;
+                                position: relative;
+                                overflow: hidden;
+                                backdrop-filter: blur(10px);
+                                -webkit-backdrop-filter: blur(10px);
+                                box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+                                ${currentStatus === 'absent' ? 'transform: scale(1.05); box-shadow: 0 8px 25px rgba(220, 53, 69, 0.5);' : ''}
+                            " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 8px 25px rgba(220, 53, 69, 0.5)'" onmouseout="this.style.transform='${currentStatus === 'absent' ? 'scale(1.05)' : 'scale(1)'}'; this.style.boxShadow='${currentStatus === 'absent' ? '0 8px 25px rgba(220, 53, 69, 0.5)' : '0 4px 15px rgba(220, 53, 69, 0.3)'}'">
+                                <span style="margin-right: 8px; font-size: 1rem;">❌</span> 缺席
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+            
+            attendanceContent.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 15px 0; color: #333; font-size: 1.2rem;">
+                        <i class="fas fa-users" style="color: #667eea; margin-right: 8px;"></i>
+                        學生名單 (${students.length} 人)
+                    </h3>
+                    <div id="studentsList" style="display: flex; flex-direction: column; gap: 15px;">
+                        ${studentsHtml}
+                    </div>
+                </div>
+                
+                <div style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 15px;
+                    background: rgba(102, 126, 234, 0.1);
+                    border-radius: 10px;
+                    margin-top: 20px;
+                ">
+                    <div id="attendanceStats" style="font-size: 0.9rem; color: #666;">
+                        統計載入中...
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button id="refreshStudents" style="
+                            background: rgba(102, 126, 234, 0.8);
+                            color: white;
+                            border: none;
+                            padding: 8px 16px;
+                            border-radius: 20px;
+                            cursor: pointer;
+                            font-size: 0.85rem;
+                            font-weight: 600;
+                            transition: all 0.3s ease;
+                        " onmouseover="this.style.background='rgba(102, 126, 234, 1)'" onmouseout="this.style.background='rgba(102, 126, 234, 0.8)'">
+                            <i class="fas fa-sync-alt" style="margin-right: 5px;"></i> 重新載入
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // 設置事件監聽器
+            setupAttendanceEventListeners(teacher, course, time, start, end);
+            updateAttendanceStats();
+            
+            // 重新載入按鈕事件
+            document.getElementById('refreshStudents').addEventListener('click', function() {
+                loadCourseStudents(teacher, course, time, start, end);
+            });
+        }
+
+        // 設置簽到事件監聽器
+        function setupAttendanceEventListeners(teacher, course, time, start, end) {
+            // 出席按鈕
+            document.querySelectorAll('.present-btn').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const studentId = this.dataset.studentId;
+                    const studentItem = document.querySelector(`[data-student-id="${studentId}"]`);
+                    const studentName = studentItem ? 
+                        studentItem.querySelector('.student-name')?.textContent || studentId : 
+                        studentId;
+                    
+                    // 添加按鈕載入動畫
+                    this.style.animation = 'buttonPress 0.3s ease-out';
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i> 處理中...';
+                    this.style.pointerEvents = 'none';
+                    
+                    // 立即發送出席記錄
+                    await saveSingleAttendanceRecord(teacher, course, time, start, end, studentId, studentName, 'present');
+                    
+                    // 恢復按鈕狀態
+                    setTimeout(() => {
+                        this.innerHTML = '<span style="margin-right: 8px; font-size: 1rem;">✅</span> 出席';
+                        this.style.pointerEvents = 'auto';
+                        this.style.animation = '';
+                    }, 1000);
+                });
+            });
+            
+            // 缺席按鈕
+            document.querySelectorAll('.absent-btn').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const studentId = this.dataset.studentId;
+                    const studentItem = document.querySelector(`[data-student-id="${studentId}"]`);
+                    const studentName = studentItem ? 
+                        studentItem.querySelector('.student-name')?.textContent || studentId : 
+                        studentId;
+                    
+                    // 添加按鈕載入動畫
+                    this.style.animation = 'buttonPress 0.3s ease-out';
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i> 處理中...';
+                    this.style.pointerEvents = 'none';
+                    
+                    // 立即發送缺席記錄
+                    await saveSingleAttendanceRecord(teacher, course, time, start, end, studentId, studentName, 'absent');
+                    
+                    // 恢復按鈕狀態
+                    setTimeout(() => {
+                        this.innerHTML = '<span style="margin-right: 8px; font-size: 1rem;">❌</span> 缺席';
+                        this.style.pointerEvents = 'auto';
+                        this.style.animation = '';
+                    }, 1000);
+                });
+            });
+        }
+
+        // 儲存單筆簽到記錄
+        async function saveSingleAttendanceRecord(teacher, course, time, start, end, studentId, studentName, status) {
+            try {
+                console.log('💾 儲存單筆簽到記錄:', { teacher, course, time, start, end, studentId, studentName, status });
+                
+                const today = new Date().toISOString().split('T')[0];
+                const attendanceRecord = {
+                    course: course,
+                    period: time,
+                    action: 'update',
+                    name: studentName,
+                    date: today,
+                    present: status === 'present'
+                };
+                
+                console.log('📤 發送簽到記錄:', attendanceRecord);
+                
+                const response = await fetch('/api/proxy/google-sheets', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(attendanceRecord)
+                });
+                
+                const data = await response.json();
+                console.log('📥 API 回應:', data);
+                
+                if (data.success) {
+                    // 檢查是否有結果陣列
+                    if (data.results && Array.isArray(data.results)) {
+                        const successResults = data.results.filter(r => r.success === true);
+                        const failedResults = data.results.filter(r => r.success === false);
+                        
+                        if (successResults.length > 0) {
+                            // 有成功的記錄，更新UI
+                            updateStudentStatus(studentId, status);
+                            updateAttendanceStats();
+                            return;
+                        } else if (failedResults.length > 0) {
+                            // 所有記錄都失敗，顯示錯誤
+                            console.error('❌ API 返回失敗:', data);
+                            const errorMessage = failedResults[0].error || '未知錯誤';
+                            alert(`儲存失敗: ${errorMessage}\n\n請重試。`);
+                            return;
+                        }
+                    } else {
+                        // 沒有結果陣列，可能是舊格式
+                        console.warn('⚠️ API 回應格式異常:', data);
+                    }
+                } else {
+                    // API 返回失敗
+                    console.error('❌ API 返回失敗:', data);
+                    const errorMessage = data.error || data.message || '未知錯誤';
+                    alert(`儲存失敗: ${errorMessage}\n\n請重試。`);
+                    return;
+                }
+                
+                // 更新學生狀態顯示
+                updateStudentStatus(studentId, status);
+                updateAttendanceStats();
+                
+            } catch (error) {
+                console.error('❌ 儲存單筆簽到記錄失敗:', error);
+                alert(`儲存失敗: ${error.message}\n\n請重試。`);
+            }
+        }
+
+        // 更新學生狀態
+        function updateStudentStatus(studentId, status) {
+            const studentItem = document.querySelector(`[data-student-id="${studentId}"]`);
+            if (!studentItem) return;
+
+            // 添加狀態變更動畫
+            studentItem.style.animation = 'statusChange 0.6s ease-out';
+            studentItem.classList.remove('present', 'absent', 'leave', 'pending');
+
+            // 重置所有按鈕樣式
+            const presentBtn = studentItem.querySelector('.present-btn');
+            const absentBtn = studentItem.querySelector('.absent-btn');
+            
+            if (presentBtn) {
+                presentBtn.style.transform = 'scale(1)';
+                presentBtn.style.boxShadow = '0 4px 15px rgba(40, 167, 69, 0.3)';
+            }
+            if (absentBtn) {
+                absentBtn.style.transform = 'scale(1)';
+                absentBtn.style.boxShadow = '0 4px 15px rgba(220, 53, 69, 0.3)';
+            }
+
+            if (status) {
+                studentItem.classList.add(status);
+                
+                // 根據狀態設定樣式
+                let statusStyles = {
+                    border: '#e9ecef',
+                    background: 'white',
+                    icon: 'fas fa-clock',
+                    iconColor: '#6c757d',
+                    statusColor: '#6c757d',
+                    statusText: '待簽到'
+                };
+                
+                if (status === 'present') {
+                    statusStyles = {
+                        border: '#28a745',
+                        background: 'linear-gradient(135deg, rgba(40, 167, 69, 0.25), rgba(32, 201, 151, 0.2))',
+                        icon: 'fas fa-check-circle',
+                        iconColor: '#28a745',
+                        statusColor: '#28a745',
+                        statusText: '✅ 已出席',
+                        emoji: '✅'
+                    };
+                } else if (status === 'absent') {
+                    statusStyles = {
+                        border: '#dc3545',
+                        background: 'linear-gradient(135deg, rgba(220, 53, 69, 0.25), rgba(231, 76, 60, 0.2))',
+                        icon: 'fas fa-times-circle',
+                        iconColor: '#dc3545',
+                        statusColor: '#dc3545',
+                        statusText: '❌ 已缺席',
+                        emoji: '❌'
+                    };
+                } else if (status === 'leave') {
+                    statusStyles = {
+                        border: '#ffc107',
+                        background: 'linear-gradient(135deg, rgba(255, 193, 7, 0.25), rgba(243, 156, 18, 0.2))',
+                        icon: 'fas fa-exclamation-triangle',
+                        iconColor: '#ffc107',
+                        statusColor: '#ffc107',
+                        statusText: '⚠️ 已請假',
+                        emoji: '⚠️'
+                    };
+                }
+                
+                // 更新學生項目的樣式
+                studentItem.style.border = `2px solid ${statusStyles.border}`;
+                studentItem.style.background = statusStyles.background;
+                
+                // 更新狀態顯示
+                const statusDisplay = studentItem.querySelector('.student-name').nextElementSibling.nextElementSibling;
+                if (statusDisplay) {
+                    statusDisplay.innerHTML = `
+                        <span style="font-size: 1.1rem;">${statusStyles.emoji}</span>
+                        <span>${statusStyles.statusText}</span>
+                    `;
+                    statusDisplay.style.color = statusStyles.statusColor;
+                }
+                
+                // 高亮選中的按鈕並添加成功動畫
+                const selectedBtn = studentItem.querySelector(`.${status}-btn`);
+                if (selectedBtn) {
+                    selectedBtn.style.transform = 'scale(1.05)';
+                    selectedBtn.style.boxShadow = status === 'present' ? 
+                        '0 8px 25px rgba(40, 167, 69, 0.5)' : 
+                        '0 8px 25px rgba(220, 53, 69, 0.5)';
+                    selectedBtn.style.animation = 'successPulse 0.8s ease-out';
+                }
+            }
+            
+            // 清除動畫
+            setTimeout(() => {
+                studentItem.style.animation = '';
+                if (studentItem.querySelector('.present-btn')) {
+                    studentItem.querySelector('.present-btn').style.animation = '';
+                }
+                if (studentItem.querySelector('.absent-btn')) {
+                    studentItem.querySelector('.absent-btn').style.animation = '';
+                }
+            }, 600);
+        }
+
+        // 更新簽到統計
+        function updateAttendanceStats() {
+            const studentsList = document.getElementById('studentsList');
+            if (!studentsList) return;
+            
+            const students = studentsList.querySelectorAll('.student-item');
+            let presentCount = 0;
+            let absentCount = 0;
+            let leaveCount = 0;
+            let pendingCount = 0;
+            
+            students.forEach(student => {
+                if (student.classList.contains('present')) presentCount++;
+                else if (student.classList.contains('absent')) absentCount++;
+                else if (student.classList.contains('leave')) leaveCount++;
+                else pendingCount++;
+            });
+            
+            const totalCount = students.length;
+            const attendanceStats = document.getElementById('attendanceStats');
+            if (attendanceStats) {
+                attendanceStats.innerHTML = `
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <span style="color: #28a745;"><i class="fas fa-check-circle"></i> 出席: ${presentCount}</span>
+                        <span style="color: #dc3545;"><i class="fas fa-times-circle"></i> 缺席: ${absentCount}</span>
+                        <span style="color: #ffc107;"><i class="fas fa-exclamation-triangle"></i> 請假: ${leaveCount}</span>
+                        <span style="color: #6c757d;"><i class="fas fa-clock"></i> 待簽: ${pendingCount}</span>
+                        <span style="color: #333; font-weight: bold;">總計: ${totalCount}</span>
+                    </div>
+                `;
+            }
+        }
+
      </script>
   </body>
   </html>
