@@ -987,3 +987,167 @@ app.get('/api/google-script', async (req, res) => {
 });
 
 module.exports = app;
+
+        });
+    }
+});
+
+// 測試 CalDAV 連接
+app.get('/api/test-caldav', async (req, res) => {
+    try {
+        if (!caldavClient) {
+            return res.json({
+                success: false,
+                message: 'CalDAV 客戶端未初始化',
+                caldavConfig: CALDAV_CONFIG
+            });
+        }
+        
+        const calendars = await caldavClient.getCalendars();
+        res.json({
+            success: true,
+            message: 'CalDAV 連接成功',
+            calendars: calendars,
+            caldavConfig: CALDAV_CONFIG
+        });
+    } catch (error) {
+        res.json({
+            success: false,
+            message: 'CalDAV 連接失敗',
+            error: error.message,
+            caldavConfig: CALDAV_CONFIG
+        });
+    }
+});
+
+// 檢查事件來源
+app.get('/api/event-source', (req, res) => {
+    res.json({
+        caldavClient: caldavClient ? '已初始化' : '未初始化',
+        caldavConfig: CALDAV_CONFIG,
+        mockEvents: mockEvents.length
+    });
+});
+
+// 測試 CalDAV 連接
+app.get('/api/test-caldav-old', async (req, res) => {
+    try {
+        if (!caldavClient) {
+            return res.json({
+                success: false,
+                error: 'CalDAV 客戶端未初始化',
+                caldav_configured: false
+            });
+        }
+
+        console.log('測試 CalDAV 連接...');
+        const calendars = await caldavClient.getCalendars();
+        
+        res.json({
+            success: true,
+            calendars: calendars,
+            caldav_configured: true,
+            message: `成功連接到 CalDAV，找到 ${calendars.length} 個行事曆`
+        });
+    } catch (error) {
+        console.error('CalDAV 連接測試失敗:', error.message);
+        res.json({
+            success: false,
+            error: error.message,
+            caldav_configured: true,
+            message: 'CalDAV 配置正確但連接失敗'
+        });
+    }
+});
+
+// 健康檢查
+app.get('/api/health', (req, res) => {
+    res.json({
+        success: true,
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        cache_age: Date.now() - teacherCache.timestamp,
+        environment: process.env.NODE_ENV || 'development',
+        caldav_configured: caldavClient !== null
+    });
+});
+
+// 404處理
+app.use('*', (req, res) => {
+    res.status(404).json({
+        success: false,
+        error: '找不到請求的資源'
+    });
+});
+
+// 錯誤處理中間件
+app.use((error, req, res, next) => {
+    console.error('服務器錯誤:', error);
+    res.status(500).json({
+        success: false,
+        error: '內部服務器錯誤'
+    });
+});
+
+// 啟動服務器
+app.listen(PORT, () => {
+    console.log(`🚀 FLB講師行事曆LIFF應用運行在端口 ${PORT}`);
+    console.log(`🌐 主頁面: http://localhost:${PORT}`);
+    console.log(`🔧 API端點: http://localhost:${PORT}/api/teachers`);
+    console.log(`🔗 代理端點: http://localhost:${PORT}/api/google-script`);
+    console.log(`📊 健康檢查: http://localhost:${PORT}/api/health`);
+    console.log(`🌍 環境: ${process.env.NODE_ENV || 'development'}`);
+});
+
+// 優雅關閉
+process.on('SIGINT', () => {
+    console.log('\n正在關閉服務器...');
+    db.close((err) => {
+        if (err) {
+            console.error('關閉資料庫時出錯:', err);
+        } else {
+            console.log('資料庫連接已關閉');
+        }
+        process.exit(0);
+    });
+});
+
+process.on('SIGTERM', () => {
+    console.log('\n收到SIGTERM信號，正在關閉服務器...');
+    db.close((err) => {
+        if (err) {
+            console.error('關閉資料庫時出錯:', err);
+        } else {
+            console.log('資料庫連接已關閉');
+        }
+        process.exit(0);
+    });
+});
+
+// 代理 Google Apps Script API 請求
+app.get('/api/google-script', async (req, res) => {
+    try {
+        const { action, limit, offset } = req.query;
+        const url = `${GOOGLE_SCRIPT_URL}?action=${action}&limit=${limit}&offset=${offset}`;
+        
+        console.log('代理請求 Google Apps Script:', url);
+        
+        const response = await axios.get(url, {
+            headers: {
+                'User-Agent': 'FLB-Calendar-Server/1.0'
+            }
+        });
+        
+        // 設定 CORS 標頭
+        res.header('Access-Control-Allow-Origin', '*');
+        res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        res.header('Access-Control-Allow-Headers', 'Content-Type');
+        
+        res.json(response.data);
+    } catch (error) {
+        console.error('代理 Google Apps Script 請求失敗:', error);
+        res.status(500).json({ error: '代理請求失敗' });
+    }
+});
+
+module.exports = app;
