@@ -1818,10 +1818,10 @@
             }
         }
         
-        // 獲取課程學生名單（真實 API）
+        // 獲取課程學生名單（通過後端代理）
         async function getCourseStudents(teacher, course, time) {
             try {
-                console.log('📚 從 Google Sheets API 獲取學生名單:', { teacher, course, time });
+                console.log('📚 通過後端代理獲取學生名單:', { teacher, course, time });
                 
                 // 清理課程名稱和時間格式
                 const cleanCourse = course.trim();
@@ -1829,34 +1829,30 @@
                 
                 console.log('🔍 清理後的參數:', { cleanCourse, cleanTime });
                 
-                // 構建 API 請求
-                const apiUrl = 'https://script.google.com/macros/s/AKfycbzm0GD-T09Botbs52e8PyeVuA5slJh6Z0AQ7I0uUiGZiE6aWhTO2D0d3XHFrdLNv90uCw/exec';
+                // 使用後端代理 API
+                const proxyUrl = '/api/proxy/google-sheets';
                 const payload = {
                     action: 'getRosterAttendance',
                     course: cleanCourse,
                     period: cleanTime
                 };
                 
-                const headers = {
-                    'Content-Type': 'application/json',
-                    'Cookie': 'NID=525=nsWVvbAon67C2qpyiEHQA3SUio_GqBd7RqUFU6BwB97_4LHggZxLpDgSheJ7WN4w3Z4dCQBiFPG9YKAqZgAokFYCuuQw04dkm-FX9-XHAIBIqJf1645n3RZrg86GcUVJOf3gN-5eTHXFIaovTmgRC6cXllv82SnQuKsGMq7CHH60XDSwyC99s9P2gmyXLppI'
-                };
+                console.log('📤 發送代理請求:', { proxyUrl, payload });
                 
-                console.log('📤 發送 API 請求:', { apiUrl, payload, headers });
-                
-                const response = await fetch(apiUrl, {
+                const response = await fetch(proxyUrl, {
                     method: 'POST',
-                    headers: headers,
-                    body: JSON.stringify(payload),
-                    mode: 'cors'
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`API 請求失敗: ${response.status} ${response.statusText}`);
+                    throw new Error(`代理 API 請求失敗: ${response.status} ${response.statusText}`);
                 }
                 
                 const data = await response.json();
-                console.log('📥 API 回應:', data);
+                console.log('📥 代理 API 回應:', data);
                 
                 if (!data.success) {
                     throw new Error(`API 錯誤: ${data.error || '未知錯誤'}`);
@@ -1988,10 +1984,10 @@
             stats.textContent = statusText;
         }
         
-        // 儲存簽到記錄
+        // 儲存簽到記錄（通過後端代理）
         async function saveAttendanceRecords(teacher, course, time, start, end, attendanceData) {
             try {
-                console.log('💾 儲存簽到記錄:', { teacher, course, time, attendanceData });
+                console.log('💾 通過後端代理儲存簽到記錄:', { teacher, course, time, attendanceData });
                 
                 if (attendanceData.size === 0) {
                     alert('請先選擇學生的簽到狀態');
@@ -2016,33 +2012,29 @@
                 
                 console.log('📤 準備儲存的簽到記錄:', attendanceRecords);
                 
-                // 使用 FLB API 儲存簽到記錄
-                const apiUrl = 'https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/exec';
+                // 使用後端代理 API
+                const proxyUrl = '/api/proxy/google-sheets';
                 const payload = {
                     action: 'updateAttendance',
                     records: attendanceRecords
                 };
                 
-                const headers = {
-                    'Content-Type': 'application/json',
-                    'Cookie': 'NID=525=nsWVvbAon67C2qpyiEHQA3SUio_GqBd7RqUFU6BwB97_4LHggZxLpDgSheJ7WN4w3Z4dCQBiFPG9YKAqZgAokFYCuuQw04dkm-FX9-XHAIBIqJf1645n3RZrg86GcUVJOf3gN-5eTHXFIaovTmgRC6cXllv82SnQuKsGMq7CHH60XDSwyC99s9P2gmyXLppI'
-                };
+                console.log('📤 發送代理請求:', { proxyUrl, payload });
                 
-                console.log('📤 發送簽到記錄到 API:', { apiUrl, payload });
-                
-                const response = await fetch(apiUrl, {
+                const response = await fetch(proxyUrl, {
                     method: 'POST',
-                    headers: headers,
-                    body: JSON.stringify(payload),
-                    mode: 'cors'
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`API 請求失敗: ${response.status} ${response.statusText}`);
+                    throw new Error(`代理 API 請求失敗: ${response.status} ${response.statusText}`);
                 }
                 
                 const data = await response.json();
-                console.log('📥 簽到記錄 API 回應:', data);
+                console.log('📥 代理 API 回應:', data);
                 
                 if (!data.success) {
                     throw new Error(`API 錯誤: ${data.error || '未知錯誤'}`);

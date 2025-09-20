@@ -346,6 +346,67 @@ app.get('/calendar', (req, res) => {
     res.sendFile(path.join(__dirname, 'perfect-calendar.html'));
 });
 
+// 代理 Google Sheets API 請求
+app.post('/api/proxy/google-sheets', async (req, res) => {
+    try {
+        const { action, course, period, records } = req.body;
+        
+        console.log('🔄 代理 Google Sheets API 請求:', { action, course, period });
+        
+        let apiUrl;
+        let payload;
+        
+        if (action === 'getRosterAttendance') {
+            apiUrl = 'https://script.google.com/macros/s/AKfycbzm0GD-T09Botbs52e8PyeVuA5slJh6Z0AQ7I0uUiGZiE6aWhTO2D0d3XHFrdLNv90uCw/exec';
+            payload = {
+                action: 'getRosterAttendance',
+                course: course,
+                period: period
+            };
+        } else if (action === 'updateAttendance') {
+            apiUrl = 'https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/exec';
+            payload = {
+                action: 'updateAttendance',
+                records: records
+            };
+        } else {
+            return res.status(400).json({
+                success: false,
+                error: '不支援的 API 動作'
+            });
+        }
+        
+        const headers = {
+            'Content-Type': 'application/json',
+            'Cookie': 'NID=525=nsWVvbAon67C2qpyiEHQA3SUio_GqBd7RqUFU6BwB97_4LHggZxLpDgSheJ7WN4w3Z4dCQBiFPG9YKAqZgAokFYCuuQw04dkm-FX9-XHAIBIqJf1645n3RZrg86GcUVJOf3gN-5eTHXFIaovTmgRC6cXllv82SnQuKsGMq7CHH60XDSwyC99s9P2gmyXLppI'
+        };
+        
+        console.log('📤 發送請求到 Google Sheets API:', { apiUrl, payload });
+        
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Google Sheets API 請求失敗: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('📥 Google Sheets API 回應:', data);
+        
+        res.json(data);
+        
+    } catch (error) {
+        console.error('❌ 代理 Google Sheets API 請求失敗:', error);
+        res.status(500).json({
+            success: false,
+            error: '代理請求失敗: ' + error.message
+        });
+    }
+});
+
 // 獲取講師列表
 app.get('/api/teachers', async (req, res) => {
     try {
