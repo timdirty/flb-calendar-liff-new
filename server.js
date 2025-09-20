@@ -370,6 +370,29 @@ app.post('/api/proxy/google-sheets', async (req, res) => {
                 course: cleanCourse,
                 period: cleanPeriod
             };
+            
+            // 直接發送請求並返回結果
+            const headers = {
+                'Content-Type': 'application/json',
+                'Cookie': 'NID=525=nsWVvbAon67C2qpyiEHQA3SUio_GqBd7RqUFU6BwB97_4LHggZxLpDgSheJ7WN4w3Z4dCQBiFPG9YKAqZgAokFYCuuQw04dkm-FX9-XHAIBIqJf1645n3RZrg86GcUVJOf3gN-5eTHXFIaovTmgRC6cXllv82SnQuKsGMq7CHH60XDSwyC99s9P2gmyXLppI'
+            };
+            
+            console.log('📤 發送請求到 Google Sheets API:', { apiUrl, payload });
+            
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(payload)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Google Sheets API 請求失敗: ${response.status} ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log('📥 Google Sheets API 回應:', data);
+            
+            return res.json(data);
         } else if (action === 'updateAttendance') {
             // 使用學生簽到 API (dev 版本)
             apiUrl = 'https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/dev';
