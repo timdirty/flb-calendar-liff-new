@@ -4231,25 +4231,44 @@
                     const today = new Date();
                     date = today.toISOString().split('T')[0];
                 }
-                // 使用 GET 請求以便 JSONP 可以工作
-                return await this._makeRequest('/api/course-students', 'GET', {
+                // 根據 API 文件，使用 POST 請求
+                return await this._makeRequest('/api/course-students', 'POST', {
                     course: course,
                     time: time,
                     date: date
                 });
             }
 
-            async markStudentAttendance(studentName, present, teacherName, courseName, date = null) {
-                if (!date) {
-                    const today = new Date();
-                    date = today.toISOString().split('T')[0];
-                }
+            async markStudentAttendance(course, time, date, studentName, status) {
+                // 根據 API 文件，使用正確的參數格式
                 return await this._makeRequest('/api/student-attendance', 'POST', {
-                    studentName: studentName,
+                    course: course,
+                    time: time,
                     date: date,
-                    present: present,
-                    teacherName: teacherName,
-                    courseName: courseName
+                    studentName: studentName,
+                    status: status
+                });
+            }
+
+            async submitTeacherReport(teacher, course, time, date, courseContent, studentCount, attendanceCount) {
+                // 根據 API 文件，添加講師簽到功能
+                return await this._makeRequest('/api/teacher-report', 'POST', {
+                    teacher: teacher,
+                    course: course,
+                    time: time,
+                    date: date,
+                    courseContent: courseContent,
+                    studentCount: studentCount,
+                    attendanceCount: attendanceCount
+                });
+            }
+
+            async directStep3(teacher, course, time) {
+                // 根據 API 文件，添加直接跳轉功能
+                return await this._makeRequest('/api/direct-step3', 'POST', {
+                    teacher: teacher,
+                    course: course,
+                    time: time
                 });
             }
         }
@@ -4276,6 +4295,7 @@
             currentAttendanceData.courseName = courseName;
             currentAttendanceData.instructor = instructor;
             currentAttendanceData.time = time;
+            currentAttendanceData.date = new Date().toISOString().split('T')[0]; // 添加日期
             
             // 顯示彈出式視窗
             const modal = document.getElementById('attendanceModal');
@@ -4298,7 +4318,9 @@
             studentsList.innerHTML = '<div class="loading">載入中...</div>';
             
             try {
-                const result = await attendanceSDK.getStudents(courseName, time);
+                // 使用當前日期
+                const date = currentAttendanceData.date || new Date().toISOString().split('T')[0];
+                const result = await attendanceSDK.getStudents(courseName, time, date);
                 console.log('學生列表結果:', result);
                 
                 if (result.success && result.students) {
@@ -4408,12 +4430,13 @@
         // 標記學生簽到
         async function markAttendance(studentName, status) {
             try {
-                const present = status === true;
+                // 根據 API 文件，使用正確的參數格式
                 const result = await attendanceSDK.markStudentAttendance(
-                    studentName, 
-                    present, 
-                    currentAttendanceData.instructor, 
-                    currentAttendanceData.courseName
+                    currentAttendanceData.courseName,
+                    currentAttendanceData.time,
+                    currentAttendanceData.date,
+                    studentName,
+                    status
                 );
                 
                 if (result.success) {
