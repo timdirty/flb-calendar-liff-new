@@ -6,12 +6,82 @@
     <title>講師行事曆檢視系統 - 測試版 (含簽到功能)</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            
+            /* 動畫關鍵幀 */
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            
+            @keyframes slideIn {
+                from { transform: translateX(-100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+            }
+            
+            @keyframes bounce {
+                0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+                40% { transform: translateY(-10px); }
+                60% { transform: translateY(-5px); }
+            }
+            
+            @keyframes shimmer {
+                0% { background-position: -200px 0; }
+                100% { background-position: calc(200px + 100%) 0; }
+            }
+            
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+            
+            @keyframes statusChange {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+                100% { transform: scale(1); }
+            }
+            
+            @keyframes successPulse {
+                0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+                70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+            }
+            
+            @keyframes errorShake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                20%, 40%, 60%, 80% { transform: translateX(5px); }
+            }
+            
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+            
+            @keyframes fadeOut {
+                from { opacity: 1; transform: scale(1); }
+                to { opacity: 0; transform: scale(0.8); }
+            }
+            
+            @keyframes glow {
+                0%, 100% { box-shadow: 0 0 5px rgba(40, 167, 69, 0.5); }
+                50% { box-shadow: 0 0 20px rgba(40, 167, 69, 0.8), 0 0 30px rgba(40, 167, 69, 0.6); }
+            }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -1749,9 +1819,43 @@
                         </div>
                         
                         <div id="attendanceContent">
-                            <div style="text-align: center; padding: 40px;">
-                                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #667eea; margin-bottom: 15px;"></i>
-                                <p style="color: #666; margin: 0;">載入學生名單中...</p>
+                            <div style="text-align: center; padding: 60px 40px; color: #666;">
+                                <div style="
+                                    width: 60px;
+                                    height: 60px;
+                                    border: 4px solid #f3f3f3;
+                                    border-top: 4px solid #667eea;
+                                    border-right: 4px solid #764ba2;
+                                    border-radius: 50%;
+                                    animation: spin 1s linear infinite;
+                                    margin: 0 auto 30px;
+                                    position: relative;
+                                ">
+                                    <div style="
+                                        position: absolute;
+                                        top: 50%;
+                                        left: 50%;
+                                        transform: translate(-50%, -50%);
+                                        width: 20px;
+                                        height: 20px;
+                                        background: linear-gradient(135deg, #667eea, #764ba2);
+                                        border-radius: 50%;
+                                        animation: pulse 1.5s ease-in-out infinite;
+                                    "></div>
+                                </div>
+                                <h3 style="margin: 0 0 15px 0; color: #333; font-size: 1.2rem; animation: fadeIn 0.8s ease-out;">
+                                    <i class="fas fa-users" style="margin-right: 8px; color: #667eea;"></i>
+                                    載入學生名單中...
+                                </h3>
+                                <div style="
+                                    width: 200px;
+                                    height: 4px;
+                                    background: linear-gradient(90deg, #f3f3f3, #667eea, #f3f3f3);
+                                    background-size: 200px 100%;
+                                    border-radius: 2px;
+                                    margin: 0 auto;
+                                    animation: shimmer 2s ease-in-out infinite;
+                                "></div>
                             </div>
                         </div>
                     </div>
@@ -1831,6 +1935,52 @@
                                     currentStatus = 'leave';
                                     statusText = '已請假';
                                 }
+                            } else {
+                                currentStatus = 'pending';
+                                statusText = '待簽到';
+                            }
+                            
+                            // 根據狀態設定樣式
+                            let statusStyles = {
+                                border: '#e9ecef',
+                                background: 'white',
+                                icon: 'fas fa-clock',
+                                iconColor: '#6c757d',
+                                statusColor: '#6c757d'
+                            };
+                            
+                            if (currentStatus === 'present') {
+                                statusStyles = {
+                                    border: '#28a745',
+                                    background: 'linear-gradient(135deg, rgba(40, 167, 69, 0.15), rgba(32, 201, 151, 0.1))',
+                                    icon: 'fas fa-check-circle',
+                                    iconColor: '#28a745',
+                                    statusColor: '#28a745'
+                                };
+                            } else if (currentStatus === 'absent') {
+                                statusStyles = {
+                                    border: '#dc3545',
+                                    background: 'linear-gradient(135deg, rgba(220, 53, 69, 0.15), rgba(231, 76, 60, 0.1))',
+                                    icon: 'fas fa-times-circle',
+                                    iconColor: '#dc3545',
+                                    statusColor: '#dc3545'
+                                };
+                            } else if (currentStatus === 'leave') {
+                                statusStyles = {
+                                    border: '#ffc107',
+                                    background: 'linear-gradient(135deg, rgba(255, 193, 7, 0.15), rgba(243, 156, 18, 0.1))',
+                                    icon: 'fas fa-exclamation-triangle',
+                                    iconColor: '#ffc107',
+                                    statusColor: '#ffc107'
+                                };
+                            } else if (currentStatus === 'pending') {
+                                statusStyles = {
+                                    border: '#6c757d',
+                                    background: 'linear-gradient(135deg, rgba(108, 117, 125, 0.1), rgba(73, 80, 87, 0.05))',
+                                    icon: 'fas fa-clock',
+                                    iconColor: '#6c757d',
+                                    statusColor: '#6c757d'
+                                };
                             }
                             
                             return `
@@ -1838,16 +1988,14 @@
                                     display: flex;
                                     justify-content: space-between;
                                     align-items: center;
-                                    padding: 15px 20px;
-                                    border: 2px solid ${currentStatus ? 
-                                        (currentStatus === 'present' ? '#28a745' : 
-                                         currentStatus === 'absent' ? '#dc3545' : '#ffc107') : '#e9ecef'};
-                                    border-radius: 10px;
-                                    background: ${currentStatus ? 
-                                        (currentStatus === 'present' ? 'linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(32, 201, 151, 0.1))' : 
-                                         currentStatus === 'absent' ? 'linear-gradient(135deg, rgba(220, 53, 69, 0.1), rgba(231, 76, 60, 0.1))' : 
-                                         'linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(243, 156, 18, 0.1))') : 'white'};
-                                    transition: all 0.3s ease;
+                                    padding: 20px;
+                                    border: 2px solid ${statusStyles.border};
+                                    border-radius: 15px;
+                                    background: ${statusStyles.background};
+                                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                                    animation: fadeIn 0.6s ease-out;
+                                    position: relative;
+                                    overflow: hidden;
                                 ">
                                     <div style="display: flex; align-items: center; gap: 15px;">
                                         <div style="
@@ -1864,10 +2012,20 @@
                                         ">
                                             ${student.name.charAt(0)}
                                         </div>
-                                        <div>
-                                            <div class="student-name" style="font-weight: bold; color: #333; font-size: 1.1rem;">${student.name}</div>
-                                            <div style="color: #666; font-size: 0.9rem;">${student.id}</div>
-                                            ${statusText ? `<div style="color: #666; font-size: 0.8rem; margin-top: 2px;">${statusText}</div>` : ''}
+                                        <div style="flex: 1;">
+                                            <div class="student-name" style="font-weight: bold; color: #333; font-size: 1.1rem; margin-bottom: 4px;">${student.name}</div>
+                                            <div style="color: #666; font-size: 0.9rem; margin-bottom: 6px;">${student.id}</div>
+                                            <div style="
+                                                display: flex;
+                                                align-items: center;
+                                                gap: 6px;
+                                                font-size: 0.85rem;
+                                                font-weight: 500;
+                                                color: ${statusStyles.statusColor};
+                                            ">
+                                                <i class="${statusStyles.icon}" style="font-size: 0.9rem;"></i>
+                                                <span>${statusText}</span>
+                                            </div>
                                         </div>
                                     </div>
                                     <div style="display: flex; gap: 10px;">
@@ -1875,31 +2033,35 @@
                                             background: linear-gradient(135deg, #28a745, #20c997);
                                             color: white;
                                             border: none;
-                                            padding: 8px 16px;
-                                            border-radius: 20px;
+                                            padding: 10px 20px;
+                                            border-radius: 25px;
                                             cursor: pointer;
                                             font-size: 0.9rem;
-                                            font-weight: 500;
-                                            transition: all 0.3s ease;
+                                            font-weight: 600;
+                                            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                                             opacity: 1;
-                                            ${currentStatus === 'present' ? 'transform: scale(1.05); box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);' : ''}
-                                        ">
-                                            <i class="fas fa-check"></i> 出席
+                                            position: relative;
+                                            overflow: hidden;
+                                            ${currentStatus === 'present' ? 'transform: scale(1.05); box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);' : ''}
+                                        " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 20px rgba(40, 167, 69, 0.4)'" onmouseout="this.style.transform='${currentStatus === 'present' ? 'scale(1.05)' : 'scale(1)'}'; this.style.boxShadow='${currentStatus === 'present' ? '0 6px 20px rgba(40, 167, 69, 0.4)' : 'none'}'">
+                                            <i class="fas fa-check" style="margin-right: 6px;"></i> 出席
                                         </button>
                                         <button class="attendance-btn absent-btn" data-student-id="${student.id}" style="
                                             background: linear-gradient(135deg, #dc3545, #e74c3c);
                                             color: white;
                                             border: none;
-                                            padding: 8px 16px;
-                                            border-radius: 20px;
+                                            padding: 10px 20px;
+                                            border-radius: 25px;
                                             cursor: pointer;
                                             font-size: 0.9rem;
-                                            font-weight: 500;
-                                            transition: all 0.3s ease;
+                                            font-weight: 600;
+                                            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                                             opacity: 1;
-                                            ${currentStatus === 'absent' ? 'transform: scale(1.05); box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);' : ''}
-                                        ">
-                                            <i class="fas fa-times"></i> 缺席
+                                            position: relative;
+                                            overflow: hidden;
+                                            ${currentStatus === 'absent' ? 'transform: scale(1.05); box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);' : ''}
+                                        " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 20px rgba(220, 53, 69, 0.4)'" onmouseout="this.style.transform='${currentStatus === 'absent' ? 'scale(1.05)' : 'scale(1)'}'; this.style.boxShadow='${currentStatus === 'absent' ? '0 6px 20px rgba(220, 53, 69, 0.4)' : 'none'}'">
+                                            <i class="fas fa-times" style="margin-right: 6px;"></i> 缺席
                                         </button>
                                     </div>
                                 </div>
@@ -2136,8 +2298,11 @@
             const studentItem = document.querySelector(`[data-student-id="${studentId}"]`);
             if (!studentItem) return;
             
+            // 添加狀態變更動畫
+            studentItem.style.animation = 'statusChange 0.6s ease-out';
+            
             // 移除所有狀態樣式
-            studentItem.classList.remove('present', 'absent', 'leave');
+            studentItem.classList.remove('present', 'absent', 'leave', 'pending');
             
             // 更新按鈕狀態
             const buttons = studentItem.querySelectorAll('.attendance-btn');
@@ -2152,15 +2317,82 @@
             if (status) {
                 studentItem.classList.add(status);
                 
-                // 高亮選中的按鈕
+                // 根據狀態設定樣式
+                let statusStyles = {
+                    border: '#e9ecef',
+                    background: 'white',
+                    icon: 'fas fa-clock',
+                    iconColor: '#6c757d',
+                    statusColor: '#6c757d',
+                    statusText: '待簽到'
+                };
+                
+                if (status === 'present') {
+                    statusStyles = {
+                        border: '#28a745',
+                        background: 'linear-gradient(135deg, rgba(40, 167, 69, 0.15), rgba(32, 201, 151, 0.1))',
+                        icon: 'fas fa-check-circle',
+                        iconColor: '#28a745',
+                        statusColor: '#28a745',
+                        statusText: '已出席'
+                    };
+                } else if (status === 'absent') {
+                    statusStyles = {
+                        border: '#dc3545',
+                        background: 'linear-gradient(135deg, rgba(220, 53, 69, 0.15), rgba(231, 76, 60, 0.1))',
+                        icon: 'fas fa-times-circle',
+                        iconColor: '#dc3545',
+                        statusColor: '#dc3545',
+                        statusText: '已缺席'
+                    };
+                } else if (status === 'leave') {
+                    statusStyles = {
+                        border: '#ffc107',
+                        background: 'linear-gradient(135deg, rgba(255, 193, 7, 0.15), rgba(243, 156, 18, 0.1))',
+                        icon: 'fas fa-exclamation-triangle',
+                        iconColor: '#ffc107',
+                        statusColor: '#ffc107',
+                        statusText: '已請假'
+                    };
+                }
+                
+                // 更新學生項目的樣式
+                studentItem.style.border = `2px solid ${statusStyles.border}`;
+                studentItem.style.background = statusStyles.background;
+                
+                // 更新狀態顯示
+                const statusDisplay = studentItem.querySelector('.student-name').nextElementSibling.nextElementSibling;
+                if (statusDisplay) {
+                    statusDisplay.innerHTML = `
+                        <i class="${statusStyles.icon}" style="font-size: 0.9rem;"></i>
+                        <span>${statusStyles.statusText}</span>
+                    `;
+                    statusDisplay.style.color = statusStyles.statusColor;
+                }
+                
+                // 高亮選中的按鈕並添加成功動畫
                 const selectedBtn = studentItem.querySelector(`.${status}-btn`);
                 if (selectedBtn) {
                     selectedBtn.style.transform = 'scale(1.05)';
                     selectedBtn.style.boxShadow = status === 'present' ? 
-                        '0 4px 8px rgba(40, 167, 69, 0.3)' : 
-                        '0 4px 8px rgba(220, 53, 69, 0.3)';
+                        '0 6px 20px rgba(40, 167, 69, 0.4)' : 
+                        '0 6px 20px rgba(220, 53, 69, 0.4)';
+                    
+                    // 添加成功脈衝動畫
+                    selectedBtn.style.animation = 'successPulse 0.8s ease-out';
                 }
             }
+            
+            // 清除動畫
+            setTimeout(() => {
+                studentItem.style.animation = '';
+                if (status) {
+                    const selectedBtn = studentItem.querySelector(`.${status}-btn`);
+                    if (selectedBtn) {
+                        selectedBtn.style.animation = '';
+                    }
+                }
+            }, 600);
         }
         
         // 更新簽到統計
@@ -2285,30 +2517,62 @@
                 position: fixed;
                 top: 20px;
                 right: 20px;
-                background: linear-gradient(135deg, #00ff00, #00cc00);
-                color: #000;
-                padding: 15px 20px;
-                border-radius: 8px;
-                font-weight: bold;
+                background: linear-gradient(135deg, #28a745, #20c997);
+                color: white;
+                padding: 20px 25px;
+                border-radius: 15px;
+                font-weight: 600;
+                font-size: 1rem;
                 z-index: 10000;
-                box-shadow: 0 4px 12px rgba(0, 255, 0, 0.3);
-                animation: slideInRight 0.3s ease-out;
+                box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+                animation: bounce 0.6s ease-out;
+                border: 2px solid rgba(255, 255, 255, 0.2);
+                backdrop-filter: blur(10px);
+                max-width: 350px;
+                word-wrap: break-word;
             `;
-            toast.textContent = message;
+            
+            // 添加圖標和訊息
+            toast.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="
+                        width: 30px;
+                        height: 30px;
+                        background: rgba(255, 255, 255, 0.2);
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        animation: pulse 1s ease-in-out infinite;
+                    ">
+                        <i class="fas fa-check" style="color: white; font-size: 0.9rem;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700; margin-bottom: 4px;">簽到成功！</div>
+                        <div style="font-size: 0.9rem; opacity: 0.9;">${message}</div>
+                    </div>
+                </div>
+            `;
             
             document.body.appendChild(toast);
             
-            // 3秒後自動移除
+            // 添加成功脈衝效果
+            setTimeout(() => {
+                toast.style.animation = 'successPulse 0.8s ease-out';
+            }, 100);
+            
+            // 4秒後自動移除
             setTimeout(() => {
                 if (toast.parentNode) {
-                    toast.style.animation = 'slideOutRight 0.3s ease-in';
+                    toast.style.animation = 'fadeOut 0.5s ease-in';
+                    toast.style.transform = 'translateX(100%)';
                     setTimeout(() => {
                         if (toast.parentNode) {
                             document.body.removeChild(toast);
                         }
-                    }, 300);
+                    }, 500);
                 }
-            }, 3000);
+            }, 4000);
         }
 
         // 測試課程解析功能
