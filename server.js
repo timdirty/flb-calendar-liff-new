@@ -438,6 +438,12 @@ app.post('/api/proxy/google-sheets', async (req, res) => {
             });
         }
         
+        // 如果到達這裡，表示沒有匹配到任何動作，直接返回
+        return res.status(400).json({
+            success: false,
+            error: '無效的 API 動作'
+        });
+        
         const headers = {
             'Content-Type': 'application/json',
             'Cookie': 'NID=525=nsWVvbAon67C2qpyiEHQA3SUio_GqBd7RqUFU6BwB97_4LHggZxLpDgSheJ7WN4w3Z4dCQBiFPG9YKAqZgAokFYCuuQw04dkm-FX9-XHAIBIqJf1645n3RZrg86GcUVJOf3gN-5eTHXFIaovTmgRC6cXllv82SnQuKsGMq7CHH60XDSwyC99s9P2gmyXLppI'
