@@ -4134,8 +4134,25 @@
             // 跳轉到簽到系統
             const attendanceUrl = 'https://liff-sttendence-0908-production.up.railway.app/';
             
-            // 在新視窗中開啟簽到系統
-            window.open(attendanceUrl, '_blank', 'noopener,noreferrer');
+            try {
+                // 檢查 LIFF 是否已初始化
+                if (typeof liff !== 'undefined' && liff.isInClient()) {
+                    // 在 LINE 內使用 LIFF 開啟
+                    liff.openWindow({
+                        url: attendanceUrl,
+                        external: false
+                    });
+                    console.log('✅ 使用 LIFF 在 LINE 內開啟簽到系統');
+                } else {
+                    // 如果不在 LINE 內或 LIFF 未初始化，使用一般方式開啟
+                    window.open(attendanceUrl, '_blank', 'noopener,noreferrer');
+                    console.log('✅ 使用一般方式開啟簽到系統');
+                }
+            } catch (error) {
+                console.error('❌ 開啟簽到系統失敗:', error);
+                // 降級處理：使用一般方式開啟
+                window.open(attendanceUrl, '_blank', 'noopener,noreferrer');
+            }
             
             // 添加點擊動畫效果
             const button = event.currentTarget.querySelector('.attendance-menu-button');
