@@ -1386,6 +1386,36 @@
             return matrix[len2][len1];
         }
 
+        // 特殊事件類型定義
+        const SPECIAL_EVENT_TYPES = {
+            "停課": ["停課", "取消", "暫停", "休息", "放假", "請假"],
+            "體驗": ["體驗", "體驗課", "體驗班", "體課", "體"],
+            "代課": ["代課", "代理", "支援", "代"],
+            "補課": ["補課", "調課", "延後", "提前"]
+        };
+
+        // 從時間資訊中移除特殊事件類型
+        function removeSpecialEventTypes(timeInfo) {
+            if (!timeInfo) return timeInfo;
+            
+            let cleanedTimeInfo = timeInfo;
+            
+            // 移除所有特殊事件類型
+            Object.values(SPECIAL_EVENT_TYPES).forEach(keywords => {
+                keywords.forEach(keyword => {
+                    // 移除特殊事件關鍵字（包括前後的空白）
+                    const regex = new RegExp(`\\s*${keyword}\\s*`, 'g');
+                    cleanedTimeInfo = cleanedTimeInfo.replace(regex, ' ');
+                });
+            });
+            
+            // 清理多餘的空白
+            cleanedTimeInfo = cleanedTimeInfo.replace(/\s+/g, ' ').trim();
+            
+            console.log(`🧹 清理特殊事件: "${timeInfo}" → "${cleanedTimeInfo}"`);
+            return cleanedTimeInfo;
+        }
+
         // 解析課程標題，分離課程名稱和時間資訊（符合 API 格式）
         function parseCourseTitle(fullTitle) {
             if (!fullTitle) {
@@ -1508,6 +1538,9 @@
                 courseName = fullTitle;
                 timeInfo = '';
             }
+
+            // 從時間資訊中移除特殊事件類型
+            timeInfo = removeSpecialEventTypes(timeInfo);
 
             console.log(`✅ 解析結果: 課程="${courseName}", 時間="${timeInfo}"`);
             
@@ -2159,7 +2192,16 @@
                 '物理 第3週',
                 '化學 請假',
                 '生物 9:30-10:30',
-                '簡單課程'
+                '簡單課程',
+                // 特殊事件類型測試
+                'SPIKE 六 16:00-18:00 代課',
+                'SPM 六 9:30-10:30 停課',
+                '數學 一 14:00-15:30 體驗',
+                '英文 9:30-10:30 補課',
+                '物理 16:00-18:00 代理',
+                '化學 9:30-10:30 支援',
+                '生物 14:00-15:30 體課',
+                '歷史 16:00-18:00 調課'
             ];
             
             testCases.forEach(testCase => {
