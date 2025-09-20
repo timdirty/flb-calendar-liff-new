@@ -6066,11 +6066,11 @@ async function loadTodayEvents() {
         const settingsOverlay = document.getElementById('settingsOverlay');
         if (settingsOverlay) {
             settingsOverlay.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeSettings();
-            }
-          });
-          }
+                if (e.target === this) {
+                    closeSettings();
+                }
+            });
+        }
 
         // 設置按鈕事件監聽器
         document.addEventListener('DOMContentLoaded', function() {
@@ -6220,26 +6220,36 @@ async function loadTodayEvents() {
 
             // 定義多種課程標題格式的正則表達式
             const patterns = [
-                // 格式1: "ESM 六 9:30-10:30 到府 第4週請假"
+                // 格式1: "SPIKE PRO 日 10:00-12:00 第3週" - 處理包含空格的課程名稱
+                /^([A-Z]+(?:\s+[A-Z]+)*)\s+([一二三四五六日])\s+(\d{1,2}:\d{2})-(\d{1,2}:\d{2})(?:\s+(.+?))?(?:\s+第\d+週.*)?$/,
+                // 格式2: "ESM 六 9:30-10:30 到府 第4週請假"
                 /^([A-Z]+)\s+([一二三四五六日])\s+(\d{1,2}:\d{2})-(\d{1,2}:\d{2})\s+(.+?)(?:\s+第\d+週.*)?$/,
-                // 格式2: "BOOST 六 1530-1700 到府"
+                // 格式3: "BOOST 六 1530-1700 到府"
                 /^([A-Z]+)\s+([一二三四五六日])\s+(\d{4})-(\d{4})\s+(.+?)(?:\s+第\d+週.*)?$/,
-                // 格式3: "SPIKE 六 9:30-10:30"
+                // 格式4: "SPIKE 六 9:30-10:30"
                 /^([A-Z]+)\s+([一二三四五六日])\s+(\d{1,2}:\d{2})-(\d{1,2}:\d{2})(?:\s+(.+?))?(?:\s+第\d+週.*)?$/,
-                // 格式4: "ESM 六 1530-1700"
+                // 格式5: "ESM 六 1530-1700"
                 /^([A-Z]+)\s+([一二三四五六日])\s+(\d{4})-(\d{4})(?:\s+(.+?))?(?:\s+第\d+週.*)?$/,
-                // 格式5: "ESM 六 0930-1100 到府"
+                // 格式6: "ESM 六 0930-1100 到府"
                 /^([A-Z]+)\s+([一二三四五六日])\s+(\d{4})-(\d{4})\s+(.+?)(?:\s+第\d+週.*)?$/
             ];
 
             for (const pattern of patterns) {
                 const match = fullTitle.match(pattern);
                 if (match) {
-                    const courseName = match[1];
+                    let courseName = match[1];
                     const weekday = match[2];
                     const startTime = match[3];
                     const endTime = match[4];
                     const location = match[5] || '';
+
+                    // 處理課程名稱：如果是 "SPIKE PRO" 這樣的格式，只取第一部分
+                    if (courseName.includes(' ')) {
+                        const courseParts = courseName.split(' ');
+                        // 只取第一個單詞作為主要課程名稱
+                        courseName = courseParts[0];
+                        console.log(`🔄 課程名稱簡化: "${match[1]}" → "${courseName}"`);
+                    }
 
                     // 格式化時間
                     const formattedStartTime = formatTime(startTime);
