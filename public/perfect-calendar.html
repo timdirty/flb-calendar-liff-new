@@ -16,19 +16,19 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: 
-                radial-gradient(circle at 20% 80%, rgba(255, 215, 0, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(255, 215, 0, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 20% 80%, rgba(255, 215, 0, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255, 215, 0, 0.03) 0%, transparent 50%),
                 linear-gradient(135deg, 
-                    rgba(0, 0, 0, 0.98) 0%, 
-                    rgba(15, 15, 15, 0.95) 25%,
-                    rgba(25, 25, 25, 0.92) 50%,
-                    rgba(15, 15, 15, 0.95) 75%,
-                    rgba(0, 0, 0, 0.98) 100%);
+                    rgba(255, 255, 255, 0.98) 0%, 
+                    rgba(248, 250, 252, 0.95) 25%,
+                    rgba(255, 255, 255, 0.92) 50%,
+                    rgba(248, 250, 252, 0.95) 75%,
+                    rgba(255, 255, 255, 0.98) 100%);
             background-size: 100% 100%, 100% 100%, 100% 100%, 400% 400%;
             animation: gradientShift 20s ease infinite, subtleGlow 8s ease-in-out infinite;
             min-height: 100vh;
-            color: rgba(255, 255, 255, 0.95);
+            color: rgba(51, 51, 51, 0.95);
             position: relative;
         }
 
@@ -2024,6 +2024,93 @@
             background: linear-gradient(135deg, rgba(255, 215, 0, 0.8), rgba(255, 215, 0, 0.6));
         }
 
+        /* 懸浮固定選單樣式 */
+        .floating-stats-menu {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: 
+                radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.1) 0%, transparent 70%),
+                linear-gradient(135deg, 
+                    rgba(255, 255, 255, 0.25) 0%, 
+                    rgba(248, 249, 250, 0.2) 50%,
+                    rgba(255, 255, 255, 0.25) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 20px;
+            padding: 12px 20px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(-50%) translateY(-20px) scale(0.9);
+        }
+
+        .floating-stats-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0) scale(1);
+        }
+
+        .floating-stats-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 0.85rem;
+            color: rgba(51, 51, 51, 0.9);
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+        }
+
+        .floating-stats-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+
+        .floating-stats-item .icon {
+            color: #ffd700;
+            font-size: 0.9rem;
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+        }
+
+        .floating-stats-item .value {
+            color: rgba(51, 51, 51, 0.8);
+            font-weight: 700;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .floating-stats-menu {
+                top: 10px;
+                padding: 10px 16px;
+                border-radius: 16px;
+            }
+            
+            .floating-stats-content {
+                gap: 15px;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .floating-stats-menu {
+                top: 8px;
+                padding: 8px 12px;
+                border-radius: 12px;
+            }
+            
+            .floating-stats-content {
+                gap: 12px;
+                font-size: 0.75rem;
+            }
+        }
+
         /* 缺勤紀錄模態框樣式 */
         .attendance-record-modal {
             position: fixed;
@@ -2175,22 +2262,26 @@
             }
             
             .attendance-student-item {
-                flex-direction: column !important;
-                align-items: stretch !important;
-                padding: 15px !important;
-                gap: 15px !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                padding: 12px 15px !important;
+                gap: 12px !important;
+                min-height: 60px !important;
             }
             
             .attendance-student-item .student-info {
                 display: flex !important;
                 align-items: center !important;
                 gap: 12px !important;
+                flex: 1 !important;
+                min-width: 0 !important;
             }
             
             .attendance-student-item .student-actions {
                 display: flex !important;
-                gap: 10px !important;
-                justify-content: center !important;
+                gap: 8px !important;
+                justify-content: flex-end !important;
+                flex-shrink: 0 !important;
             }
             
             .attendance-btn {
@@ -2227,27 +2318,39 @@
             }
             
             .attendance-student-item {
-                padding: 12px !important;
+                padding: 10px 12px !important;
+                min-height: 55px !important;
             }
             
             .attendance-student-item .student-info {
-                gap: 10px !important;
+                gap: 8px !important;
+                flex: 1 !important;
+                min-width: 0 !important;
             }
             
             .attendance-student-item .student-avatar {
-                width: 35px !important;
-                height: 35px !important;
-                font-size: 1rem !important;
+                width: 32px !important;
+                height: 32px !important;
+                font-size: 0.9rem !important;
             }
             
             .attendance-student-item .student-name {
-                font-size: 1rem !important;
+                font-size: 0.9rem !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+            }
+            
+            .attendance-student-item .student-actions {
+                gap: 6px !important;
+                flex-shrink: 0 !important;
             }
             
             .attendance-btn {
-                padding: 10px 12px !important;
-                font-size: 0.85rem !important;
-                min-height: 40px !important;
+                padding: 8px 10px !important;
+                font-size: 0.8rem !important;
+                min-height: 36px !important;
+                min-width: 60px !important;
             }
             
             .attendance-stats .stats-grid {
@@ -3526,6 +3629,24 @@
         <div class="loading-signature">Tim感恩戴德🙏🏻</div>
     </div>
 
+    <!-- 懸浮固定選單 -->
+    <div class="floating-stats-menu" id="floatingStatsMenu">
+        <div class="floating-stats-content">
+            <div class="floating-stats-item">
+                <i class="fas fa-calendar-check icon"></i>
+                <span class="value" id="floatingTotalEvents">總事件: 0</span>
+            </div>
+            <div class="floating-stats-item">
+                <i class="fas fa-chalkboard-teacher icon"></i>
+                <span class="value" id="floatingInstructorCount">講師: 0</span>
+            </div>
+            <div class="floating-stats-item">
+                <i class="fas fa-calendar-alt icon"></i>
+                <span class="value" id="floatingDateRange">日期: -</span>
+            </div>
+        </div>
+    </div>
+
     <div class="container" id="mainContainer" style="display: none;">
         <!-- 頂部標題區域 -->
         <div class="header">
@@ -3749,6 +3870,9 @@
             
             // 初始化系統
             initializeSystem();
+            
+            // 初始化懸浮選單滾動監聽
+            initializeFloatingMenu();
         });
 
         // 顯示載入動畫
@@ -6422,6 +6546,9 @@ async function loadTodayEvents() {
             if (dateRangeText) {
                 animateCounter(dateRangeText, `日期: ${dateRange}`);
             }
+            
+            // 觸發統計更新事件，通知懸浮選單更新
+            document.dispatchEvent(new CustomEvent('statsUpdated'));
         }
 
         // 動畫更新計數器
@@ -7699,6 +7826,8 @@ async function loadTodayEvents() {
                 });
                 
                 // 查詢缺勤紀錄
+                console.log('🔍 查詢學生缺勤紀錄:', studentName);
+                
                 const response = await fetch('/api/proxy/google-sheets', {
                     method: 'POST',
                     headers: {
@@ -7710,7 +7839,14 @@ async function loadTodayEvents() {
                     })
                 });
                 
+                console.log('📡 查詢回應狀態:', response.status, response.statusText);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
+                console.log('📥 查詢回應數據:', data);
                 
                 if (data.success && data.records) {
                     // 顯示缺勤紀錄
@@ -7791,6 +7927,76 @@ async function loadTodayEvents() {
             `;
             
             content.appendChild(errorDiv);
+        }
+
+        // 初始化懸浮選單滾動監聽
+        function initializeFloatingMenu() {
+            const floatingMenu = document.getElementById('floatingStatsMenu');
+            const statsText = document.getElementById('statsText');
+            
+            if (!floatingMenu || !statsText) return;
+            
+            let isFloatingVisible = false;
+            let ticking = false;
+            
+            // 滾動監聽函數
+            function handleScroll() {
+                if (!ticking) {
+                    requestAnimationFrame(() => {
+                        const statsRect = statsText.getBoundingClientRect();
+                        const shouldShow = statsRect.bottom < 0; // 當統計區域滾動出視窗時顯示懸浮選單
+                        
+                        if (shouldShow && !isFloatingVisible) {
+                            showFloatingMenu();
+                            isFloatingVisible = true;
+                        } else if (!shouldShow && isFloatingVisible) {
+                            hideFloatingMenu();
+                            isFloatingVisible = false;
+                        }
+                        
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            }
+            
+            // 添加滾動監聽器
+            window.addEventListener('scroll', handleScroll, { passive: true });
+            
+            // 顯示懸浮選單
+            function showFloatingMenu() {
+                floatingMenu.classList.add('show');
+                updateFloatingMenuContent();
+            }
+            
+            // 隱藏懸浮選單
+            function hideFloatingMenu() {
+                floatingMenu.classList.remove('show');
+            }
+            
+            // 更新懸浮選單內容
+            function updateFloatingMenuContent() {
+                const totalEventsText = document.getElementById('totalEventsText');
+                const instructorCountText = document.getElementById('instructorCountText');
+                const dateRangeText = document.getElementById('dateRangeText');
+                
+                const floatingTotalEvents = document.getElementById('floatingTotalEvents');
+                const floatingInstructorCount = document.getElementById('floatingInstructorCount');
+                const floatingDateRange = document.getElementById('floatingDateRange');
+                
+                if (totalEventsText && floatingTotalEvents) {
+                    floatingTotalEvents.textContent = totalEventsText.textContent;
+                }
+                if (instructorCountText && floatingInstructorCount) {
+                    floatingInstructorCount.textContent = instructorCountText.textContent;
+                }
+                if (dateRangeText && floatingDateRange) {
+                    floatingDateRange.textContent = dateRangeText.textContent;
+                }
+            }
+            
+            // 監聽統計更新事件
+            document.addEventListener('statsUpdated', updateFloatingMenuContent);
         }
 
     </script>
