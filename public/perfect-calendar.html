@@ -7839,13 +7839,14 @@ async function loadTodayEvents() {
                 studentItem.style.background = statusStyles.background;
                 
                 // 更新狀態顯示
-                const statusDisplay = studentItem.querySelector('.student-name').nextElementSibling.nextElementSibling;
+                const statusDisplay = studentItem.querySelector('.student-name').nextElementSibling;
                 if (statusDisplay) {
                     statusDisplay.innerHTML = `
                         <span style="font-size: 1.1rem;">${statusStyles.emoji}</span>
                         <span>${statusStyles.statusText}</span>
                     `;
-                    statusDisplay.style.color = statusStyles.statusColor;
+                    statusDisplay.style.background = statusStyles.statusColor;
+                    statusDisplay.style.color = 'white';
                 }
                 
                 // 高亮選中的按鈕並添加成功動畫
