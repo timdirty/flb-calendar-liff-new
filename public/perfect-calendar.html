@@ -2060,6 +2060,7 @@
         .floating-stats-content {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 20px;
             font-size: 0.85rem;
             color: rgba(51, 51, 51, 0.9);
@@ -2088,7 +2089,8 @@
         .floating-filter-buttons {
             display: flex;
             gap: 8px;
-            margin-left: 15px;
+            align-items: center;
+            justify-content: center;
         }
 
         .floating-filter-btn {
@@ -2122,12 +2124,26 @@
         @media (max-width: 768px) {
             .floating-stats-menu {
                 top: 10px;
-                padding: 10px 16px;
+                padding: 12px 16px;
                 border-radius: 16px;
+                max-width: 90%;
             }
             
             .floating-stats-content {
-                gap: 15px;
+                gap: 12px;
+                font-size: 0.8rem;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .floating-filter-buttons {
+                margin-left: 0;
+                margin-top: 8px;
+                gap: 6px;
+            }
+            
+            .floating-filter-btn {
+                padding: 8px 12px;
                 font-size: 0.8rem;
             }
         }
@@ -2135,13 +2151,30 @@
         @media (max-width: 480px) {
             .floating-stats-menu {
                 top: 8px;
-                padding: 8px 12px;
+                padding: 10px 12px;
                 border-radius: 12px;
+                max-width: 95%;
             }
             
             .floating-stats-content {
-                gap: 12px;
+                gap: 8px;
                 font-size: 0.75rem;
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .floating-filter-buttons {
+                margin-left: 0;
+                margin-top: 6px;
+                gap: 4px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .floating-filter-btn {
+                padding: 6px 10px;
+                font-size: 0.7rem;
+                min-width: 60px;
             }
         }
 
@@ -2298,9 +2331,10 @@
             .attendance-student-item {
                 flex-direction: row !important;
                 align-items: center !important;
-                padding: 12px 15px !important;
-                gap: 12px !important;
-                min-height: 60px !important;
+                padding: 15px 18px !important;
+                gap: 15px !important;
+                min-height: 70px !important;
+                margin-bottom: 12px !important;
             }
             
             .attendance-student-item .student-info {
@@ -2313,16 +2347,16 @@
             
             .attendance-student-item .student-actions {
                 display: flex !important;
-                gap: 8px !important;
+                gap: 10px !important;
                 justify-content: flex-end !important;
                 flex-shrink: 0 !important;
             }
             
             .attendance-btn {
                 flex: 1 !important;
-                padding: 12px 16px !important;
+                padding: 14px 18px !important;
                 font-size: 0.9rem !important;
-                min-height: 44px !important;
+                min-height: 48px !important;
             }
             
             .attendance-stats {
@@ -2352,8 +2386,9 @@
             }
             
             .attendance-student-item {
-                padding: 10px 12px !important;
-                min-height: 55px !important;
+                padding: 12px 15px !important;
+                min-height: 65px !important;
+                margin-bottom: 10px !important;
             }
             
             .attendance-student-item .student-info {
@@ -2376,15 +2411,15 @@
             }
             
             .attendance-student-item .student-actions {
-                gap: 6px !important;
+                gap: 8px !important;
                 flex-shrink: 0 !important;
             }
             
             .attendance-btn {
-                padding: 8px 10px !important;
+                padding: 10px 12px !important;
                 font-size: 0.8rem !important;
-                min-height: 36px !important;
-                min-width: 60px !important;
+                min-height: 40px !important;
+                min-width: 65px !important;
             }
             
             .attendance-stats .stats-grid {
@@ -3666,22 +3701,11 @@
     <!-- 懸浮固定選單 -->
     <div class="floating-stats-menu" id="floatingStatsMenu">
         <div class="floating-stats-content">
-            <div class="floating-stats-item">
-                <i class="fas fa-calendar-check icon"></i>
-                <span class="value" id="floatingTotalEvents">總事件: 0</span>
-            </div>
-            <div class="floating-stats-item">
-                <i class="fas fa-chalkboard-teacher icon"></i>
-                <span class="value" id="floatingInstructorCount">講師: 0</span>
-            </div>
-            <div class="floating-stats-item">
-                <i class="fas fa-calendar-alt icon"></i>
-                <span class="value" id="floatingDateRange">日期: -</span>
-            </div>
             <div class="floating-filter-buttons">
                 <button class="floating-filter-btn" data-filter="today">今日</button>
                 <button class="floating-filter-btn" data-filter="week">本週</button>
                 <button class="floating-filter-btn" data-filter="month">本月</button>
+                <button class="floating-filter-btn" data-filter="all">全部</button>
             </div>
         </div>
     </div>
@@ -7006,7 +7030,7 @@ async function loadTodayEvents() {
                         </div>
                         
                         <div id="attendanceContent">
-                            <div style="text-align: center; padding: 60px 40px; color: #333333;">
+                            <div style="text-align: center; padding: 60px 40px; color: #333333; background: linear-gradient(135deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.05)); border-radius: 15px; transition: all 0.5s ease;">
                                 <!-- 卡牌載入動畫 -->
                                 <div style="
                                     display: flex;
@@ -7234,6 +7258,10 @@ async function loadTodayEvents() {
         function displayStudents(students, teacher, course, time, start, end) {
             const attendanceContent = document.getElementById('attendanceContent');
             if (!attendanceContent) return;
+            
+            // 添加載入完成的過渡效果
+            attendanceContent.style.background = 'transparent';
+            attendanceContent.style.transition = 'all 0.5s ease';
             
             const today = new Date().toISOString().split('T')[0];
             
@@ -8063,36 +8091,53 @@ async function loadTodayEvents() {
         
         // 應用日期篩選
         function applyDateFilter(filter) {
-            const today = new Date();
-            let startDate, endDate;
+            // 找到對應的篩選按鈕並觸發點擊事件
+            const filterButtons = document.querySelectorAll('.filter-btn, .floating-filter-btn');
+            const targetButton = Array.from(filterButtons).find(btn => 
+                btn.getAttribute('data-filter') === filter || 
+                btn.textContent.trim() === filter
+            );
             
-            switch(filter) {
-                case 'today':
-                    startDate = new Date(today);
-                    endDate = new Date(today);
-                    break;
-                case 'week':
-                    startDate = new Date(today);
-                    startDate.setDate(today.getDate() - today.getDay()); // 本週開始（週日）
-                    endDate = new Date(startDate);
-                    endDate.setDate(startDate.getDate() + 6); // 本週結束（週六）
-                    break;
-                case 'month':
-                    startDate = new Date(today.getFullYear(), today.getMonth(), 1); // 本月第一天
-                    endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0); // 本月最後一天
-                    break;
-                default:
-                    return;
-            }
-            
-            // 更新日期範圍篩選
-            if (window.updateDateRange) {
-                window.updateDateRange(startDate, endDate);
-            }
-            
-            // 觸發事件重新載入
-            if (window.loadEvents) {
-                window.loadEvents();
+            if (targetButton) {
+                targetButton.click();
+            } else {
+                // 如果找不到對應按鈕，直接執行篩選邏輯
+                const today = new Date();
+                let startDate, endDate;
+                
+                switch(filter) {
+                    case 'today':
+                        startDate = new Date(today);
+                        endDate = new Date(today);
+                        break;
+                    case 'week':
+                        startDate = new Date(today);
+                        startDate.setDate(today.getDate() - today.getDay()); // 本週開始（週日）
+                        endDate = new Date(startDate);
+                        endDate.setDate(startDate.getDate() + 6); // 本週結束（週六）
+                        break;
+                    case 'month':
+                        startDate = new Date(today.getFullYear(), today.getMonth(), 1); // 本月第一天
+                        endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0); // 本月最後一天
+                        break;
+                    case 'all':
+                        // 全部：清除日期篩選
+                        startDate = null;
+                        endDate = null;
+                        break;
+                    default:
+                        return;
+                }
+                
+                // 更新日期範圍篩選
+                if (window.updateDateRange) {
+                    window.updateDateRange(startDate, endDate);
+                }
+                
+                // 觸發事件重新載入
+                if (window.loadEvents) {
+                    window.loadEvents();
+                }
             }
         }
 
