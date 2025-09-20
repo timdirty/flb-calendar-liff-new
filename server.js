@@ -394,8 +394,8 @@ app.post('/api/proxy/google-sheets', async (req, res) => {
             
             return res.json(data);
         } else if (action === 'updateAttendance') {
-            // 使用主要 FLB API (正式版本)
-            apiUrl = 'https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/exec';
+            // 使用學生簽到 API (dev 版本)
+            apiUrl = 'https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/dev';
             
             // 處理多筆簽到記錄
             if (records && records.length > 0) {
