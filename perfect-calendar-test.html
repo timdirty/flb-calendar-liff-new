@@ -675,6 +675,10 @@
         // 初始化系統
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 測試版系統初始化開始');
+            
+            // 測試課程解析功能
+            testCourseParsing();
+            
             initializeSystem();
         });
 
@@ -1382,21 +1386,25 @@
             return matrix[len2][len1];
         }
 
-        // 解析課程標題，分離課程名稱和時間資訊
+        // 解析課程標題，分離課程名稱和時間資訊（符合 API 格式）
         function parseCourseTitle(fullTitle) {
             if (!fullTitle) {
                 return { courseName: '未命名課程', timeInfo: '' };
             }
 
-            // 常見的時間模式
+            console.log(`📝 開始解析課程標題: "${fullTitle}"`);
+
+            // 常見的時間模式（按照 API 文檔格式）
             const timePatterns = [
-                // 六 9:30-10:30 到府
+                // 六 16:00-18:00 第2週 代課
+                /([一二三四五六日])\s+(\d{1,2}:\d{2})-(\d{1,2}:\d{2})\s+第(\d+)週\s*(.+)/,
+                // 六 16:00-18:00 代課
                 /([一二三四五六日])\s+(\d{1,2}:\d{2})-(\d{1,2}:\d{2})\s+(.+)/,
-                // 六 9:30-10:30
+                // 六 16:00-18:00
                 /([一二三四五六日])\s+(\d{1,2}:\d{2})-(\d{1,2}:\d{2})/,
-                // 9:30-10:30 到府
+                // 16:00-18:00 到府
                 /(\d{1,2}:\d{2})-(\d{1,2}:\d{2})\s+(.+)/,
-                // 9:30-10:30
+                // 16:00-18:00
                 /(\d{1,2}:\d{2})-(\d{1,2}:\d{2})/,
                 // 第X週
                 /第(\d+)週/,
@@ -1411,37 +1419,71 @@
             for (const pattern of timePatterns) {
                 const match = fullTitle.match(pattern);
                 if (match) {
+                    console.log(`🔍 匹配到模式: ${pattern.source}`, match);
+                    
                     if (pattern.source.includes('請假')) {
                         // 處理請假情況
                         courseName = fullTitle.replace(/請假.*$/, '').trim();
                         timeInfo = '請假';
                         break;
-                    } else if (pattern.source.includes('第') && pattern.source.includes('週')) {
-                        // 處理週次
-                        const weekMatch = fullTitle.match(/第(\d+)週/);
-                        if (weekMatch) {
-                            courseName = fullTitle.replace(/第\d+週.*$/, '').trim();
-                            timeInfo = `第${weekMatch[1]}週`;
-                        }
+                    } else if (pattern.source.includes('第') && pattern.source.includes('週') && pattern.source.includes('一二三四五六日')) {
+                        // 處理包含星期、時間和週次的情況：六 16:00-18:00 第2週 代課
+                        const weekday = match[1];
+                        const startTime = match[2];
+                        const endTime = match[3];
+                        const week = match[4];
+                        const location = match[5] || '';
+                        
+                        // 轉換時間格式：16:00 -> 1600
+                        const formatTime = (time) => time.replace(':', '');
+                        const formattedStartTime = formatTime(startTime);
+                        const formattedEndTime = formatTime(endTime);
+                        
+                        courseName = fullTitle.replace(new RegExp(`${weekday}\\s+${startTime}-${endTime}\\s*第${week}週\\s*${location}.*$`), '').trim();
+                        timeInfo = `${weekday} ${formattedStartTime}-${formattedEndTime}${location ? ' ' + location : ''}`;
                         break;
-                    } else if (pattern.source.includes('一二三四五六日')) {
-                        // 處理包含星期和時間的情況
+                    } else if (pattern.source.includes('一二三四五六日') && pattern.source.includes('\\d{1,2}:\\d{2}')) {
+                        // 處理包含星期和時間的情況：六 16:00-18:00 代課
                         const weekday = match[1];
                         const startTime = match[2];
                         const endTime = match[3];
                         const location = match[4] || '';
                         
+                        // 轉換時間格式：16:00 -> 1600
+                        const formatTime = (time) => time.replace(':', '');
+                        const formattedStartTime = formatTime(startTime);
+                        const formattedEndTime = formatTime(endTime);
+                        
                         courseName = fullTitle.replace(new RegExp(`${weekday}\\s+${startTime}-${endTime}\\s*${location}.*$`), '').trim();
-                        timeInfo = `${weekday} ${startTime}-${endTime}${location ? ' ' + location : ''}`;
+                        timeInfo = `${weekday} ${formattedStartTime}-${formattedEndTime}${location ? ' ' + location : ''}`;
+                        break;
+                    } else if (pattern.source.includes('一二三四五六日')) {
+                        // 處理只有星期和時間的情況：六 16:00-18:00
+                        const weekday = match[1];
+                        const startTime = match[2];
+                        const endTime = match[3];
+                        
+                        // 轉換時間格式：16:00 -> 1600
+                        const formatTime = (time) => time.replace(':', '');
+                        const formattedStartTime = formatTime(startTime);
+                        const formattedEndTime = formatTime(endTime);
+                        
+                        courseName = fullTitle.replace(new RegExp(`${weekday}\\s+${startTime}-${endTime}.*$`), '').trim();
+                        timeInfo = `${weekday} ${formattedStartTime}-${formattedEndTime}`;
                         break;
                     } else if (pattern.source.includes('\\d{1,2}:\\d{2}')) {
-                        // 處理只有時間的情況
+                        // 處理只有時間的情況：16:00-18:00 到府
                         const startTime = match[1];
                         const endTime = match[2];
                         const location = match[3] || '';
                         
+                        // 轉換時間格式：16:00 -> 1600
+                        const formatTime = (time) => time.replace(':', '');
+                        const formattedStartTime = formatTime(startTime);
+                        const formattedEndTime = formatTime(endTime);
+                        
                         courseName = fullTitle.replace(new RegExp(`${startTime}-${endTime}\\s*${location}.*$`), '').trim();
-                        timeInfo = `${startTime}-${endTime}${location ? ' ' + location : ''}`;
+                        timeInfo = `${formattedStartTime}-${formattedEndTime}${location ? ' ' + location : ''}`;
                         break;
                     }
                 }
@@ -1467,7 +1509,7 @@
                 timeInfo = '';
             }
 
-            console.log(`📝 解析課程標題: "${fullTitle}" → 課程: "${courseName}", 時間: "${timeInfo}"`);
+            console.log(`✅ 解析結果: 課程="${courseName}", 時間="${timeInfo}"`);
             
             return { courseName, timeInfo };
         }
@@ -2105,6 +2147,30 @@
             }, 3000);
         }
 
+        // 測試課程解析功能
+        function testCourseParsing() {
+            console.log('🧪 測試課程解析功能...');
+            
+            const testCases = [
+                'SPIKE 六 16:00-18:00 第2週 代課',
+                'SPM 六 9:30-10:30 到府 第4週請假',
+                '數學 一 14:00-15:30 教室A',
+                '英文 9:30-10:30 線上',
+                '物理 第3週',
+                '化學 請假',
+                '生物 9:30-10:30',
+                '簡單課程'
+            ];
+            
+            testCases.forEach(testCase => {
+                const result = parseCourseTitle(testCase);
+                console.log(`📝 測試: "${testCase}"`);
+                console.log(`   課程: "${result.courseName}"`);
+                console.log(`   時間: "${result.timeInfo}"`);
+                console.log('---');
+            });
+        }
+        
         // 強制重新整理
         async function forceRefresh() {
             console.log('🔄 開始強制重新整理...');

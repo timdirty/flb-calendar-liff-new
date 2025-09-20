@@ -358,10 +358,17 @@ app.post('/api/proxy/google-sheets', async (req, res) => {
         
         if (action === 'getRosterAttendance') {
             apiUrl = 'https://script.google.com/macros/s/AKfycbzm0GD-T09Botbs52e8PyeVuA5slJh6Z0AQ7I0uUiGZiE6aWhTO2D0d3XHFrdLNv90uCw/exec';
+            
+            // 確保課程和時間格式正確
+            const cleanCourse = course ? course.trim() : '';
+            const cleanPeriod = period ? period.trim() : '';
+            
+            console.log('🔍 清理後的參數:', { cleanCourse, cleanPeriod });
+            
             payload = {
                 action: 'getRosterAttendance',
-                course: course,
-                period: period
+                course: cleanCourse,
+                period: cleanPeriod
             };
         } else if (action === 'updateAttendance') {
             apiUrl = 'https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/exec';
