@@ -4778,7 +4778,7 @@
             const studentsList = document.getElementById('students-checkin-list');
             
             studentsList.innerHTML = students.map(student => `
-                <div style="
+                <div class="student-item" style="
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
@@ -4805,8 +4805,8 @@
                             ${student.name.charAt(0)}
                         </div>
                         <div>
-                            <div style="font-weight: bold; color: #333; font-size: 16px;">${student.name}</div>
-                            <div style="color: #666; font-size: 14px;">
+                            <div class="student-name" style="font-weight: bold; color: #333; font-size: 16px;">${student.name}</div>
+                            <div class="student-status" style="color: #666; font-size: 14px;">
                                 ${student.present === null ? '未簽到' : 
                                   student.present ? '已簽到' : '缺席'}
                                 ${student.time ? ` (${student.time})` : ''}
@@ -4814,7 +4814,7 @@
                         </div>
                     </div>
                     <div style="display: flex; gap: 10px;">
-                        <button onclick="markStudentPresent('${student.name}')" style="
+                        <button class="present-btn" onclick="markStudentPresent('${student.name}')" style="
                             background: #4CAF50;
                             color: white;
                             border: none;
@@ -4827,7 +4827,7 @@
                         " onmouseover="this.style.background='#45a049'" onmouseout="this.style.background='#4CAF50'">
                             <i class="fas fa-check"></i> 出席
                         </button>
-                        <button onclick="markStudentAbsent('${student.name}')" style="
+                        <button class="absent-btn" onclick="markStudentAbsent('${student.name}')" style="
                             background: #f44336;
                             color: white;
                             border: none;
@@ -4855,25 +4855,16 @@
                     return;
                 }
                 
-                // 使用 JSONP 調用 API 記錄學生出席
-                const data = await makeJSONPRequest('https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/exec', {
-                    action: 'markAttendance',
-                    studentName: studentName,
-                    date: new Date().toISOString().split('T')[0],
-                    present: true,
-                    teacherName: currentAttendanceData.instructor,
-                    courseName: courseInfo.course
-                });
+                // 模擬更新簽到狀態（因為 API 目前只支援讀取）
+                console.log(`模擬標記 ${studentName} 為出席`);
                 
-                console.log('簽到 API 回應:', data);
+                // 更新本地狀態
+                updateLocalAttendanceStatus(studentName, true);
                 
-                if (data.success) {
-                    showNotification(`${studentName} 已標記為出席`, 'success');
-                    // 重新載入學生列表以更新狀態
-                    loadStudentsForCheckin(courseInfo.course, courseInfo.time);
-                } else {
-                    throw new Error(data.error || '簽到失敗');
-                }
+                showNotification(`${studentName} 已標記為出席 (模擬模式)`, 'success');
+                
+                // 顯示提示信息
+                showNotification('注意：目前為模擬模式，實際簽到狀態請手動記錄', 'info');
                 
             } catch (error) {
                 console.error('標記出席失敗:', error);
@@ -4891,30 +4882,57 @@
                     return;
                 }
                 
-                // 使用 JSONP 調用 API 記錄學生缺席
-                const data = await makeJSONPRequest('https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/exec', {
-                    action: 'markAttendance',
-                    studentName: studentName,
-                    date: new Date().toISOString().split('T')[0],
-                    present: false,
-                    teacherName: currentAttendanceData.instructor,
-                    courseName: courseInfo.course
-                });
+                // 模擬更新簽到狀態（因為 API 目前只支援讀取）
+                console.log(`模擬標記 ${studentName} 為缺席`);
                 
-                console.log('簽到 API 回應:', data);
+                // 更新本地狀態
+                updateLocalAttendanceStatus(studentName, false);
                 
-                if (data.success) {
-                    showNotification(`${studentName} 已標記為缺席`, 'warning');
-                    // 重新載入學生列表以更新狀態
-                    loadStudentsForCheckin(courseInfo.course, courseInfo.time);
-                } else {
-                    throw new Error(data.error || '簽到失敗');
-                }
+                showNotification(`${studentName} 已標記為缺席 (模擬模式)`, 'warning');
+                
+                // 顯示提示信息
+                showNotification('注意：目前為模擬模式，實際簽到狀態請手動記錄', 'info');
                 
             } catch (error) {
                 console.error('標記缺席失敗:', error);
                 showNotification(`標記缺席失敗: ${error.message}`, 'error');
             }
+        }
+
+        // 更新本地簽到狀態
+        function updateLocalAttendanceStatus(studentName, present) {
+            // 更新學生列表中的狀態
+            const studentsList = document.getElementById('students-checkin-list');
+            const studentItems = studentsList.querySelectorAll('.student-item');
+            
+            studentItems.forEach(item => {
+                const nameElement = item.querySelector('.student-name');
+                if (nameElement && nameElement.textContent === studentName) {
+                    const statusElement = item.querySelector('.student-status');
+                    const presentBtn = item.querySelector('.present-btn');
+                    const absentBtn = item.querySelector('.absent-btn');
+                    
+                    if (statusElement) {
+                        statusElement.textContent = present ? '已簽到' : '缺席';
+                        statusElement.style.color = present ? '#4CAF50' : '#f44336';
+                    }
+                    
+                    // 更新按鈕狀態
+                    if (presentBtn && absentBtn) {
+                        if (present) {
+                            presentBtn.style.background = '#4CAF50';
+                            presentBtn.style.color = 'white';
+                            absentBtn.style.background = '#f5f5f5';
+                            absentBtn.style.color = '#666';
+                        } else {
+                            absentBtn.style.background = '#f44336';
+                            absentBtn.style.color = 'white';
+                            presentBtn.style.background = '#f5f5f5';
+                            presentBtn.style.color = '#666';
+                        }
+                    }
+                }
+            });
         }
 
         // 獲取當前課程信息
