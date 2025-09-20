@@ -647,6 +647,123 @@
             font-size: 1rem;
         }
 
+        /* 即將到來課程的高亮樣式 */
+        .event-card.upcoming-event {
+            position: relative;
+            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+            border: 3px solid #FF6B35;
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+            transform: scale(1.02);
+            animation: upcomingPulse 2s ease-in-out infinite;
+        }
+
+        .event-card.upcoming-event::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            background: linear-gradient(45deg, #FF6B35, #F7931E, #FF6B35, #F7931E);
+            border-radius: 12px;
+            z-index: -1;
+            animation: upcomingGlow 2s ease-in-out infinite;
+        }
+
+        .event-card.upcoming-event .event-title {
+            color: white;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .event-card.upcoming-event .event-instructor {
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+        }
+
+        .event-card.upcoming-event .event-detail {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .event-card.upcoming-event .event-detail i {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .event-card.upcoming-event .countdown-timer {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin: 8px 0;
+        }
+
+        .event-card.upcoming-event .event-description {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .event-card.upcoming-event .event-description h4 {
+            color: white;
+        }
+
+        .event-card.upcoming-event .event-description p {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* 即將到來課程標記 */
+        .upcoming-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #FF6B35;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-left: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            animation: upcomingBadgePulse 1.5s ease-in-out infinite;
+        }
+
+        .upcoming-badge i {
+            font-size: 0.9rem;
+        }
+
+        /* 動畫效果 */
+        @keyframes upcomingPulse {
+            0%, 100% { 
+                box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+                transform: scale(1.02);
+            }
+            50% { 
+                box-shadow: 0 12px 35px rgba(255, 107, 53, 0.6);
+                transform: scale(1.03);
+            }
+        }
+
+        @keyframes upcomingGlow {
+            0%, 100% { 
+                opacity: 0.8;
+            }
+            50% { 
+                opacity: 1;
+            }
+        }
+
+        @keyframes upcomingBadgePulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            }
+            50% { 
+                transform: scale(1.05);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            }
+        }
+
         .btn-secondary {
             background: rgba(108, 117, 125, 0.9);
             color: rgba(255, 255, 255, 0.9);
@@ -3917,6 +4034,75 @@
             }, 3000);
         }
 
+        // 計算每位講師的下一個即將到來的課程
+        function getUpcomingEventsByInstructor() {
+            const now = new Date();
+            const upcomingEvents = {};
+            
+            // 獲取所有有效的未來事件
+            const futureEvents = allEvents.filter(event => {
+                if (!event || !event.start || !event.instructor) return false;
+                const eventDate = new Date(event.start);
+                return eventDate > now; // 只考慮未來的事件
+            });
+            
+            // 按講師分組並找到每個講師的下一個課程
+            futureEvents.forEach(event => {
+                const instructor = event.instructor;
+                if (!upcomingEvents[instructor]) {
+                    upcomingEvents[instructor] = event;
+                } else {
+                    // 比較時間，保留更早的課程
+                    const currentUpcoming = new Date(upcomingEvents[instructor].start);
+                    const newEvent = new Date(event.start);
+                    if (newEvent < currentUpcoming) {
+                        upcomingEvents[instructor] = event;
+                    }
+                }
+            });
+            
+            console.log('📅 每位講師的下一個課程:', upcomingEvents);
+            return upcomingEvents;
+        }
+
+        // 檢查事件是否為即將到來的課程
+        function isUpcomingEvent(event) {
+            if (!event || !event.start || !event.instructor) return false;
+            
+            const upcomingEvents = getUpcomingEventsByInstructor();
+            const instructor = event.instructor;
+            
+            // 檢查是否為該講師的下一個課程
+            if (upcomingEvents[instructor] && upcomingEvents[instructor].id === event.id) {
+                return true;
+            }
+            
+            return false;
+        }
+
+        // 計算距離課程開始的時間
+        function getTimeUntilEvent(event) {
+            if (!event || !event.start) return null;
+            
+            const now = new Date();
+            const eventDate = new Date(event.start);
+            const timeDiff = eventDate - now;
+            
+            if (timeDiff <= 0) return null; // 課程已開始或結束
+            
+            const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+            
+            if (days > 0) {
+                return `${days}天${hours}小時`;
+            } else if (hours > 0) {
+                return `${hours}小時${minutes}分鐘`;
+            } else {
+                return `${minutes}分鐘`;
+            }
+        }
+
         // 強制重新整理行事曆
         async function forceRefresh() {
             const refreshButton = document.getElementById('refreshButton');
@@ -5298,6 +5484,10 @@ async function loadTodayEvents() {
             const isExperienceEvent = isExperience(event);
             const experienceInfo = isExperienceEvent ? getExperienceInfo(event) : null;
             
+            // 檢測是否為即將到來的課程
+            const isUpcomingEventFlag = isUpcomingEvent(event);
+            const timeUntilEvent = isUpcomingEventFlag ? getTimeUntilEvent(event) : null;
+            
             // 從標題解析時間
             const titleTime = parseTimeFromTitle(event.title);
             
@@ -5380,7 +5570,7 @@ async function loadTodayEvents() {
             const instructorStyle = instructorColors[event.instructor] ? 'custom-color' : '';
             
             return `
-                <div class="event-card ${isCancelledEvent ? 'cancelled-event' : ''} ${isSubstituteEvent ? 'substitute-event' : ''} ${isExperienceEvent ? 'experience-event' : ''}">
+                <div class="event-card ${isCancelledEvent ? 'cancelled-event' : ''} ${isSubstituteEvent ? 'substitute-event' : ''} ${isExperienceEvent ? 'experience-event' : ''} ${isUpcomingEventFlag ? 'upcoming-event' : ''}">
                     <div class="event-header">
                         <div>
                             <div class="event-title">
@@ -5388,6 +5578,7 @@ async function loadTodayEvents() {
                                 ${isCancelledEvent ? '<span class="cancelled-badge"><i class="fas fa-ban"></i> ⚠️ 停課 ⚠️</span>' : ''}
                                 ${isSubstituteEvent && substituteInfo ? `<span class="substitute-badge"><i class="fas fa-exchange-alt"></i> ${substituteInfo.type} ${substituteInfo.originalInstructor}</span>` : ''}
                                 ${isExperienceEvent && experienceInfo ? `<span class="experience-badge"><i class="fas fa-star"></i> ${experienceInfo.type}</span>` : ''}
+                                ${isUpcomingEventFlag ? `<span class="upcoming-badge"><i class="fas fa-clock"></i> 即將上課</span>` : ''}
                             </div>
                             <div class="event-instructor ${instructorStyle}" style="--instructor-color: ${instructorColor}">
                                 <i class="fas fa-user"></i> ${event.instructor}
@@ -5421,7 +5612,7 @@ async function loadTodayEvents() {
                          data-start-time="${event.start}" 
                          data-end-time="${event.end}">
                         <i class="fas fa-clock countdown-icon"></i>
-                        <span class="countdown-text">計算中...</span>
+                        <span class="countdown-text">${isUpcomingEventFlag && timeUntilEvent ? `距離上課還有 ${timeUntilEvent}` : '計算中...'}</span>
                     </div>
                     
                     <div class="event-description">

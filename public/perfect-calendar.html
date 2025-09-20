@@ -647,36 +647,121 @@
             font-size: 1rem;
         }
 
-        .btn-import {
-            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+        /* 即將到來課程的高亮樣式 */
+        .event-card.upcoming-event {
             position: relative;
-            overflow: hidden;
-            display: flex;
+            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+            border: 3px solid #FF6B35;
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+            transform: scale(1.02);
+            animation: upcomingPulse 2s ease-in-out infinite;
+        }
+
+        .event-card.upcoming-event::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            background: linear-gradient(45deg, #FF6B35, #F7931E, #FF6B35, #F7931E);
+            border-radius: 12px;
+            z-index: -1;
+            animation: upcomingGlow 2s ease-in-out infinite;
+        }
+
+        .event-card.upcoming-event .event-title {
+            color: white;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .event-card.upcoming-event .event-instructor {
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+        }
+
+        .event-card.upcoming-event .event-detail {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .event-card.upcoming-event .event-detail i {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .event-card.upcoming-event .countdown-timer {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin: 8px 0;
+        }
+
+        .event-card.upcoming-event .event-description {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .event-card.upcoming-event .event-description h4 {
+            color: white;
+        }
+
+        .event-card.upcoming-event .event-description p {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* 即將到來課程標記 */
+        .upcoming-badge {
+            display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #FF6B35;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-left: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            animation: upcomingBadgePulse 1.5s ease-in-out infinite;
+        }
+
+        .upcoming-badge i {
             font-size: 0.9rem;
         }
 
-        .btn-import:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        /* 動畫效果 */
+        @keyframes upcomingPulse {
+            0%, 100% { 
+                box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+                transform: scale(1.02);
+            }
+            50% { 
+                box-shadow: 0 12px 35px rgba(255, 107, 53, 0.6);
+                transform: scale(1.03);
+            }
         }
 
-        .btn-import:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 10px rgba(33, 150, 243, 0.3);
+        @keyframes upcomingGlow {
+            0%, 100% { 
+                opacity: 0.8;
+            }
+            50% { 
+                opacity: 1;
+            }
         }
 
-        .btn-import i {
-            font-size: 1rem;
+        @keyframes upcomingBadgePulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            }
+            50% { 
+                transform: scale(1.05);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            }
         }
 
         .btn-secondary {
@@ -1801,16 +1886,6 @@
                 justify-content: center;
                 gap: 6px;
             }
-
-            .btn-import {
-                padding: 8px 12px;
-                font-size: 0.75rem;
-                min-height: 36px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 6px;
-            }
             
             .btn-primary.active {
                 color: rgba(0, 0, 0, 0.9) !important; /* 確保選中時字體為深色 */
@@ -2008,13 +2083,6 @@
             }
 
             .btn-export {
-                padding: 6px 8px;
-                font-size: 0.7rem;
-                min-height: 32px;
-                gap: 4px;
-            }
-
-            .btn-import {
                 padding: 6px 8px;
                 font-size: 0.7rem;
                 min-height: 32px;
@@ -3152,7 +3220,6 @@
                         bindViewButtons();
                         bindRefreshButton();
                         bindExportButton();
-                        bindImportButton();
                         
                         // 設置今日按鈕的預設按下效果
                         updateViewButtonStates();
@@ -3807,49 +3874,12 @@
             }
         }
 
-        // 綁定導入行事曆按鈕事件
-        function bindImportButton() {
-            const importButton = document.getElementById('importCalendarBtn');
-            const importFileInput = document.getElementById('importFileInput');
-            if (importButton && importFileInput) {
-                // 移除舊的事件監聽器
-                importButton.removeEventListener('click', handleImportClick);
-                importFileInput.removeEventListener('change', handleFileSelect);
-                // 添加新的事件監聽器
-                importButton.addEventListener('click', handleImportClick);
-                importFileInput.addEventListener('change', handleFileSelect);
-                console.log('✅ 導入行事曆按鈕事件已綁定');
-            } else {
-                console.warn('⚠️ 導入行事曆按鈕或檔案輸入元素未找到');
-            }
-        }
-
         // 匯出按鈕點擊處理函數
         function handleExportClick(event) {
             event.preventDefault();
             event.stopPropagation();
             console.log('📥 匯出行事曆按鈕被點擊');
             exportCalendar();
-        }
-
-        // 導入按鈕點擊處理函數
-        function handleImportClick(event) {
-            event.preventDefault();
-            event.stopPropagation();
-            console.log('📤 導入行事曆按鈕被點擊');
-            const importFileInput = document.getElementById('importFileInput');
-            if (importFileInput) {
-                importFileInput.click();
-            }
-        }
-
-        // 檔案選擇處理函數
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (file) {
-                console.log('📁 選擇檔案:', file.name);
-                importCalendar(file);
-            }
         }
 
         // 匯出行事曆功能
@@ -4004,441 +4034,73 @@
             }, 3000);
         }
 
-        // 導入行事曆功能
-        function importCalendar(file) {
-            try {
-                console.log('📤 開始導入行事曆...', file.name);
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    try {
-                        const content = e.target.result;
-                        console.log('📄 檔案內容讀取完成，長度:', content.length);
-                        
-                        // 解析 iCal 內容
-                        const events = parseICalContent(content);
-                        console.log('📅 解析到事件數量:', events.length);
-                        
-                        if (events.length === 0) {
-                            showImportMessage('檔案中沒有找到有效的事件', 'warning');
-                            return;
-                        }
-                        
-                        // 合併到現有事件
-                        mergeImportedEvents(events);
-                        
-                        // 顯示成功訊息
-                        showImportMessage(`成功導入 ${events.length} 個事件！`, 'success');
-                        
-                        // 重新渲染事件
-                        updateStats();
-                        renderEvents();
-                        
-                    } catch (error) {
-                        console.error('❌ 解析行事曆檔案失敗:', error);
-                        showImportMessage('檔案格式不正確，請選擇有效的 .ics 檔案', 'error');
-                    }
-                };
-                
-                reader.onerror = function() {
-                    console.error('❌ 讀取檔案失敗');
-                    showImportMessage('讀取檔案失敗，請重試', 'error');
-                };
-                
-                reader.readAsText(file, 'UTF-8');
-                
-            } catch (error) {
-                console.error('❌ 導入行事曆失敗:', error);
-                showImportMessage('導入行事曆時發生錯誤，請稍後再試', 'error');
-            }
-        }
-
-        // 解析 iCal 內容
-        function parseICalContent(content) {
-            const events = [];
-            const lines = content.split(/\r?\n/);
-            let currentEvent = null;
-            let inEvent = false;
+        // 計算每位講師的下一個即將到來的課程
+        function getUpcomingEventsByInstructor() {
+            const now = new Date();
+            const upcomingEvents = {};
             
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i].trim();
-                
-                if (line === 'BEGIN:VEVENT') {
-                    inEvent = true;
-                    currentEvent = {};
-                } else if (line === 'END:VEVENT') {
-                    if (currentEvent && currentEvent.start) {
-                        // 確保有必要的欄位
-                        currentEvent.title = currentEvent.title || '未命名事件';
-                        currentEvent.description = currentEvent.description || '';
-                        currentEvent.location = currentEvent.location || '';
-                        currentEvent.instructor = currentEvent.instructor || '未知講師';
-                        
-                        // 生成唯一 ID
-                        currentEvent.id = currentEvent.id || `imported_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-                        
-                        events.push(currentEvent);
-                    }
-                    inEvent = false;
-                    currentEvent = null;
-                } else if (inEvent && currentEvent) {
-                    const colonIndex = line.indexOf(':');
-                    if (colonIndex > 0) {
-                        const key = line.substring(0, colonIndex).toLowerCase();
-                        const value = line.substring(colonIndex + 1);
-                        
-                        switch (key) {
-                            case 'summary':
-                                currentEvent.title = value;
-                                break;
-                            case 'description':
-                                currentEvent.description = value;
-                                break;
-                            case 'location':
-                                currentEvent.location = value;
-                                break;
-                            case 'dtstart':
-                                currentEvent.start = parseICalDate(value);
-                                break;
-                            case 'dtend':
-                                currentEvent.end = parseICalDate(value);
-                                break;
-                            case 'uid':
-                                currentEvent.id = value;
-                                break;
-                        }
-                    }
-                }
-            }
+            // 獲取所有有效的未來事件
+            const futureEvents = allEvents.filter(event => {
+                if (!event || !event.start || !event.instructor) return false;
+                const eventDate = new Date(event.start);
+                return eventDate > now; // 只考慮未來的事件
+            });
             
-            return events;
-        }
-
-        // 解析 iCal 日期格式
-        function parseICalDate(dateStr) {
-            try {
-                // 移除時區標記
-                const cleanDate = dateStr.replace(/Z$/, '');
-                
-                // 處理格式：20240115T143000 或 20240115
-                if (cleanDate.length === 15) {
-                    // 包含時間
-                    const year = cleanDate.substring(0, 4);
-                    const month = cleanDate.substring(4, 6);
-                    const day = cleanDate.substring(6, 8);
-                    const hour = cleanDate.substring(9, 11);
-                    const minute = cleanDate.substring(11, 13);
-                    const second = cleanDate.substring(13, 15);
-                    
-                    return new Date(year, month - 1, day, hour, minute, second);
-                } else if (cleanDate.length === 8) {
-                    // 只有日期
-                    const year = cleanDate.substring(0, 4);
-                    const month = cleanDate.substring(4, 6);
-                    const day = cleanDate.substring(6, 8);
-                    
-                    return new Date(year, month - 1, day);
-                }
-                
-                // 嘗試標準日期格式
-                return new Date(dateStr);
-            } catch (error) {
-                console.error('❌ 解析日期失敗:', dateStr, error);
-                return new Date();
-            }
-        }
-
-        // 合併導入的事件
-        function mergeImportedEvents(importedEvents) {
-            console.log('🔄 開始合併導入的事件...');
-            
-            // 將導入的事件添加到現有事件列表
-            importedEvents.forEach(event => {
-                // 檢查是否已存在相同的事件
-                const exists = allEvents.some(existingEvent => 
-                    existingEvent.id === event.id || 
-                    (existingEvent.title === event.title && 
-                     existingEvent.start === event.start)
-                );
-                
-                if (!exists) {
-                    allEvents.push(event);
-                    console.log('✅ 添加事件:', event.title);
+            // 按講師分組並找到每個講師的下一個課程
+            futureEvents.forEach(event => {
+                const instructor = event.instructor;
+                if (!upcomingEvents[instructor]) {
+                    upcomingEvents[instructor] = event;
                 } else {
-                    console.log('⚠️ 事件已存在，跳過:', event.title);
+                    // 比較時間，保留更早的課程
+                    const currentUpcoming = new Date(upcomingEvents[instructor].start);
+                    const newEvent = new Date(event.start);
+                    if (newEvent < currentUpcoming) {
+                        upcomingEvents[instructor] = event;
+                    }
                 }
             });
             
-            console.log('📊 合併完成，總事件數:', allEvents.length);
+            console.log('📅 每位講師的下一個課程:', upcomingEvents);
+            return upcomingEvents;
         }
 
-        // 顯示導入訊息
-        function showImportMessage(message, type = 'info') {
-            const colors = {
-                success: 'linear-gradient(135deg, #4CAF50, #45a049)',
-                warning: 'linear-gradient(135deg, #FF9800, #F57C00)',
-                error: 'linear-gradient(135deg, #F44336, #D32F2F)',
-                info: 'linear-gradient(135deg, #2196F3, #1976D2)'
-            };
+        // 檢查事件是否為即將到來的課程
+        function isUpcomingEvent(event) {
+            if (!event || !event.start || !event.instructor) return false;
             
-            const icons = {
-                success: 'fa-check-circle',
-                warning: 'fa-exclamation-triangle',
-                error: 'fa-times-circle',
-                info: 'fa-info-circle'
-            };
+            const upcomingEvents = getUpcomingEventsByInstructor();
+            const instructor = event.instructor;
             
-            // 創建訊息元素
-            const messageEl = document.createElement('div');
-            messageEl.style.cssText = `
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: ${colors[type]};
-                color: white;
-                padding: 20px 30px;
-                border-radius: 12px;
-                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-                z-index: 10000;
-                font-size: 16px;
-                font-weight: 600;
-                text-align: center;
-                animation: fadeInOut 3s ease-in-out;
-                max-width: 300px;
-            `;
-            
-            messageEl.innerHTML = `
-                <i class="fas ${icons[type]}" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
-                ${message}
-            `;
-            
-            // 添加動畫樣式
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes fadeInOut {
-                    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-                    20% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
-                    80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-                    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-                }
-            `;
-            document.head.appendChild(style);
-            
-            document.body.appendChild(messageEl);
-            
-            // 3秒後移除訊息
-            setTimeout(() => {
-                if (messageEl.parentNode) {
-                    messageEl.parentNode.removeChild(messageEl);
-                }
-                if (style.parentNode) {
-                    style.parentNode.removeChild(style);
-                }
-            }, 3000);
-        }
-
-        // 導入行事曆功能
-        function importCalendar(file) {
-            try {
-                console.log('📤 開始導入行事曆...', file.name);
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    try {
-                        const content = e.target.result;
-                        console.log('📄 檔案內容讀取完成，長度:', content.length);
-                        
-                        // 解析 iCal 內容
-                        const events = parseICalContent(content);
-                        console.log('📅 解析到事件數量:', events.length);
-                        
-                        if (events.length === 0) {
-                            showImportMessage('檔案中沒有找到有效的事件', 'warning');
-                            return;
-                        }
-                        
-                        // 合併到現有事件
-                        mergeImportedEvents(events);
-                        
-                        // 顯示成功訊息
-                        showImportMessage(`成功導入 ${events.length} 個事件`, 'success');
-                        
-                        // 重新渲染事件
-                        updateStats();
-                        renderEvents();
-                        
-                    } catch (error) {
-                        console.error('❌ 解析行事曆檔案失敗:', error);
-                        showImportMessage('檔案格式不正確，請選擇有效的 .ics 檔案', 'error');
-                    }
-                };
-                
-                reader.onerror = function() {
-                    console.error('❌ 讀取檔案失敗');
-                    showImportMessage('讀取檔案失敗，請重試', 'error');
-                };
-                
-                reader.readAsText(file, 'UTF-8');
-                
-            } catch (error) {
-                console.error('❌ 導入行事曆失敗:', error);
-                showImportMessage('導入行事曆時發生錯誤，請稍後再試', 'error');
-            }
-        }
-
-        // 解析 iCal 內容
-        function parseICalContent(content) {
-            const events = [];
-            const lines = content.split('\n').map(line => line.trim());
-            
-            let currentEvent = null;
-            let inEvent = false;
-            
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i];
-                
-                if (line === 'BEGIN:VEVENT') {
-                    inEvent = true;
-                    currentEvent = {};
-                } else if (line === 'END:VEVENT') {
-                    if (currentEvent && currentEvent.start) {
-                        events.push(currentEvent);
-                    }
-                    inEvent = false;
-                    currentEvent = null;
-                } else if (inEvent && currentEvent) {
-                    const colonIndex = line.indexOf(':');
-                    if (colonIndex > 0) {
-                        const key = line.substring(0, colonIndex).toLowerCase();
-                        const value = line.substring(colonIndex + 1);
-                        
-                        switch (key) {
-                            case 'summary':
-                                currentEvent.title = value;
-                                break;
-                            case 'description':
-                                currentEvent.description = value;
-                                break;
-                            case 'location':
-                                currentEvent.location = value;
-                                break;
-                            case 'dtstart':
-                                currentEvent.start = parseICalDate(value);
-                                break;
-                            case 'dtend':
-                                currentEvent.end = parseICalDate(value);
-                                break;
-                            case 'uid':
-                                currentEvent.id = value;
-                                break;
-                        }
-                    }
-                }
+            // 檢查是否為該講師的下一個課程
+            if (upcomingEvents[instructor] && upcomingEvents[instructor].id === event.id) {
+                return true;
             }
             
-            return events;
+            return false;
         }
 
-        // 解析 iCal 日期格式
-        function parseICalDate(dateStr) {
-            // 移除時區標記
-            const cleanDate = dateStr.replace(/Z$/, '');
+        // 計算距離課程開始的時間
+        function getTimeUntilEvent(event) {
+            if (!event || !event.start) return null;
             
-            // 檢查格式 YYYYMMDDTHHMMSS
-            if (cleanDate.length === 15) {
-                const year = cleanDate.substring(0, 4);
-                const month = cleanDate.substring(4, 6);
-                const day = cleanDate.substring(6, 8);
-                const hour = cleanDate.substring(9, 11);
-                const minute = cleanDate.substring(11, 13);
-                const second = cleanDate.substring(13, 15);
-                
-                return new Date(year, month - 1, day, hour, minute, second);
+            const now = new Date();
+            const eventDate = new Date(event.start);
+            const timeDiff = eventDate - now;
+            
+            if (timeDiff <= 0) return null; // 課程已開始或結束
+            
+            const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+            
+            if (days > 0) {
+                return `${days}天${hours}小時`;
+            } else if (hours > 0) {
+                return `${hours}小時${minutes}分鐘`;
+            } else {
+                return `${minutes}分鐘`;
             }
-            
-            // 嘗試標準日期解析
-            return new Date(cleanDate);
-        }
-
-        // 合併導入的事件
-        function mergeImportedEvents(importedEvents) {
-            console.log('🔄 開始合併導入的事件...');
-            
-            // 為導入的事件添加標記
-            const markedEvents = importedEvents.map(event => ({
-                ...event,
-                isImported: true,
-                source: 'imported'
-            }));
-            
-            // 合併到現有事件
-            allEvents.push(...markedEvents);
-            
-            console.log('✅ 事件合併完成，總事件數:', allEvents.length);
-        }
-
-        // 顯示導入訊息
-        function showImportMessage(message, type) {
-            const colors = {
-                success: 'linear-gradient(135deg, #4CAF50, #45a049)',
-                warning: 'linear-gradient(135deg, #FF9800, #F57C00)',
-                error: 'linear-gradient(135deg, #F44336, #D32F2F)'
-            };
-            
-            const icons = {
-                success: 'fa-check-circle',
-                warning: 'fa-exclamation-triangle',
-                error: 'fa-times-circle'
-            };
-            
-            // 創建訊息元素
-            const messageDiv = document.createElement('div');
-            messageDiv.style.cssText = `
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: ${colors[type]};
-                color: white;
-                padding: 20px 30px;
-                border-radius: 12px;
-                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-                z-index: 10000;
-                font-size: 16px;
-                font-weight: 600;
-                text-align: center;
-                animation: fadeInOut 3s ease-in-out;
-            `;
-            
-            messageDiv.innerHTML = `
-                <i class="fas ${icons[type]}" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
-                ${message}
-            `;
-            
-            // 添加動畫樣式
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes fadeInOut {
-                    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-                    20% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
-                    80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-                    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-                }
-            `;
-            document.head.appendChild(style);
-            
-            document.body.appendChild(messageDiv);
-            
-            // 3秒後移除訊息
-            setTimeout(() => {
-                if (messageDiv.parentNode) {
-                    messageDiv.parentNode.removeChild(messageDiv);
-                }
-                if (style.parentNode) {
-                    style.parentNode.removeChild(style);
-                }
-            }, 3000);
         }
 
         // 強制重新整理行事曆
@@ -5822,6 +5484,10 @@ async function loadTodayEvents() {
             const isExperienceEvent = isExperience(event);
             const experienceInfo = isExperienceEvent ? getExperienceInfo(event) : null;
             
+            // 檢測是否為即將到來的課程
+            const isUpcomingEventFlag = isUpcomingEvent(event);
+            const timeUntilEvent = isUpcomingEventFlag ? getTimeUntilEvent(event) : null;
+            
             // 從標題解析時間
             const titleTime = parseTimeFromTitle(event.title);
             
@@ -5904,7 +5570,7 @@ async function loadTodayEvents() {
             const instructorStyle = instructorColors[event.instructor] ? 'custom-color' : '';
             
             return `
-                <div class="event-card ${isCancelledEvent ? 'cancelled-event' : ''} ${isSubstituteEvent ? 'substitute-event' : ''} ${isExperienceEvent ? 'experience-event' : ''}">
+                <div class="event-card ${isCancelledEvent ? 'cancelled-event' : ''} ${isSubstituteEvent ? 'substitute-event' : ''} ${isExperienceEvent ? 'experience-event' : ''} ${isUpcomingEventFlag ? 'upcoming-event' : ''}">
                     <div class="event-header">
                         <div>
                             <div class="event-title">
@@ -5912,6 +5578,7 @@ async function loadTodayEvents() {
                                 ${isCancelledEvent ? '<span class="cancelled-badge"><i class="fas fa-ban"></i> ⚠️ 停課 ⚠️</span>' : ''}
                                 ${isSubstituteEvent && substituteInfo ? `<span class="substitute-badge"><i class="fas fa-exchange-alt"></i> ${substituteInfo.type} ${substituteInfo.originalInstructor}</span>` : ''}
                                 ${isExperienceEvent && experienceInfo ? `<span class="experience-badge"><i class="fas fa-star"></i> ${experienceInfo.type}</span>` : ''}
+                                ${isUpcomingEventFlag ? `<span class="upcoming-badge"><i class="fas fa-clock"></i> 即將上課</span>` : ''}
                             </div>
                             <div class="event-instructor ${instructorStyle}" style="--instructor-color: ${instructorColor}">
                                 <i class="fas fa-user"></i> ${event.instructor}
@@ -5945,297 +5612,7 @@ async function loadTodayEvents() {
                          data-start-time="${event.start}" 
                          data-end-time="${event.end}">
                         <i class="fas fa-clock countdown-icon"></i>
-                        <span class="countdown-text">計算中...</span>
-                    </div>
-                    
-                    <div class="event-description">
-                        <h4><i class="fas fa-info-circle"></i> 課程描述</h4>
-                        <p>${cleanDescription || '無描述'}</p>
-                    </div>
-                    
-                    ${lessonButton}
-                </div>
-            `;
-        }
-
-        // 更新統計信息
-        function updateStats() {
-            // 獲取當前篩選條件
-            const instructorFilter = document.getElementById('instructorSelect').value;
-            const timeFilter = document.getElementById('timeFilter').value;
-            const dateFilter = document.getElementById('dateFilter').value;
-            
-            // 先過濾掉 null 值
-            let filteredEvents = allEvents.filter(event => {
-                if (!event) return false;
-                if (!event.start || !event.end || !event.title || !event.instructor) return false;
-                return true;
-            });
-            
-            // 應用講師篩選
-            if (instructorFilter) {
-                filteredEvents = filteredEvents.filter(event => event.instructor === instructorFilter);
-            }
-            
-            // 應用時段篩選
-                if (timeFilter) {
-                filteredEvents = filteredEvents.filter(event => {
-                    const eventDate = new Date(event.start);
-                    const hour = eventDate.getHours();
-                    switch (timeFilter) {
-                        case 'morning':
-                            return hour >= 6 && hour < 12;
-                        case 'afternoon':
-                            return hour >= 12 && hour < 18;
-                        case 'evening':
-                            return hour >= 18 && hour < 24;
-                        default:
-                            return true;
-                    }
-                });
-                }
-                
-            // 應用指定日期篩選
-                if (dateFilter) {
-                filteredEvents = filteredEvents.filter(event => {
-                    const eventDate = new Date(event.start);
-                    const filterDate = new Date(dateFilter);
-                    return eventDate.getFullYear() === filterDate.getFullYear() &&
-                           eventDate.getMonth() === filterDate.getMonth() &&
-                           eventDate.getDate() === filterDate.getDate();
-                });
-            }
-            
-            // 應用視圖篩選（今日/本週/本月/全部）
-                const now = new Date();
-            filteredEvents = filteredEvents.filter(event => {
-                const eventDate = new Date(event.start);
-                
-                switch (currentView) {
-                    case '今日':
-                        return eventDate.getFullYear() === now.getFullYear() &&
-                               eventDate.getMonth() === now.getMonth() &&
-                               eventDate.getDate() === now.getDate();
-                    case '本週':
-                        const weekStart = new Date(now);
-                        const dayOfWeek = now.getDay();
-                        const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-                        weekStart.setDate(now.getDate() + daysToMonday);
-                        weekStart.setHours(0, 0, 0, 0);
-                        const weekEnd = new Date(weekStart);
-                        weekEnd.setDate(weekStart.getDate() + 6);
-                        weekEnd.setHours(23, 59, 59, 999);
-                        return eventDate >= weekStart && eventDate <= weekEnd;
-                    case '本月':
-                        return eventDate.getFullYear() === now.getFullYear() &&
-                               eventDate.getMonth() === now.getMonth();
-                    case '全部':
-                    default:
-                        return true;
-                }
-            });
-            
-            // 計算篩選後的講師數量
-            const uniqueInstructors = new Set(filteredEvents.map(event => event.instructor));
-            const instructorCount = uniqueInstructors.size;
-            
-            // 調試日誌：顯示篩選結果
-            console.log(`📊 統計更新 - 模式: ${currentView}, 總事件: ${allEvents.length}, 篩選後: ${filteredEvents.length}`);
-            
-            // 根據當前篩選模式計算日期範圍
-            let dateRange = '-';
-            
-            switch (currentView) {
-                case '今日':
-                    dateRange = now.toLocaleDateString('zh-TW');
-                    break;
-                case '本週':
-                    const weekStart = new Date(now);
-                    const dayOfWeek = now.getDay();
-                    const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-                    weekStart.setDate(now.getDate() + daysToMonday);
-                    const weekEnd = new Date(weekStart);
-                    weekEnd.setDate(weekStart.getDate() + 6);
-                    dateRange = `${weekStart.toLocaleDateString('zh-TW')} - ${weekEnd.toLocaleDateString('zh-TW')}`;
-                    break;
-                case '本月':
-                    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-                    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-                    dateRange = `${monthStart.toLocaleDateString('zh-TW')} - ${monthEnd.toLocaleDateString('zh-TW')}`;
-                    break;
-                case '全部':
-                default:
-                    if (filteredEvents.length > 0) {
-                        const dates = filteredEvents.map(event => new Date(event.start));
-                        const minDate = new Date(Math.min(...dates));
-                        const maxDate = new Date(Math.max(...dates));
-                        dateRange = `${minDate.toLocaleDateString('zh-TW')} - ${maxDate.toLocaleDateString('zh-TW')}`;
-                    } else if (allEvents.length > 0) {
-                const dates = allEvents.map(event => new Date(event.start));
-                const minDate = new Date(Math.min(...dates));
-                const maxDate = new Date(Math.max(...dates));
-                        dateRange = `${minDate.toLocaleDateString('zh-TW')} - ${maxDate.toLocaleDateString('zh-TW')}`;
-                    }
-                    break;
-            }
-            
-            // 更新文字形式的統計信息
-            const totalEventsText = document.getElementById('totalEventsText');
-            const instructorCountText = document.getElementById('instructorCountText');
-            const dateRangeText = document.getElementById('dateRangeText');
-            
-            // 動畫更新統計數字
-            if (totalEventsText) {
-                animateCounter(totalEventsText, `總事件: ${filteredEvents.length}`);
-            }
-            if (instructorCountText) {
-                animateCounter(instructorCountText, `講師: ${instructorCount}`);
-            }
-            if (dateRangeText) {
-                animateCounter(dateRangeText, `日期: ${dateRange}`);
-            }
-        }
-
-        // 動畫更新計數器
-        function animateCounter(element, newText) {
-            if (element.textContent !== newText) {
-                // 添加動畫類
-                element.classList.add('animate');
-                
-                // 更新文字
-                element.textContent = newText;
-                
-                // 移除動畫類
-                setTimeout(() => {
-                    element.classList.remove('animate');
-                }, 600);
-            }
-        }
-
-        // 顯示錯誤訊息
-        function showError(message) {
-            const container = document.getElementById('eventsContainer');
-            container.innerHTML = `
-                <div class="no-events">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <h3>載入失敗</h3>
-                    <p>${message}</p>
-                </div>
-            `;
-        }
-
-        // 點擊外部關閉設置畫面
-        const settingsOverlay = document.getElementById('settingsOverlay');
-        if (settingsOverlay) {
-            settingsOverlay.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeSettings();
-                }
-            });
-        }
-    </script>
-</body>
-</html>
-
-                .replace(/\s+/g, ' ')
-                .trim();
-            
-            // 尋找教案連結 - 從原始描述中提取
-            const notionUrlRegex = /\(https:\/\/www\.notion\.so\/([^)]+)\)/;
-            let notionMatch = event.description.match(notionUrlRegex);
-            
-            // 如果沒有找到括號內的連結，則匹配一般的 Notion 連結
-            if (!notionMatch) {
-                const generalNotionRegex = /https:\/\/www\.notion\.so\/([^)\s]+)/;
-                notionMatch = event.description.match(generalNotionRegex);
-            }
-            
-            let lessonButton = '';
-            if (notionMatch) {
-                const lessonUrl = `https://www.notion.so/${notionMatch[1]}`;
-                
-                // 提取教案名稱和類型
-                let lessonName = '查看教案';
-                let lessonType = '教案';
-                
-                // 從原始描述中提取教案資訊
-                const originalDescription = event.description;
-                
-                // 匹配各種教案格式，優先匹配括號前的教案名稱
-                const lessonMatch = originalDescription.match(/(ESM教案|SPM教案|SPIKE教案|BOOST教案|EV3教案|MINECRAFT教案)[:\s]*([^(]+?)(?:\s*\(https:\/\/www\.notion\.so)/);
-                if (lessonMatch && lessonMatch[2]) {
-                    lessonName = lessonMatch[2].trim();
-                    lessonType = lessonMatch[1].replace('教案', '');
-                }
-                
-                lessonButton = `
-                    <div class="lesson-section">
-                        <div class="lesson-label">${lessonType}教案</div>
-                        <a href="${lessonUrl}" target="_blank" class="lesson-button ${lessonType.toLowerCase()}">
-                            <i class="fas fa-book"></i> ${lessonName}
-                        </a>
-                    </div>
-                `;
-            }
-            
-        // 處理位置資訊
-        let location = event.location;
-        if (!location || location === 'nan' || location === 'null' || location === '' || location.trim() === '') {
-                location = '樂程坊 FunLearnBar';
-            }
-        
-            // 統一地址為樂程坊 FunLearnBar
-            if (location === '站前教室' || location === '台北市中正區開封街1段2號9樓' || location === '台北市中正區開封街一段2號9樓') {
-                location = '樂程坊 FunLearnBar';
-        }
-            
-            // 講師底色
-            const instructorColor = instructorColors[event.instructor] || '#667eea';
-            const instructorStyle = instructorColors[event.instructor] ? 'custom-color' : '';
-            
-            return `
-                <div class="event-card ${isCancelledEvent ? 'cancelled-event' : ''} ${isSubstituteEvent ? 'substitute-event' : ''} ${isExperienceEvent ? 'experience-event' : ''}">
-                    <div class="event-header">
-                        <div>
-                            <div class="event-title">
-                                ${event.title}
-                                ${isCancelledEvent ? '<span class="cancelled-badge"><i class="fas fa-ban"></i> ⚠️ 停課 ⚠️</span>' : ''}
-                                ${isSubstituteEvent && substituteInfo ? `<span class="substitute-badge"><i class="fas fa-exchange-alt"></i> ${substituteInfo.type} ${substituteInfo.originalInstructor}</span>` : ''}
-                                ${isExperienceEvent && experienceInfo ? `<span class="experience-badge"><i class="fas fa-star"></i> ${experienceInfo.type}</span>` : ''}
-                            </div>
-                            <div class="event-instructor ${instructorStyle}" style="--instructor-color: ${instructorColor}">
-                                <i class="fas fa-user"></i> ${event.instructor}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="event-details">
-                        <div class="event-detail">
-                            <i class="fas fa-calendar"></i>
-                            <span>${displayDate} (${getWeekday(startDate)}, 第${getWeekNumber(startDate)}週)</span>
-                        </div>
-                        <div class="event-detail">
-                            <i class="fas fa-clock"></i>
-                            <span>${timeString}</span>
-                        </div>
-                        <div class="event-detail">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}" 
-                               target="_blank" 
-                               class="location-link"
-                               title="點擊查看地圖">
-                                <i class="fas fa-map-marked-alt location-map-icon"></i>
-                                <span>${location}</span>
-                                <i class="fas fa-external-link-alt location-external-icon"></i>
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <div class="countdown-timer" 
-                         data-start-time="${event.start}" 
-                         data-end-time="${event.end}">
-                        <i class="fas fa-clock countdown-icon"></i>
-                        <span class="countdown-text">計算中...</span>
+                        <span class="countdown-text">${isUpcomingEventFlag && timeUntilEvent ? `距離上課還有 ${timeUntilEvent}` : '計算中...'}</span>
                     </div>
                     
                     <div class="event-description">
