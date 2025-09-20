@@ -4345,38 +4345,10 @@
             const studentsList = document.getElementById('studentsList');
             studentsList.innerHTML = '<div class="loading">載入中...</div>';
             
-            try {
-                // 解析課程名稱和時間
-                const course = parseCourseFromTitle(courseName);
-                const period = time;
-                
-                console.log('載入學生列表:', { course, period });
-                
-                const result = await attendanceSDK.getStudentAttendance(course, period);
-                console.log('學生列表結果:', result);
-                
-                if (result.success && result.students) {
-                    // 轉換數據格式以符合現有的渲染邏輯
-                    const students = result.students.map(student => {
-                        const todayAttendance = student.attendance.find(att => att.date === currentAttendanceData.date);
-                        return {
-                            name: student.name,
-                            hasAttendanceToday: todayAttendance ? todayAttendance.present : null,
-                            attendanceTime: todayAttendance ? todayAttendance.time : null
-                        };
-                    });
-                    
-                    currentAttendanceData.students = students;
-                    renderStudentsList(students);
-                } else {
-                    // 如果 API 回應不成功，直接顯示新視窗選項
-                    showFLBAttendanceOption(courseName, time);
-                }
-            } catch (error) {
-                console.error('載入學生列表失敗:', error);
-                // 任何錯誤都直接顯示新視窗選項
+            // 由於 CSP 和跨域限制，直接顯示新視窗選項
+            setTimeout(() => {
                 showFLBAttendanceOption(courseName, time);
-            }
+            }, 1000);
         }
 
         // 解析課程名稱（從完整標題中提取課程代碼）
@@ -4390,23 +4362,56 @@
         // 顯示 FLB 簽到系統選項
         function showFLBAttendanceOption(courseName, time) {
             const studentsList = document.getElementById('studentsList');
+            
+            // 解析課程信息
+            const course = parseCourseFromTitle(courseName);
+            const courseInfo = parseCourseAndTimeFromTitle(courseName);
+            
             studentsList.innerHTML = `
-                <div class="loading">
-                    <i class="fas fa-shield-alt" style="color: #f44336; margin-right: 8px;"></i>
-                    安全政策限制，無法直接連接簽到系統
-                    <br>
-                    <small style="color: #666; margin-top: 8px; display: block;">
-                        請使用以下方式進行簽到：
-                    </small>
-                    <div style="margin-top: 12px;">
+                <div class="attendance-option">
+                    <div class="attendance-header">
+                        <i class="fas fa-calendar-check" style="color: #4CAF50; font-size: 24px; margin-bottom: 12px;"></i>
+                        <h3 style="margin: 0 0 8px 0; color: #333;">簽到系統</h3>
+                        <p style="margin: 0 0 16px 0; color: #666; font-size: 14px;">
+                            由於安全政策限制，請使用新視窗進行簽到
+                        </p>
+                    </div>
+                    
+                    <div class="course-info" style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="font-weight: bold; color: #333;">課程：</span>
+                            <span style="color: #666;">${courseInfo.course || course}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="font-weight: bold; color: #333;">時間：</span>
+                            <span style="color: #666;">${courseInfo.time || time}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="font-weight: bold; color: #333;">地點：</span>
+                            <span style="color: #666;">${courseInfo.location || '未指定'}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="attendance-actions" style="display: flex; gap: 12px; justify-content: center;">
                         <button onclick="openFLBAttendance('${courseName}', '${time}')" 
-                                style="background: #4CAF50; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-right: 8px;">
-                            <i class="fas fa-external-link-alt"></i> 開啟簽到系統
+                                class="btn-primary" 
+                                style="background: linear-gradient(135deg, #4CAF50, #45a049); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3); transition: all 0.3s ease;">
+                            <i class="fas fa-external-link-alt" style="margin-right: 8px;"></i>
+                            開啟簽到系統
                         </button>
                         <button onclick="closeAttendanceModal()" 
-                                style="background: #f44336; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
-                            <i class="fas fa-times"></i> 關閉
+                                class="btn-secondary" 
+                                style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3); transition: all 0.3s ease;">
+                            <i class="fas fa-times" style="margin-right: 8px;"></i>
+                            關閉
                         </button>
+                    </div>
+                    
+                    <div class="attendance-note" style="margin-top: 16px; padding: 12px; background: #e3f2fd; border-radius: 8px; border-left: 4px solid #2196F3;">
+                        <i class="fas fa-info-circle" style="color: #2196F3; margin-right: 8px;"></i>
+                        <small style="color: #1976D2;">
+                            新視窗將開啟 FLB 簽到系統，完成簽到後可關閉視窗返回行事曆
+                        </small>
                     </div>
                 </div>
             `;
@@ -4414,20 +4419,84 @@
 
         // 開啟 FLB 簽到系統
         function openFLBAttendance(courseName, time) {
+            // 解析課程信息
+            const course = parseCourseFromTitle(courseName);
+            const courseInfo = parseCourseAndTimeFromTitle(courseName);
+            
             // 構建 FLB 簽到系統的 URL
             const params = new URLSearchParams({
-                course: courseName,
-                time: time,
-                date: new Date().toISOString().split('T')[0]
+                course: courseInfo.course || course,
+                time: courseInfo.time || time,
+                date: new Date().toISOString().split('T')[0],
+                location: courseInfo.location || '未指定'
             });
             
-            const flbUrl = `https://liff-sttendence-0908-production.up.railway.app/step3?${params.toString()}`;
+            // 使用 Google Apps Script 的 step3 頁面
+            const flbUrl = `https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/exec?step=3&${params.toString()}`;
             
-            // 在新視窗中開啟
-            window.open(flbUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+            // 開啟新視窗
+            const newWindow = window.open(flbUrl, '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes,menubar=no,toolbar=no,location=no,status=no');
             
-            // 關閉當前模態框
-            closeAttendanceModal();
+            if (newWindow) {
+                // 顯示成功訊息
+                showNotification('簽到系統已開啟', 'success');
+                closeAttendanceModal();
+            } else {
+                // 顯示錯誤訊息
+                showNotification('無法開啟簽到系統，請檢查彈出視窗設定', 'error');
+            }
+        }
+
+        // 顯示通知訊息
+        function showNotification(message, type = 'info') {
+            // 創建通知元素
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: bold;
+                z-index: 10000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            
+            // 根據類型設置樣式
+            switch (type) {
+                case 'success':
+                    notification.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+                    break;
+                case 'error':
+                    notification.style.background = 'linear-gradient(135deg, #f44336, #d32f2f)';
+                    break;
+                case 'warning':
+                    notification.style.background = 'linear-gradient(135deg, #ff9800, #f57c00)';
+                    break;
+                default:
+                    notification.style.background = 'linear-gradient(135deg, #2196F3, #1976D2)';
+            }
+            
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            // 顯示動畫
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // 自動隱藏
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
         }
 
         // 渲染學生列表
