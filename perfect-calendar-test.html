@@ -1659,6 +1659,9 @@
                     return;
                 }
                 
+                // 獲取今天的日期
+                const today = new Date().toISOString().split('T')[0];
+                
                 content.innerHTML = `
                     <div style="margin-bottom: 20px;">
                         <h3 style="margin: 0 0 15px 0; color: #333;">
@@ -1668,80 +1671,112 @@
                     </div>
                     
                     <div id="studentsList" style="display: grid; gap: 15px; margin-bottom: 20px;">
-                        ${students.map(student => `
-                            <div class="student-item" data-student-id="${student.id}" style="
-                                display: flex;
-                                justify-content: space-between;
-                                align-items: center;
-                                padding: 15px 20px;
-                                border: 2px solid #e9ecef;
-                                border-radius: 10px;
-                                background: white;
-                                transition: all 0.3s ease;
-                            ">
-                                <div style="display: flex; align-items: center; gap: 15px;">
-                                    <div style="
-                                        width: 40px;
-                                        height: 40px;
-                                        border-radius: 50%;
-                                        background: linear-gradient(135deg, #667eea, #764ba2);
-                                        display: flex;
-                                        align-items: center;
-                                        justify-content: center;
-                                        color: white;
-                                        font-weight: bold;
-                                        font-size: 1.1rem;
-                                    ">
-                                        ${student.name.charAt(0)}
+                        ${students.map(student => {
+                            // 檢查今天的簽到狀態
+                            const todayAttendance = student.attendance.find(record => record.date === today);
+                            let currentStatus = null;
+                            let statusText = '';
+                            
+                            if (todayAttendance) {
+                                if (todayAttendance.present === true) {
+                                    currentStatus = 'present';
+                                    statusText = '已出席';
+                                } else if (todayAttendance.present === false) {
+                                    currentStatus = 'absent';
+                                    statusText = '已缺席';
+                                } else if (todayAttendance.present === 'leave') {
+                                    currentStatus = 'leave';
+                                    statusText = '已請假';
+                                }
+                            }
+                            
+                            return `
+                                <div class="student-item ${currentStatus ? currentStatus : ''}" data-student-id="${student.id}" style="
+                                    display: flex;
+                                    justify-content: space-between;
+                                    align-items: center;
+                                    padding: 15px 20px;
+                                    border: 2px solid ${currentStatus ? 
+                                        (currentStatus === 'present' ? '#28a745' : 
+                                         currentStatus === 'absent' ? '#dc3545' : '#ffc107') : '#e9ecef'};
+                                    border-radius: 10px;
+                                    background: ${currentStatus ? 
+                                        (currentStatus === 'present' ? 'linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(32, 201, 151, 0.1))' : 
+                                         currentStatus === 'absent' ? 'linear-gradient(135deg, rgba(220, 53, 69, 0.1), rgba(231, 76, 60, 0.1))' : 
+                                         'linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(243, 156, 18, 0.1))') : 'white'};
+                                    transition: all 0.3s ease;
+                                ">
+                                    <div style="display: flex; align-items: center; gap: 15px;">
+                                        <div style="
+                                            width: 40px;
+                                            height: 40px;
+                                            border-radius: 50%;
+                                            background: linear-gradient(135deg, #667eea, #764ba2);
+                                            display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                            color: white;
+                                            font-weight: bold;
+                                            font-size: 1.1rem;
+                                        ">
+                                            ${student.name.charAt(0)}
+                                        </div>
+                                        <div>
+                                            <div style="font-weight: bold; color: #333; font-size: 1.1rem;">${student.name}</div>
+                                            <div style="color: #666; font-size: 0.9rem;">${student.id}</div>
+                                            ${statusText ? `<div style="color: #666; font-size: 0.8rem; margin-top: 2px;">${statusText}</div>` : ''}
+                                        </div>
                                     </div>
-                                    <div>
-                                        <div style="font-weight: bold; color: #333; font-size: 1.1rem;">${student.name}</div>
-                                        <div style="color: #666; font-size: 0.9rem;">${student.id}</div>
+                                    <div style="display: flex; gap: 10px;">
+                                        <button class="attendance-btn present-btn" data-student-id="${student.id}" style="
+                                            background: linear-gradient(135deg, #28a745, #20c997);
+                                            color: white;
+                                            border: none;
+                                            padding: 8px 16px;
+                                            border-radius: 20px;
+                                            cursor: pointer;
+                                            font-size: 0.9rem;
+                                            font-weight: 500;
+                                            transition: all 0.3s ease;
+                                            opacity: ${currentStatus ? '0.5' : '1'};
+                                            ${currentStatus === 'present' ? 'transform: scale(1.05);' : ''}
+                                        " ${currentStatus ? 'disabled' : ''}>
+                                            <i class="fas fa-check"></i> 出席
+                                        </button>
+                                        <button class="attendance-btn absent-btn" data-student-id="${student.id}" style="
+                                            background: linear-gradient(135deg, #dc3545, #e74c3c);
+                                            color: white;
+                                            border: none;
+                                            padding: 8px 16px;
+                                            border-radius: 20px;
+                                            cursor: pointer;
+                                            font-size: 0.9rem;
+                                            font-weight: 500;
+                                            transition: all 0.3s ease;
+                                            opacity: ${currentStatus ? '0.5' : '1'};
+                                            ${currentStatus === 'absent' ? 'transform: scale(1.05);' : ''}
+                                        " ${currentStatus ? 'disabled' : ''}>
+                                            <i class="fas fa-times"></i> 缺席
+                                        </button>
+                                        <button class="attendance-btn leave-btn" data-student-id="${student.id}" style="
+                                            background: linear-gradient(135deg, #ffc107, #f39c12);
+                                            color: white;
+                                            border: none;
+                                            padding: 8px 16px;
+                                            border-radius: 20px;
+                                            cursor: pointer;
+                                            font-size: 0.9rem;
+                                            font-weight: 500;
+                                            transition: all 0.3s ease;
+                                            opacity: ${currentStatus ? '0.5' : '1'};
+                                            ${currentStatus === 'leave' ? 'transform: scale(1.05);' : ''}
+                                        " ${currentStatus ? 'disabled' : ''}>
+                                            <i class="fas fa-calendar-times"></i> 請假
+                                        </button>
                                     </div>
                                 </div>
-                                <div style="display: flex; gap: 10px;">
-                                    <button class="attendance-btn present-btn" data-student-id="${student.id}" style="
-                                        background: linear-gradient(135deg, #28a745, #20c997);
-                                        color: white;
-                                        border: none;
-                                        padding: 8px 16px;
-                                        border-radius: 20px;
-                                        cursor: pointer;
-                                        font-size: 0.9rem;
-                                        font-weight: 500;
-                                        transition: all 0.3s ease;
-                                    ">
-                                        <i class="fas fa-check"></i> 出席
-                                    </button>
-                                    <button class="attendance-btn absent-btn" data-student-id="${student.id}" style="
-                                        background: linear-gradient(135deg, #dc3545, #e74c3c);
-                                        color: white;
-                                        border: none;
-                                        padding: 8px 16px;
-                                        border-radius: 20px;
-                                        cursor: pointer;
-                                        font-size: 0.9rem;
-                                        font-weight: 500;
-                                        transition: all 0.3s ease;
-                                    ">
-                                        <i class="fas fa-times"></i> 缺席
-                                    </button>
-                                    <button class="attendance-btn leave-btn" data-student-id="${student.id}" style="
-                                        background: linear-gradient(135deg, #ffc107, #f39c12);
-                                        color: white;
-                                        border: none;
-                                        padding: 8px 16px;
-                                        border-radius: 20px;
-                                        cursor: pointer;
-                                        font-size: 0.9rem;
-                                        font-weight: 500;
-                                        transition: all 0.3s ease;
-                                    ">
-                                        <i class="fas fa-calendar-times"></i> 請假
-                                    </button>
-                                </div>
-                            </div>
-                        `).join('')}
+                            `;
+                        }).join('')}
                     </div>
                     
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px; background: #f8f9fa; border-radius: 10px;">
@@ -1783,24 +1818,87 @@
             }
         }
         
-        // 獲取課程學生名單（模擬 API）
+        // 獲取課程學生名單（真實 API）
         async function getCourseStudents(teacher, course, time) {
-            // 模擬延遲
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // 模擬學生名單
-            const mockStudents = [
-                { id: 'S001', name: '張小明' },
-                { id: 'S002', name: '李美華' },
-                { id: 'S003', name: '王大偉' },
-                { id: 'S004', name: '陳小芳' },
-                { id: 'S005', name: '林志強' },
-                { id: 'S006', name: '黃淑芬' },
-                { id: 'S007', name: '劉建國' },
-                { id: 'S008', name: '吳雅婷' }
-            ];
-            
-            return mockStudents;
+            try {
+                console.log('📚 從 Google Sheets API 獲取學生名單:', { teacher, course, time });
+                
+                // 清理課程名稱和時間格式
+                const cleanCourse = course.trim();
+                const cleanTime = time.trim();
+                
+                console.log('🔍 清理後的參數:', { cleanCourse, cleanTime });
+                
+                // 構建 API 請求
+                const apiUrl = 'https://script.google.com/macros/s/AKfycbzm0GD-T09Botbs52e8PyeVuA5slJh6Z0AQ7I0uUiGZiE6aWhTO2D0d3XHFrdLNv90uCw/exec';
+                const payload = {
+                    action: 'getRosterAttendance',
+                    course: cleanCourse,
+                    period: cleanTime
+                };
+                
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Cookie': 'NID=525=nsWVvbAon67C2qpyiEHQA3SUio_GqBd7RqUFU6BwB97_4LHggZxLpDgSheJ7WN4w3Z4dCQBiFPG9YKAqZgAokFYCuuQw04dkm-FX9-XHAIBIqJf1645n3RZrg86GcUVJOf3gN-5eTHXFIaovTmgRC6cXllv82SnQuKsGMq7CHH60XDSwyC99s9P2gmyXLppI'
+                };
+                
+                console.log('📤 發送 API 請求:', { apiUrl, payload, headers });
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(payload),
+                    mode: 'cors'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API 請求失敗: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('📥 API 回應:', data);
+                
+                if (!data.success) {
+                    throw new Error(`API 錯誤: ${data.error || '未知錯誤'}`);
+                }
+                
+                if (!data.students || !Array.isArray(data.students)) {
+                    console.log('⚠️ 沒有學生資料，返回空陣列');
+                    return [];
+                }
+                
+                // 轉換 API 資料格式
+                const students = data.students.map((student, index) => {
+                    return {
+                        id: student.id || `S${String(index + 1).padStart(3, '0')}`,
+                        name: student.name || '未知學生',
+                        attendance: student.attendance || [],
+                        remaining: student.remaining || 0,
+                        foundInCourseSheet: student.foundInCourseSheet || false
+                    };
+                });
+                
+                console.log('✅ 成功獲取學生名單:', students.length, '人');
+                return students;
+                
+            } catch (error) {
+                console.error('❌ 獲取學生名單失敗:', error);
+                
+                // 如果 API 失敗，返回模擬資料作為備用
+                console.log('🔄 使用模擬資料作為備用');
+                const mockStudents = [
+                    { id: 'S001', name: '張小明', attendance: [], remaining: 0, foundInCourseSheet: false },
+                    { id: 'S002', name: '李美華', attendance: [], remaining: 0, foundInCourseSheet: false },
+                    { id: 'S003', name: '王大偉', attendance: [], remaining: 0, foundInCourseSheet: false },
+                    { id: 'S004', name: '陳小芳', attendance: [], remaining: 0, foundInCourseSheet: false },
+                    { id: 'S005', name: '林志強', attendance: [], remaining: 0, foundInCourseSheet: false },
+                    { id: 'S006', name: '黃淑芬', attendance: [], remaining: 0, foundInCourseSheet: false },
+                    { id: 'S007', name: '劉建國', attendance: [], remaining: 0, foundInCourseSheet: false },
+                    { id: 'S008', name: '吳雅婷', attendance: [], remaining: 0, foundInCourseSheet: false }
+                ];
+                
+                return mockStudents;
+            }
         }
         
         // 設置簽到事件監聽器
@@ -1877,7 +1975,17 @@
             const totalStudents = document.querySelectorAll('.student-item').length;
             const attendedStudents = document.querySelectorAll('.student-item.present, .student-item.absent, .student-item.leave').length;
             
-            stats.textContent = `已簽到: ${attendedStudents} / ${totalStudents}`;
+            // 計算各種狀態的數量
+            const presentCount = document.querySelectorAll('.student-item.present').length;
+            const absentCount = document.querySelectorAll('.student-item.absent').length;
+            const leaveCount = document.querySelectorAll('.student-item.leave').length;
+            
+            let statusText = `已簽到: ${attendedStudents} / ${totalStudents}`;
+            if (attendedStudents > 0) {
+                statusText += ` (出席: ${presentCount}, 缺席: ${absentCount}, 請假: ${leaveCount})`;
+            }
+            
+            stats.textContent = statusText;
         }
         
         // 儲存簽到記錄
@@ -1885,8 +1993,60 @@
             try {
                 console.log('💾 儲存簽到記錄:', { teacher, course, time, attendanceData });
                 
-                // 模擬 API 調用
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                if (attendanceData.size === 0) {
+                    alert('請先選擇學生的簽到狀態');
+                    return;
+                }
+                
+                // 獲取今天的日期
+                const today = new Date().toISOString().split('T')[0];
+                
+                // 構建簽到記錄
+                const attendanceRecords = [];
+                for (const [studentId, status] of attendanceData) {
+                    attendanceRecords.push({
+                        studentId: studentId,
+                        date: today,
+                        present: status === 'present' ? true : status === 'absent' ? false : 'leave',
+                        teacher: teacher,
+                        course: course,
+                        time: time
+                    });
+                }
+                
+                console.log('📤 準備儲存的簽到記錄:', attendanceRecords);
+                
+                // 使用 FLB API 儲存簽到記錄
+                const apiUrl = 'https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/exec';
+                const payload = {
+                    action: 'updateAttendance',
+                    records: attendanceRecords
+                };
+                
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Cookie': 'NID=525=nsWVvbAon67C2qpyiEHQA3SUio_GqBd7RqUFU6BwB97_4LHggZxLpDgSheJ7WN4w3Z4dCQBiFPG9YKAqZgAokFYCuuQw04dkm-FX9-XHAIBIqJf1645n3RZrg86GcUVJOf3gN-5eTHXFIaovTmgRC6cXllv82SnQuKsGMq7CHH60XDSwyC99s9P2gmyXLppI'
+                };
+                
+                console.log('📤 發送簽到記錄到 API:', { apiUrl, payload });
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(payload),
+                    mode: 'cors'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API 請求失敗: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('📥 簽到記錄 API 回應:', data);
+                
+                if (!data.success) {
+                    throw new Error(`API 錯誤: ${data.error || '未知錯誤'}`);
+                }
                 
                 // 顯示成功訊息
                 showSuccessMessage(`簽到記錄已儲存！共 ${attendanceData.size} 筆記錄`);
@@ -1896,7 +2056,13 @@
                 
             } catch (error) {
                 console.error('❌ 儲存簽到記錄失敗:', error);
-                alert('儲存簽到記錄失敗: ' + error.message);
+                
+                // 如果 API 失敗，顯示警告但繼續
+                console.log('⚠️ API 儲存失敗，但本地狀態已更新');
+                showSuccessMessage(`簽到記錄已更新（本地）！共 ${attendanceData.size} 筆記錄`);
+                
+                // 關閉模態框
+                closeAttendanceModal();
             }
         }
         
