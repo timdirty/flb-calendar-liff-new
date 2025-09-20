@@ -5534,6 +5534,26 @@ async function loadTodayEvents() {
             updateAllCountdowns();
         }
         
+        // 從標題解析課程名稱和時間
+        function parseCourseAndTimeFromTitle(title) {
+            if (!title) return null;
+            
+            // 匹配格式：SPM 六 9:30-11:00 到府 第2週
+            // 課程：SPM
+            // 時間：六 9:30-11:00
+            const courseTimeRegex = /^([A-Z]+)\s+([一二三四五六日]\s+\d{1,2}:\d{2}-\d{1,2}:\d{2})/;
+            const match = title.match(courseTimeRegex);
+            
+            if (match) {
+                return {
+                    course: match[1], // SPM
+                    time: match[2]    // 六 9:30-11:00
+                };
+            }
+            
+            return null;
+        }
+
         // 從標題解析時間
         function parseTimeFromTitle(title) {
             // 匹配格式如 "18:30-20:30", "14:30-15:30", "16:30-17:30", "1630-1730" 等
@@ -5710,16 +5730,18 @@ async function loadTodayEvents() {
             const isUpcomingEventFlag = isUpcomingEvent(event);
             const timeUntilEvent = isUpcomingEventFlag ? getTimeUntilEvent(event) : null;
             
-            // 從標題解析時間
-            const titleTime = parseTimeFromTitle(event.title);
+            // 從標題解析課程名稱和時間
+            const courseTimeInfo = parseCourseAndTimeFromTitle(event.title);
             
             // 統一使用 CalDAV 的日期，確保日期正確
             const displayDate = startDate.toLocaleDateString('zh-TW');
             let timeString;
+            let courseName = event.title; // 預設使用完整標題
             
-            if (titleTime) {
-                // 使用標題解析的時間，但日期使用 CalDAV
-                timeString = titleTime.timeString;
+            if (courseTimeInfo) {
+                // 使用解析出的課程名稱和時間
+                courseName = courseTimeInfo.course;
+                timeString = courseTimeInfo.time;
             } else {
                 // 使用 CalDAV 的時間
                 timeString = `${startDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })} - ${endDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })}`;
@@ -5845,7 +5867,7 @@ async function loadTodayEvents() {
                     ${lessonButton}
                     
                     <div class="event-actions">
-                        <button class="action-btn attendance-btn" onclick="openAttendanceModal('${event.title}', '${event.instructor}', '${timeString}')" title="學生簽到">
+                        <button class="action-btn attendance-btn" onclick="openAttendanceModal('${courseName}', '${event.instructor}', '${timeString}')" title="學生簽到">
                             <i class="fas fa-user-check"></i>
                             簽到
                         </button>
