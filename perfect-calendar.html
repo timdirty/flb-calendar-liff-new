@@ -4674,13 +4674,24 @@
                     </div>
                 `;
                 
-                // 使用 JSONP 方式調用 Google Sheets API
-                const data = await makeJSONPRequest('https://script.google.com/macros/s/AKfycbzm0GD-T09Botbs52e8PyeVuA5slJh6Z0AQ7I0uUiGZiE6aWhTO2D0d3XHFrdLNv90uCw/exec', {
-                    action: 'getRosterAttendance',
-                    course: course,
-                    period: time
+                // 使用 fetch API 調用 Google Sheets API
+                const response = await fetch('https://script.google.com/macros/s/AKfycbzm0GD-T09Botbs52e8PyeVuA5slJh6Z0AQ7I0uUiGZiE6aWhTO2D0d3XHFrdLNv90uCw/exec', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'getRosterAttendance',
+                        course: course,
+                        period: time
+                    })
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
                 console.log('API 回應:', data);
                 
                 if (data.success && data.students) {
@@ -4710,7 +4721,7 @@
                         <div style="font-size: 14px; color: #666; margin-top: 8px;">
                             ${error.message}
                         </div>
-                        <button onclick="loadStudentsForCheckin('${course}', '${time}')" style="
+                        <button id="retry-load-students" style="
                             background: #4CAF50;
                             color: white;
                             border: none;
@@ -4724,6 +4735,11 @@
                         </button>
                     </div>
                 `;
+                
+                // 綁定重新載入按鈕事件
+                document.getElementById('retry-load-students').onclick = () => {
+                    loadStudentsForCheckin(course, time);
+                };
             }
         }
 
@@ -4788,7 +4804,7 @@
                     margin-bottom: 10px;
                     background: white;
                     transition: all 0.2s ease;
-                " onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='none'">
+                ">
                     <div style="display: flex; align-items: center; gap: 15px;">
                         <div style="
                             width: 40px;
@@ -4814,7 +4830,7 @@
                         </div>
                     </div>
                     <div style="display: flex; gap: 10px;">
-                        <button class="present-btn" onclick="markStudentPresent('${student.name}')" style="
+                        <button class="present-btn" data-student-name="${student.name}" style="
                             background: #4CAF50;
                             color: white;
                             border: none;
@@ -4824,10 +4840,10 @@
                             font-size: 12px;
                             font-weight: bold;
                             transition: background 0.2s ease;
-                        " onmouseover="this.style.background='#45a049'" onmouseout="this.style.background='#4CAF50'">
+                        ">
                             <i class="fas fa-check"></i> 出席
                         </button>
-                        <button class="absent-btn" onclick="markStudentAbsent('${student.name}')" style="
+                        <button class="absent-btn" data-student-name="${student.name}" style="
                             background: #f44336;
                             color: white;
                             border: none;
@@ -4837,12 +4853,41 @@
                             font-size: 12px;
                             font-weight: bold;
                             transition: background 0.2s ease;
-                        " onmouseover="this.style.background='#d32f2f'" onmouseout="this.style.background='#f44336'">
+                        ">
                             <i class="fas fa-times"></i> 缺席
                         </button>
                     </div>
                 </div>
             `).join('');
+            
+            // 綁定事件委派
+            bindCheckinButtonEvents();
+        }
+
+        // 綁定簽到按鈕事件
+        function bindCheckinButtonEvents() {
+            const studentsList = document.getElementById('students-checkin-list');
+            
+            // 移除舊的事件監聽器
+            studentsList.removeEventListener('click', handleCheckinButtonClick);
+            
+            // 添加新的事件監聽器
+            studentsList.addEventListener('click', handleCheckinButtonClick);
+        }
+
+        // 處理簽到按鈕點擊
+        function handleCheckinButtonClick(event) {
+            const target = event.target.closest('.present-btn, .absent-btn');
+            if (!target) return;
+            
+            const studentName = target.getAttribute('data-student-name');
+            if (!studentName) return;
+            
+            if (target.classList.contains('present-btn')) {
+                markStudentPresent(studentName);
+            } else if (target.classList.contains('absent-btn')) {
+                markStudentAbsent(studentName);
+            }
         }
 
         // 標記學生出席
@@ -4855,14 +4900,25 @@
                     return;
                 }
                 
-                // 使用真實的 API 更新簽到狀態
-                const data = await makeJSONPRequest('https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/dev', {
-                    action: 'update',
-                    name: studentName,
-                    date: new Date().toISOString().split('T')[0],
-                    present: true
+                // 使用 fetch API 更新簽到狀態
+                const response = await fetch('https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/dev', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'update',
+                        name: studentName,
+                        date: new Date().toISOString().split('T')[0],
+                        present: true
+                    })
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
                 console.log('簽到 API 回應:', data);
                 
                 if (data.success) {
@@ -4889,14 +4945,25 @@
                     return;
                 }
                 
-                // 使用真實的 API 更新簽到狀態
-                const data = await makeJSONPRequest('https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/dev', {
-                    action: 'update',
-                    name: studentName,
-                    date: new Date().toISOString().split('T')[0],
-                    present: false
+                // 使用 fetch API 更新簽到狀態
+                const response = await fetch('https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/dev', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'update',
+                        name: studentName,
+                        date: new Date().toISOString().split('T')[0],
+                        present: false
+                    })
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
                 console.log('簽到 API 回應:', data);
                 
                 if (data.success) {
