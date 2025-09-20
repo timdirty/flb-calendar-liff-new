@@ -1978,8 +1978,17 @@
             document.querySelectorAll('.present-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const studentId = this.dataset.studentId;
-                    attendanceData.set(studentId, 'present');
-                    updateStudentStatus(studentId, 'present');
+                    const currentStatus = attendanceData.get(studentId);
+                    
+                    // 如果已經是出席狀態，則取消選擇
+                    if (currentStatus === 'present') {
+                        attendanceData.delete(studentId);
+                        updateStudentStatus(studentId, null);
+                    } else {
+                        // 設定為出席狀態
+                        attendanceData.set(studentId, 'present');
+                        updateStudentStatus(studentId, 'present');
+                    }
                     updateAttendanceStats();
                 });
             });
@@ -1988,8 +1997,17 @@
             document.querySelectorAll('.absent-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const studentId = this.dataset.studentId;
-                    attendanceData.set(studentId, 'absent');
-                    updateStudentStatus(studentId, 'absent');
+                    const currentStatus = attendanceData.get(studentId);
+                    
+                    // 如果已經是缺席狀態，則取消選擇
+                    if (currentStatus === 'absent') {
+                        attendanceData.delete(studentId);
+                        updateStudentStatus(studentId, null);
+                    } else {
+                        // 設定為缺席狀態
+                        attendanceData.set(studentId, 'absent');
+                        updateStudentStatus(studentId, 'absent');
+                    }
                     updateAttendanceStats();
                 });
             });
@@ -2009,21 +2027,27 @@
             // 移除所有狀態樣式
             studentItem.classList.remove('present', 'absent', 'leave');
             
-            // 添加新狀態樣式
-            studentItem.classList.add(status);
-            
             // 更新按鈕狀態
             const buttons = studentItem.querySelectorAll('.attendance-btn');
             buttons.forEach(btn => {
-                btn.style.opacity = '0.5';
-                btn.disabled = true;
+                // 重置所有按鈕樣式
+                btn.style.opacity = '1';
+                btn.style.transform = 'scale(1)';
+                btn.style.boxShadow = 'none';
             });
             
-            // 高亮選中的按鈕
-            const selectedBtn = studentItem.querySelector(`.${status}-btn`);
-            if (selectedBtn) {
-                selectedBtn.style.opacity = '1';
-                selectedBtn.style.transform = 'scale(1.05)';
+            // 如果有選擇狀態，則添加樣式和高亮
+            if (status) {
+                studentItem.classList.add(status);
+                
+                // 高亮選中的按鈕
+                const selectedBtn = studentItem.querySelector(`.${status}-btn`);
+                if (selectedBtn) {
+                    selectedBtn.style.transform = 'scale(1.05)';
+                    selectedBtn.style.boxShadow = status === 'present' ? 
+                        '0 4px 8px rgba(40, 167, 69, 0.3)' : 
+                        '0 4px 8px rgba(220, 53, 69, 0.3)';
+                }
             }
         }
         
