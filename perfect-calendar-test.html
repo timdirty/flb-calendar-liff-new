@@ -2089,7 +2089,17 @@
                 
                 if (!data.success) {
                     console.error('❌ API 返回失敗:', data);
-                    alert(`儲存失敗: ${data.error || '未知錯誤'}\n\n請重試。`);
+                    
+                    // 檢查是否有詳細的錯誤訊息
+                    let errorMessage = data.error || '未知錯誤';
+                    if (data.results && data.results.length > 0) {
+                        const failedResults = data.results.filter(r => r.success === false);
+                        if (failedResults.length > 0) {
+                            errorMessage = failedResults[0].error || errorMessage;
+                        }
+                    }
+                    
+                    alert(`儲存失敗: ${errorMessage}\n\n請重試。`);
                     return;
                 }
                 
