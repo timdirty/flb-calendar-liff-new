@@ -6278,16 +6278,15 @@ async function loadTodayEvents() {
         function formatTime(timeStr) {
             if (!timeStr) return '';
             
-            // 如果已經是 HH:MM 格式，直接返回
-            if (timeStr.includes(':')) {
+            // 如果已經是 HHHH 格式，直接返回
+            if (timeStr.length === 4 && !timeStr.includes(':')) {
                 return timeStr;
             }
             
-            // 如果是 HHHH 格式，轉換為 HH:MM
-            if (timeStr.length === 4) {
-                const hours = timeStr.substring(0, 2).padStart(2, '0');
-                const minutes = timeStr.substring(2, 4).padStart(2, '0');
-                return `${hours}:${minutes}`;
+            // 如果是 HH:MM 格式，轉換為 HHHH
+            if (timeStr.includes(':')) {
+                const [hours, minutes] = timeStr.split(':');
+                return `${hours.padStart(2, '0')}${minutes.padStart(2, '0')}`;
             }
             
             return timeStr;
