@@ -4194,7 +4194,7 @@
                 }
                 
                 // 對於 POST 請求或其他情況，使用傳統方法
-                const url = `${this.baseURL}${endpoint}`;
+                let url = `${this.baseURL}${endpoint}`;
                 const options = {
                     method,
                     headers: {
@@ -4202,7 +4202,15 @@
                     },
                 };
 
-                if (data) {
+                // 對於 GET 請求，將 data 作為查詢參數
+                if (method === 'GET' && data) {
+                    const params = new URLSearchParams();
+                    Object.keys(data).forEach(key => {
+                        params.append(key, data[key]);
+                    });
+                    url += `?${params.toString()}`;
+                } else if (data) {
+                    // 只有 POST 請求才添加 body
                     options.body = JSON.stringify(data);
                 }
 
@@ -4297,57 +4305,39 @@
                     currentAttendanceData.students = result.students;
                     renderStudentsList(result.students);
                 } else {
-                    studentsList.innerHTML = '<div class="loading">無法載入學生列表</div>';
+                    // 如果 API 回應不成功，直接顯示新視窗選項
+                    showFLBAttendanceOption(courseName, time);
                 }
             } catch (error) {
                 console.error('載入學生列表失敗:', error);
-                
-                // 檢查是否為 CSP 錯誤
-                if (error.message.includes('CSP') || error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
-                    studentsList.innerHTML = `
-                        <div class="loading">
-                            <i class="fas fa-shield-alt" style="color: #f44336; margin-right: 8px;"></i>
-                            安全政策限制，無法直接連接簽到系統
-                            <br>
-                            <small style="color: #666; margin-top: 8px; display: block;">
-                                請使用以下方式進行簽到：
-                            </small>
-                            <div style="margin-top: 12px;">
-                                <button onclick="openFLBAttendance('${courseName}', '${time}')" 
-                                        style="background: #4CAF50; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-right: 8px;">
-                                    <i class="fas fa-external-link-alt"></i> 開啟簽到系統
-                                </button>
-                                <button onclick="closeAttendanceModal()" 
-                                        style="background: #f44336; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
-                                    <i class="fas fa-times"></i> 關閉
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                } else if (error.message.includes('404') || error.message.includes('Failed to fetch')) {
-                    studentsList.innerHTML = `
-                        <div class="loading">
-                            <i class="fas fa-exclamation-triangle" style="color: #ff9800; margin-right: 8px;"></i>
-                            簽到系統暫時無法使用
-                            <br>
-                            <small style="color: #666; margin-top: 8px; display: block;">
-                                請稍後再試或聯繫管理員
-                            </small>
-                        </div>
-                    `;
-                } else {
-                    studentsList.innerHTML = `
-                        <div class="loading">
-                            <i class="fas fa-times-circle" style="color: #f44336; margin-right: 8px;"></i>
-                            載入失敗
-                            <br>
-                            <small style="color: #666; margin-top: 8px; display: block;">
-                                請稍後再試
-                            </small>
-                        </div>
-                    `;
-                }
+                // 任何錯誤都直接顯示新視窗選項
+                showFLBAttendanceOption(courseName, time);
             }
+        }
+
+        // 顯示 FLB 簽到系統選項
+        function showFLBAttendanceOption(courseName, time) {
+            const studentsList = document.getElementById('studentsList');
+            studentsList.innerHTML = `
+                <div class="loading">
+                    <i class="fas fa-shield-alt" style="color: #f44336; margin-right: 8px;"></i>
+                    安全政策限制，無法直接連接簽到系統
+                    <br>
+                    <small style="color: #666; margin-top: 8px; display: block;">
+                        請使用以下方式進行簽到：
+                    </small>
+                    <div style="margin-top: 12px;">
+                        <button onclick="openFLBAttendance('${courseName}', '${time}')" 
+                                style="background: #4CAF50; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-right: 8px;">
+                            <i class="fas fa-external-link-alt"></i> 開啟簽到系統
+                        </button>
+                        <button onclick="closeAttendanceModal()" 
+                                style="background: #f44336; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                            <i class="fas fa-times"></i> 關閉
+                        </button>
+                    </div>
+                </div>
+            `;
         }
 
         // 開啟 FLB 簽到系統
