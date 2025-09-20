@@ -3123,7 +3123,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h3><i class="fas fa-user-check"></i> 學生簽到</h3>
-                    <button class="modal-close" onclick="closeAttendanceModal()">
+                    <button class="modal-close" id="closeAttendanceModal">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -3141,8 +3141,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" onclick="closeAttendanceModal()">關閉</button>
-                    <button class="btn btn-primary" onclick="saveAttendance()">儲存簽到</button>
+                    <button class="btn btn-secondary" id="closeAttendanceModalBtn">關閉</button>
+                    <button class="btn btn-primary" id="saveAttendanceBtn">儲存簽到</button>
                 </div>
             </div>
         </div>
@@ -3414,6 +3414,7 @@
                         console.log('🔄 系統初始化完成，開始綁定按鈕...');
                         bindViewButtons();
                         bindRefreshButton();
+                        bindAttendanceEventListeners();
                         
                         // 設置今日按鈕的預設按下效果
                         updateViewButtonStates();
@@ -4271,13 +4272,13 @@
                         <div class="student-name">${student.name}</div>
                         <div class="attendance-controls">
                             <span class="attendance-status ${statusClass}">${statusText}</span>
-                            <button class="attendance-btn-small btn-present" onclick="markAttendance('${student.name}', true)">
+                            <button class="attendance-btn-small btn-present mark-attendance-btn" data-student-name="${student.name}" data-status="true">
                                 出席
                             </button>
-                            <button class="attendance-btn-small btn-absent" onclick="markAttendance('${student.name}', false)">
+                            <button class="attendance-btn-small btn-absent mark-attendance-btn" data-student-name="${student.name}" data-status="false">
                                 缺席
                             </button>
-                            <button class="attendance-btn-small btn-leave" onclick="markAttendance('${student.name}', 'leave')">
+                            <button class="attendance-btn-small btn-leave mark-attendance-btn" data-student-name="${student.name}" data-status="leave">
                                 請假
                             </button>
                         </div>
@@ -4323,6 +4324,47 @@
         function saveAttendance() {
             alert('簽到已儲存！');
             closeAttendanceModal();
+        }
+
+        // 綁定簽到按鈕事件監聽器
+        function bindAttendanceEventListeners() {
+            // 綁定簽到按鈕點擊事件
+            document.addEventListener('click', function(event) {
+                if (event.target.closest('.attendance-modal-btn')) {
+                    const button = event.target.closest('.attendance-modal-btn');
+                    const courseName = button.getAttribute('data-course-name');
+                    const instructor = button.getAttribute('data-instructor');
+                    const time = button.getAttribute('data-time');
+                    openAttendanceModal(courseName, instructor, time);
+                }
+            });
+
+            // 綁定關閉按鈕事件
+            document.addEventListener('click', function(event) {
+                if (event.target.closest('#closeAttendanceModal') || event.target.closest('#closeAttendanceModalBtn')) {
+                    closeAttendanceModal();
+                }
+            });
+
+            // 綁定儲存按鈕事件
+            document.addEventListener('click', function(event) {
+                if (event.target.closest('#saveAttendanceBtn')) {
+                    saveAttendance();
+                }
+            });
+
+            // 綁定學生簽到按鈕事件
+            document.addEventListener('click', function(event) {
+                if (event.target.closest('.mark-attendance-btn')) {
+                    const button = event.target.closest('.mark-attendance-btn');
+                    const studentName = button.getAttribute('data-student-name');
+                    const status = button.getAttribute('data-status') === 'true' ? true : 
+                                  button.getAttribute('data-status') === 'false' ? false : 'leave';
+                    markAttendance(studentName, status);
+                }
+            });
+
+            console.log('✅ 簽到事件監聽器已綁定');
         }
 
         // 強制重新整理行事曆
@@ -5869,7 +5911,11 @@ async function loadTodayEvents() {
                     ${lessonButton}
                     
                     <div class="event-actions">
-                        <button class="action-btn attendance-btn" onclick="openAttendanceModal('${courseName}', '${event.instructor}', '${timeString}')" title="學生簽到">
+                        <button class="action-btn attendance-btn attendance-modal-btn" 
+                                data-course-name="${courseName}" 
+                                data-instructor="${event.instructor}" 
+                                data-time="${timeString}" 
+                                title="學生簽到">
                             <i class="fas fa-user-check"></i>
                             簽到
                         </button>
