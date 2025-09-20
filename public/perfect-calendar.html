@@ -4345,10 +4345,58 @@
             const studentsList = document.getElementById('studentsList');
             studentsList.innerHTML = '<div class="loading">載入中...</div>';
             
-            // 由於 CSP 和跨域限制，直接顯示新視窗選項
-            setTimeout(() => {
-                showFLBAttendanceOption(courseName, time);
-            }, 1000);
+            try {
+                // 解析課程名稱和時間
+                const course = parseCourseFromTitle(courseName);
+                const courseInfo = parseCourseAndTimeFromTitle(courseName);
+                
+                // 使用解析後的時間格式
+                const period = (courseInfo && courseInfo.time) ? courseInfo.time : time;
+                
+                console.log('載入學生列表:', { course, period });
+                
+                const result = await attendanceSDK.getStudentAttendance(course, period);
+                console.log('學生列表結果:', result);
+                
+                if (result.success && result.students) {
+                    // 轉換數據格式以符合現有的渲染邏輯
+                    const students = result.students.map(student => {
+                        const todayAttendance = student.attendance.find(att => att.date === currentAttendanceData.date);
+                        return {
+                            name: student.name,
+                            hasAttendanceToday: todayAttendance ? todayAttendance.present : null,
+                            attendanceTime: todayAttendance ? todayAttendance.time : null
+                        };
+                    });
+                    
+                    currentAttendanceData.students = students;
+                    renderStudentsList(students);
+                } else {
+                    // 如果 API 回應不成功，顯示錯誤訊息
+                    studentsList.innerHTML = `
+                        <div class="loading">
+                            <i class="fas fa-exclamation-triangle" style="color: #f44336; margin-right: 8px;"></i>
+                            無法載入學生資料
+                            <br>
+                            <small style="color: #666; margin-top: 8px; display: block;">
+                                請檢查課程信息是否正確
+                            </small>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('載入學生列表失敗:', error);
+                studentsList.innerHTML = `
+                    <div class="loading">
+                        <i class="fas fa-exclamation-triangle" style="color: #f44336; margin-right: 8px;"></i>
+                        載入失敗: ${error.message}
+                        <br>
+                        <small style="color: #666; margin-top: 8px; display: block;">
+                            請稍後再試或檢查網路連接
+                        </small>
+                    </div>
+                `;
+            }
         }
 
         // 解析課程名稱（從完整標題中提取課程代碼）
@@ -4593,13 +4641,15 @@
                     // 重新渲染列表
                     renderStudentsList(currentAttendanceData.students);
                     
+                    // 顯示成功通知
+                    showNotification('簽到成功', 'success');
                     console.log('簽到成功:', result);
                 } else {
-                    alert('簽到失敗: ' + (result.error || '未知錯誤'));
+                    showNotification('簽到失敗: ' + (result.error || '未知錯誤'), 'error');
                 }
             } catch (error) {
                 console.error('簽到錯誤:', error);
-                alert('簽到失敗: ' + error.message);
+                showNotification('簽到失敗: ' + error.message, 'error');
             }
         }
 
