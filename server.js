@@ -336,6 +336,11 @@ app.get('/test-functionality', (req, res) => {
     res.sendFile(path.join(__dirname, 'test-system-functionality.html'));
 });
 
+// 課程解析測試頁面
+app.get('/test-course-parsing', (req, res) => {
+    res.sendFile(path.join(__dirname, 'test-course-parsing.html'));
+});
+
 // 正式版本路由
 app.get('/calendar', (req, res) => {
     res.sendFile(path.join(__dirname, 'perfect-calendar.html'));

@@ -1157,6 +1157,10 @@
             try {
                 const selectedInstructor = document.getElementById('instructorSelect').value;
                 
+                // 解析課程標題，分離課程名稱和時間資訊
+                const { courseName, timeInfo } = parseCourseTitle(title);
+                console.log(`📝 解析結果: 課程="${courseName}", 時間資訊="${timeInfo}"`);
+                
                 // 獲取可用講師列表並進行模糊比對
                 const availableInstructors = await getAvailableInstructors();
                 const matchedInstructor = findMatchingInstructor(selectedInstructor, availableInstructors);
@@ -1174,10 +1178,12 @@
                     console.log(`🔄 講師名稱已修正: "${selectedInstructor}" → "${matchedInstructor}"`);
                 }
                 
-                const timeString = `${new Date(start).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${new Date(end).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
+                // 使用解析後的課程名稱和時間資訊
+                const finalCourseName = courseName;
+                const finalTimeString = timeInfo || `${new Date(start).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${new Date(end).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
                 
                 // 構建簽到系統URL
-                const attendanceUrl = `https://liff.line.me/1657746214-wPgd2qQn?step=3&teacher=${encodeURIComponent(finalInstructor)}&course=${encodeURIComponent(title)}&time=${encodeURIComponent(timeString)}`;
+                const attendanceUrl = `https://liff.line.me/1657746214-wPgd2qQn?step=3&teacher=${encodeURIComponent(finalInstructor)}&course=${encodeURIComponent(finalCourseName)}&time=${encodeURIComponent(finalTimeString)}`;
                 
                 // 開啟簽到系統
                 if (typeof liff !== 'undefined' && liff.isInClient()) {
@@ -1192,7 +1198,7 @@
                 // 關閉對話框
                 closeCourseDialog();
                 
-                console.log('✅ 開啟課程簽到:', { finalInstructor, title, timeString });
+                console.log('✅ 開啟課程簽到:', { finalInstructor, finalCourseName, finalTimeString });
             } catch (error) {
                 console.error('❌ 選擇課程簽到失敗:', error);
                 alert('選擇課程簽到失敗: ' + error.message);
@@ -1332,6 +1338,96 @@
             return matrix[len2][len1];
         }
 
+        // 解析課程標題，分離課程名稱和時間資訊
+        function parseCourseTitle(fullTitle) {
+            if (!fullTitle) {
+                return { courseName: '未命名課程', timeInfo: '' };
+            }
+
+            // 常見的時間模式
+            const timePatterns = [
+                // 六 9:30-10:30 到府
+                /([一二三四五六日])\s+(\d{1,2}:\d{2})-(\d{1,2}:\d{2})\s+(.+)/,
+                // 六 9:30-10:30
+                /([一二三四五六日])\s+(\d{1,2}:\d{2})-(\d{1,2}:\d{2})/,
+                // 9:30-10:30 到府
+                /(\d{1,2}:\d{2})-(\d{1,2}:\d{2})\s+(.+)/,
+                // 9:30-10:30
+                /(\d{1,2}:\d{2})-(\d{1,2}:\d{2})/,
+                // 第X週
+                /第(\d+)週/,
+                // 請假
+                /請假/
+            ];
+
+            let courseName = fullTitle;
+            let timeInfo = '';
+
+            // 嘗試匹配各種時間模式
+            for (const pattern of timePatterns) {
+                const match = fullTitle.match(pattern);
+                if (match) {
+                    if (pattern.source.includes('請假')) {
+                        // 處理請假情況
+                        courseName = fullTitle.replace(/請假.*$/, '').trim();
+                        timeInfo = '請假';
+                        break;
+                    } else if (pattern.source.includes('第') && pattern.source.includes('週')) {
+                        // 處理週次
+                        const weekMatch = fullTitle.match(/第(\d+)週/);
+                        if (weekMatch) {
+                            courseName = fullTitle.replace(/第\d+週.*$/, '').trim();
+                            timeInfo = `第${weekMatch[1]}週`;
+                        }
+                        break;
+                    } else if (pattern.source.includes('一二三四五六日')) {
+                        // 處理包含星期和時間的情況
+                        const weekday = match[1];
+                        const startTime = match[2];
+                        const endTime = match[3];
+                        const location = match[4] || '';
+                        
+                        courseName = fullTitle.replace(new RegExp(`${weekday}\\s+${startTime}-${endTime}\\s*${location}.*$`), '').trim();
+                        timeInfo = `${weekday} ${startTime}-${endTime}${location ? ' ' + location : ''}`;
+                        break;
+                    } else if (pattern.source.includes('\\d{1,2}:\\d{2}')) {
+                        // 處理只有時間的情況
+                        const startTime = match[1];
+                        const endTime = match[2];
+                        const location = match[3] || '';
+                        
+                        courseName = fullTitle.replace(new RegExp(`${startTime}-${endTime}\\s*${location}.*$`), '').trim();
+                        timeInfo = `${startTime}-${endTime}${location ? ' ' + location : ''}`;
+                        break;
+                    }
+                }
+            }
+
+            // 如果沒有匹配到時間模式，嘗試簡單的分割
+            if (timeInfo === '') {
+                // 檢查是否包含時間格式
+                const timeMatch = fullTitle.match(/(\d{1,2}:\d{2})-(\d{1,2}:\d{2})/);
+                if (timeMatch) {
+                    const timeIndex = fullTitle.indexOf(timeMatch[0]);
+                    courseName = fullTitle.substring(0, timeIndex).trim();
+                    timeInfo = fullTitle.substring(timeIndex).trim();
+                }
+            }
+
+            // 清理課程名稱
+            courseName = courseName.replace(/[第\d+週請假].*$/, '').trim();
+            
+            // 如果課程名稱為空，使用原始標題
+            if (!courseName) {
+                courseName = fullTitle;
+                timeInfo = '';
+            }
+
+            console.log(`📝 解析課程標題: "${fullTitle}" → 課程: "${courseName}", 時間: "${timeInfo}"`);
+            
+            return { courseName, timeInfo };
+        }
+
         // 獲取可用講師列表
         async function getAvailableInstructors() {
             try {
@@ -1355,6 +1451,10 @@
             try {
                 console.log('🎯 處理直接簽到:', { title, instructor, start, end });
                 
+                // 解析課程標題，分離課程名稱和時間資訊
+                const { courseName, timeInfo } = parseCourseTitle(title);
+                console.log(`📝 解析結果: 課程="${courseName}", 時間資訊="${timeInfo}"`);
+                
                 // 獲取可用講師列表並進行模糊比對
                 const availableInstructors = await getAvailableInstructors();
                 const matchedInstructor = findMatchingInstructor(instructor, availableInstructors);
@@ -1372,10 +1472,12 @@
                     instructor = matchedInstructor;
                 }
                 
-                const timeString = `${new Date(start).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${new Date(end).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
+                // 使用解析後的課程名稱和時間資訊
+                const finalCourseName = courseName;
+                const finalTimeString = timeInfo || `${new Date(start).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${new Date(end).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
                 
                 // 構建簽到系統URL
-                const attendanceUrl = `https://liff.line.me/1657746214-wPgd2qQn?step=3&teacher=${encodeURIComponent(instructor)}&course=${encodeURIComponent(title)}&time=${encodeURIComponent(timeString)}`;
+                const attendanceUrl = `https://liff.line.me/1657746214-wPgd2qQn?step=3&teacher=${encodeURIComponent(instructor)}&course=${encodeURIComponent(finalCourseName)}&time=${encodeURIComponent(finalTimeString)}`;
                 
                 // 開啟簽到系統
                 if (typeof liff !== 'undefined' && liff.isInClient()) {
@@ -1390,7 +1492,7 @@
                 }
                 
                 // 顯示成功訊息
-                showSuccessMessage(`已開啟 ${instructor} 的 ${title} 簽到`);
+                showSuccessMessage(`已開啟 ${instructor} 的 ${finalCourseName} 簽到`);
                 
             } catch (error) {
                 console.error('❌ 直接簽到失敗:', error);
