@@ -326,6 +326,16 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// 測試頁面路由
+app.get('/test', (req, res) => {
+    res.sendFile(path.join(__dirname, 'perfect-calendar-test.html'));
+});
+
+// 正式版本路由
+app.get('/calendar', (req, res) => {
+    res.sendFile(path.join(__dirname, 'perfect-calendar.html'));
+});
+
 // 獲取講師列表
 app.get('/api/teachers', async (req, res) => {
     try {
