@@ -3768,6 +3768,17 @@
         .event-card.releasing {
             animation: releaseAnimation 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: block !important;
+            position: relative !important;
+            z-index: 10 !important;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.95) 0%, 
+                rgba(248, 250, 252, 0.9) 50%,
+                rgba(255, 255, 255, 0.95) 100%) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
         }
 
         @keyframes releaseAnimation {
@@ -3778,6 +3789,13 @@
                     0 0 40px rgba(184, 134, 11, 0.2),
                     inset 0 0 20px rgba(184, 134, 11, 0.1);
                 border: 2px solid rgba(184, 134, 11, 0.6);
+                opacity: 1;
+                visibility: visible;
+                display: block;
+                background: linear-gradient(135deg, 
+                    rgba(255, 255, 255, 0.95) 0%, 
+                    rgba(248, 250, 252, 0.9) 50%,
+                    rgba(255, 255, 255, 0.95) 100%);
             }
             50% {
                 transform: scale(1.05) translateY(-3px);
@@ -3786,11 +3804,25 @@
                     0 0 60px rgba(184, 134, 11, 0.3),
                     inset 0 0 30px rgba(184, 134, 11, 0.15);
                 border: 2px solid rgba(184, 134, 11, 0.8);
+                opacity: 1;
+                visibility: visible;
+                display: block;
+                background: linear-gradient(135deg, 
+                    rgba(255, 255, 255, 0.95) 0%, 
+                    rgba(248, 250, 252, 0.9) 50%,
+                    rgba(255, 255, 255, 0.95) 100%);
             }
             100% {
                 transform: scale(1) translateY(0px);
                 box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
                 border: 1px solid rgba(0, 0, 0, 0.1);
+                opacity: 1;
+                visibility: visible;
+                display: block;
+                background: linear-gradient(135deg, 
+                    rgba(255, 255, 255, 0.95) 0%, 
+                    rgba(248, 250, 252, 0.9) 50%,
+                    rgba(255, 255, 255, 0.95) 100%);
             }
         }
 
@@ -7534,6 +7566,10 @@ async function loadTodayEvents() {
                     // 釋放動畫完成後移除類別
                     setTimeout(() => {
                         eventCard.classList.remove('releasing');
+                        // 確保元素保持可見
+                        eventCard.style.opacity = '1';
+                        eventCard.style.visibility = 'visible';
+                        eventCard.style.display = 'block';
                     }, 600);
                     
                     console.log('❌ 長按中斷，播放釋放動畫');
@@ -7562,6 +7598,10 @@ async function loadTodayEvents() {
                     // 釋放動畫完成後移除類別
                     setTimeout(() => {
                         eventCard.classList.remove('releasing');
+                        // 確保元素保持可見
+                        eventCard.style.opacity = '1';
+                        eventCard.style.visibility = 'visible';
+                        eventCard.style.display = 'block';
                     }, 600);
                     
                     console.log('❌ 滑鼠離開，播放釋放動畫');
@@ -7643,6 +7683,10 @@ async function loadTodayEvents() {
                     // 釋放動畫完成後移除類別
                     setTimeout(() => {
                         eventCard.classList.remove('releasing');
+                        // 確保元素保持可見
+                        eventCard.style.opacity = '1';
+                        eventCard.style.visibility = 'visible';
+                        eventCard.style.display = 'block';
                     }, 600);
                     
                     console.log('❌ 觸控長按中斷，播放釋放動畫');
