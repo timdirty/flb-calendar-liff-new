@@ -2491,7 +2491,8 @@
         }
 
         .attendance-record-list {
-            max-height: 400px;
+            max-height: 350px;
+                            min-height: 200px;
             overflow-y: auto;
         }
 
@@ -8523,7 +8524,8 @@ async function loadTodayEvents() {
                             flex: 1; 
                             overflow-y: auto; 
                             padding-right: 8px;
-                            max-height: 400px;
+                            max-height: 350px;
+                            min-height: 200px;
                         ">
                             <!-- 學生列表將在這裡顯示 -->
                         </div>
@@ -8638,7 +8640,8 @@ async function loadTodayEvents() {
                             flex: 1; 
                             overflow-y: auto; 
                             padding-right: 8px;
-                            max-height: 400px;
+                            max-height: 350px;
+                            min-height: 200px;
                         ">
                             <!-- 學生列表將在這裡顯示 -->
                         </div>
@@ -10896,7 +10899,8 @@ async function loadTodayEvents() {
                         flex: 1; 
                         overflow-y: auto; 
                         padding-right: 8px;
-                        max-height: 400px;
+                        max-height: 350px;
+                        min-height: 200px;
                     ">
                         ${studentsHtml}
                     </div>
@@ -12134,11 +12138,11 @@ async function loadTodayEvents() {
                 }, 600);
                 
                 attendanceStats.innerHTML = `
-                    <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: center;">
-                        <span class="stats-item" style="color: #28a745; text-shadow: none; padding: 4px 8px; border-radius: 8px; background: rgba(40, 167, 69, 0.1);"><i class="fas fa-check-circle"></i> 出席: ${presentCount}</span>
-                        <span class="stats-item" style="color: #dc3545; text-shadow: none; padding: 4px 8px; border-radius: 8px; background: rgba(220, 53, 69, 0.1);"><i class="fas fa-times-circle"></i> 缺席: ${absentCount}</span>
-                        <span class="stats-item" style="color: #ffc107; text-shadow: none; padding: 4px 8px; border-radius: 8px; background: rgba(255, 193, 7, 0.1);"><i class="fas fa-exclamation-triangle"></i> 請假: ${leaveCount}</span>
-                        <span class="stats-item" style="color: #6c757d; text-shadow: none; padding: 4px 8px; border-radius: 8px; background: rgba(108, 117, 125, 0.1);"><i class="fas fa-clock"></i> 待簽: ${pendingCount}</span>
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: nowrap; justify-content: center; overflow-x: auto; white-space: nowrap;">
+                        <span class="stats-item" style="color: #28a745; text-shadow: none; padding: 3px 6px; border-radius: 6px; background: rgba(40, 167, 69, 0.1); font-size: 0.8rem; white-space: nowrap; flex-shrink: 0;"><i class="fas fa-check-circle"></i> 出席: ${presentCount}</span>
+                        <span class="stats-item" style="color: #dc3545; text-shadow: none; padding: 3px 6px; border-radius: 6px; background: rgba(220, 53, 69, 0.1); font-size: 0.8rem; white-space: nowrap; flex-shrink: 0;"><i class="fas fa-times-circle"></i> 缺席: ${absentCount}</span>
+                        <span class="stats-item" style="color: #ffc107; text-shadow: none; padding: 3px 6px; border-radius: 6px; background: rgba(255, 193, 7, 0.1); font-size: 0.8rem; white-space: nowrap; flex-shrink: 0;"><i class="fas fa-exclamation-triangle"></i> 請假: ${leaveCount}</span>
+                        <span class="stats-item" style="color: #6c757d; text-shadow: none; padding: 3px 6px; border-radius: 6px; background: rgba(108, 117, 125, 0.1); font-size: 0.8rem; white-space: nowrap; flex-shrink: 0;"><i class="fas fa-clock"></i> 待簽: ${pendingCount}</span>
                     </div>
                 `;
             }
