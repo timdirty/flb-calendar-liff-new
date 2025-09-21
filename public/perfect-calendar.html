@@ -7875,13 +7875,118 @@ async function loadTodayEvents() {
             // 檢查是否有已載入的學生資料
             const existingStudentsList = document.querySelector('#studentsList');
             if (existingStudentsList) {
-                console.log('✅ 找到已載入的學生資料，直接恢復');
-                // 如果已經有學生資料，直接恢復原始結構
-                restoreOriginalStudentContent();
+                console.log('✅ 找到已載入的學生資料，直接恢復到原始狀態');
+                // 如果已經有學生資料，直接恢復到原始學生簽到狀態
+                // 不需要重新創建內容，只需要確保模態框回到原始位置
+                return;
             } else {
-                console.log('⚠️ 沒有找到已載入的學生資料，顯示載入畫面');
-                // 如果沒有學生資料，顯示載入畫面
-                showLoadingContent();
+                console.log('⚠️ 沒有找到已載入的學生資料，重新創建學生簽到內容');
+                // 如果沒有學生資料，重新創建學生簽到內容
+                // 但不需要重新載入，因為學生資料已經載入完成
+                recreateStudentAttendanceContent();
+            }
+        }
+
+        // 重新創建學生簽到內容（不重新載入）
+        function recreateStudentAttendanceContent() {
+            console.log('🔄 重新創建學生簽到內容');
+            
+            const modalContent = document.querySelector('.attendance-modal-content');
+            if (!modalContent) return;
+            
+            // 重新創建學生簽到內容結構
+            modalContent.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div style="flex: 1;">
+                        <h2 style="margin: 0; color: #333333; font-size: 1.5rem; text-shadow: none;">
+                            <i class="fas fa-calendar-check" style="color: #b8860b; margin-right: 10px; text-shadow: 0 0 10px rgba(184, 134, 11, 0.5);"></i>
+                            課程簽到系統
+                        </h2>
+                    </div>
+                    <button id="closeAttendanceModal" class="close-attendance-modal" style="
+                        background: rgba(255, 255, 255, 0.2);
+                        border: 1px solid rgba(255, 215, 0, 0.4);
+                        font-size: 1.5rem;
+                        color: #333333;
+                        cursor: pointer;
+                        padding: 5px;
+                        border-radius: 50%;
+                        width: 40px;
+                        height: 40px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        transition: all 0.3s ease;
+                        backdrop-filter: blur(10px);
+                        -webkit-backdrop-filter: blur(10px);
+                    ">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="course-info" style="
+                    margin-bottom: 20px; 
+                    padding: 20px; 
+                    background: 
+                        radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.05) 0%, transparent 70%),
+                        linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+                    border-radius: 15px; 
+                    border: 1px solid rgba(255, 215, 0, 0.3);
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                    box-shadow: 
+                        0 8px 32px rgba(0, 0, 0, 0.2),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                ">
+                    <div class="course-info-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.9rem;">
+                        <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">載入中...</span></div>
+                        <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">載入中...</span></div>
+                        <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">載入中...</span></div>
+                        <div data-field="date" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">日期:</strong> <span id="currentDate">載入中...</span></div>
+                    </div>
+                </div>
+                
+                <div id="attendanceContent">
+                    <div style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
+                        <h3 style="margin: 0 0 12px 0; color: #333333; font-size: 1.1rem; text-shadow: none;">
+                            <i class="fas fa-users" style="color: #b8860b; margin-right: 8px; text-shadow: 0 0 10px rgba(184, 134, 11, 0.5);"></i>
+                            學生名單 (載入中...)
+                        </h3>
+                        <div id="studentsList" style="
+                            display: flex; 
+                            flex-direction: column; 
+                            gap: 8px; 
+                            flex: 1; 
+                            overflow-y: auto; 
+                            padding-right: 8px;
+                            max-height: 400px;
+                        ">
+                            <!-- 學生列表將在這裡顯示 -->
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 重新設置關閉按鈕事件監聽器
+            const closeBtn = document.getElementById('closeAttendanceModal');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    closeAttendanceModal();
+                });
+            }
+            
+            // 如果學生資料已經載入完成，直接顯示學生列表
+            if (window.loadedStudentsData) {
+                console.log('✅ 使用已載入的學生資料');
+                displayStudents(window.loadedStudentsData.students, 
+                              window.loadedStudentsData.teacher, 
+                              window.loadedStudentsData.course, 
+                              window.loadedStudentsData.time, 
+                              window.loadedStudentsData.start, 
+                              window.loadedStudentsData.end, 
+                              window.loadedStudentsData.minutesUntilStart);
+            } else {
+                console.log('⚠️ 沒有已載入的學生資料，顯示載入畫面');
             }
         }
 
@@ -9780,6 +9885,17 @@ async function loadTodayEvents() {
         function displayStudents(students, teacher, course, time, start, end, minutesUntilStart = null) {
             const attendanceContent = document.getElementById('attendanceContent');
             if (!attendanceContent) return;
+            
+            // 保存學生資料到全域變數，供後續使用
+            window.loadedStudentsData = {
+                students: students,
+                teacher: teacher,
+                course: course,
+                time: time,
+                start: start,
+                end: end,
+                minutesUntilStart: minutesUntilStart
+            };
             
             // 添加載入完成的過渡效果
             attendanceContent.style.background = 'transparent';
