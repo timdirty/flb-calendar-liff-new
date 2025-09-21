@@ -25,19 +25,57 @@ async function testNotificationFix() {
         console.log('✅ 頁面載入完成');
         
         // 等待頁面完全載入
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        
+        // 切換到週視圖以確保有課程顯示
+        await page.evaluate(() => {
+            if (typeof switchToWeekView === 'function') {
+                switchToWeekView();
+            }
+        });
+        
+        // 等待視圖切換完成
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // 檢查頁面狀態
+        const pageTitle = await page.title();
+        console.log('📄 頁面標題:', pageTitle);
+        
+        // 檢查是否有課程數據
+        const hasEvents = await page.evaluate(() => {
+            return typeof allEvents !== 'undefined' && allEvents && allEvents.length > 0;
+        });
+        console.log('📊 是否有課程數據:', hasEvents);
+        
+        if (hasEvents) {
+            const eventCount = await page.evaluate(() => allEvents.length);
+            console.log('📈 課程數據數量:', eventCount);
+        }
         
         // 查找課程事件卡片
         const eventCards = await page.$$('.calendar-event');
-        console.log(`📅 找到 ${eventCards.length} 個課程事件`);
+        console.log(`📅 找到 ${eventCards.length} 個課程事件卡片`);
         
-        if (eventCards.length === 0) {
-            console.log('❌ 沒有找到課程事件，無法測試');
+        // 也檢查其他可能的選擇器
+        const weekEvents = await page.$$('.week-event');
+        const dayEvents = await page.$$('.day-event');
+        console.log(`📅 週視圖事件: ${weekEvents.length}, 日視圖事件: ${dayEvents.length}`);
+        
+        if (eventCards.length === 0 && weekEvents.length === 0 && dayEvents.length === 0) {
+            console.log('❌ 沒有找到任何課程事件，無法測試');
+            
+            // 截圖調試
+            await page.screenshot({ path: 'debug-no-events.png' });
+            console.log('📸 已截圖保存為 debug-no-events.png');
             return;
         }
         
+        // 使用找到的事件
+        const eventsToTest = eventCards.length > 0 ? eventCards : (weekEvents.length > 0 ? weekEvents : dayEvents);
+        console.log(`🎯 將測試 ${eventsToTest.length} 個事件`);
+        
         // 長按第一個課程事件
-        const firstEvent = eventCards[0];
+        const firstEvent = eventsToTest[0];
         console.log('🔄 開始長按課程事件...');
         
         await page.evaluate((element) => {

@@ -9142,10 +9142,26 @@ async function loadTodayEvents() {
         function checkAllStudentsMarked() {
             const studentCards = document.querySelectorAll('.student-card');
             const totalStudents = studentCards.length;
-            const markedStudents = Object.keys(studentAttendanceStatus).length;
             
-            console.log(`🔍 簽到完成檢測: ${markedStudents}/${totalStudents} 學生已標記`);
-            console.log('📋 已標記學生:', Object.keys(studentAttendanceStatus));
+            // 計算有進度的學生數量（除了"未簽到"以外的所有狀態都算進度）
+            let markedStudents = 0;
+            studentCards.forEach(card => {
+                const studentName = card.querySelector('.student-name')?.textContent?.trim();
+                if (studentName) {
+                    // 檢查學生是否有任何狀態（當次簽到或歷史狀態）
+                    const currentStatus = studentAttendanceStatus[studentName];
+                    const hasStatus = card.querySelector('.status-tag');
+                    const statusText = hasStatus ? hasStatus.textContent.trim() : '';
+                    
+                    // 如果有當次簽到狀態，或者有歷史狀態標籤（不是"未簽到"），就算有進度
+                    if (currentStatus || (statusText && statusText !== '未簽到' && statusText !== '待簽到')) {
+                        markedStudents++;
+                    }
+                }
+            });
+            
+            console.log(`🔍 簽到完成檢測: ${markedStudents}/${totalStudents} 學生有進度`);
+            console.log('📋 當次標記學生:', Object.keys(studentAttendanceStatus));
             console.log('📋 學生卡片數量:', studentCards.length);
             
             const isComplete = markedStudents === totalStudents;
@@ -9205,11 +9221,32 @@ async function loadTodayEvents() {
             studentCards.forEach(card => {
                 const studentName = card.querySelector('.student-name')?.textContent?.trim();
                 if (studentName) {
-                    const status = studentAttendanceStatus[studentName];
+                    // 優先使用當次簽到狀態，如果沒有則檢查歷史狀態標籤
+                    let status = studentAttendanceStatus[studentName];
+                    
+                    if (!status) {
+                        // 檢查歷史狀態標籤
+                        const statusTag = card.querySelector('.status-tag');
+                        if (statusTag) {
+                            const statusText = statusTag.textContent.trim();
+                            if (statusText === '出席' || statusText === 'Present') {
+                                status = 'present';
+                            } else if (statusText === '缺席' || statusText === 'Absent') {
+                                status = 'absent';
+                            } else if (statusText === '請假' || statusText === 'Leave') {
+                                status = 'leave';
+                            }
+                        }
+                    }
+                    
+                    // 根據狀態分類
                     if (status === 'present') {
                         presentStudents.push(studentName);
                     } else if (status === 'absent') {
                         absentStudents.push(studentName);
+                    } else if (status === 'leave') {
+                        // 請假也算進度，可以單獨分類或歸類到缺席
+                        absentStudents.push(studentName + '(請假)');
                     } else {
                         unmarkedStudents.push(studentName);
                     }
@@ -9230,7 +9267,22 @@ async function loadTodayEvents() {
             if (allStudentsMarked) {
                 message += `🎉 簽到完成！所有學生已標記\n\n`;
             } else {
-                message += `⏳ 簽到進行中 (${Object.keys(studentAttendanceStatus).length}/${totalStudents} 已標記)\n\n`;
+                // 計算總進度（包括歷史狀態）
+                let totalProgress = 0;
+                studentCards.forEach(card => {
+                    const studentName = card.querySelector('.student-name')?.textContent?.trim();
+                    if (studentName) {
+                        const currentStatus = studentAttendanceStatus[studentName];
+                        const hasStatus = card.querySelector('.status-tag');
+                        const statusText = hasStatus ? hasStatus.textContent.trim() : '';
+                        
+                        if (currentStatus || (statusText && statusText !== '未簽到' && statusText !== '待簽到')) {
+                            totalProgress++;
+                        }
+                    }
+                });
+                
+                message += `⏳ 簽到進行中 (${totalProgress}/${totalStudents} 有進度)\n\n`;
             }
             
             if (presentStudents.length > 0) {
@@ -9337,10 +9389,28 @@ async function loadTodayEvents() {
         function updateAttendanceProgress() {
             const studentCards = document.querySelectorAll('.student-card');
             const totalStudents = studentCards.length;
-            const markedStudents = Object.keys(studentAttendanceStatus).length;
+            
+            // 計算有進度的學生數量（包括歷史狀態）
+            let markedStudents = 0;
+            studentCards.forEach(card => {
+                const studentName = card.querySelector('.student-name')?.textContent?.trim();
+                if (studentName) {
+                    // 檢查學生是否有任何狀態（當次簽到或歷史狀態）
+                    const currentStatus = studentAttendanceStatus[studentName];
+                    const hasStatus = card.querySelector('.status-tag');
+                    const statusText = hasStatus ? hasStatus.textContent.trim() : '';
+                    
+                    // 如果有當次簽到狀態，或者有歷史狀態標籤（不是"未簽到"），就算有進度
+                    if (currentStatus || (statusText && statusText !== '未簽到' && statusText !== '待簽到')) {
+                        markedStudents++;
+                    }
+                }
+            });
+            
             const progress = totalStudents > 0 ? (markedStudents / totalStudents) * 100 : 0;
             
             console.log(`📊 更新進度顯示: ${markedStudents}/${totalStudents} (${progress}%)`);
+            console.log(`📊 當次標記: ${Object.keys(studentAttendanceStatus).length}, 總進度: ${markedStudents}`);
             
             // 移除舊的浮動通知
             const existingNotification = document.querySelector('.floating-notification');
