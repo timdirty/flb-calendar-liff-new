@@ -2671,6 +2671,29 @@
             width: 100%;
             height: 100%;
         }
+        
+        /* 人數選擇按鈕樣式 */
+        .count-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .count-btn.active {
+            border-width: 4px;
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        
+        .count-btn.active {
+            border-color: #ff6b35;
+            background: linear-gradient(135deg, #fff5f2, #ffe8e0);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
+        }
+        
+        .count-btn.active i {
+            color: #ff6b35;
+            transform: scale(1.1);
+        }
 
         .report-form textarea:focus {
             outline: none;
@@ -8998,6 +9021,86 @@ async function loadTodayEvents() {
                             </div>
                         </div>
                         
+                        <!-- 人數選擇（僅在沒有學生時顯示） -->
+                        <div id="student-count-selection" class="student-count-section" style="
+                            margin: 20px 0;
+                            padding: 20px;
+                            background: #f8f9fa;
+                            border-radius: 12px;
+                            border: 1px solid #e9ecef;
+                            display: none;
+                        ">
+                            <div class="count-header">
+                                <h4 style="
+                                    margin: 0 0 8px 0;
+                                    color: #333;
+                                    font-size: 1.1rem;
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 8px;
+                                ">
+                                    <i class="fas fa-user-friends"></i>
+                                    人數設定
+                                </h4>
+                                <p class="count-description" style="
+                                    margin: 0 0 15px 0;
+                                    color: #666;
+                                    font-size: 0.9rem;
+                                ">此課程沒有學生資料，請選擇實際出席人數</p>
+                            </div>
+                            <div class="count-buttons" style="
+                                display: grid;
+                                grid-template-columns: 1fr 1fr;
+                                gap: 15px;
+                                margin-bottom: 20px;
+                            ">
+                                <button class="count-btn" id="count-2-btn" onclick="setStudentCount(2)" style="
+                                    background: white;
+                                    border: 3px solid #e9ecef;
+                                    border-radius: 12px;
+                                    padding: 20px;
+                                    cursor: pointer;
+                                    transition: all 0.3s ease;
+                                    text-align: center;
+                                    display: flex;
+                                    flex-direction: column;
+                                    align-items: center;
+                                    gap: 8px;
+                                ">
+                                    <i class="fas fa-users" style="font-size: 2rem; color: #666;"></i>
+                                    <span class="count-title" style="font-weight: 600; font-size: 1rem; color: #333;">2人（含）以下</span>
+                                    <span class="count-desc" style="font-size: 0.8rem; color: #666;">小班教學</span>
+                                </button>
+                                <button class="count-btn" id="count-30-btn" onclick="setStudentCount(30)" style="
+                                    background: white;
+                                    border: 3px solid #e9ecef;
+                                    border-radius: 12px;
+                                    padding: 20px;
+                                    cursor: pointer;
+                                    transition: all 0.3s ease;
+                                    text-align: center;
+                                    display: flex;
+                                    flex-direction: column;
+                                    align-items: center;
+                                    gap: 8px;
+                                ">
+                                    <i class="fas fa-users" style="font-size: 2rem; color: #666;"></i>
+                                    <span class="count-title" style="font-weight: 600; font-size: 1rem; color: #333;">3人（含）以上</span>
+                                    <span class="count-desc" style="font-size: 0.8rem; color: #666;">大班教學</span>
+                                </button>
+                            </div>
+                            <div class="current-count-display" style="
+                                text-align: center;
+                                padding: 10px;
+                                background: rgba(255, 215, 0, 0.1);
+                                border-radius: 8px;
+                                font-size: 0.9rem;
+                            ">
+                                <span class="count-label" style="color: #666;">選擇人數：</span>
+                                <span class="count-value" id="current-count-display" style="font-weight: 600; color: #333;">未選擇</span>
+                            </div>
+                        </div>
+                        
                         <!-- 提交按鈕 -->
                         <div class="report-actions" style="
                             margin-top: 30px;
@@ -9083,9 +9186,67 @@ async function loadTodayEvents() {
             });
         }
 
+        // 全域變數：選中的人數
+        let selectedStudentCount = null;
+        
+        // 設定學生人數
+        function setStudentCount(count) {
+            selectedStudentCount = count;
+            updateStudentCountDisplay();
+            showToast(`已選擇 ${count} 人（含）${count === 2 ? '以下' : '以上'}`, 'info');
+        }
+        
+        // 更新學生人數顯示
+        function updateStudentCountDisplay() {
+            const count2Btn = document.getElementById('count-2-btn');
+            const count30Btn = document.getElementById('count-30-btn');
+            const countDisplay = document.getElementById('current-count-display');
+            
+            if (!count2Btn || !count30Btn || !countDisplay) return;
+            
+            // 重置所有按鈕狀態
+            count2Btn.classList.remove('active');
+            count30Btn.classList.remove('active');
+            count2Btn.style.borderColor = '#e9ecef';
+            count30Btn.style.borderColor = '#e9ecef';
+            count2Btn.style.borderWidth = '3px';
+            count30Btn.style.borderWidth = '3px';
+            
+            if (selectedStudentCount === 2) {
+                count2Btn.classList.add('active');
+                count2Btn.style.borderColor = '#ff6b35';
+                count2Btn.style.borderWidth = '4px';
+                countDisplay.textContent = '2人（含）以下';
+            } else if (selectedStudentCount === 30) {
+                count30Btn.classList.add('active');
+                count30Btn.style.borderColor = '#ff6b35';
+                count30Btn.style.borderWidth = '4px';
+                countDisplay.textContent = '3人（含）以上';
+            } else {
+                countDisplay.textContent = '未選擇';
+            }
+        }
+        
         // 初始化講師報表功能
         function initializeTeacherReport() {
             console.log('📝 初始化講師報表功能');
+            
+            // 檢查是否有學生資料，如果沒有則顯示人數選擇
+            const studentCountSelection = document.getElementById('student-count-selection');
+            if (studentCountSelection) {
+                // 檢查是否有學生資料
+                const hasStudents = window.loadedStudentsData && 
+                                  window.loadedStudentsData.students && 
+                                  window.loadedStudentsData.students.length > 0;
+                
+                if (!hasStudents) {
+                    console.log('📝 沒有學生資料，顯示人數選擇');
+                    studentCountSelection.style.display = 'block';
+                } else {
+                    console.log('📝 有學生資料，隱藏人數選擇');
+                    studentCountSelection.style.display = 'none';
+                }
+            }
             
             // 設置字數統計
             const courseContent = document.getElementById('course-content');
@@ -9232,23 +9393,34 @@ async function loadTodayEvents() {
                 let studentCount = 0;
                 const currentMode = currentModeDisplay ? currentModeDisplay.textContent : '講師模式';
                 
-                if (currentMode === '助教模式') {
+                // 檢查是否有學生資料
+                const hasStudents = window.loadedStudentsData && 
+                                  window.loadedStudentsData.students && 
+                                  window.loadedStudentsData.students.length > 0;
+                
+                if (!hasStudents) {
+                    // 沒有學生資料：使用選擇的人數
+                    if (selectedStudentCount === null) {
+                        showToast('請選擇實際出席人數', 'error');
+                        return;
+                    }
+                    studentCount = selectedStudentCount;
+                    console.log('📊 沒有學生資料，使用選擇的人數:', studentCount);
+                } else if (currentMode === '助教模式') {
                     // 助教模式：人數設為 0
                     studentCount = 0;
                     console.log('📊 助教模式：人數設為 0');
                 } else {
                     // 講師模式：計算實際出席的學生數量
-                    if (window.loadedStudentsData && window.loadedStudentsData.students) {
-                        const presentStudents = window.loadedStudentsData.students.filter(student => 
-                            student.status === 'present' || student.status === 'attended'
-                        );
-                        studentCount = presentStudents.length;
-                        console.log('📊 講師模式學生簽到統計:', {
-                            totalStudents: window.loadedStudentsData.students.length,
-                            presentStudents: presentStudents.length,
-                            presentStudentNames: presentStudents.map(s => s.name)
-                        });
-                    }
+                    const presentStudents = window.loadedStudentsData.students.filter(student => 
+                        student.status === 'present' || student.status === 'attended'
+                    );
+                    studentCount = presentStudents.length;
+                    console.log('📊 講師模式學生簽到統計:', {
+                        totalStudents: window.loadedStudentsData.students.length,
+                        presentStudents: presentStudents.length,
+                        presentStudentNames: presentStudents.map(s => s.name)
+                    });
                 }
                 
                 console.log('📊 講師報表資料:', {
@@ -10632,6 +10804,13 @@ async function loadTodayEvents() {
                 end: end,
                 minutesUntilStart: minutesUntilStart
             };
+            
+            // 檢查是否有學生，如果沒有學生直接顯示講師報表
+            if (!students || students.length === 0) {
+                console.log('📝 課程沒有學生，直接顯示講師報表');
+                showTeacherReport();
+                return;
+            }
             
             // 添加載入完成的過渡效果
             attendanceContent.style.background = 'transparent';
