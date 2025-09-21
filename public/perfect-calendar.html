@@ -9075,6 +9075,11 @@ async function loadTodayEvents() {
         // 全域變數：選中的人數
         let selectedStudentCount = null;
         
+        // 自動提交相關變數
+        let autoSubmitTimer = null;
+        let autoSubmitCountdown = 0;
+        let isAutoSubmitEnabled = false;
+        
         // 設定學生人數
         function setStudentCount(count) {
             selectedStudentCount = count;
@@ -9134,7 +9139,7 @@ async function loadTodayEvents() {
                 }
             }
             
-            // 設置字數統計
+            // 設置字數統計和自動提交
             const courseContent = document.getElementById('course-content');
             const charCount = document.getElementById('char-count');
             
@@ -9151,6 +9156,14 @@ async function loadTodayEvents() {
                     } else {
                         charCount.style.color = '#666';
                     }
+                    
+                    // 觸發自動提交檢查
+                    checkAutoSubmit();
+                });
+                
+                // 監聽失去焦點事件
+                courseContent.addEventListener('blur', function() {
+                    checkAutoSubmit();
                 });
             }
             
@@ -9162,19 +9175,19 @@ async function loadTodayEvents() {
             if (teacherModeBtn && assistantModeBtn && currentModeDisplay) {
                 teacherModeBtn.addEventListener('click', () => {
                     setTeacherMode();
+                    checkAutoSubmit(); // 觸發自動提交檢查
                 });
                 
                 assistantModeBtn.addEventListener('click', () => {
                     setAssistantMode();
+                    checkAutoSubmit(); // 觸發自動提交檢查
                 });
             }
             
-            // 設置提交按鈕
+            // 隱藏提交按鈕（因為使用自動提交）
             const submitBtn = document.getElementById('submitTeacherReport');
             if (submitBtn) {
-                submitBtn.addEventListener('click', () => {
-                    submitTeacherReport();
-                });
+                submitBtn.style.display = 'none';
             }
         }
 
@@ -9223,11 +9236,153 @@ async function loadTodayEvents() {
                 currentModeDisplay.textContent = '助教模式';
             }
         }
+        
+        // 檢查是否滿足自動提交條件
+        function checkAutoSubmit() {
+            const courseContent = document.getElementById('course-content');
+            const currentModeDisplay = document.getElementById('current-mode-display');
+            
+            // 檢查是否有文字內容
+            const hasContent = courseContent && courseContent.value.trim().length > 0;
+            
+            // 檢查是否選擇了身份
+            const hasMode = currentModeDisplay && 
+                           (currentModeDisplay.textContent === '講師模式' || 
+                            currentModeDisplay.textContent === '助教模式');
+            
+            // 檢查是否滿足自動提交條件
+            const shouldAutoSubmit = hasContent && hasMode;
+            
+            console.log('🔍 自動提交檢查:', {
+                hasContent,
+                hasMode,
+                shouldAutoSubmit,
+                content: courseContent ? courseContent.value.trim() : '',
+                mode: currentModeDisplay ? currentModeDisplay.textContent : ''
+            });
+            
+            if (shouldAutoSubmit) {
+                startAutoSubmitCountdown();
+            } else {
+                stopAutoSubmitCountdown();
+            }
+        }
+        
+        // 開始自動提交倒數
+        function startAutoSubmitCountdown() {
+            // 清除現有計時器
+            if (autoSubmitTimer) {
+                clearInterval(autoSubmitTimer);
+            }
+            
+            // 重置倒數
+            autoSubmitCountdown = 3;
+            isAutoSubmitEnabled = true;
+            
+            console.log('⏰ 開始自動提交倒數:', autoSubmitCountdown);
+            
+            // 顯示倒數提示
+            showCountdownToast();
+            
+            // 開始倒數計時
+            autoSubmitTimer = setInterval(() => {
+                autoSubmitCountdown--;
+                console.log('⏰ 自動提交倒數:', autoSubmitCountdown);
+                
+                if (autoSubmitCountdown <= 0) {
+                    // 倒數結束，執行提交
+                    clearInterval(autoSubmitTimer);
+                    autoSubmitTimer = null;
+                    isAutoSubmitEnabled = false;
+                    
+                    console.log('🚀 自動提交執行');
+                    submitTeacherReport();
+                } else {
+                    // 更新倒數提示
+                    showCountdownToast();
+                }
+            }, 1000);
+        }
+        
+        // 停止自動提交倒數
+        function stopAutoSubmitCountdown() {
+            if (autoSubmitTimer) {
+                clearInterval(autoSubmitTimer);
+                autoSubmitTimer = null;
+            }
+            isAutoSubmitEnabled = false;
+            autoSubmitCountdown = 0;
+            
+            console.log('⏹️ 停止自動提交倒數');
+            
+            // 隱藏倒數提示
+            hideCountdownToast();
+        }
+        
+        // 顯示倒數提示
+        function showCountdownToast() {
+            // 移除現有的倒數提示
+            const existingToast = document.querySelector('.countdown-toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+            
+            // 創建倒數提示
+            const toast = document.createElement('div');
+            toast.className = 'countdown-toast';
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: linear-gradient(135deg, #ff6b35, #f7931e);
+                color: white;
+                padding: 12px 24px;
+                border-radius: 25px;
+                font-size: 16px;
+                font-weight: bold;
+                z-index: 10000;
+                box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
+                animation: countdownPulse 0.5s ease-in-out;
+            `;
+            
+            toast.innerHTML = `
+                <i class="fas fa-clock" style="margin-right: 8px;"></i>
+                ${autoSubmitCountdown} 秒後自動提交
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // 添加動畫樣式
+            if (!document.querySelector('#countdown-styles')) {
+                const style = document.createElement('style');
+                style.id = 'countdown-styles';
+                style.textContent = `
+                    @keyframes countdownPulse {
+                        0% { transform: translateX(-50%) scale(0.8); opacity: 0; }
+                        50% { transform: translateX(-50%) scale(1.1); opacity: 1; }
+                        100% { transform: translateX(-50%) scale(1); opacity: 1; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+        
+        // 隱藏倒數提示
+        function hideCountdownToast() {
+            const toast = document.querySelector('.countdown-toast');
+            if (toast) {
+                toast.remove();
+            }
+        }
 
         // 提交講師報表
         async function submitTeacherReport() {
             try {
                 console.log('📤 提交講師報表');
+                
+                // 停止自動提交計時器
+                stopAutoSubmitCountdown();
                 
                 const courseContent = document.getElementById('course-content');
                 const currentModeDisplay = document.getElementById('current-mode-display');
@@ -9238,7 +9393,7 @@ async function loadTodayEvents() {
                     return;
                 }
                 
-                // 顯示載入狀態
+                // 顯示載入狀態（如果按鈕存在）
                 if (submitBtn) {
                     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>提交中...';
                     submitBtn.disabled = true;
@@ -9381,7 +9536,25 @@ async function loadTodayEvents() {
                     charCount.style.color = '#666';
                 }
                 
-                // 重置按鈕
+                // 重置身份選擇
+                const teacherModeBtn = document.getElementById('teacher-mode-btn');
+                const assistantModeBtn = document.getElementById('assistant-mode-btn');
+                
+                if (teacherModeBtn && assistantModeBtn && currentModeDisplay) {
+                    // 重置按鈕樣式
+                    teacherModeBtn.style.background = '#f8f9fa';
+                    teacherModeBtn.style.color = '#666';
+                    teacherModeBtn.style.border = '2px solid #e9ecef';
+                    
+                    assistantModeBtn.style.background = '#f8f9fa';
+                    assistantModeBtn.style.color = '#666';
+                    assistantModeBtn.style.border = '2px solid #e9ecef';
+                    
+                    // 重置顯示
+                    currentModeDisplay.textContent = '未選擇';
+                }
+                
+                // 重置按鈕（如果存在）
                 if (submitBtn) {
                     submitBtn.innerHTML = '<i class="fas fa-paper-plane" style="margin-right: 8px;"></i>提交講師報表';
                     submitBtn.disabled = false;
@@ -9391,6 +9564,9 @@ async function loadTodayEvents() {
                 
             } catch (error) {
                 console.error('❌ 講師報表提交失敗:', error);
+                
+                // 停止自動提交計時器
+                stopAutoSubmitCountdown();
                 
                 // 顯示詳細的錯誤信息
                 let errorMessage = `講師報表提交失敗: ${error.message}`;
