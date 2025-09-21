@@ -7836,10 +7836,6 @@ async function loadTodayEvents() {
                 hideStudentLoadingState();
                 // 直接恢復學生簽到內容，不重新載入
                 restoreStudentAttendanceContent();
-                
-                // 立即更新課程資訊
-                console.log('🔄 在showStudentAttendance中立即調用updateCourseInfoDisplay');
-                updateCourseInfoDisplay();
             }
             
             // 確保課程資訊正確顯示 - 強制更新
@@ -7892,44 +7888,10 @@ async function loadTodayEvents() {
             console.log('🔄 使用儲存的課程資訊更新顯示');
             console.log('🔍 storedCourseInfo:', storedCourseInfo);
             
-            // 只更新當前活動模態框中的元素
-            const modalContent = document.querySelector('.attendance-modal-content');
-            if (!modalContent) {
-                console.log('❌ 找不到模態框內容，無法更新課程資訊');
-                return;
-            }
-            
-            // 嘗試找到課程資訊元素（支援兩種HTML結構）
-            let timeElement = modalContent.querySelector('#currentTime');
-            let dateElement = modalContent.querySelector('#currentDate');
-            let teacherElement = modalContent.querySelector('#currentTeacher');
-            let courseElement = modalContent.querySelector('#currentCourse');
-            
-            // 如果找不到ID元素，嘗試找到data-field元素
-            if (!timeElement) {
-                const timeField = modalContent.querySelector('[data-field="time"]');
-                if (timeField) {
-                    timeElement = timeField.querySelector('span') || timeField;
-                }
-            }
-            if (!dateElement) {
-                const dateField = modalContent.querySelector('[data-field="date"]');
-                if (dateField) {
-                    dateElement = dateField.querySelector('span') || dateField;
-                }
-            }
-            if (!teacherElement) {
-                const teacherField = modalContent.querySelector('[data-field="teacher"]');
-                if (teacherField) {
-                    teacherElement = teacherField.querySelector('span') || teacherField;
-                }
-            }
-            if (!courseElement) {
-                const courseField = modalContent.querySelector('[data-field="course"]');
-                if (courseField) {
-                    courseElement = courseField.querySelector('span') || courseField;
-                }
-            }
+            const timeElement = document.getElementById('currentTime');
+            const dateElement = document.getElementById('currentDate');
+            const teacherElement = document.getElementById('currentTeacher');
+            const courseElement = document.getElementById('currentCourse');
             
             console.log('🔍 元素檢查:', {
                 timeElement: !!timeElement,
@@ -7940,14 +7902,7 @@ async function loadTodayEvents() {
             
             if (timeElement && storedCourseInfo.time) {
                 console.log('🔍 更新時間元素:', storedCourseInfo.time);
-                // 檢查是否是原始的data-field結構
-                if (timeElement.hasAttribute('data-field')) {
-                    // 原始結構：更新整個元素的innerHTML
-                    timeElement.innerHTML = `<strong style="color: #b8860b; font-weight: 600;">時間:</strong> ${storedCourseInfo.time}`;
-                } else {
-                    // 新結構：只更新textContent
-                    timeElement.textContent = storedCourseInfo.time;
-                }
+                timeElement.textContent = storedCourseInfo.time;
                 console.log('✅ 時間元素已更新');
             } else {
                 console.log('❌ 時間元素更新失敗:', {
@@ -7958,14 +7913,7 @@ async function loadTodayEvents() {
             
             if (dateElement && storedCourseInfo.date) {
                 console.log('🔍 更新日期元素:', storedCourseInfo.date);
-                // 檢查是否是原始的data-field結構
-                if (dateElement.hasAttribute('data-field')) {
-                    // 原始結構：更新整個元素的innerHTML
-                    dateElement.innerHTML = `<strong style="color: #b8860b; font-weight: 600;">日期:</strong> ${storedCourseInfo.date}`;
-                } else {
-                    // 新結構：只更新textContent
-                    dateElement.textContent = storedCourseInfo.date;
-                }
+                dateElement.textContent = storedCourseInfo.date;
                 console.log('✅ 日期元素已更新');
             } else {
                 console.log('❌ 日期元素更新失敗:', {
@@ -7976,14 +7924,7 @@ async function loadTodayEvents() {
             
             if (teacherElement && storedCourseInfo.teacher) {
                 console.log('🔍 更新講師元素:', storedCourseInfo.teacher);
-                // 檢查是否是原始的data-field結構
-                if (teacherElement.hasAttribute('data-field')) {
-                    // 原始結構：更新整個元素的innerHTML
-                    teacherElement.innerHTML = `<strong style="color: #b8860b; font-weight: 600;">講師:</strong> ${storedCourseInfo.teacher}`;
-                } else {
-                    // 新結構：只更新textContent
-                    teacherElement.textContent = storedCourseInfo.teacher;
-                }
+                teacherElement.textContent = storedCourseInfo.teacher;
                 console.log('✅ 講師元素已更新');
             } else {
                 console.log('❌ 講師元素更新失敗:', {
@@ -7994,14 +7935,7 @@ async function loadTodayEvents() {
             
             if (courseElement && storedCourseInfo.course) {
                 console.log('🔍 更新課程元素:', storedCourseInfo.course);
-                // 檢查是否是原始的data-field結構
-                if (courseElement.hasAttribute('data-field')) {
-                    // 原始結構：更新整個元素的innerHTML
-                    courseElement.innerHTML = `<strong style="color: #b8860b; font-weight: 600;">課程:</strong> ${storedCourseInfo.course}`;
-                } else {
-                    // 新結構：只更新textContent
-                    courseElement.textContent = storedCourseInfo.course;
-                }
+                courseElement.textContent = storedCourseInfo.course;
                 console.log('✅ 課程元素已更新');
             } else {
                 console.log('❌ 課程元素更新失敗:', {
@@ -8037,64 +7971,6 @@ async function loadTodayEvents() {
                 console.log('✅ 使用已儲存的課程資訊');
                 updateDisplayWithStoredInfo();
                 return;
-            }
-            
-            // 如果沒有儲存的課程資訊，但元素顯示"載入中"，嘗試從其他來源獲取
-            if (timeElement && timeElement.textContent === '載入中...' && 
-                dateElement && dateElement.textContent === '載入中...') {
-                console.log('🔍 檢測到載入中狀態，嘗試從其他來源獲取課程資訊');
-                
-                // 嘗試從 window.loadedStudentsData 獲取
-                if (window.loadedStudentsData && window.loadedStudentsData.teacher) {
-                    console.log('✅ 從 window.loadedStudentsData 獲取課程資訊');
-                    const teacher = window.loadedStudentsData.teacher;
-                    const course = window.loadedStudentsData.course;
-                    const time = window.loadedStudentsData.time;
-                    let date = window.loadedStudentsData.date;
-                    
-                    // 如果沒有 date，從 start 計算
-                    if (!date && window.loadedStudentsData.start) {
-                        const startDate = new Date(window.loadedStudentsData.start);
-                        date = startDate.toLocaleDateString('zh-TW', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit'
-                        });
-                    }
-                    
-                    // 儲存課程資訊
-                    if (teacher && course && time && date) {
-                        storeCourseInfo(teacher, course, time, date);
-                        updateDisplayWithStoredInfo();
-                        return;
-                    }
-                }
-                
-                // 嘗試從 window.currentAttendanceData 獲取
-                if (window.currentAttendanceData && window.currentAttendanceData.teacher) {
-                    console.log('✅ 從 window.currentAttendanceData 獲取課程資訊');
-                    const teacher = window.currentAttendanceData.teacher;
-                    const course = window.currentAttendanceData.course;
-                    const time = window.currentAttendanceData.time;
-                    let date = window.currentAttendanceData.date;
-                    
-                    // 如果沒有 date，從 start 計算
-                    if (!date && window.currentAttendanceData.start) {
-                        const startDate = new Date(window.currentAttendanceData.start);
-                        date = startDate.toLocaleDateString('zh-TW', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit'
-                        });
-                    }
-                    
-                    // 儲存課程資訊
-                    if (teacher && course && time && date) {
-                        storeCourseInfo(teacher, course, time, date);
-                        updateDisplayWithStoredInfo();
-                        return;
-                    }
-                }
             }
             
             // 如果沒有可用的數據，設置為預設值
@@ -8298,70 +8174,9 @@ async function loadTodayEvents() {
             
             // 檢查是否有已載入的學生資料（檢查全域變數而不是DOM元素）
             if (window.loadedStudentsData) {
-                console.log('✅ 找到已載入的學生資料，恢復原先的學生簽到畫面');
-                
-                // 優先檢查是否有保存的原始學生簽到內容
-                if (window.originalStudentContent) {
-                    console.log('✅ 找到保存的原始學生簽到內容，直接恢復');
-                    const attendanceContent = document.getElementById('attendanceContent');
-                    if (attendanceContent) {
-                        attendanceContent.innerHTML = window.originalStudentContent;
-                        
-                        // 重新綁定事件
-                        setupStudentCardDoubleClickListeners();
-                        setupAttendanceEventListeners();
-                        updateStats();
-                        
-                        // 立即更新課程資訊
-                        console.log('🔄 恢復保存的學生簽到內容後立即更新課程資訊');
-                        updateCourseInfoDisplay();
-                        
-                        console.log('✅ 保存的原始學生簽到畫面已恢復');
-                        return; // 直接返回，不需要繼續檢查
-                    }
-                }
-                
-                // 如果沒有保存的內容，檢查當前的 attendanceContent
-                const attendanceContent = document.getElementById('attendanceContent');
-                if (attendanceContent) {
-                    console.log('✅ 找到當前學生簽到內容，檢查是否為學生簽到');
-                    
-                    // 檢查attendanceContent是否包含學生簽到內容
-                    const hasStudentContent = attendanceContent.querySelector('.student-card') || 
-                                            attendanceContent.querySelector('.attendance-btn') ||
-                                            attendanceContent.innerHTML.includes('學生簽到');
-                    
-                    if (hasStudentContent) {
-                        console.log('✅ 確認是學生簽到內容，直接顯示');
-                        // 如果已經有原始的學生簽到內容，直接顯示它
-                        attendanceContent.style.display = 'block';
-                        
-                        // 隱藏其他可能的內容
-                        const studentsList = document.getElementById('studentsList');
-                        if (studentsList) {
-                            studentsList.style.display = 'none';
-                        }
-                        
-                        // 重新綁定事件
-                        setupStudentCardDoubleClickListeners();
-                        setupAttendanceEventListeners();
-                        updateStats();
-                        
-                        // 立即更新課程資訊
-                        console.log('🔄 恢復學生簽到內容後立即更新課程資訊');
-                        updateCourseInfoDisplay();
-                        
-                        console.log('✅ 原先的學生簽到畫面已恢復');
-                    } else {
-                        console.log('⚠️ attendanceContent不是學生簽到內容，重新創建');
-                        // 如果attendanceContent不是學生簽到內容，重新創建
-                        recreateStudentAttendanceContent();
-                    }
-                } else {
-                    console.log('⚠️ 沒有找到原始學生簽到內容，重新創建');
-                    // 如果沒有原始內容，才重新創建
-                    recreateStudentAttendanceContent();
-                }
+                console.log('✅ 找到已載入的學生資料，重新創建學生簽到內容');
+                // 如果已經有學生資料，重新創建學生簽到內容並顯示已載入的資料
+                recreateStudentAttendanceContent();
             } else if (studentListLoadPromise) {
                 console.log('⏳ 學生資料正在背景載入中，等待載入完成');
                 // 如果正在背景載入，等待載入完成
@@ -8412,10 +8227,10 @@ async function loadTodayEvents() {
                 
                 <div style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05)); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                        <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">載入中...</span></div>
-                        <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">載入中...</span></div>
-                        <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">載入中...</span></div>
-                        <div data-field="date" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">日期:</strong> <span id="currentDate">載入中...</span></div>
+                        <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">${teacher}</span></div>
+                        <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">${course}</span></div>
+                        <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">${time}</span></div>
+                        <div data-field="date" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">日期:</strong> <span id="currentDate">${date}</span></div>
                     </div>
                 </div>
                 
@@ -8448,97 +8263,16 @@ async function loadTodayEvents() {
             // 重新生成學生列表 - 使用完整的參數
             if (window.loadedStudentsData && window.loadedStudentsData.students) {
                 console.log('🔍 重新生成學生列表，使用完整參數');
-                
-                // 直接生成學生列表HTML，因為displayStudents函數會尋找attendanceContent元素
-                const studentsList = document.getElementById('studentsList');
-                if (studentsList && window.loadedStudentsData.students.length > 0) {
-                    console.log('📝 生成學生列表HTML');
-                    
-                    // 生成學生卡片HTML
-                    const studentsHTML = window.loadedStudentsData.students.map((student, index) => {
-                        const studentId = student.student_id || student.studentId || student.key || student.name;
-                        const studentName = student.name || '未知學生';
-                        
-                        return `
-                            <div class="student-card" data-student-id="${studentId}" style="
-                                background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
-                                border: 1px solid rgba(255, 255, 255, 0.3);
-                                border-radius: 12px;
-                                padding: 15px;
-                                margin-bottom: 10px;
-                                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-                                transition: all 0.3s ease;
-                                cursor: pointer;
-                            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(0, 0, 0, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0, 0, 0, 0.1)'">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <div style="flex: 1;">
-                                        <div style="font-weight: 600; color: #333; margin-bottom: 8px; font-size: 1.1rem;">
-                                            ${studentName}
-                                        </div>
-                                        <div style="font-size: 0.9rem; color: #666;">
-                                            ID: ${studentId}
-                                        </div>
-                                    </div>
-                                    <div style="display: flex; gap: 8px;">
-                                        <button class="attendance-btn present-btn liquid-button" 
-                                                data-student-id="${studentId}" 
-                                                style="
-                                                    background: linear-gradient(135deg, #28a745, #20c997);
-                                                    color: white;
-                                                    border: none;
-                                                    border-radius: 8px;
-                                                    padding: 8px 16px;
-                                                    font-size: 0.9rem;
-                                                    font-weight: 600;
-                                                    cursor: pointer;
-                                                    transition: all 0.3s ease;
-                                                    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
-                                                "
-                                                onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(40, 167, 69, 0.4)'"
-                                                onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 8px rgba(40, 167, 69, 0.3)'">
-                                            出席
-                                        </button>
-                                        <button class="attendance-btn absent-btn liquid-button" 
-                                                data-student-id="${studentId}" 
-                                                style="
-                                                    background: linear-gradient(135deg, #dc3545, #fd7e14);
-                                                    color: white;
-                                                    border: none;
-                                                    border-radius: 8px;
-                                                    padding: 8px 16px;
-                                                    font-size: 0.9rem;
-                                                    font-weight: 600;
-                                                    cursor: pointer;
-                                                    transition: all 0.3s ease;
-                                                    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
-                                                "
-                                                onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(220, 53, 69, 0.4)'"
-                                                onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 8px rgba(220, 53, 69, 0.3)'">
-                                            缺席
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                    
-                    studentsList.innerHTML = studentsHTML;
-                    console.log('✅ 學生列表HTML生成完成');
-                }
+                displayStudents(
+                    window.loadedStudentsData.students,
+                    window.loadedStudentsData.teacher,
+                    window.loadedStudentsData.course,
+                    window.loadedStudentsData.time,
+                    window.loadedStudentsData.start,
+                    window.loadedStudentsData.end,
+                    window.loadedStudentsData.minutesUntilStart
+                );
             }
-            
-            // 重新綁定關閉按鈕事件
-            const closeBtn = document.getElementById('closeModalBtn');
-            if (closeBtn) {
-                closeBtn.addEventListener('click', function() {
-                    console.log('❌ 用戶點擊關閉按鈕（重新創建後）');
-                    closeAttendanceModal();
-                });
-            }
-            
-            // 立即更新課程資訊顯示
-            console.log('🔄 重新創建後立即更新課程資訊');
-            updateCourseInfoDisplay();
             
             // 重新綁定事件
             setupStudentCardDoubleClickListeners();
@@ -8598,10 +8332,10 @@ async function loadTodayEvents() {
                         inset 0 1px 0 rgba(255, 255, 255, 0.1);
                 ">
                     <div class="course-info-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.8rem;">
-                        <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">載入中...</span></div>
-                        <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">載入中...</span></div>
-                        <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">載入中...</span></div>
-                        <div data-field="date" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">日期:</strong> <span id="currentDate">載入中...</span></div>
+                        <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">${storedCourseInfo && storedCourseInfo.teacher ? storedCourseInfo.teacher : "載入中..."}</span></div>
+                        <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">${storedCourseInfo && storedCourseInfo.course ? storedCourseInfo.course : "載入中..."}</span></div>
+                        <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">${storedCourseInfo && storedCourseInfo.time ? storedCourseInfo.time : "載入中..."}</span></div>
+                        <div data-field="date" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">日期:</strong> <span id="currentDate">${storedCourseInfo && storedCourseInfo.date ? storedCourseInfo.date : "載入中..."}</span></div>
                     </div>
                 </div>
                 
@@ -8726,10 +8460,10 @@ async function loadTodayEvents() {
                         inset 0 1px 0 rgba(255, 255, 255, 0.1);
                 ">
                     <div class="course-info-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.8rem;">
-                        <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">載入中...</span></div>
-                        <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">載入中...</span></div>
-                        <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">載入中...</span></div>
-                        <div data-field="date" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">日期:</strong> <span id="currentDate">載入中...</span></div>
+                        <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">${storedCourseInfo && storedCourseInfo.teacher ? storedCourseInfo.teacher : "載入中..."}</span></div>
+                        <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">${storedCourseInfo && storedCourseInfo.course ? storedCourseInfo.course : "載入中..."}</span></div>
+                        <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">${storedCourseInfo && storedCourseInfo.time ? storedCourseInfo.time : "載入中..."}</span></div>
+                        <div data-field="date" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">日期:</strong> <span id="currentDate">${storedCourseInfo && storedCourseInfo.date ? storedCourseInfo.date : "載入中..."}</span></div>
                     </div>
                 </div>
                 
@@ -8871,23 +8605,6 @@ async function loadTodayEvents() {
             // 添加左移動畫類別
             modalContent.classList.add('slide-left');
             
-            // 在替換內容之前，先保存原始的學生簽到內容
-            const attendanceContent = document.getElementById('attendanceContent');
-            let originalStudentContent = null;
-            if (attendanceContent) {
-                // 檢查是否包含學生簽到內容
-                const hasStudentContent = attendanceContent.querySelector('.student-card') || 
-                                        attendanceContent.querySelector('.attendance-btn') ||
-                                        attendanceContent.innerHTML.includes('學生簽到');
-                
-                if (hasStudentContent) {
-                    console.log('💾 在切換到講師簽到前保存原始學生簽到內容');
-                    originalStudentContent = attendanceContent.innerHTML;
-                    window.originalStudentContent = originalStudentContent;
-                    console.log('✅ 原始學生簽到內容已保存到 window.originalStudentContent');
-                }
-            }
-            
             // 創建講師報表內容
             const teacherAttendanceContent = document.createElement('div');
             teacherAttendanceContent.className = 'teacher-attendance-content';
@@ -8899,8 +8616,8 @@ async function loadTodayEvents() {
                     display: flex;
                     flex-direction: column;
                     height: 100%;
-                    max-height: 75vh;
-                    min-height: 350px;
+                    max-height: 70vh;
+                    min-height: 300px;
                     gap: 12px;
                     overflow-y: auto;
                     -webkit-overflow-scrolling: touch;
@@ -8917,7 +8634,7 @@ async function loadTodayEvents() {
                         -webkit-backdrop-filter: blur(25px);
                         border: 1px solid rgba(255, 255, 255, 0.3);
                         border-radius: 20px;
-                        padding: 12px;
+                        padding: 16px;
                         box-shadow: 
                             0 8px 32px rgba(0, 0, 0, 0.1),
                             0 2px 8px rgba(0, 0, 0, 0.05),
@@ -8971,20 +8688,20 @@ async function loadTodayEvents() {
                         ">
                             <button class="mode-btn teacher-mode active" id="teacher-mode-btn" style="
                                 background: linear-gradient(135deg, 
-                                    rgba(59, 130, 246, 0.3) 0%, 
-                                    rgba(59, 130, 246, 0.15) 50%,
-                                    rgba(59, 130, 246, 0.25) 100%);
+                                    rgba(255, 215, 0, 0.3) 0%, 
+                                    rgba(255, 215, 0, 0.15) 50%,
+                                    rgba(255, 215, 0, 0.25) 100%);
                                 backdrop-filter: blur(20px);
                                 -webkit-backdrop-filter: blur(20px);
-                                color: #1e40af;
-                                border: 2px solid rgba(59, 130, 246, 0.4);
+                                color: #2c3e50;
+                                border: 2px solid rgba(255, 215, 0, 0.4);
                                 padding: 14px 12px;
                                 border-radius: 16px;
                                 cursor: pointer;
                                 transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
                                 text-align: center;
                                 box-shadow: 
-                                    0 4px 16px rgba(59, 130, 246, 0.3),
+                                    0 4px 16px rgba(255, 215, 0, 0.3),
                                     0 2px 4px rgba(0, 0, 0, 0.1),
                                     inset 0 1px 0 rgba(255, 255, 255, 0.5),
                                     inset 0 -1px 0 rgba(0, 0, 0, 0.1);
@@ -9017,32 +8734,31 @@ async function loadTodayEvents() {
                                     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
                                 ">講師模式</div>
                                 <div style="
-                                    font-size: 0.65rem; 
+                                    font-size: 0.75rem; 
                                     opacity: 0.9;
                                     color: #5a6c7d;
-                                    line-height: 1.2;
-                                ">特殊課程自動設為99人</div>
+                                ">根據學生數量</div>
                             </button>
                             
                             <button class="mode-btn assistant-mode" id="assistant-mode-btn" style="
                                 background: linear-gradient(135deg, 
-                                    rgba(34, 197, 94, 0.3) 0%, 
-                                    rgba(34, 197, 94, 0.15) 50%,
-                                    rgba(34, 197, 94, 0.25) 100%);
+                                    rgba(108, 117, 125, 0.2) 0%, 
+                                    rgba(108, 117, 125, 0.1) 50%,
+                                    rgba(108, 117, 125, 0.15) 100%);
                                 backdrop-filter: blur(20px);
                                 -webkit-backdrop-filter: blur(20px);
-                                color: #166534;
-                                border: 2px solid rgba(34, 197, 94, 0.4);
+                                color: #5a6c7d;
+                                border: 2px solid rgba(108, 117, 125, 0.3);
                                 padding: 14px 12px;
                                 border-radius: 16px;
                                 cursor: pointer;
                                 transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
                                 text-align: center;
                                 box-shadow: 
-                                    0 4px 16px rgba(34, 197, 94, 0.3),
-                                    0 2px 4px rgba(0, 0, 0, 0.1),
-                                    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-                                    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+                                    0 4px 16px rgba(0, 0, 0, 0.1),
+                                    0 2px 4px rgba(0, 0, 0, 0.05),
+                                    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                                    inset 0 -1px 0 rgba(0, 0, 0, 0.05);
                                 position: relative;
                                 overflow: hidden;
                                 font-family: inherit;
@@ -9135,7 +8851,7 @@ async function loadTodayEvents() {
                         
                         <div style="position: relative; z-index: 1;">
                             <h3 style="
-                                margin: 0 0 8px 0;
+                                margin: 0 0 12px 0;
                                 color: #2c3e50;
                                 font-size: 1rem;
                                 font-weight: 700;
@@ -9152,10 +8868,10 @@ async function loadTodayEvents() {
                                 今日報表
                             </h3>
                         
-                        <div style="margin-bottom: 8px;">
+                        <div style="margin-bottom: 12px;">
                             <label for="course-content" style="
                                 display: block;
-                                margin-bottom: 6px;
+                                margin-bottom: 8px;
                                 font-weight: 600;
                                 color: #2c3e50;
                                 font-size: 0.9rem;
@@ -9164,18 +8880,18 @@ async function loadTodayEvents() {
                             <textarea 
                                 id="course-content" 
                                 placeholder="請描述今天的課程內容..."
-                                rows="3"
+                                rows="4"
                                 maxlength="500"
                                 style="
                                     width: 100%;
-                                    padding: 10px 12px;
+                                    padding: 14px;
                                     background: linear-gradient(135deg, 
                                         rgba(255, 255, 255, 0.2) 0%, 
                                         rgba(255, 255, 255, 0.1) 100%);
                                     backdrop-filter: blur(15px);
                                     -webkit-backdrop-filter: blur(15px);
                                     border: 2px solid rgba(255, 255, 255, 0.3);
-                                    border-radius: 10px;
+                                    border-radius: 12px;
                                     font-size: 0.85rem;
                                     font-family: inherit;
                                     resize: vertical;
@@ -9192,8 +8908,8 @@ async function loadTodayEvents() {
                             ></textarea>
                             <div class="char-count" style="
                                 text-align: right;
-                                margin-top: 6px;
-                                font-size: 0.75rem;
+                                margin-top: 8px;
+                                font-size: 0.8rem;
                                 color: #5a6c7d;
                                 font-weight: 500;
                             ">
@@ -9397,10 +9113,10 @@ async function loadTodayEvents() {
                         inset 0 1px 0 rgba(255, 255, 255, 0.1);
                 ">
                     <div class="course-info-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.8rem;">
-                        <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">載入中...</span></div>
-                        <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">載入中...</span></div>
-                        <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">載入中...</span></div>
-                        <div data-field="date" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">日期:</strong> <span id="currentDate">載入中...</span></div>
+                        <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">${storedCourseInfo && storedCourseInfo.teacher ? storedCourseInfo.teacher : "載入中..."}</span></div>
+                        <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">${storedCourseInfo && storedCourseInfo.course ? storedCourseInfo.course : "載入中..."}</span></div>
+                        <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">${storedCourseInfo && storedCourseInfo.time ? storedCourseInfo.time : "載入中..."}</span></div>
+                        <div data-field="date" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">日期:</strong> <span id="currentDate">${storedCourseInfo && storedCourseInfo.date ? storedCourseInfo.date : "載入中..."}</span></div>
                     </div>
                 </div>
                 
@@ -9409,7 +9125,7 @@ async function loadTodayEvents() {
                     padding-right: 8px;
                     min-height: 0;
                 ">
-                    <!-- 講師報表內容將動態插入這裡，不覆蓋原始學生簽到內容 -->
+                    ${teacherAttendanceContent.innerHTML}
                 </div>
             `;
             
@@ -9419,13 +9135,6 @@ async function loadTodayEvents() {
                 closeBtn.addEventListener('click', function() {
                     closeAttendanceModal();
                 });
-            }
-            
-            // 插入講師報表內容到 attendanceContent
-            const newAttendanceContent = document.getElementById('attendanceContent');
-            if (newAttendanceContent) {
-                console.log('🔄 插入講師報表內容到 attendanceContent');
-                newAttendanceContent.innerHTML = teacherAttendanceContent.innerHTML;
             }
             
             // 填充課程資訊 - 立即更新並添加多次重試
@@ -9459,25 +9168,6 @@ async function loadTodayEvents() {
             
             // 初始化講師報表功能
             initializeTeacherReport();
-            
-            // 檢查是否為特殊課程並顯示提示
-            setTimeout(() => {
-                const originalTitle = window.currentAttendanceData?.originalTitle || '';
-                const isCustomizedCourse = originalTitle.includes('客製化') || 
-                                        originalTitle.includes('到府') || 
-                                        originalTitle.includes('客制化') || 
-                                        originalTitle.includes('客製') || 
-                                        originalTitle.includes('客制');
-                
-                // 檢查當前模式，只有講師模式才顯示特殊提示
-                const currentModeDisplay = document.getElementById('current-mode-display');
-                const currentMode = currentModeDisplay ? currentModeDisplay.textContent : '講師模式';
-                
-                if (isCustomizedCourse && currentMode === '講師模式') {
-                    // 使用統一的函數來顯示特殊提示
-                    checkAndShowSpecialNotice();
-                }
-            }, 500);
             
             // 如果學生名單正在載入中，在背景持續載入
             if (isStudentListLoading && !studentListLoadPromise) {
@@ -9572,7 +9262,7 @@ async function loadTodayEvents() {
                 count30Btn.classList.add('active');
                 count30Btn.style.borderColor = '#ff6b35';
                 count30Btn.style.borderWidth = '4px';
-                countDisplay.textContent = '3人（含）以上';
+                countDisplay.textContent = '3人(含)以上';
             } else {
                 countDisplay.textContent = '未選擇';
             }
@@ -9639,46 +9329,8 @@ async function loadTodayEvents() {
             const currentModeDisplay = document.getElementById('current-mode-display');
             
             if (teacherModeBtn && assistantModeBtn && currentModeDisplay) {
-                // 添加講師模式按鈕的hover效果
-                teacherModeBtn.addEventListener('mouseenter', () => {
-                    teacherModeBtn.style.transform = 'translateY(-2px) scale(1.02)';
-                    teacherModeBtn.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.4), 0 4px 8px rgba(0, 0, 0, 0.15)';
-                });
-                
-                teacherModeBtn.addEventListener('mouseleave', () => {
-                    if (currentModeDisplay.textContent === '講師模式') {
-                        teacherModeBtn.style.transform = 'translateY(0) scale(1)';
-                        teacherModeBtn.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(0, 0, 0, 0.1)';
-                    } else {
-                        teacherModeBtn.style.transform = 'translateY(0) scale(1)';
-                        teacherModeBtn.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.05)';
-                    }
-                });
-                
-                // 添加助教模式按鈕的hover效果
-                assistantModeBtn.addEventListener('mouseenter', () => {
-                    assistantModeBtn.style.transform = 'translateY(-2px) scale(1.02)';
-                    assistantModeBtn.style.boxShadow = '0 8px 25px rgba(34, 197, 94, 0.4), 0 4px 8px rgba(0, 0, 0, 0.15)';
-                });
-                
-                assistantModeBtn.addEventListener('mouseleave', () => {
-                    if (currentModeDisplay.textContent === '助教模式') {
-                        assistantModeBtn.style.transform = 'translateY(0) scale(1)';
-                        assistantModeBtn.style.boxShadow = '0 4px 16px rgba(34, 197, 94, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(0, 0, 0, 0.1)';
-                    } else {
-                        assistantModeBtn.style.transform = 'translateY(0) scale(1)';
-                        assistantModeBtn.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.05)';
-                    }
-                });
-                
                 teacherModeBtn.addEventListener('click', () => {
                     console.log('👨‍🏫 講師模式按鈕被點擊');
-                    // 添加點擊效果
-                    teacherModeBtn.style.transform = 'translateY(0) scale(0.98)';
-                    setTimeout(() => {
-                        teacherModeBtn.style.transform = 'translateY(-2px) scale(1.02)';
-                    }, 150);
-                    
                     // 停止當前的倒數計時
                     stopAutoSubmitCountdown();
                     setTeacherMode();
@@ -9691,12 +9343,6 @@ async function loadTodayEvents() {
                 
                 assistantModeBtn.addEventListener('click', () => {
                     console.log('👨‍🎓 助教模式按鈕被點擊');
-                    // 添加點擊效果
-                    assistantModeBtn.style.transform = 'translateY(0) scale(0.98)';
-                    setTimeout(() => {
-                        assistantModeBtn.style.transform = 'translateY(-2px) scale(1.02)';
-                    }, 150);
-                    
                     // 停止當前的倒數計時
                     stopAutoSubmitCountdown();
                     setAssistantMode();
@@ -9724,22 +9370,17 @@ async function loadTodayEvents() {
             const currentModeDisplay = document.getElementById('current-mode-display');
             
             if (teacherModeBtn && assistantModeBtn && currentModeDisplay) {
-                // 更新按鈕樣式 - 講師模式為藍色
-                teacherModeBtn.style.background = 'linear-gradient(135deg, #3b82f6, #60a5fa)';
-                teacherModeBtn.style.color = '#1e40af';
-                teacherModeBtn.style.border = '2px solid #3b82f6';
-                teacherModeBtn.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(0, 0, 0, 0.1)';
+                // 更新按鈕樣式
+                teacherModeBtn.style.background = 'linear-gradient(135deg, #ffd700, #ffed4e)';
+                teacherModeBtn.style.color = '#333';
+                teacherModeBtn.style.border = '2px solid #ffd700';
                 
                 assistantModeBtn.style.background = '#f8f9fa';
                 assistantModeBtn.style.color = '#666';
                 assistantModeBtn.style.border = '2px solid #e9ecef';
-                assistantModeBtn.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.05)';
                 
                 // 更新顯示
                 currentModeDisplay.textContent = '講師模式';
-                
-                // 檢查並顯示特殊提示（如果是特殊課程）
-                checkAndShowSpecialNotice();
             }
         }
 
@@ -9752,85 +9393,17 @@ async function loadTodayEvents() {
             const currentModeDisplay = document.getElementById('current-mode-display');
             
             if (teacherModeBtn && assistantModeBtn && currentModeDisplay) {
-                // 更新按鈕樣式 - 助教模式為綠色
-                assistantModeBtn.style.background = 'linear-gradient(135deg, #22c55e, #4ade80)';
-                assistantModeBtn.style.color = '#166534';
-                assistantModeBtn.style.border = '2px solid #22c55e';
-                assistantModeBtn.style.boxShadow = '0 4px 16px rgba(34, 197, 94, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(0, 0, 0, 0.1)';
+                // 更新按鈕樣式
+                assistantModeBtn.style.background = 'linear-gradient(135deg, #6c757d, #495057)';
+                assistantModeBtn.style.color = 'white';
+                assistantModeBtn.style.border = '2px solid #6c757d';
                 
                 teacherModeBtn.style.background = '#f8f9fa';
                 teacherModeBtn.style.color = '#666';
                 teacherModeBtn.style.border = '2px solid #e9ecef';
-                teacherModeBtn.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.05)';
                 
                 // 更新顯示
                 currentModeDisplay.textContent = '助教模式';
-                
-                // 隱藏特殊提示（助教模式下不顯示）
-                hideSpecialNotice();
-            }
-        }
-        
-        // 檢查並顯示特殊提示
-        function checkAndShowSpecialNotice() {
-            const originalTitle = window.currentAttendanceData?.originalTitle || '';
-            const isCustomizedCourse = originalTitle.includes('客製化') || 
-                                    originalTitle.includes('到府') || 
-                                    originalTitle.includes('客制化') || 
-                                    originalTitle.includes('客製') || 
-                                    originalTitle.includes('客制');
-            
-            if (isCustomizedCourse) {
-                // 檢查是否已經有特殊提示
-                let specialNotice = document.querySelector('.special-notice');
-                if (!specialNotice) {
-                    // 在課程內容輸入框上方顯示特殊提示
-                    const courseContentLabel = document.querySelector('label[for="course-content"]');
-                    if (courseContentLabel) {
-                        specialNotice = document.createElement('div');
-                        specialNotice.className = 'special-notice';
-                        specialNotice.style.cssText = `
-                            background: linear-gradient(135deg, 
-                                rgba(255, 193, 7, 0.2) 0%, 
-                                rgba(255, 193, 7, 0.1) 100%);
-                            border: 2px solid rgba(255, 193, 7, 0.4);
-                            border-radius: 10px;
-                            padding: 8px 10px;
-                            margin-bottom: 8px;
-                            font-size: 0.8rem;
-                            color: #856404;
-                            text-align: center;
-                            box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
-                            line-height: 1.3;
-                        `;
-                        specialNotice.innerHTML = `
-                            <i class="fas fa-star" style="margin-right: 6px; color: #ffc107;"></i>
-                            <strong>特殊模式課程</strong> - 包含客製化或到府服務
-                            <br><small>提交時會自動添加特殊標記，人數設為99</small>
-                        `;
-                        courseContentLabel.parentNode.insertBefore(specialNotice, courseContentLabel.nextSibling);
-                    }
-                    
-                    // 在課程內容輸入框的placeholder中添加提示
-                    const courseContentInput = document.getElementById('course-content');
-                    if (courseContentInput) {
-                        courseContentInput.placeholder = '🏷️ [特殊模式] 請描述今天的課程內容...';
-                    }
-                }
-            }
-        }
-        
-        // 隱藏特殊提示
-        function hideSpecialNotice() {
-            const specialNotice = document.querySelector('.special-notice');
-            if (specialNotice) {
-                specialNotice.remove();
-            }
-            
-            // 恢復課程內容輸入框的placeholder
-            const courseContentInput = document.getElementById('course-content');
-            if (courseContentInput) {
-                courseContentInput.placeholder = '請描述今天的課程內容...';
             }
         }
         
@@ -9987,7 +9560,7 @@ async function loadTodayEvents() {
                 width: 100%;
                 height: 100%;
                 background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-                animation: shimmerSlide 2.5s ease-in-out infinite;
+                animation: shimmerSlide 2.5s easen-out infinite;
                 pointer-events: none;
             `;
             
@@ -10289,19 +9862,6 @@ async function loadTodayEvents() {
                     courseTime = currentData.time || '未知時間';
                 }
                 
-                // 檢查是否為特殊課程（客製化、到府等）
-                // originalTitle 和 isCustomizedCourse 已在上面宣告
-                
-                // 準備課程內容，如果是特殊課程則添加特殊標記
-                let finalCourseContent = courseContent.value.trim();
-                if (isCustomizedCourse) {
-                    const specialMark = '🏷️ [特殊模式] ';
-                    if (!finalCourseContent.startsWith(specialMark)) {
-                        finalCourseContent = specialMark + finalCourseContent;
-                    }
-                    console.log('🏷️ 檢測到特殊課程，添加特殊標記:', originalTitle);
-                }
-                
                 // 獲取實際簽到的學生人數
                 let studentCount = 0;
                 const currentMode = currentModeDisplay ? currentModeDisplay.textContent : '講師模式';
@@ -10311,27 +9871,20 @@ async function loadTodayEvents() {
                                   window.loadedStudentsData.students && 
                                   window.loadedStudentsData.students.length > 0;
                 
-                // 檢查是否為特殊課程（客製化、到府等）
-                // originalTitle 和 isCustomizedCourse 已在上面宣告
-                
-                if (currentMode === '助教模式') {
-                    // 助教模式：人數設為 0
-                    studentCount = 0;
-                    console.log('📊 助教模式：人數設為 0');
-                } else if (isCustomizedCourse) {
-                    // 特殊課程（客製化、到府等）：人數直接設為99
-                    studentCount = 99;
-                    console.log('📊 特殊課程，人數設為99:', originalTitle);
-                } else if (!hasStudents) {
-                    // 一般課程且沒有學生資料：使用選擇的人數
+                if (!hasStudents) {
+                    // 沒有學生資料：使用選擇的人數
                     if (selectedStudentCount === null) {
                         showToast('請選擇實際出席人數', 'error');
                         return;
                     }
                     studentCount = selectedStudentCount;
                     console.log('📊 沒有學生資料，使用選擇的人數:', studentCount);
+                } else if (currentMode === '助教模式') {
+                    // 助教模式：人數設為 0
+                    studentCount = 0;
+                    console.log('📊 助教模式：人數設為 0');
                 } else {
-                    // 講師模式且有學生資料：計算實際出席的學生數量
+                    // 講師模式：計算實際出席的學生數量
                     const presentStudents = window.loadedStudentsData.students.filter(student => 
                         student.status === 'present' || student.status === 'attended'
                     );
@@ -10349,8 +9902,7 @@ async function loadTodayEvents() {
                     courseTime: courseTime,
                     date: dateString,
                     studentCount: studentCount,
-                    courseContent: finalCourseContent,
-                    isCustomizedCourse: isCustomizedCourse
+                    courseContent: courseContent.value.trim()
                 });
                 
                 // 獲取講師的Web API URL
@@ -10373,9 +9925,8 @@ async function loadTodayEvents() {
                         courseTime: courseTime,
                         date: dateString,
                         studentCount: studentCount,
-                        courseContent: finalCourseContent,
-                        webApi: webApiUrl,
-                        isCustomizedCourse: isCustomizedCourse
+                        courseContent: courseContent.value.trim(),
+                        webApi: webApiUrl
                     })
                 });
                 
@@ -11033,8 +10584,7 @@ async function loadTodayEvents() {
             "停課": ["停課", "取消", "暫停", "休息", "放假", "請假"],
             "體驗": ["體驗", "體驗課", "體驗班", "體課", "體"],
             "代課": ["代課", "代理", "支援", "代"],
-            "補課": ["補課", "調課", "延後", "提前"],
-            "客製化": ["客製化", "客制化", "客製", "客制", "客製課程", "客制課程"]
+            "補課": ["補課", "調課", "延後", "提前"]
         };
 
         // 模糊匹配講師名稱
@@ -11285,8 +10835,8 @@ async function loadTodayEvents() {
                 const finalCourseName = courseName;
                 const finalTimeString = timeInfo || `${new Date(start).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${new Date(end).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
                 
-                // 開啟原生簽到系統（傳入時間限制資訊和原始標題）
-                await openNativeAttendanceSystem(matchedInstructor, finalCourseName, finalTimeString, start, end, minutesUntilStart, title);
+                // 開啟原生簽到系統（傳入時間限制資訊）
+                await openNativeAttendanceSystem(matchedInstructor, finalCourseName, finalTimeString, start, end, minutesUntilStart);
                 
             } catch (error) {
                 console.error('❌ 直接簽到失敗:', error);
@@ -11295,12 +10845,12 @@ async function loadTodayEvents() {
         }
 
         // 開啟原生簽到系統
-        async function openNativeAttendanceSystem(teacher, course, time, start, end, minutesUntilStart = null, originalTitle = '') {
+        async function openNativeAttendanceSystem(teacher, course, time, start, end, minutesUntilStart = null) {
             try {
-                console.log('🎯 開啟原生簽到系統:', { teacher, course, time, start, end, originalTitle });
+                console.log('🎯 開啟原生簽到系統:', { teacher, course, time, start, end });
                 
                 // 保存當前簽到數據，以便在恢復學生簽到內容時使用
-                window.currentAttendanceData = { teacher, course, time, start, end, minutesUntilStart, originalTitle };
+                window.currentAttendanceData = { teacher, course, time, start, end, minutesUntilStart };
                 
                 // 創建簽到系統模態框
                 const modal = document.createElement('div');
