@@ -8616,15 +8616,16 @@ async function loadTodayEvents() {
                     display: flex;
                     flex-direction: column;
                     height: 100%;
-                    max-height: 70vh;
-                    min-height: 300px;
+                    max-height: 85vh;
+                    min-height: 500px;
                     gap: 12px;
                     overflow-y: auto;
                     -webkit-overflow-scrolling: touch;
                     padding: 8px;
+                    scroll-behavior: smooth;
                 ">
                     
-                    <!-- 身份選擇區域 -->
+                    <!-- 第一步：身份選擇區域 -->
                     <div class="glass-card" style="
                         background: linear-gradient(135deg, 
                             rgba(255, 255, 255, 0.25) 0%, 
@@ -8818,7 +8819,7 @@ async function loadTodayEvents() {
                         </div>
                     </div>
                     
-                    <!-- 課程內容區域 -->
+                    <!-- 第三步：課程內容區域 -->
                     <div class="glass-card" style="
                         background: linear-gradient(135deg, 
                             rgba(255, 255, 255, 0.25) 0%, 
@@ -8919,7 +8920,7 @@ async function loadTodayEvents() {
                         </div>
                     </div>
                     
-                    <!-- 人數選擇（僅在沒有學生時顯示） -->
+                    <!-- 第二步：人數選擇（僅在沒有學生時顯示） -->
                     <div id="student-count-selection" class="glass-card" style="
                         background: linear-gradient(135deg, 
                             rgba(255, 255, 255, 0.25) 0%, 
@@ -9065,6 +9066,9 @@ async function loadTodayEvents() {
                             提交講師報表
                         </button>
                     </div>
+                    
+                    <!-- 額外空間確保可以滑動 -->
+                    <div style="height: 300px; flex-shrink: 0;"></div>
                 </div>
             `;
             
@@ -9354,6 +9358,32 @@ async function loadTodayEvents() {
                 });
             }
             
+            // 設置人數選擇按鈕事件監聽器
+            const count2Btn = document.getElementById('count-2-btn');
+            const count30Btn = document.getElementById('count-30-btn');
+            
+            if (count2Btn) {
+                count2Btn.addEventListener('click', () => {
+                    console.log('🔢 1-2人按鈕被點擊');
+                    stopAutoSubmitCountdown();
+                    setStudentCount(2);
+                    setTimeout(() => {
+                        checkAutoSubmit();
+                    }, 100);
+                });
+            }
+            
+            if (count30Btn) {
+                count30Btn.addEventListener('click', () => {
+                    console.log('🔢 3人以上按鈕被點擊');
+                    stopAutoSubmitCountdown();
+                    setStudentCount(30);
+                    setTimeout(() => {
+                        checkAutoSubmit();
+                    }, 100);
+                });
+            }
+            
             // 隱藏提交按鈕（因為使用自動提交）
             const submitBtn = document.getElementById('submitTeacherReport');
             if (submitBtn) {
@@ -9411,6 +9441,7 @@ async function loadTodayEvents() {
         function checkAutoSubmit() {
             const courseContent = document.getElementById('course-content');
             const currentModeDisplay = document.getElementById('current-mode-display');
+            const studentCountSelection = document.getElementById('student-count-selection');
             
             // 檢查是否有文字內容
             const hasContent = courseContent && courseContent.value.trim().length > 0;
@@ -9420,15 +9451,26 @@ async function loadTodayEvents() {
                            (currentModeDisplay.textContent === '講師模式' || 
                             currentModeDisplay.textContent === '助教模式');
             
+            // 檢查人數選擇（僅在有人數選擇區域且顯示時才檢查）
+            let hasStudentCount = true;
+            if (studentCountSelection && studentCountSelection.style.display !== 'none') {
+                hasStudentCount = selectedStudentCount !== null;
+                console.log('🔍 有人數選擇區域，檢查人數選擇:', hasStudentCount);
+            } else {
+                console.log('🔍 沒有人數選擇區域，跳過人數選擇檢查');
+            }
+            
             // 檢查是否滿足自動提交條件
-            const shouldAutoSubmit = hasContent && hasMode;
+            const shouldAutoSubmit = hasContent && hasMode && hasStudentCount;
             
             console.log('🔍 自動提交檢查:', {
                 hasContent,
                 hasMode,
+                hasStudentCount,
                 shouldAutoSubmit,
                 content: courseContent ? courseContent.value.trim() : '',
                 mode: currentModeDisplay ? currentModeDisplay.textContent : '',
+                selectedStudentCount: selectedStudentCount,
                 isCurrentlyCounting: isAutoSubmitEnabled
             });
             
@@ -9470,7 +9512,14 @@ async function loadTodayEvents() {
                                (currentModeDisplay.textContent === '講師模式' || 
                                 currentModeDisplay.textContent === '助教模式');
                 
-                if (!hasContent || !hasMode) {
+                // 檢查人數選擇（僅在有人數選擇區域且顯示時才檢查）
+                const studentCountSelection = document.getElementById('student-count-selection');
+                let hasStudentCount = true;
+                if (studentCountSelection && studentCountSelection.style.display !== 'none') {
+                    hasStudentCount = selectedStudentCount !== null;
+                }
+                
+                if (!hasContent || !hasMode || !hasStudentCount) {
                     // 條件不滿足，停止倒數
                     console.log('⏹️ 條件不滿足，停止倒數');
                     stopAutoSubmitCountdown();
@@ -10836,7 +10885,7 @@ async function loadTodayEvents() {
                 const finalTimeString = timeInfo || `${new Date(start).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${new Date(end).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
                 
                 // 開啟原生簽到系統（傳入時間限制資訊）
-                await openNativeAttendanceSystem(matchedInstructor, finalCourseName, finalTimeString, start, end, minutesUntilStart);
+                await openNativeAttendanceSystem(matchedInstructor, finalCourseName, finalTimeString, start, end, minutesUntilStart, title);
                 
             } catch (error) {
                 console.error('❌ 直接簽到失敗:', error);
@@ -10845,12 +10894,16 @@ async function loadTodayEvents() {
         }
 
         // 開啟原生簽到系統
-        async function openNativeAttendanceSystem(teacher, course, time, start, end, minutesUntilStart = null) {
+        async function openNativeAttendanceSystem(teacher, course, time, start, end, minutesUntilStart = null, originalTitle = '') {
             try {
-                console.log('🎯 開啟原生簽到系統:', { teacher, course, time, start, end });
+                console.log('🎯 開啟原生簽到系統:', { teacher, course, time, start, end, originalTitle });
+                
+                // 清除之前的課程資料，確保載入新的課程資訊
+                window.loadedStudentsData = null;
+                storedCourseInfo = { teacher: null, course: null, time: null, date: null };
                 
                 // 保存當前簽到數據，以便在恢復學生簽到內容時使用
-                window.currentAttendanceData = { teacher, course, time, start, end, minutesUntilStart };
+                window.currentAttendanceData = { teacher, course, time, start, end, minutesUntilStart, originalTitle };
                 
                 // 創建簽到系統模態框
                 const modal = document.createElement('div');
