@@ -7892,10 +7892,17 @@ async function loadTodayEvents() {
             console.log('🔄 使用儲存的課程資訊更新顯示');
             console.log('🔍 storedCourseInfo:', storedCourseInfo);
             
-            const timeElement = document.getElementById('currentTime');
-            const dateElement = document.getElementById('currentDate');
-            const teacherElement = document.getElementById('currentTeacher');
-            const courseElement = document.getElementById('currentCourse');
+            // 只更新當前活動模態框中的元素
+            const modalContent = document.querySelector('.attendance-modal-content');
+            if (!modalContent) {
+                console.log('❌ 找不到模態框內容，無法更新課程資訊');
+                return;
+            }
+            
+            const timeElement = modalContent.querySelector('#currentTime');
+            const dateElement = modalContent.querySelector('#currentDate');
+            const teacherElement = modalContent.querySelector('#currentTeacher');
+            const courseElement = modalContent.querySelector('#currentCourse');
             
             console.log('🔍 元素檢查:', {
                 timeElement: !!timeElement,
