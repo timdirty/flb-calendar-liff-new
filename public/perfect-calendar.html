@@ -7859,10 +7859,57 @@ async function loadTodayEvents() {
         }
 
         // 更新課程資訊顯示
+
+        // 課程資訊全域變數
+        let storedCourseInfo = {
+            teacher: null,
+            course: null,
+            time: null,
+            date: null
+        };
+        
+        // 檢查是否已儲存課程資訊
+        function isCourseInfoStored() {
+            return storedCourseInfo.teacher && storedCourseInfo.course && 
+                   storedCourseInfo.time && storedCourseInfo.date;
+        }
+        
+        // 儲存課程資訊
+        function storeCourseInfo(teacher, course, time, date) {
+            storedCourseInfo.teacher = teacher;
+            storedCourseInfo.course = course;
+            storedCourseInfo.time = time;
+            storedCourseInfo.date = date;
+            console.log('💾 課程資訊已儲存:', storedCourseInfo);
+        }
+        
+        // 使用儲存的課程資訊更新顯示
+        function updateDisplayWithStoredInfo() {
+            const timeElement = document.getElementById('currentTime');
+            const dateElement = document.getElementById('currentDate');
+            const teacherElement = document.getElementById('currentTeacher');
+            const courseElement = document.getElementById('currentCourse');
+            
+            if (timeElement && storedCourseInfo.time) {
+                timeElement.textContent = storedCourseInfo.time;
+            }
+            if (dateElement && storedCourseInfo.date) {
+                dateElement.textContent = storedCourseInfo.date;
+            }
+            if (teacherElement && storedCourseInfo.teacher) {
+                teacherElement.textContent = storedCourseInfo.teacher;
+            }
+            if (courseElement && storedCourseInfo.course) {
+                courseElement.textContent = storedCourseInfo.course;
+            }
+            console.log('🔄 使用儲存的課程資訊更新顯示');
+        }
+        
         function updateCourseInfoDisplay() {
             console.log('🔄 更新課程資訊顯示');
             console.log('🔍 window.loadedStudentsData:', window.loadedStudentsData);
             console.log('🔍 window.currentAttendanceData:', window.currentAttendanceData);
+            console.log('🔍 已儲存的課程資訊:', storedCourseInfo);
             
             // 檢查元素是否存在
             const timeElement = document.getElementById('currentTime');
@@ -7876,6 +7923,13 @@ async function loadTodayEvents() {
                 teacherElement: !!teacherElement,
                 courseElement: !!courseElement
             });
+            
+            // 如果已經有儲存的課程資訊，直接使用
+            if (isCourseInfoStored()) {
+                console.log('✅ 使用已儲存的課程資訊');
+                updateDisplayWithStoredInfo();
+                return;
+            }
             
             // 如果沒有可用的數據，設置為預設值
             if (!window.loadedStudentsData && !window.currentAttendanceData) {
@@ -7900,17 +7954,22 @@ async function loadTodayEvents() {
             if (window.loadedStudentsData) {
                 console.log('✅ 使用已載入的學生資料更新課程資訊');
                 
+                let teacher = window.loadedStudentsData.teacher;
+                let course = window.loadedStudentsData.course;
+                let time = null;
+                let date = null;
+                
                 // 更新講師資訊
                 if (teacherElement) {
-                    teacherElement.textContent = window.loadedStudentsData.teacher;
+                    teacherElement.textContent = teacher;
                 }
                 
                 // 更新課程資訊
                 if (courseElement) {
-                    courseElement.textContent = window.loadedStudentsData.course;
+                    courseElement.textContent = course;
                 }
                 
-                // 更新時間資訊
+                // 計算時間資訊
                 if (timeElement) {
                     console.log('🔍 找到時間元素，準備更新');
                     if (window.loadedStudentsData.start) {
@@ -7931,33 +7990,34 @@ async function loadTodayEvents() {
                             minute: '2-digit',
                             hour12: false
                         });
-                        const timeString = startTime + '-' + endTime;
-                        console.log('🔍 計算出的時間字串:', timeString);
-                        console.log('🔍 設置時間元素內容:', timeString);
-                        timeElement.textContent = timeString;
+                        time = startTime + '-' + endTime;
+                        console.log('🔍 計算出的時間字串:', time);
+                        console.log('🔍 設置時間元素內容:', time);
+                        timeElement.textContent = time;
                         
                         // 強制更新，確保顯示正確
                         setTimeout(() => {
                             console.log('🔄 強制更新時間元素');
-                            timeElement.textContent = timeString;
+                            timeElement.textContent = time;
                         }, 50);
                         
                         setTimeout(() => {
                             console.log('🔄 第二次強制更新時間元素');
-                            timeElement.textContent = timeString;
+                            timeElement.textContent = time;
                         }, 200);
                         
                         setTimeout(() => {
                             console.log('🔄 第三次強制更新時間元素');
-                            timeElement.textContent = timeString;
+                            timeElement.textContent = time;
                         }, 500);
                     } else if (window.loadedStudentsData.time) {
                         console.log('🔍 使用 window.loadedStudentsData.time:', window.loadedStudentsData.time);
-                        timeElement.textContent = window.loadedStudentsData.time;
+                        time = window.loadedStudentsData.time;
+                        timeElement.textContent = time;
                         
                         setTimeout(() => {
                             console.log('🔄 強制更新時間元素（備用）');
-                            timeElement.textContent = window.loadedStudentsData.time;
+                            timeElement.textContent = time;
                         }, 50);
                     } else {
                         console.log('⚠️ 沒有找到時間資料');
@@ -7966,7 +8026,7 @@ async function loadTodayEvents() {
                     console.log('❌ 找不到時間元素');
                 }
                 
-                // 更新日期資訊
+                // 計算日期資訊
                 if (dateElement) {
                     console.log('🔍 找到日期元素，準備更新');
                     if (window.loadedStudentsData.start) {
@@ -7974,29 +8034,29 @@ async function loadTodayEvents() {
                         console.log('🔍 日期計算 start 值:', window.loadedStudentsData.start);
                         const date = new Date(window.loadedStudentsData.start);
                         console.log('🔍 日期計算 date 對象:', date);
-                        const dateString = date.toLocaleDateString('zh-TW', {
+                        date = date.toLocaleDateString('zh-TW', {
                             year: 'numeric',
                             month: '2-digit',
                             day: '2-digit'
                         });
-                        console.log('🔍 計算出的日期字串:', dateString);
-                        console.log('🔍 設置日期元素內容:', dateString);
-                        dateElement.textContent = dateString;
+                        console.log('🔍 計算出的日期字串:', date);
+                        console.log('🔍 設置日期元素內容:', date);
+                        dateElement.textContent = date;
                         
                         // 強制更新，確保顯示正確
                         setTimeout(() => {
                             console.log('🔄 強制更新日期元素');
-                            dateElement.textContent = dateString;
+                            dateElement.textContent = date;
                         }, 50);
                         
                         setTimeout(() => {
                             console.log('🔄 第二次強制更新日期元素');
-                            dateElement.textContent = dateString;
+                            dateElement.textContent = date;
                         }, 200);
                         
                         setTimeout(() => {
                             console.log('🔄 第三次強制更新日期元素');
-                            dateElement.textContent = dateString;
+                            dateElement.textContent = date;
                         }, 500);
                     } else {
                         console.log('⚠️ 沒有找到日期資料');
@@ -8005,23 +8065,33 @@ async function loadTodayEvents() {
                     console.log('❌ 找不到日期元素');
                 }
                 
+                // 儲存課程資訊
+                if (teacher && course && time && date) {
+                    storeCourseInfo(teacher, course, time, date);
+                }
+                
                 console.log('✅ 課程資訊更新完成');
             } else if (window.currentAttendanceData) {
                 console.log('✅ 使用當前課程資料更新課程資訊');
                 
                 const currentData = window.currentAttendanceData;
                 
+                let teacher = currentData.teacher;
+                let course = currentData.course;
+                let time = null;
+                let date = null;
+                
                 // 更新講師資訊
                 if (teacherElement) {
-                    teacherElement.textContent = currentData.teacher;
+                    teacherElement.textContent = teacher;
                 }
                 
                 // 更新課程資訊
                 if (courseElement) {
-                    courseElement.textContent = currentData.course;
+                    courseElement.textContent = course;
                 }
                 
-                // 更新時間資訊
+                // 計算時間資訊
                 if (timeElement) {
                     console.log('🔍 找到時間元素，準備更新（使用 currentAttendanceData）');
                     if (currentData.start) {
@@ -8038,12 +8108,13 @@ async function loadTodayEvents() {
                             minute: '2-digit',
                             hour12: false
                         });
-                        const timeString = startTime + '-' + endTime;
-                        console.log('🔍 計算出的時間字串:', timeString);
-                        timeElement.textContent = timeString;
+                        time = startTime + '-' + endTime;
+                        console.log('🔍 計算出的時間字串:', time);
+                        timeElement.textContent = time;
                     } else if (currentData.time) {
                         console.log('🔍 使用 currentData.time:', currentData.time);
-                        timeElement.textContent = currentData.time;
+                        time = currentData.time;
+                        timeElement.textContent = time;
                     } else {
                         console.log('⚠️ 沒有找到時間資料');
                     }
@@ -8051,24 +8122,29 @@ async function loadTodayEvents() {
                     console.log('❌ 找不到時間元素');
                 }
                 
-                // 更新日期資訊
+                // 計算日期資訊
                 if (dateElement) {
                     console.log('🔍 找到日期元素，準備更新（使用 currentAttendanceData）');
                     if (currentData.start) {
                         console.log('🔍 使用 currentData.start 計算日期');
                         const date = new Date(currentData.start);
-                        const dateString = date.toLocaleDateString('zh-TW', {
+                        date = date.toLocaleDateString('zh-TW', {
                             year: 'numeric',
                             month: '2-digit',
                             day: '2-digit'
                         });
-                        console.log('🔍 計算出的日期字串:', dateString);
-                        dateElement.textContent = dateString;
+                        console.log('🔍 計算出的日期字串:', date);
+                        dateElement.textContent = date;
                     } else {
                         console.log('⚠️ 沒有找到日期資料');
                     }
                 } else {
                     console.log('❌ 找不到日期元素');
+                }
+                
+                // 儲存課程資訊
+                if (teacher && course && time && date) {
+                    storeCourseInfo(teacher, course, time, date);
                 }
                 
                 console.log('✅ 課程資訊更新完成');
