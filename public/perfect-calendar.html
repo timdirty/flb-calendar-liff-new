@@ -8180,8 +8180,8 @@ async function loadTodayEvents() {
                         flex-direction: column; 
                         gap: 8px; 
                         margin-bottom: 16px;
-                        height: auto;
-                        max-height: 80vh;
+                        height: 500px;
+                        max-height: 500px;
                         min-height: 500px;
                         overflow-y: scroll;
                         overflow-x: hidden;
@@ -8192,8 +8192,27 @@ async function loadTodayEvents() {
                         /* 確保滾動條可見 */
                         scrollbar-width: thin;
                         scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+                        /* 設置固定高度以確保滾動 */
+                        flex: 1;
+                        box-sizing: border-box;
                     ">
                         <!-- 學生列表將在這裡顯示 -->
+                        <!-- 透明的虛擬學生卡片，用於增加滾動高度 -->
+                        <div class="virtual-student-card" style="
+                            height: 550px !important;
+                            background: transparent;
+                            border: none;
+                            margin: 0;
+                            padding: 0;
+                            pointer-events: none;
+                            opacity: 0.01;
+                            visibility: visible;
+                            width: 100%;
+                            overflow: hidden;
+                            position: relative;
+                            min-height: 550px;
+                            max-height: 550px;
+                        "></div>
                     </div>
                     
                     <!-- 統計欄位 - 接續在學生列表後面 -->
@@ -10958,8 +10977,8 @@ async function loadTodayEvents() {
                         flex-direction: column; 
                         gap: 8px; 
                         margin-bottom: 16px;
-                        height: auto;
-                        max-height: 80vh;
+                        height: 500px;
+                        max-height: 500px;
                         min-height: 500px;
                         overflow-y: scroll;
                         overflow-x: hidden;
@@ -10970,8 +10989,27 @@ async function loadTodayEvents() {
                         /* 確保滾動條可見 */
                         scrollbar-width: thin;
                         scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+                        /* 設置固定高度以確保滾動 */
+                        flex: 1;
+                        box-sizing: border-box;
                     ">
                         ${studentsHtml}
+                        <!-- 透明的虛擬學生卡片，用於增加滾動高度 -->
+                        <div class="virtual-student-card" style="
+                            height: 550px !important;
+                            background: transparent;
+                            border: none;
+                            margin: 0;
+                            padding: 0;
+                            pointer-events: none;
+                            opacity: 0.01;
+                            visibility: visible;
+                            width: 100%;
+                            overflow: hidden;
+                            position: relative;
+                            min-height: 550px;
+                            max-height: 550px;
+                        "></div>
                     </div>
                     
                     <!-- 統計欄位 - 接續在學生列表後面 -->
