@@ -8129,7 +8129,7 @@ async function loadTodayEvents() {
                         0 8px 32px rgba(0, 0, 0, 0.2),
                         inset 0 1px 0 rgba(255, 255, 255, 0.1);
                 ">
-                    <div class="course-info-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.9rem;">
+                    <div class="course-info-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.8rem;">
                         <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">載入中...</span></div>
                         <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">載入中...</span></div>
                         <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">載入中...</span></div>
@@ -8151,8 +8151,9 @@ async function loadTodayEvents() {
                             overflow-y: auto; 
                             padding-right: 8px;
                             padding-bottom: 20px;
-                            max-height: 350px;
+                            max-height: 60vh;
                             min-height: 200px;
+                            -webkit-overflow-scrolling: touch;
                         ">
                             <!-- 學生列表將在這裡顯示 -->
                         </div>
@@ -8246,7 +8247,7 @@ async function loadTodayEvents() {
                         0 8px 32px rgba(0, 0, 0, 0.2),
                         inset 0 1px 0 rgba(255, 255, 255, 0.1);
                 ">
-                    <div class="course-info-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.9rem;">
+                    <div class="course-info-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.8rem;">
                         <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">載入中...</span></div>
                         <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">載入中...</span></div>
                         <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">載入中...</span></div>
@@ -8282,7 +8283,9 @@ async function loadTodayEvents() {
                                 overflow-y: auto; 
                                 padding-right: 8px;
                                 padding-bottom: 20px;
+                                max-height: 60vh;
                                 min-height: 200px;
+                                -webkit-overflow-scrolling: touch;
                             ">
                                 <!-- 學生列表將在這裡顯示 -->
                             </div>
@@ -8378,7 +8381,7 @@ async function loadTodayEvents() {
                         0 8px 32px rgba(0, 0, 0, 0.2),
                         inset 0 1px 0 rgba(255, 255, 255, 0.1);
                 ">
-                    <div class="course-info-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.9rem;">
+                    <div class="course-info-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.8rem;">
                         <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">載入中...</span></div>
                         <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">載入中...</span></div>
                         <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">載入中...</span></div>
@@ -8558,7 +8561,7 @@ async function loadTodayEvents() {
                         <h3 style="
                             margin: 0 0 10px 0;
                             color: #333;
-                            font-size: 1rem;
+                            font-size: 0.9rem;
                             font-weight: 600;
                             display: flex;
                             align-items: center;
@@ -8574,7 +8577,7 @@ async function loadTodayEvents() {
                                 margin-bottom: 8px;
                                 font-weight: 600;
                                 color: #333;
-                                font-size: 0.9rem;
+                                font-size: 0.8rem;
                             ">課程內容：</label>
                             <textarea 
                                 id="course-content" 
@@ -8589,7 +8592,7 @@ async function loadTodayEvents() {
                                     -webkit-backdrop-filter: blur(10px);
                                     border: 1px solid rgba(255, 255, 255, 0.2);
                                     border-radius: 10px;
-                                    font-size: 0.9rem;
+                                    font-size: 0.8rem;
                                     font-family: inherit;
                                     resize: vertical;
                                     transition: all 0.3s ease;
@@ -8628,7 +8631,7 @@ async function loadTodayEvents() {
                         <h4 style="
                             margin: 0 0 8px 0;
                             color: #333;
-                            font-size: 1rem;
+                            font-size: 0.9rem;
                             display: flex;
                             align-items: center;
                             gap: 8px;
@@ -8725,7 +8728,7 @@ async function loadTodayEvents() {
                         <h4 style="
                             margin: 0 0 8px 0;
                             color: #333;
-                            font-size: 1rem;
+                            font-size: 0.9rem;
                             display: flex;
                             align-items: center;
                             gap: 8px;
@@ -8820,7 +8823,7 @@ async function loadTodayEvents() {
                             border: 1px solid rgba(255, 255, 255, 0.2);
                             padding: 15px 30px;
                             border-radius: 25px;
-                            font-size: 1rem;
+                            font-size: 0.9rem;
                             font-weight: 600;
                             cursor: pointer;
                             transition: all 0.3s ease;
@@ -8882,7 +8885,7 @@ async function loadTodayEvents() {
                         0 8px 32px rgba(0, 0, 0, 0.2),
                         inset 0 1px 0 rgba(255, 255, 255, 0.1);
                 ">
-                    <div class="course-info-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.9rem;">
+                    <div class="course-info-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.8rem;">
                         <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">載入中...</span></div>
                         <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">載入中...</span></div>
                         <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">載入中...</span></div>
@@ -10255,7 +10258,7 @@ async function loadTodayEvents() {
                                 0 8px 32px rgba(0, 0, 0, 0.2),
                                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
                         ">
-                            <div class="course-info-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.9rem;">
+                            <div class="course-info-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.8rem;">
                                 <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> ${teacher}</div>
                                 <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> ${course}</div>
                                 <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> ${time}</div>
@@ -10896,7 +10899,9 @@ async function loadTodayEvents() {
                             overflow-y: auto; 
                             padding-right: 8px;
                             padding-bottom: 20px;
+                            max-height: 60vh;
                             min-height: 200px;
+                            -webkit-overflow-scrolling: touch;
                         ">
                             ${studentsHtml}
                         </div>
@@ -12109,10 +12114,16 @@ async function loadTodayEvents() {
 
         // 更新簽到統計
         function updateAttendanceStats() {
+            console.log('📊 開始更新簽到統計');
             const studentsList = document.getElementById('studentsList');
-            if (!studentsList) return;
+            if (!studentsList) {
+                console.log('❌ 找不到學生列表元素');
+                return;
+            }
             
             const students = studentsList.querySelectorAll('.student-item');
+            console.log('📊 找到學生元素數量:', students.length);
+            
             let presentCount = 0;
             let absentCount = 0;
             let leaveCount = 0;
@@ -12128,6 +12139,8 @@ async function loadTodayEvents() {
             const totalCount = students.length;
             const attendanceStats = document.getElementById('attendanceStats');
             if (attendanceStats) {
+                console.log('📊 更新統計欄位:', { presentCount, absentCount, leaveCount, pendingCount });
+                
                 // 添加統計動畫
                 attendanceStats.classList.add('stats-animation');
                 setTimeout(() => {
@@ -12135,18 +12148,21 @@ async function loadTodayEvents() {
                 }, 600);
                 
                 attendanceStats.innerHTML = `
-                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: nowrap; justify-content: center; overflow-x: auto; white-space: nowrap;">
-                        <span class="stats-item" style="color: #28a745; text-shadow: none; padding: 3px 6px; border-radius: 6px; background: rgba(40, 167, 69, 0.1); font-size: 0.8rem; white-space: nowrap; flex-shrink: 0;"><i class="fas fa-check-circle"></i> 出席: ${presentCount}</span>
-                        <span class="stats-item" style="color: #dc3545; text-shadow: none; padding: 3px 6px; border-radius: 6px; background: rgba(220, 53, 69, 0.1); font-size: 0.8rem; white-space: nowrap; flex-shrink: 0;"><i class="fas fa-times-circle"></i> 缺席: ${absentCount}</span>
-                        <span class="stats-item" style="color: #ffc107; text-shadow: none; padding: 3px 6px; border-radius: 6px; background: rgba(255, 193, 7, 0.1); font-size: 0.8rem; white-space: nowrap; flex-shrink: 0;"><i class="fas fa-exclamation-triangle"></i> 請假: ${leaveCount}</span>
-                        <span class="stats-item" style="color: #6c757d; text-shadow: none; padding: 3px 6px; border-radius: 6px; background: rgba(108, 117, 125, 0.1); font-size: 0.8rem; white-space: nowrap; flex-shrink: 0;"><i class="fas fa-clock"></i> 待簽: ${pendingCount}</span>
+                    <div style="display: flex; gap: 6px; align-items: center; flex-wrap: nowrap; justify-content: center; overflow-x: auto; white-space: nowrap;">
+                        <span class="stats-item" style="color: #28a745; text-shadow: none; padding: 2px 4px; border-radius: 4px; background: rgba(40, 167, 69, 0.1); font-size: 0.7rem; white-space: nowrap; flex-shrink: 0;"><i class="fas fa-check-circle"></i> 出席: ${presentCount}</span>
+                        <span class="stats-item" style="color: #dc3545; text-shadow: none; padding: 2px 4px; border-radius: 4px; background: rgba(220, 53, 69, 0.1); font-size: 0.7rem; white-space: nowrap; flex-shrink: 0;"><i class="fas fa-times-circle"></i> 缺席: ${absentCount}</span>
+                        <span class="stats-item" style="color: #ffc107; text-shadow: none; padding: 2px 4px; border-radius: 4px; background: rgba(255, 193, 7, 0.1); font-size: 0.7rem; white-space: nowrap; flex-shrink: 0;"><i class="fas fa-exclamation-triangle"></i> 請假: ${leaveCount}</span>
+                        <span class="stats-item" style="color: #6c757d; text-shadow: none; padding: 2px 4px; border-radius: 4px; background: rgba(108, 117, 125, 0.1); font-size: 0.7rem; white-space: nowrap; flex-shrink: 0;"><i class="fas fa-clock"></i> 待簽: ${pendingCount}</span>
                     </div>
                 `;
+            } else {
+                console.log('❌ 找不到統計欄位元素');
             }
         }
 
         // 設置學生卡片雙擊課程監聽器
         function setupStudentCardDoubleClickListeners() {
+            console.log('🔧 設置學生卡片事件監聽器');
             // 直接綁定學生卡片事件監聽器，不重新創建元素
             
             const studentCards = document.querySelectorAll('.student-card');
