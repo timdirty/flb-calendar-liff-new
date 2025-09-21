@@ -2590,7 +2590,7 @@
         /* 懸浮導航器樣式 */
         .floating-navigator {
             position: fixed;
-            bottom: 20px;
+            bottom: 10px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 10001;
@@ -2744,7 +2744,7 @@
         /* 手機優化 - 懸浮導航器 */
         @media (max-width: 768px) {
             .floating-navigator {
-                bottom: 20px;
+                bottom: 10px;
                 left: 0;
                 right: 0;
                 transform: none;
@@ -2787,7 +2787,7 @@
 
         @media (max-width: 480px) {
             .floating-navigator {
-                bottom: 15px;
+                bottom: 5px;
                 left: 0;
                 right: 0;
                 transform: none;
@@ -7895,6 +7895,21 @@ async function loadTodayEvents() {
                                 timeElement.textContent = timeString;
                             }
                         }, 50);
+                        
+                        // 多次強制更新，確保顯示正確
+                        setTimeout(() => {
+                            if (timeElement.textContent === '載入中...') {
+                                console.log('🔄 第二次強制更新時間元素');
+                                timeElement.textContent = timeString;
+                            }
+                        }, 200);
+                        
+                        setTimeout(() => {
+                            if (timeElement.textContent === '載入中...') {
+                                console.log('🔄 第三次強制更新時間元素');
+                                timeElement.textContent = timeString;
+                            }
+                        }, 500);
                     } else if (window.loadedStudentsData.time) {
                         console.log(timeFallbackMsg, window.loadedStudentsData.time);
                         timeElement.textContent = window.loadedStudentsData.time;
@@ -7944,6 +7959,21 @@ async function loadTodayEvents() {
                                 dateElement.textContent = dateString;
                             }
                         }, 50);
+                        
+                        // 多次強制更新，確保顯示正確
+                        setTimeout(() => {
+                            if (dateElement.textContent === '載入中...') {
+                                console.log('🔄 第二次強制更新日期元素');
+                                dateElement.textContent = dateString;
+                            }
+                        }, 200);
+                        
+                        setTimeout(() => {
+                            if (dateElement.textContent === '載入中...') {
+                                console.log('🔄 第三次強制更新日期元素');
+                                dateElement.textContent = dateString;
+                            }
+                        }, 500);
                     } else {
                         console.log(dateNotFoundMsg);
                     }
@@ -8277,6 +8307,10 @@ async function loadTodayEvents() {
                             flex-direction: column; 
                             gap: 8px; 
                             margin-bottom: 16px;
+                            max-height: 50vh;
+                            min-height: 150px;
+                            overflow-y: auto;
+                            -webkit-overflow-scrolling: touch;
                         ">
                             <!-- 學生列表將在這裡顯示 -->
                         </div>
@@ -10891,6 +10925,10 @@ async function loadTodayEvents() {
                         flex-direction: column; 
                         gap: 8px; 
                         margin-bottom: 16px;
+                        max-height: 50vh;
+                        min-height: 150px;
+                        overflow-y: auto;
+                        -webkit-overflow-scrolling: touch;
                     ">
                         ${studentsHtml}
                     </div>
