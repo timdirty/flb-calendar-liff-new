@@ -2784,6 +2784,29 @@
                 transition: all 0.2s ease !important;
             }
 
+            /* 已過期按鈕樣式 */
+            .view-buttons .btn-primary[data-view="expired"] {
+                background: linear-gradient(135deg, #e91e63, #f06292) !important;
+                color: white !important;
+                border: 2px solid #e91e63 !important;
+                box-shadow: 0 2px 8px rgba(233, 30, 99, 0.3) !important;
+            }
+
+            .view-buttons .btn-primary[data-view="expired"]:hover {
+                background: linear-gradient(135deg, #c2185b, #e91e63) !important;
+                transform: scale(1.02) !important;
+                box-shadow: 0 4px 12px rgba(233, 30, 99, 0.4) !important;
+            }
+
+            .view-buttons .btn-primary[data-view="expired"].active {
+                background: linear-gradient(135deg, #ad1457, #c2185b) !important;
+                color: white !important;
+                border: 2px solid #ad1457 !important;
+                box-shadow: 0 4px 12px rgba(173, 20, 87, 0.5) !important;
+                transform: scale(1.05) !important;
+                font-weight: 600 !important;
+            }
+
             .header {
                 padding: 12px;
                 margin-bottom: 0 !important; /* 移除底部間距，避免與篩選區塊重疊 */
@@ -4188,6 +4211,7 @@
                             <button class="btn btn-primary active" data-view="today">今日</button>
                             <button class="btn btn-primary" data-view="week">本週</button>
                             <button class="btn btn-primary" data-view="month">本月</button>
+                            <button class="btn btn-primary" data-view="expired">已過期</button>
                             <button class="btn btn-primary" data-view="all">全部</button>
                 </div>
             </div>
@@ -6225,6 +6249,7 @@ async function loadTodayEvents() {
                 '今日': 'today',
                 '本週': 'week', 
                 '本月': 'month',
+                '已過期': 'expired',
                 '全部': 'all'
             };
             
@@ -6484,6 +6509,9 @@ async function loadTodayEvents() {
                     case '本月':
                         shouldShow = eventDate.getFullYear() === now.getFullYear() && 
                                    eventDate.getMonth() === now.getMonth();
+                        break;
+                    case '已過期':
+                        shouldShow = eventDate < now;
                         break;
                     case '全部':
                     default:
@@ -6946,6 +6974,8 @@ async function loadTodayEvents() {
                     case '本月':
                         return eventDate.getFullYear() === now.getFullYear() &&
                                eventDate.getMonth() === now.getMonth();
+                    case '已過期':
+                        return eventDate < now;
                     case '全部':
                     default:
                         return true;
@@ -6979,6 +7009,9 @@ async function loadTodayEvents() {
                     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
                     const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
                     dateRange = `${monthStart.toLocaleDateString('zh-TW')} - ${monthEnd.toLocaleDateString('zh-TW')}`;
+                    break;
+                case '已過期':
+                    dateRange = '已過期的課程';
                     break;
                 case '全部':
                 default:
@@ -7086,6 +7119,13 @@ async function loadTodayEvents() {
                 const end = eventCard.dataset.eventEnd;
                 
                 if (title && instructor && start && end) {
+                    // 檢查是否為停課課程
+                    if (eventCard.classList.contains('cancelled-event')) {
+                        console.log('⚠️ 停課課程無法簽到');
+                        alert('⚠️ 此課程已停課，無法進行簽到');
+                        return;
+                    }
+                    
                     // 開始長按計時
                     chargingStartTime = Date.now();
                     isCharging = true;
@@ -7192,6 +7232,13 @@ async function loadTodayEvents() {
                 const end = eventCard.dataset.eventEnd;
                 
                 if (title && instructor && start && end) {
+                    // 檢查是否為停課課程
+                    if (eventCard.classList.contains('cancelled-event')) {
+                        console.log('⚠️ 停課課程無法簽到（觸控）');
+                        alert('⚠️ 此課程已停課，無法進行簽到');
+                        return;
+                    }
+                    
                     chargingStartTime = Date.now();
                     isCharging = true;
                     
