@@ -8174,9 +8174,32 @@ async function loadTodayEvents() {
             
             // 檢查是否有已載入的學生資料（檢查全域變數而不是DOM元素）
             if (window.loadedStudentsData) {
-                console.log('✅ 找到已載入的學生資料，重新創建學生簽到內容');
-                // 如果已經有學生資料，重新創建學生簽到內容並顯示已載入的資料
-                recreateStudentAttendanceContent();
+                console.log('✅ 找到已載入的學生資料，恢復原先的學生簽到畫面');
+                
+                // 檢查是否已經有原始的學生簽到內容結構
+                const attendanceContent = document.getElementById('attendanceContent');
+                if (attendanceContent) {
+                    console.log('✅ 找到原始學生簽到內容，直接顯示');
+                    // 如果已經有原始的學生簽到內容，直接顯示它
+                    attendanceContent.style.display = 'block';
+                    
+                    // 隱藏其他可能的內容
+                    const studentsList = document.getElementById('studentsList');
+                    if (studentsList) {
+                        studentsList.style.display = 'none';
+                    }
+                    
+                    // 重新綁定事件
+                    setupStudentCardDoubleClickListeners();
+                    setupAttendanceEventListeners();
+                    updateStats();
+                    
+                    console.log('✅ 原先的學生簽到畫面已恢復');
+                } else {
+                    console.log('⚠️ 沒有找到原始學生簽到內容，重新創建');
+                    // 如果沒有原始內容，才重新創建
+                    recreateStudentAttendanceContent();
+                }
             } else if (studentListLoadPromise) {
                 console.log('⏳ 學生資料正在背景載入中，等待載入完成');
                 // 如果正在背景載入，等待載入完成
