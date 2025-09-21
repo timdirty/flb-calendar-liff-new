@@ -7838,32 +7838,22 @@ async function loadTodayEvents() {
                 restoreStudentAttendanceContent();
             }
             
-            // 確保課程資訊正確顯示 - 使用已載入的學生資料
+            // 確保課程資訊正確顯示 - 強制更新
             setTimeout(() => {
                 console.log('🔄 在showStudentAttendance中調用updateCourseInfoDisplay');
-                // 確保有正確的數據才更新
-                if (window.loadedStudentsData) {
-                    updateCourseInfoDisplay();
-                } else if (window.currentAttendanceData) {
-                    updateCourseInfoDisplay();
-                } else {
-                    console.log('⚠️ 沒有可用的課程數據，跳過更新');
-                }
+                // 強制更新課程資訊，不管是否有數據
+                updateCourseInfoDisplay();
                 
                 // 再次確保課程資訊正確顯示
                 setTimeout(() => {
                     console.log('🔄 二次確認課程資訊顯示');
-                    if (window.loadedStudentsData || window.currentAttendanceData) {
-                        updateCourseInfoDisplay();
-                    }
+                    updateCourseInfoDisplay();
                 }, 200);
                 
                 // 第三次確認，確保元素已完全載入
                 setTimeout(() => {
                     console.log('🔄 三次確認課程資訊顯示');
-                    if (window.loadedStudentsData || window.currentAttendanceData) {
-                        updateCourseInfoDisplay();
-                    }
+                    updateCourseInfoDisplay();
                 }, 500);
             }, 300);
         }
@@ -7891,9 +7881,23 @@ async function loadTodayEvents() {
                 courseElement: !!courseElement
             });
             
-            // 如果沒有可用的數據，不要更新元素
+            // 如果沒有可用的數據，設置為預設值
             if (!window.loadedStudentsData && !window.currentAttendanceData) {
-                console.log('⚠️ 沒有可用的課程數據，跳過更新課程資訊');
+                console.log('⚠️ 沒有可用的課程數據，設置為預設值');
+                
+                // 設置預設值而不是"載入中..."
+                if (timeElement) {
+                    timeElement.textContent = '--:--';
+                }
+                if (dateElement) {
+                    dateElement.textContent = '--/--/--';
+                }
+                if (teacherElement) {
+                    teacherElement.textContent = '未知';
+                }
+                if (courseElement) {
+                    courseElement.textContent = '未知';
+                }
                 return;
             }
             
@@ -9681,7 +9685,12 @@ async function loadTodayEvents() {
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                background: transparent;
+                background: linear-gradient(135deg, 
+                    rgba(255, 255, 255, 0.15) 0%, 
+                    rgba(255, 255, 255, 0.08) 50%,
+                    rgba(255, 255, 255, 0.15) 100%);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
                 color: #2c3e50;
                 padding: 24px 36px;
                 border-radius: 25px;
@@ -9690,6 +9699,12 @@ async function loadTodayEvents() {
                 z-index: 10000;
                 text-align: center;
                 min-width: 280px;
+                box-shadow: 
+                    0 8px 32px rgba(0, 0, 0, 0.1),
+                    0 4px 16px rgba(0, 0, 0, 0.05),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
             `;
             
             toast.innerHTML = `
@@ -9760,7 +9775,12 @@ async function loadTodayEvents() {
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                background: transparent;
+                background: linear-gradient(135deg, 
+                    rgba(255, 255, 255, 0.15) 0%, 
+                    rgba(255, 255, 255, 0.08) 50%,
+                    rgba(255, 255, 255, 0.15) 100%);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
                 color: ${colorScheme.textColor};
                 padding: 24px 36px;
                 border-radius: 25px;
@@ -9773,6 +9793,12 @@ async function loadTodayEvents() {
                 word-wrap: break-word;
                 white-space: pre-line;
                 animation: centerToastPulse 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 
+                    0 8px 32px rgba(0, 0, 0, 0.1),
+                    0 4px 16px rgba(0, 0, 0, 0.05),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
             `;
             
             toast.innerHTML = `
