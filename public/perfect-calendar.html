@@ -8510,52 +8510,6 @@ async function loadTodayEvents() {
             if (window.loadedStudentsData) {
                 console.log('✅ 使用已載入的學生資料');
                 
-                // 先填充課程資訊
-                const teacherElement = document.getElementById('currentTeacher');
-                const courseElement = document.getElementById('currentCourse');
-                const timeElement = document.getElementById('currentTime');
-                const dateElement = document.getElementById('currentDate');
-                
-                if (teacherElement) teacherElement.textContent = window.loadedStudentsData.teacher;
-                if (courseElement) courseElement.textContent = window.loadedStudentsData.course;
-                
-                // 處理時間顯示
-                if (timeElement) {
-                    if (window.loadedStudentsData.time) {
-                        timeElement.textContent = window.loadedStudentsData.time;
-                    } else if (window.loadedStudentsData.start) {
-                        const startDate = new Date(window.loadedStudentsData.start);
-                        const endDate = new Date(window.loadedStudentsData.end);
-                        const startTime = startDate.toLocaleTimeString('zh-TW', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: false
-                        });
-                        const endTime = endDate.toLocaleTimeString('zh-TW', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: false
-                        });
-                        timeElement.textContent = `${startTime}-${endTime}`;
-                    } else {
-                        timeElement.textContent = '載入中...';
-                    }
-                }
-                
-                // 處理日期顯示
-                if (dateElement) {
-                    if (window.loadedStudentsData.start) {
-                        const date = new Date(window.loadedStudentsData.start);
-                        dateElement.textContent = date.toLocaleDateString('zh-TW', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit'
-                        });
-                    } else {
-                        dateElement.textContent = '載入中...';
-                    }
-                }
-                
                 // 然後顯示學生列表
                 displayStudents(window.loadedStudentsData.students, 
                               window.loadedStudentsData.teacher, 
