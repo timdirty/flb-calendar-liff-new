@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 
-async function testFinalFix() {
-    console.log('🚀 開始測試最終修復...');
+async function testStudentFix() {
+    console.log('🚀 開始測試學生簽到修復...');
     
     const browser = await puppeteer.launch({
         headless: false,
@@ -93,6 +93,22 @@ async function testFinalFix() {
         
         console.log('📊 課程資訊:', courseInfo);
         
+        // 檢查學生簽到按鈕
+        console.log('🔍 檢查學生簽到按鈕...');
+        const buttonInfo = await page.evaluate(() => {
+            const presentBtns = document.querySelectorAll('.present-btn');
+            const absentBtns = document.querySelectorAll('.absent-btn');
+            const studentCards = document.querySelectorAll('.student-card');
+            
+            return {
+                presentBtns: presentBtns.length,
+                absentBtns: absentBtns.length,
+                studentCards: studentCards.length
+            };
+        });
+        
+        console.log('📊 按鈕資訊:', buttonInfo);
+        
         // 檢查是否還有"載入中"的問題
         const hasLoadingIssue = courseInfo.time === '載入中...' || courseInfo.date === '載入中...';
         
@@ -100,20 +116,6 @@ async function testFinalFix() {
             console.log('❌ 仍然存在載入中問題');
             console.log('🔍 時間:', courseInfo.time);
             console.log('🔍 日期:', courseInfo.date);
-            
-            // 檢查 storedCourseInfo 狀態
-            const storedInfo = await page.evaluate(() => {
-                return window.storedCourseInfo || '未找到';
-            });
-            console.log('🔍 storedCourseInfo:', storedInfo);
-            
-            // 檢查是否有 JavaScript 錯誤
-            const errors = await page.evaluate(() => {
-                return window.consoleErrors || [];
-            });
-            if (errors.length > 0) {
-                console.log('🔍 JavaScript 錯誤:', errors);
-            }
         } else {
             console.log('✅ 載入中問題已修復');
             console.log('✅ 時間:', courseInfo.time);
@@ -122,55 +124,45 @@ async function testFinalFix() {
             console.log('✅ 課程:', courseInfo.course);
         }
         
+        if (buttonInfo.presentBtns === 0 || buttonInfo.absentBtns === 0) {
+            console.log('❌ 學生簽到按鈕沒有正確生成');
+        } else {
+            console.log('✅ 學生簽到按鈕正確生成');
+            console.log('✅ 出席按鈕:', buttonInfo.presentBtns);
+            console.log('✅ 缺席按鈕:', buttonInfo.absentBtns);
+            console.log('✅ 學生卡片:', buttonInfo.studentCards);
+        }
+        
         // 測試切換到講師報表
         console.log('🔄 測試切換到講師報表...');
         await page.click('#teacher-attendance-tab');
         await page.waitForTimeout(1000);
-        
-        // 檢查講師報表的課程資訊
-        const teacherReportInfo = await page.evaluate(() => {
-            const timeElement = document.getElementById('currentTime');
-            const dateElement = document.getElementById('currentDate');
-            const teacherElement = document.getElementById('currentTeacher');
-            const courseElement = document.getElementById('currentCourse');
-            
-            return {
-                time: timeElement ? timeElement.textContent : '未找到',
-                date: dateElement ? dateElement.textContent : '未找到',
-                teacher: teacherElement ? teacherElement.textContent : '未找到',
-                course: courseElement ? courseElement.textContent : '未找到'
-            };
-        });
-        
-        console.log('📊 講師報表課程資訊:', teacherReportInfo);
         
         // 測試切換回學生簽到
         console.log('🔄 測試切換回學生簽到...');
         await page.click('#student-attendance-tab');
         await page.waitForTimeout(1000);
         
-        // 檢查學生簽到的課程資訊
-        const studentReportInfo = await page.evaluate(() => {
-            const timeElement = document.getElementById('currentTime');
-            const dateElement = document.getElementById('currentDate');
-            const teacherElement = document.getElementById('currentTeacher');
-            const courseElement = document.getElementById('currentCourse');
+        // 再次檢查學生簽到按鈕
+        const buttonInfoAfter = await page.evaluate(() => {
+            const presentBtns = document.querySelectorAll('.present-btn');
+            const absentBtns = document.querySelectorAll('.absent-btn');
+            const studentCards = document.querySelectorAll('.student-card');
             
             return {
-                time: timeElement ? timeElement.textContent : '未找到',
-                date: dateElement ? dateElement.textContent : '未找到',
-                teacher: teacherElement ? teacherElement.textContent : '未找到',
-                course: courseElement ? courseElement.textContent : '未找到'
+                presentBtns: presentBtns.length,
+                absentBtns: absentBtns.length,
+                studentCards: studentCards.length
             };
         });
         
-        console.log('📊 學生簽到課程資訊:', studentReportInfo);
+        console.log('📊 切換後按鈕資訊:', buttonInfoAfter);
         
         // 等待 3 秒讓用戶查看結果
         console.log('⏳ 等待 3 秒讓用戶查看結果...');
         await page.waitForTimeout(3000);
         
-        console.log('✅ 最終修復測試完成');
+        console.log('✅ 學生簽到修復測試完成');
         
     } catch (error) {
         console.error('❌ 測試失敗:', error);
@@ -181,4 +173,4 @@ async function testFinalFix() {
 }
 
 // 運行測試
-testFinalFix().catch(console.error);
+testStudentFix().catch(console.error);

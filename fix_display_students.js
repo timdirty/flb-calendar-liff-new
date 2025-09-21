@@ -3,9 +3,9 @@ const fs = require('fs');
 // 讀取文件
 let content = fs.readFileSync('public/perfect-calendar.html', 'utf8');
 
-console.log('🔍 開始修復模板字面量問題...');
+console.log('🔍 開始修復 displayStudents 函數調用...');
 
-// 找到 recreateStudentAttendanceContent 函數中的 innerHTML 部分
+// 找到 recreateStudentAttendanceContent 函數中的 displayStudents 調用
 const functionStart = content.indexOf('function recreateStudentAttendanceContent()');
 if (functionStart === -1) {
     console.log('❌ 找不到 recreateStudentAttendanceContent 函數');
@@ -33,7 +33,7 @@ for (let i = functionStart; i < content.length; i++) {
 // 提取函數內容
 const functionContent = content.substring(functionStart, functionEnd + 1);
 
-// 創建新的函數，使用正確的模板字面量語法
+// 創建新的函數，修復 displayStudents 調用
 const newRecreateFunction = `function recreateStudentAttendanceContent() {
             console.log('🔄 重新創建學生簽到內容');
             
@@ -96,15 +96,24 @@ const newRecreateFunction = `function recreateStudentAttendanceContent() {
                 </div>
             \`;
             
-            // 重新生成學生列表
+            // 重新生成學生列表 - 使用完整的參數
             if (window.loadedStudentsData && window.loadedStudentsData.students) {
-                displayStudents(window.loadedStudentsData.students);
+                console.log('🔍 重新生成學生列表，使用完整參數');
+                displayStudents(
+                    window.loadedStudentsData.students,
+                    window.loadedStudentsData.teacher,
+                    window.loadedStudentsData.course,
+                    window.loadedStudentsData.time,
+                    window.loadedStudentsData.start,
+                    window.loadedStudentsData.end,
+                    window.loadedStudentsData.minutesUntilStart
+                );
             }
             
             // 重新綁定事件
             setupStudentCardDoubleClickListeners();
             setupAttendanceEventListeners();
-            updateAttendanceStatistics();
+            updateStats();
             
             console.log('✅ 學生簽到內容重新創建完成');
         }`;
@@ -117,7 +126,7 @@ fs.writeFileSync('public/perfect-calendar.html', newContent, 'utf8');
 
 console.log('✅ recreateStudentAttendanceContent 函數已修復');
 console.log('📊 修正內容:');
-console.log('- 使用正確的模板字面量語法');
-console.log('- 動態變數現在會正確解析');
+console.log('- 修復 displayStudents 函數調用，使用完整參數');
+console.log('- 確保學生列表正確生成');
 console.log('- 修復 JavaScript 錯誤');
-console.log('- 確保課程資訊正確顯示');
+console.log('- 確保學生簽到功能正常運作');

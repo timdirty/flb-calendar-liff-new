@@ -8260,15 +8260,24 @@ async function loadTodayEvents() {
                 </div>
             `;
             
-            // 重新生成學生列表
+            // 重新生成學生列表 - 使用完整的參數
             if (window.loadedStudentsData && window.loadedStudentsData.students) {
-                displayStudents(window.loadedStudentsData.students);
+                console.log('🔍 重新生成學生列表，使用完整參數');
+                displayStudents(
+                    window.loadedStudentsData.students,
+                    window.loadedStudentsData.teacher,
+                    window.loadedStudentsData.course,
+                    window.loadedStudentsData.time,
+                    window.loadedStudentsData.start,
+                    window.loadedStudentsData.end,
+                    window.loadedStudentsData.minutesUntilStart
+                );
             }
             
             // 重新綁定事件
             setupStudentCardDoubleClickListeners();
             setupAttendanceEventListeners();
-            updateAttendanceStatistics();
+            updateStats();
             
             console.log('✅ 學生簽到內容重新創建完成');
         }
