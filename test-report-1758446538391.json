@@ -1,0 +1,201 @@
+{
+  "summary": {
+    "total": 12,
+    "passed": 3,
+    "failed": 9,
+    "successRate": "25.00"
+  },
+  "details": [
+    {
+      "timestamp": "2025-09-21T09:21:25.152Z",
+      "type": "info",
+      "message": "🚀 開始講師報表系統自動化測試..."
+    },
+    {
+      "timestamp": "2025-09-21T09:21:25.155Z",
+      "type": "info",
+      "message": "📋 步驟 1: 檢查後端API健康狀態"
+    },
+    {
+      "timestamp": "2025-09-21T09:21:25.201Z",
+      "type": "pass",
+      "message": "✅ PASS: 後端API健康檢查"
+    },
+    {
+      "timestamp": "2025-09-21T09:21:25.201Z",
+      "type": "pass",
+      "message": "✅ PASS: 後端API返回成功狀態"
+    },
+    {
+      "timestamp": "2025-09-21T09:21:25.201Z",
+      "type": "pass",
+      "message": "✅ PASS: 後端API狀態為healthy"
+    },
+    {
+      "timestamp": "2025-09-21T09:21:25.201Z",
+      "type": "info",
+      "message": "🏥 後端API健康狀態: {\"success\":true,\"status\":\"healthy\",\"timestamp\":\"2025-09-21T09:21:25.188Z\",\"cache_age\":1758446485188,\"environment\":\"development\",\"caldav_configured\":true}"
+    },
+    {
+      "timestamp": "2025-09-21T09:21:25.201Z",
+      "type": "info",
+      "message": "📋 步驟 2: 測試講師Web API獲取"
+    },
+    {
+      "timestamp": "2025-09-21T09:21:25.201Z",
+      "type": "info",
+      "message": "🔍 測試講師Web API獲取功能..."
+    },
+    {
+      "timestamp": "2025-09-21T09:21:28.197Z",
+      "type": "fail",
+      "message": "❌ FAIL: 講師Web API獲取請求成功"
+    },
+    {
+      "timestamp": "2025-09-21T09:21:28.198Z",
+      "type": "fail",
+      "message": "❌ FAIL: 講師Web API獲取成功"
+    },
+    {
+      "timestamp": "2025-09-21T09:21:28.198Z",
+      "type": "fail",
+      "message": "❌ FAIL: 獲取到有效的Web API URL"
+    },
+    {
+      "timestamp": "2025-09-21T09:21:28.198Z",
+      "type": "info",
+      "message": "📋 講師Web API: undefined"
+    },
+    {
+      "timestamp": "2025-09-21T09:21:28.198Z",
+      "type": "info",
+      "message": "📋 步驟 4: 啟動瀏覽器進行前端測試"
+    },
+    {
+      "timestamp": "2025-09-21T09:21:40.676Z",
+      "type": "info",
+      "message": "📋 步驟 5: 測試前端頁面載入"
+    },
+    {
+      "timestamp": "2025-09-21T09:21:40.677Z",
+      "type": "info",
+      "message": "🌐 測試前端頁面載入..."
+    },
+    {
+      "timestamp": "2025-09-21T09:21:43.769Z",
+      "type": "fail",
+      "message": "❌ FAIL: 頁面標題正確"
+    },
+    {
+      "timestamp": "2025-09-21T09:21:52.803Z",
+      "type": "fail",
+      "message": "❌ FAIL: 行事曆容器存在"
+    },
+    {
+      "timestamp": "2025-09-21T09:21:53.909Z",
+      "type": "info",
+      "message": "📸 截圖已保存: test-screenshots/frontend-loaded-1758446512803.png"
+    },
+    {
+      "timestamp": "2025-09-21T09:21:53.909Z",
+      "type": "pass",
+      "message": "✅ 前端頁面載入成功"
+    },
+    {
+      "timestamp": "2025-09-21T09:21:53.909Z",
+      "type": "info",
+      "message": "📋 步驟 6: 測試長按觸控功能"
+    },
+    {
+      "timestamp": "2025-09-21T09:21:53.909Z",
+      "type": "info",
+      "message": "👆 測試長按觸控功能..."
+    },
+    {
+      "timestamp": "2025-09-21T09:22:03.930Z",
+      "type": "fail",
+      "message": "❌ FAIL: 長按觸控功能測試失敗: Waiting for selector `.calendar-container` failed"
+    },
+    {
+      "timestamp": "2025-09-21T09:22:03.931Z",
+      "type": "info",
+      "message": "📋 步驟 7: 測試講師簽到切換"
+    },
+    {
+      "timestamp": "2025-09-21T09:22:03.936Z",
+      "type": "info",
+      "message": "🔄 測試講師簽到切換功能..."
+    },
+    {
+      "timestamp": "2025-09-21T09:22:04.991Z",
+      "type": "fail",
+      "message": "❌ FAIL: 找不到講師簽到按鈕"
+    },
+    {
+      "timestamp": "2025-09-21T09:22:04.992Z",
+      "type": "info",
+      "message": "📋 步驟 8: 測試講師報表表單提交"
+    },
+    {
+      "timestamp": "2025-09-21T09:22:04.992Z",
+      "type": "info",
+      "message": "📝 測試講師報表表單填寫和提交..."
+    },
+    {
+      "timestamp": "2025-09-21T09:22:06.997Z",
+      "type": "fail",
+      "message": "❌ FAIL: 講師報表表單提交測試失敗: Error: failed to find element matching selector \"#char-count\""
+    },
+    {
+      "timestamp": "2025-09-21T09:22:06.997Z",
+      "type": "info",
+      "message": "📋 步驟 9: 測試學生簽到切換"
+    },
+    {
+      "timestamp": "2025-09-21T09:22:06.998Z",
+      "type": "info",
+      "message": "🔄 測試學生簽到切換功能..."
+    },
+    {
+      "timestamp": "2025-09-21T09:22:08.001Z",
+      "type": "fail",
+      "message": "❌ FAIL: 找不到學生簽到按鈕"
+    },
+    {
+      "timestamp": "2025-09-21T09:22:08.001Z",
+      "type": "info",
+      "message": "📋 步驟 10: 測試響應式設計"
+    },
+    {
+      "timestamp": "2025-09-21T09:22:08.001Z",
+      "type": "info",
+      "message": "📱 測試響應式設計..."
+    },
+    {
+      "timestamp": "2025-09-21T09:22:11.056Z",
+      "type": "info",
+      "message": "📸 截圖已保存: test-screenshots/mobile-view-1758446530012.png"
+    },
+    {
+      "timestamp": "2025-09-21T09:22:14.111Z",
+      "type": "info",
+      "message": "📸 截圖已保存: test-screenshots/tablet-view-1758446533059.png"
+    },
+    {
+      "timestamp": "2025-09-21T09:22:17.146Z",
+      "type": "info",
+      "message": "📸 截圖已保存: test-screenshots/desktop-view-1758446536114.png"
+    },
+    {
+      "timestamp": "2025-09-21T09:22:17.146Z",
+      "type": "pass",
+      "message": "✅ 響應式設計測試完成"
+    },
+    {
+      "timestamp": "2025-09-21T09:22:18.390Z",
+      "type": "info",
+      "message": "📊 生成測試報告..."
+    }
+  ],
+  "timestamp": "2025-09-21T09:22:18.391Z"
+}

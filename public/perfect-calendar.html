@@ -8263,9 +8263,25 @@ async function loadTodayEvents() {
                         const timeString = `${startTime}-${endTime}`;
                         console.log(timeStringMsg, timeString);
                         timeElement.textContent = timeString;
+                        
+                        // 強制更新，確保顯示正確
+                        setTimeout(() => {
+                            if (timeElement.textContent === '載入中...') {
+                                console.log('🔄 強制更新時間元素');
+                                timeElement.textContent = timeString;
+                            }
+                        }, 50);
                     } else if (window.loadedStudentsData.time) {
                         console.log(timeFallbackMsg, window.loadedStudentsData.time);
                         timeElement.textContent = window.loadedStudentsData.time;
+                        
+                        // 強制更新，確保顯示正確
+                        setTimeout(() => {
+                            if (timeElement.textContent === '載入中...') {
+                                console.log('🔄 強制更新時間元素（備用）');
+                                timeElement.textContent = window.loadedStudentsData.time;
+                            }
+                        }, 50);
                     } else {
                         console.log(timeNotFoundMsg);
                     }
@@ -8293,6 +8309,14 @@ async function loadTodayEvents() {
                         });
                         console.log(dateStringMsg, dateString);
                         dateElement.textContent = dateString;
+                        
+                        // 強制更新，確保顯示正確
+                        setTimeout(() => {
+                            if (dateElement.textContent === '載入中...') {
+                                console.log('🔄 強制更新日期元素');
+                                dateElement.textContent = dateString;
+                            }
+                        }, 50);
                     } else {
                         console.log(dateNotFoundMsg);
                     }
@@ -8519,6 +8543,12 @@ async function loadTodayEvents() {
             setTimeout(() => {
                 console.log('🔄 開始填充課程資訊...');
                 updateCourseInfoDisplay();
+                
+                // 再次確保課程資訊正確顯示
+                setTimeout(() => {
+                    console.log('🔄 二次確認課程資訊顯示...');
+                    updateCourseInfoDisplay();
+                }, 100);
             }, 200);
             
             // 如果學生資料已經載入完成，直接顯示學生列表

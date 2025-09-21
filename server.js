@@ -1058,12 +1058,25 @@ app.post('/api/teacher-web-api', async (req, res) => {
             timeout: 10000
         });
         
-        if (!response.data || !Array.isArray(response.data)) {
+        console.log('📋 Google Apps Script API 回應:', response.data);
+        
+        // 處理不同的回應格式
+        let teachers = [];
+        if (Array.isArray(response.data)) {
+            teachers = response.data;
+        } else if (response.data && Array.isArray(response.data.teachers)) {
+            teachers = response.data.teachers;
+        } else if (response.data && response.data.data && Array.isArray(response.data.data)) {
+            teachers = response.data.data;
+        } else {
+            console.log('⚠️ API回應格式不正確，使用CSV備用方案');
             throw new Error('API回應格式不正確');
         }
         
+        console.log(`📋 處理後的講師列表: ${teachers.length} 個講師`);
+        
         // 查找匹配的講師
-        for (const teacher of response.data) {
+        for (const teacher of teachers) {
             const apiTeacherName = teacher.name || teacher.teacherName || teacher.老師;
             const webApi = teacher.webApi || teacher.Web_API || teacher.連結;
             
@@ -1095,11 +1108,63 @@ app.post('/api/teacher-web-api', async (req, res) => {
         
     } catch (error) {
         console.error('❌ 獲取講師Web API失敗:', error);
-        res.status(500).json({
-            success: false,
-            message: '獲取講師Web API失敗',
-            error: error.message
-        });
+        
+        // 嘗試使用CSV備用方案
+        console.log('🔄 嘗試使用CSV備用方案...');
+        try {
+            const fs = require('fs');
+            const path = require('path');
+            
+            const csvPath = path.join(__dirname, 'public', '114-1 講師報表web read api.csv');
+            const csvContent = fs.readFileSync(csvPath, 'utf8');
+            const lines = csvContent.split('\n');
+            
+            // 跳過標題行，從第二行開始處理
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const columns = line.split(',');
+                if (columns.length >= 3) {
+                    const csvTeacherName = columns[0].trim();
+                    const webApi = columns[2].trim();
+                    
+                    // 模糊匹配講師名稱（忽略空格和大小寫）
+                    if (csvTeacherName.toLowerCase().replace(/\s+/g, '') === 
+                        teacherName.toLowerCase().replace(/\s+/g, '')) {
+                        
+                        if (webApi && webApi !== '') {
+                            console.log('✅ 從CSV找到講師Web API:', webApi);
+                            return res.json({
+                                success: true,
+                                teacherName: teacherName,
+                                webApi: webApi
+                            });
+                        } else {
+                            console.log('⚠️ 講師沒有配置Web API:', csvTeacherName);
+                            return res.json({
+                                success: false,
+                                message: `講師 "${teacherName}" 沒有配置Web API`
+                            });
+                        }
+                    }
+                }
+            }
+            
+            console.log('❌ 在CSV中找不到講師:', teacherName);
+            res.json({
+                success: false,
+                message: `找不到講師 "${teacherName}"`
+            });
+            
+        } catch (csvError) {
+            console.error('❌ CSV備用方案也失敗:', csvError);
+            res.status(500).json({
+                success: false,
+                message: '獲取講師Web API失敗',
+                error: error.message
+            });
+        }
     }
 });
 
