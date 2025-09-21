@@ -7854,10 +7854,138 @@ async function loadTodayEvents() {
                 studentListLoadPromise.then(() => {
                     console.log('✅ 學生名單載入完成，恢復正常畫面');
                     hideStudentLoadingState();
+                    // 重新載入學生簽到內容
+                    restoreStudentAttendanceContent();
                 });
             } else {
                 console.log('✅ 學生名單已載入完成，顯示正常畫面');
                 hideStudentLoadingState();
+                // 重新載入學生簽到內容
+                restoreStudentAttendanceContent();
+            }
+        }
+
+        // 恢復學生簽到內容
+        function restoreStudentAttendanceContent() {
+            console.log('🔄 恢復學生簽到內容');
+            
+            const modalContent = document.querySelector('.attendance-modal-content');
+            if (!modalContent) return;
+            
+            // 重新創建原始的學生簽到內容結構
+            modalContent.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div style="flex: 1;">
+                        <h2 style="margin: 0; color: #333333; font-size: 1.5rem; text-shadow: none;">
+                            <i class="fas fa-calendar-check" style="color: #b8860b; margin-right: 10px; text-shadow: 0 0 10px rgba(184, 134, 11, 0.5);"></i>
+                            課程簽到系統
+                        </h2>
+                    </div>
+                    <button id="closeAttendanceModal" class="close-attendance-modal" style="
+                        background: rgba(255, 255, 255, 0.2);
+                        border: 1px solid rgba(255, 215, 0, 0.4);
+                        font-size: 1.5rem;
+                        color: #333333;
+                        cursor: pointer;
+                        padding: 5px;
+                        border-radius: 50%;
+                        width: 40px;
+                        height: 40px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        transition: all 0.3s ease;
+                        backdrop-filter: blur(10px);
+                        -webkit-backdrop-filter: blur(10px);
+                    ">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="course-info" style="
+                    margin-bottom: 20px; 
+                    padding: 20px; 
+                    background: 
+                        radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.05) 0%, transparent 70%),
+                        linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+                    border-radius: 15px; 
+                    border: 1px solid rgba(255, 215, 0, 0.3);
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                    box-shadow: 
+                        0 8px 32px rgba(0, 0, 0, 0.2),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                ">
+                    <div class="course-info-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.9rem;">
+                        <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">載入中...</span></div>
+                        <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">載入中...</span></div>
+                        <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">載入中...</span></div>
+                        <div data-field="date" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">日期:</strong> <span id="currentDate">載入中...</span></div>
+                    </div>
+                </div>
+                
+                <div id="attendanceContent">
+                    <div style="text-align: center; padding: 60px 40px; color: #333333; background: linear-gradient(135deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.05)); border-radius: 15px; transition: all 0.5s ease;">
+                        <!-- 卡牌載入動畫 -->
+                        <div style="
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            gap: 10px;
+                            margin-bottom: 30px;
+                            perspective: 1000px;
+                        ">
+                            <div style="
+                                width: 20px;
+                                height: 30px;
+                                background: linear-gradient(135deg, #b8860b, #daa520);
+                                border-radius: 4px;
+                                animation: cardBounceIn 0.6s ease-out infinite;
+                                animation-delay: 0s;
+                                box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+                            "></div>
+                            <div style="
+                                width: 20px;
+                                height: 30px;
+                                background: linear-gradient(135deg, #b8860b, #daa520);
+                                border-radius: 4px;
+                                animation: cardBounceIn 0.6s ease-out infinite;
+                                animation-delay: 0.1s;
+                                box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+                            "></div>
+                            <div style="
+                                width: 20px;
+                                height: 30px;
+                                background: linear-gradient(135deg, #b8860b, #daa520);
+                                border-radius: 4px;
+                                animation: cardBounceIn 0.6s ease-out infinite;
+                                animation-delay: 0.2s;
+                                box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+                            "></div>
+                        </div>
+                        <h3 style="margin: 0; color: rgba(255, 255, 255, 0.95); text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);">
+                            <i class="fas fa-spinner" style="color: #ffd700; margin-right: 8px; animation: spin 1s linear infinite;"></i>
+                            載入學生名單中...
+                        </h3>
+                        <p style="margin: 10px 0; color: rgba(255, 255, 255, 0.7);">
+                            正在從資料庫載入學生資料，請稍候
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            // 重新設置關閉按鈕事件監聽器
+            const closeBtn = document.getElementById('closeAttendanceModal');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    closeAttendanceModal();
+                });
+            }
+            
+            // 重新載入學生資料
+            if (window.currentAttendanceData) {
+                const { teacher, course, time, start, end, minutesUntilStart } = window.currentAttendanceData;
+                loadCourseStudents(teacher, course, time, start, end, minutesUntilStart);
             }
         }
 
@@ -9111,6 +9239,9 @@ async function loadTodayEvents() {
         async function openNativeAttendanceSystem(teacher, course, time, start, end, minutesUntilStart = null) {
             try {
                 console.log('🎯 開啟原生簽到系統:', { teacher, course, time, start, end });
+                
+                // 保存當前簽到數據，以便在恢復學生簽到內容時使用
+                window.currentAttendanceData = { teacher, course, time, start, end, minutesUntilStart };
                 
                 // 創建簽到系統模態框
                 const modal = document.createElement('div');

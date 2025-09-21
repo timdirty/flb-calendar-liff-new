@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 
-async function testBackgroundLoading() {
-    console.log('🧪 開始測試背景載入功能...');
+async function testStudentAttendanceFix() {
+    console.log('🧪 開始測試學生簽到修復...');
     
     const browser = await puppeteer.launch({ 
         headless: false,
@@ -15,7 +15,7 @@ async function testBackgroundLoading() {
         // 監聽控制台消息
         page.on('console', msg => {
             const text = msg.text();
-            if (text.includes('學生') || text.includes('載入') || text.includes('背景') || text.includes('模態框') || text.includes('左移') || text.includes('載入完成')) {
+            if (text.includes('學生') || text.includes('簽到') || text.includes('載入') || text.includes('模態框') || text.includes('左移') || text.includes('恢復')) {
                 console.log('📱 控制台:', text);
             }
         });
@@ -57,10 +57,10 @@ async function testBackgroundLoading() {
         if (floatingNavigator) {
             console.log('✅ 懸浮導航器已出現');
             
-            // 立即點擊講師簽到（在學生名單載入過程中）
+            // 先點擊講師簽到
             const teacherNav = await page.$('.nav-item[data-tab="teacher-attendance"]');
             if (teacherNav) {
-                console.log('🔄 在載入過程中點擊講師簽到...');
+                console.log('🔄 點擊講師簽到...');
                 await teacherNav.click();
                 
                 // 等待左移動畫完成
@@ -71,10 +71,6 @@ async function testBackgroundLoading() {
                 if (teacherContent) {
                     console.log('✅ 講師報表內容已顯示');
                     
-                    // 等待背景載入完成（3秒）
-                    console.log('⏳ 等待背景載入完成...');
-                    await new Promise(resolve => setTimeout(resolve, 4000));
-                    
                     // 現在點擊學生簽到切換回去
                     const studentNav = await page.$('.nav-item[data-tab="student-attendance"]');
                     if (studentNav) {
@@ -84,30 +80,44 @@ async function testBackgroundLoading() {
                         // 等待切換動畫完成
                         await new Promise(resolve => setTimeout(resolve, 500));
                         
-                        // 檢查是否顯示載入狀態或正常內容
-                        const loadingOverlay = await page.$('.student-loading-overlay');
-                        const studentContent = await page.$('.attendanceContent');
+                        // 檢查學生簽到內容是否恢復
+                        const courseInfo = await page.$('.course-info');
+                        const attendanceContent = await page.$('#attendanceContent');
                         
-                        if (loadingOverlay) {
-                            const isVisible = await page.evaluate(el => el.style.display !== 'none', loadingOverlay);
-                            if (isVisible) {
-                                console.log('✅ 顯示載入中狀態');
+                        if (courseInfo && attendanceContent) {
+                            console.log('✅ 學生簽到內容已恢復');
+                            
+                            // 檢查課程信息是否正確顯示
+                            const teacherField = await courseInfo.$('[data-field="teacher"]');
+                            const courseField = await courseInfo.$('[data-field="course"]');
+                            
+                            if (teacherField && courseField) {
+                                const teacherText = await page.evaluate(el => el.textContent, teacherField);
+                                const courseText = await page.evaluate(el => el.textContent, courseField);
+                                console.log(`📚 課程信息: ${teacherText}, ${courseText}`);
+                            }
+                            
+                            // 檢查載入動畫是否顯示
+                            const loadingSpinner = await attendanceContent.$('.fa-spinner');
+                            if (loadingSpinner) {
+                                console.log('✅ 載入動畫正在顯示');
                                 
                                 // 等待載入完成
-                                await new Promise(resolve => setTimeout(resolve, 2000));
+                                await new Promise(resolve => setTimeout(resolve, 3000));
                                 
-                                // 檢查載入狀態是否消失
-                                const stillLoading = await page.evaluate(el => el.style.display !== 'none', loadingOverlay);
-                                if (!stillLoading) {
-                                    console.log('✅ 載入完成，載入狀態已消失');
+                                // 檢查是否載入完成
+                                const studentsList = await page.$('#studentsList');
+                                if (studentsList) {
+                                    console.log('✅ 學生列表已載入完成');
                                 } else {
-                                    console.log('⚠️ 載入狀態仍然顯示');
+                                    console.log('⚠️ 學生列表尚未載入完成');
                                 }
                             } else {
-                                console.log('✅ 載入已完成，顯示正常內容');
+                                console.log('⚠️ 載入動畫未顯示');
                             }
+                            
                         } else {
-                            console.log('✅ 沒有載入遮罩，直接顯示正常內容');
+                            console.log('❌ 學生簽到內容未恢復');
                         }
                         
                     } else {
@@ -132,7 +142,7 @@ async function testBackgroundLoading() {
             console.log('❌ 懸浮導航器未出現');
         }
         
-        console.log('🎉 背景載入功能測試完成！');
+        console.log('🎉 學生簽到修復測試完成！');
         
         // 等待一下讓用戶看到結果
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -145,4 +155,4 @@ async function testBackgroundLoading() {
 }
 
 // 運行測試
-testBackgroundLoading().catch(console.error);
+testStudentAttendanceFix().catch(console.error);
