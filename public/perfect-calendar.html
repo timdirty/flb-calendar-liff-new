@@ -3742,6 +3742,28 @@
             border: 2px solid rgba(184, 134, 11, 0.8);
         }
 
+        /* 手機端動畫優化 */
+        @media (max-width: 768px) {
+            .event-card.charging {
+                animation: chargingBounceMobile 0.6s ease-in-out infinite;
+                transform: scale(1.08);
+                box-shadow: 0 16px 50px rgba(184, 134, 11, 0.8);
+                border: 3px solid rgba(184, 134, 11, 1);
+            }
+
+            .event-card.charging::before {
+                animation: chargingSweepMobile 1s ease-in-out infinite;
+            }
+
+            .event-card.charging::after {
+                width: 70px;
+                height: 70px;
+                margin: -35px 0 0 -35px;
+                border-width: 6px;
+                animation: chargingSpinMobile 0.8s linear infinite;
+            }
+        }
+
         .event-card.charging::before {
             content: '';
             position: absolute;
@@ -3868,6 +3890,72 @@
             100% { 
                 transform: scale(1);
                 box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+            }
+        }
+
+        /* 手機端專用動畫 */
+        @keyframes chargingBounceMobile {
+            0%, 100% { 
+                transform: scale(1.08) translateY(0px) rotate(0deg);
+                box-shadow: 0 16px 50px rgba(184, 134, 11, 0.8);
+            }
+            25% { 
+                transform: scale(1.12) translateY(-5px) rotate(1deg);
+                box-shadow: 0 20px 60px rgba(184, 134, 11, 1);
+            }
+            50% { 
+                transform: scale(1.15) translateY(-8px) rotate(0deg);
+                box-shadow: 0 24px 70px rgba(184, 134, 11, 1);
+            }
+            75% { 
+                transform: scale(1.12) translateY(-5px) rotate(-1deg);
+                box-shadow: 0 20px 60px rgba(184, 134, 11, 1);
+            }
+        }
+
+        @keyframes chargingSweepMobile {
+            0% { 
+                transform: translateX(-150%) scaleY(1.5) rotate(3deg);
+                opacity: 0.7;
+            }
+            25% {
+                transform: translateX(-75%) scaleY(1.8) rotate(1.5deg);
+                opacity: 1;
+            }
+            50% {
+                transform: translateX(0%) scaleY(2) rotate(0deg);
+                opacity: 1;
+            }
+            75% {
+                transform: translateX(75%) scaleY(1.8) rotate(-1.5deg);
+                opacity: 1;
+            }
+            100% { 
+                transform: translateX(150%) scaleY(1.5) rotate(-3deg);
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes chargingSpinMobile {
+            0% { 
+                transform: rotate(0deg) scale(1) translateY(0px);
+                opacity: 0.9;
+            }
+            25% {
+                transform: rotate(90deg) scale(1.2) translateY(-3px);
+                opacity: 1;
+            }
+            50% {
+                transform: rotate(180deg) scale(1.4) translateY(-6px);
+                opacity: 1;
+            }
+            75% {
+                transform: rotate(270deg) scale(1.2) translateY(-3px);
+                opacity: 1;
+            }
+            100% { 
+                transform: rotate(360deg) scale(1) translateY(0px);
+                opacity: 0.9;
             }
         }
 
@@ -7228,6 +7316,16 @@ async function loadTodayEvents() {
             try {
                 console.log('🎯 處理直接簽到:', { title, instructor, start, end });
                 
+                // 檢查課程時間限制
+                const courseStartTime = new Date(start);
+                const currentTime = new Date();
+                const timeDiff = courseStartTime.getTime() - currentTime.getTime();
+                const minutesUntilStart = Math.floor(timeDiff / (1000 * 60));
+                
+                console.log(`⏰ 課程開始時間: ${courseStartTime.toLocaleString()}`);
+                console.log(`⏰ 當前時間: ${currentTime.toLocaleString()}`);
+                console.log(`⏰ 距離課程開始: ${minutesUntilStart} 分鐘`);
+                
                 // 解析課程標題，分離課程名稱和時間資訊
                 const { courseName, timeInfo } = parseCourseTitle(title);
                 console.log(`📝 解析結果: 課程="${courseName}", 時間資訊="${timeInfo}"`);
@@ -7253,8 +7351,8 @@ async function loadTodayEvents() {
                 const finalCourseName = courseName;
                 const finalTimeString = timeInfo || `${new Date(start).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${new Date(end).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
                 
-                // 開啟原生簽到系統
-                await openNativeAttendanceSystem(matchedInstructor, finalCourseName, finalTimeString, start, end);
+                // 開啟原生簽到系統（傳入時間限制資訊）
+                await openNativeAttendanceSystem(matchedInstructor, finalCourseName, finalTimeString, start, end, minutesUntilStart);
                 
             } catch (error) {
                 console.error('❌ 直接簽到失敗:', error);
@@ -7263,7 +7361,7 @@ async function loadTodayEvents() {
         }
 
         // 開啟原生簽到系統
-        async function openNativeAttendanceSystem(teacher, course, time, start, end) {
+        async function openNativeAttendanceSystem(teacher, course, time, start, end, minutesUntilStart = null) {
             try {
                 console.log('🎯 開啟原生簽到系統:', { teacher, course, time, start, end });
                 
@@ -7315,10 +7413,23 @@ async function loadTodayEvents() {
                         overflow: hidden;
                     ">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                            <h2 style="margin: 0; color: #333333; font-size: 1.5rem; text-shadow: none;">
-                                <i class="fas fa-calendar-check" style="color: #b8860b; margin-right: 10px; text-shadow: 0 0 10px rgba(184, 134, 11, 0.5);"></i>
-                                課程簽到系統
-                            </h2>
+                            <div>
+                                <h2 style="margin: 0; color: #333333; font-size: 1.5rem; text-shadow: none;">
+                                    <i class="fas fa-calendar-check" style="color: #b8860b; margin-right: 10px; text-shadow: 0 0 10px rgba(184, 134, 11, 0.5);"></i>
+                                    課程簽到系統
+                                </h2>
+                                ${minutesUntilStart !== null ? `
+                                    <div style="margin-top: 8px; font-size: 0.9rem; color: ${minutesUntilStart <= 10 ? '#28a745' : '#ffc107'}; font-weight: 600;">
+                                        <i class="fas fa-clock" style="margin-right: 5px;"></i>
+                                        ${minutesUntilStart > 0 ? 
+                                            `距離課程開始還有 ${minutesUntilStart} 分鐘` : 
+                                            minutesUntilStart === 0 ? 
+                                                '課程即將開始' : 
+                                                '課程已開始'
+                                        }
+                                    </div>
+                                ` : ''}
+                            </div>
                             <button id="closeAttendanceModal" class="close-attendance-modal" style="
                                 background: rgba(255, 255, 255, 0.2);
                                 border: 1px solid rgba(255, 215, 0, 0.4);
@@ -7472,7 +7583,7 @@ async function loadTodayEvents() {
                 });
                 
                 // 載入學生名單
-                await loadCourseStudents(teacher, course, time, start, end);
+                await loadCourseStudents(teacher, course, time, start, end, minutesUntilStart);
                 
             } catch (error) {
                 console.error('❌ 開啟簽到系統失敗:', error);
@@ -7481,7 +7592,7 @@ async function loadTodayEvents() {
         }
 
         // 載入課程學生
-        async function loadCourseStudents(teacher, course, time, start, end) {
+        async function loadCourseStudents(teacher, course, time, start, end, minutesUntilStart = null) {
             try {
                 console.log('📚 載入課程學生:', { teacher, course, time, start, end });
                 
@@ -7501,7 +7612,7 @@ async function loadTodayEvents() {
                 console.log('📊 學生資料回應:', data);
                 
                 if (data.success && data.students) {
-                    displayStudents(data.students, teacher, course, time, start, end);
+                    displayStudents(data.students, teacher, course, time, start, end, minutesUntilStart);
                 } else {
                     // 顯示錯誤訊息，不使用模擬資料
                     console.error('❌ 無法載入學生資料:', data);
@@ -7588,7 +7699,7 @@ async function loadTodayEvents() {
         }
 
         // 顯示學生列表
-        function displayStudents(students, teacher, course, time, start, end) {
+        function displayStudents(students, teacher, course, time, start, end, minutesUntilStart = null) {
             const attendanceContent = document.getElementById('attendanceContent');
             if (!attendanceContent) return;
             
@@ -7597,6 +7708,26 @@ async function loadTodayEvents() {
             attendanceContent.style.transition = 'all 0.5s ease';
             
             const today = new Date().toISOString().split('T')[0];
+            
+            // 添加時間限制提示
+            let timeRestrictionMessage = '';
+            if (minutesUntilStart !== null && minutesUntilStart > 10) {
+                timeRestrictionMessage = `
+                    <div style="
+                        background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 193, 7, 0.1));
+                        border: 1px solid rgba(255, 193, 7, 0.4);
+                        border-radius: 15px;
+                        padding: 15px;
+                        margin-bottom: 20px;
+                        text-align: center;
+                        color: #856404;
+                        font-weight: 600;
+                    ">
+                        <i class="fas fa-info-circle" style="margin-right: 8px; color: #ffc107;"></i>
+                        課程開始前10分鐘才能進行簽到，目前只能查看學生名單
+                    </div>
+                `;
+            }
             
             const studentsHtml = students.map(student => {
                 // 檢查今天的簽到狀態
@@ -7729,12 +7860,16 @@ async function loadTodayEvents() {
                             </div>
                         </div>
                         <div style="display: flex; gap: 8px;">
-                            <button class="attendance-btn present-btn liquid-button" data-student-id="${student.id}" style="
+                            <button class="attendance-btn present-btn liquid-button" data-student-id="${student.id}" 
+                                ${minutesUntilStart !== null && minutesUntilStart > 10 ? 'disabled' : ''}
+                                style="
                                 background: ${currentStatus === 'present' 
                                     ? 'linear-gradient(135deg, rgba(40, 167, 69, 1), rgba(32, 201, 151, 0.9))' 
-                                    : 'linear-gradient(135deg, rgba(40, 167, 69, 0.6), rgba(32, 201, 151, 0.5))'};
-                                color: white;
-                                border: 1px solid ${currentStatus === 'present' ? 'rgba(40, 167, 69, 0.8)' : 'rgba(255, 255, 255, 0.4)'};
+                                    : minutesUntilStart !== null && minutesUntilStart > 10
+                                        ? 'linear-gradient(135deg, rgba(108, 117, 125, 0.3), rgba(108, 117, 125, 0.2))'
+                                        : 'linear-gradient(135deg, rgba(40, 167, 69, 0.6), rgba(32, 201, 151, 0.5))'};
+                                color: ${minutesUntilStart !== null && minutesUntilStart > 10 ? 'rgba(0, 0, 0, 0.4)' : 'white'};
+                                border: 1px solid ${currentStatus === 'present' ? 'rgba(40, 167, 69, 0.8)' : minutesUntilStart !== null && minutesUntilStart > 10 ? 'rgba(108, 117, 125, 0.3)' : 'rgba(255, 255, 255, 0.4)'};
                                 padding: 8px 16px;
                                 border-radius: 20px;
                                 cursor: pointer;
@@ -7753,12 +7888,16 @@ async function loadTodayEvents() {
                             ">
                                 <span style="margin-right: 6px; font-size: 0.9rem;">✅</span> 出席
                             </button>
-                            <button class="attendance-btn absent-btn liquid-button" data-student-id="${student.id}" style="
+                            <button class="attendance-btn absent-btn liquid-button" data-student-id="${student.id}" 
+                                ${minutesUntilStart !== null && minutesUntilStart > 10 ? 'disabled' : ''}
+                                style="
                                 background: ${currentStatus === 'absent' 
                                     ? 'linear-gradient(135deg, rgba(220, 53, 69, 1), rgba(231, 76, 60, 0.9))' 
-                                    : 'linear-gradient(135deg, rgba(220, 53, 69, 0.6), rgba(231, 76, 60, 0.5))'};
-                                color: white;
-                                border: 1px solid ${currentStatus === 'absent' ? 'rgba(220, 53, 69, 0.8)' : 'rgba(255, 255, 255, 0.4)'};
+                                    : minutesUntilStart !== null && minutesUntilStart > 10
+                                        ? 'linear-gradient(135deg, rgba(108, 117, 125, 0.3), rgba(108, 117, 125, 0.2))'
+                                        : 'linear-gradient(135deg, rgba(220, 53, 69, 0.6), rgba(231, 76, 60, 0.5))'};
+                                color: ${minutesUntilStart !== null && minutesUntilStart > 10 ? 'rgba(0, 0, 0, 0.4)' : 'white'};
+                                border: 1px solid ${currentStatus === 'absent' ? 'rgba(220, 53, 69, 0.8)' : minutesUntilStart !== null && minutesUntilStart > 10 ? 'rgba(108, 117, 125, 0.3)' : 'rgba(255, 255, 255, 0.4)'};
                                 padding: 8px 16px;
                                 border-radius: 20px;
                                 cursor: pointer;
@@ -7788,6 +7927,7 @@ async function loadTodayEvents() {
                         <i class="fas fa-users" style="color: #b8860b; margin-right: 8px; text-shadow: 0 0 10px rgba(184, 134, 11, 0.5);"></i>
                         學生名單 (${students.length} 人)
                     </h3>
+                    ${timeRestrictionMessage}
                     <div id="studentsList" style="
                         display: flex; 
                         flex-direction: column; 
