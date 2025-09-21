@@ -2585,83 +2585,26 @@
             }
         }
 
-        /* 講師簽到樣式 */
+        /* 講師報表樣式 */
         .teacher-attendance-content {
             width: 100%;
             height: 100%;
         }
 
-        .teacher-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-            padding-bottom: 20px;
+        .report-form textarea:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
         }
 
-        .teacher-card {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            user-select: none;
-            position: relative;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        .mode-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
-        .teacher-card:hover {
-            border-color: #FFD700;
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
-        }
-
-        .teacher-card.selected {
-            border-color: #FFD700;
-            border-width: 3px;
-            background: linear-gradient(135deg, #fff8dc, #faf0e6);
-            transform: scale(1.05);
-            box-shadow: 0 12px 30px rgba(255, 215, 0, 0.4);
-        }
-
-        .teacher-card.selected::before {
-            content: '✓';
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #FFD700;
-            color: #1a1a1a;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 16px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .teacher-card i {
-            font-size: 2rem;
-            color: #DAA520;
-            margin-bottom: 12px;
-            display: block;
-        }
-
-        .teacher-card .teacher-name {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
-        }
-
-        .teacher-card .teacher-role {
-            font-size: 0.85rem;
-            color: #666;
-            font-style: italic;
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
         }
 
         /* 手機優化 - 懸浮導航器 */
@@ -2686,25 +2629,17 @@
                 font-size: 0.75rem;
             }
 
-            .teacher-grid {
-                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-                gap: 15px;
+            .mode-buttons {
+                grid-template-columns: 1fr;
+                gap: 10px;
             }
 
-            .teacher-card {
-                padding: 15px;
+            .mode-btn {
+                padding: 12px;
             }
 
-            .teacher-card i {
-                font-size: 1.5rem;
-            }
-
-            .teacher-card .teacher-name {
-                font-size: 0.9rem;
-            }
-
-            .teacher-card .teacher-role {
-                font-size: 0.8rem;
+            .mode-btn i {
+                font-size: 1.2rem;
             }
         }
 
@@ -7922,7 +7857,7 @@ async function loadTodayEvents() {
             // 添加左移動畫類別
             modalContent.classList.add('slide-left');
             
-            // 創建講師簽到內容
+            // 創建講師報表內容
             const teacherAttendanceContent = document.createElement('div');
             teacherAttendanceContent.className = 'teacher-attendance-content';
             teacherAttendanceContent.innerHTML = `
@@ -7939,12 +7874,13 @@ async function loadTodayEvents() {
                         justify-content: center;
                         gap: 10px;
                     ">
-                        <i class="fas fa-chalkboard-teacher" style="color: #ffd700;"></i>
-                        講師簽到系統
+                        <i class="fas fa-clipboard-list" style="color: #ffd700;"></i>
+                        講師報表
                     </h2>
                 </div>
                 
-                <div class="teacher-selection-section">
+                <!-- 今日報表 -->
+                <div class="today-report-section">
                     <h3 style="
                         color: #555;
                         margin: 20px 0 15px 0;
@@ -7953,199 +7889,299 @@ async function loadTodayEvents() {
                         align-items: center;
                         gap: 8px;
                     ">
-                        <i class="fas fa-user-tie"></i>
-                        選擇講師
+                        <i class="fas fa-calendar-day"></i>
+                        今日報表
                     </h3>
                     
-                    <div class="teacher-grid" id="teacherGrid">
-                        <div class="loading" id="teacherLoading" style="
-                            text-align: center;
-                            padding: 40px;
-                            color: #666;
-                            font-size: 1.1rem;
-                            display: flex;
-                            flex-direction: column;
-                            align-items: center;
-                            gap: 15px;
+                    <div class="report-form">
+                        <div class="form-group">
+                            <label for="course-content" style="
+                                display: block;
+                                margin-bottom: 8px;
+                                font-weight: 600;
+                                color: #333;
+                            ">課程內容：</label>
+                            <textarea 
+                                id="course-content" 
+                                placeholder="請描述今天的課程內容..."
+                                rows="4"
+                                maxlength="500"
+                                style="
+                                    width: 100%;
+                                    padding: 12px;
+                                    border: 2px solid #e9ecef;
+                                    border-radius: 8px;
+                                    font-size: 1rem;
+                                    font-family: inherit;
+                                    resize: vertical;
+                                    transition: border-color 0.3s ease;
+                                "
+                            ></textarea>
+                            <div class="char-count" style="
+                                text-align: right;
+                                margin-top: 5px;
+                                font-size: 0.85rem;
+                                color: #666;
+                            ">
+                                <span id="char-count">0</span>/500
+                            </div>
+                        </div>
+                        
+                        <!-- 身份選擇 -->
+                        <div class="assistant-toggle" style="
+                            margin: 20px 0;
+                            padding: 20px;
+                            background: #f8f9fa;
+                            border-radius: 12px;
+                            border: 1px solid #e9ecef;
                         ">
-                            <i class="fas fa-spinner" style="
-                                color: #FFD700;
-                                font-size: 2rem;
-                                animation: spin 1s linear infinite;
-                            "></i>
-                            <div class="loading-text" style="font-weight: 500;">載入講師列表中...</div>
+                            <div class="mode-header">
+                                <h4 style="
+                                    margin: 0 0 8px 0;
+                                    color: #333;
+                                    font-size: 1.1rem;
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 8px;
+                                ">
+                                    <i class="fas fa-users"></i>
+                                    身份選擇
+                                </h4>
+                                <p class="mode-description" style="
+                                    margin: 0 0 15px 0;
+                                    color: #666;
+                                    font-size: 0.9rem;
+                                ">請選擇您的身份以正確設定人數</p>
+                            </div>
+                            <div class="mode-buttons" style="
+                                display: grid;
+                                grid-template-columns: 1fr 1fr;
+                                gap: 15px;
+                                margin-bottom: 15px;
+                            ">
+                                <button class="mode-btn teacher-mode active" id="teacher-mode-btn" style="
+                                    background: linear-gradient(135deg, #ffd700, #ffed4e);
+                                    color: #333;
+                                    border: 2px solid #ffd700;
+                                    padding: 15px;
+                                    border-radius: 12px;
+                                    cursor: pointer;
+                                    transition: all 0.3s ease;
+                                    text-align: center;
+                                ">
+                                    <i class="fas fa-chalkboard-teacher" style="font-size: 1.5rem; margin-bottom: 8px; display: block;"></i>
+                                    <div class="mode-title" style="font-weight: 600; margin-bottom: 4px;">講師模式</div>
+                                    <div class="mode-desc" style="font-size: 0.8rem; opacity: 0.8;">人數根據學生數量計算</div>
+                                </button>
+                                <button class="mode-btn assistant-mode" id="assistant-mode-btn" style="
+                                    background: #f8f9fa;
+                                    color: #666;
+                                    border: 2px solid #e9ecef;
+                                    padding: 15px;
+                                    border-radius: 12px;
+                                    cursor: pointer;
+                                    transition: all 0.3s ease;
+                                    text-align: center;
+                                ">
+                                    <i class="fas fa-user-graduate" style="font-size: 1.5rem; margin-bottom: 8px; display: block;"></i>
+                                    <div class="mode-title" style="font-weight: 600; margin-bottom: 4px;">助教模式</div>
+                                    <div class="mode-desc" style="font-size: 0.8rem; opacity: 0.8;">人數自動設為 0</div>
+                                </button>
+                            </div>
+                            <div class="current-mode-display" style="
+                                text-align: center;
+                                padding: 10px;
+                                background: rgba(255, 215, 0, 0.1);
+                                border-radius: 8px;
+                                font-size: 0.9rem;
+                            ">
+                                <span class="mode-label" style="color: #666;">目前模式：</span>
+                                <span class="mode-value" id="current-mode-display" style="font-weight: 600; color: #333;">講師模式</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 提交按鈕 -->
+                        <div class="report-actions" style="
+                            margin-top: 30px;
+                            text-align: center;
+                        ">
+                            <button class="btn-primary" id="submitTeacherReport" style="
+                                background: linear-gradient(135deg, #28a745, #20c997);
+                                color: white;
+                                border: none;
+                                padding: 15px 40px;
+                                border-radius: 25px;
+                                font-size: 1.1rem;
+                                font-weight: 600;
+                                cursor: pointer;
+                                transition: all 0.3s ease;
+                                box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+                            ">
+                                <i class="fas fa-paper-plane" style="margin-right: 8px;"></i>
+                                提交講師報表
+                            </button>
                         </div>
                     </div>
                 </div>
-                
-                <div class="teacher-attendance-actions" style="
-                    margin-top: 30px;
-                    text-align: center;
-                    display: none;
-                " id="teacherActions">
-                    <button class="btn-primary" id="confirmTeacherAttendance" style="
-                        background: linear-gradient(135deg, #28a745, #20c997);
-                        color: white;
-                        border: none;
-                        padding: 12px 30px;
-                        border-radius: 25px;
-                        font-size: 1rem;
-                        font-weight: 600;
-                        cursor: pointer;
-                        transition: all 0.3s ease;
-                        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-                    ">
-                        <i class="fas fa-check-circle" style="margin-right: 8px;"></i>
-                        確認講師到場
-                    </button>
-                </div>
             `;
             
-            // 清空原有內容並添加講師簽到內容
+            // 清空原有內容並添加講師報表內容
             modalContent.innerHTML = '';
             modalContent.appendChild(teacherAttendanceContent);
             
-            // 載入講師列表
-            loadTeacherList();
+            // 初始化講師報表功能
+            initializeTeacherReport();
         }
 
-        // 載入講師列表
-        async function loadTeacherList() {
-            try {
-                console.log('👨‍🏫 載入講師列表...');
-                
-                // 模擬講師數據（可以從API獲取）
-                const teachers = [
-                    { name: 'Tim', role: '管理員', icon: 'fas fa-user-tie' },
-                    { name: 'Ted', role: '資深講師', icon: 'fas fa-user-graduate' },
-                    { name: 'Agnes', role: '講師', icon: 'fas fa-user-graduate' },
-                    { name: 'Hansen', role: '講師', icon: 'fas fa-user-tie' },
-                    { name: 'James', role: '講師', icon: 'fas fa-user-tie' },
-                    { name: 'Ivan', role: '講師', icon: 'fas fa-user-tie' },
-                    { name: 'Xian', role: '講師', icon: 'fas fa-user-graduate' },
-                    { name: 'Eason', role: '講師', icon: 'fas fa-user-tie' },
-                    { name: 'Bella', role: '講師', icon: 'fas fa-user-graduate' },
-                    { name: 'Gillian', role: '講師', icon: 'fas fa-user-graduate' },
-                    { name: 'Daniel', role: '講師', icon: 'fas fa-user-tie' },
-                    { name: 'Philp', role: '講師', icon: 'fas fa-user-tie' }
-                ];
-                
-                // 隱藏載入動畫
-                const loading = document.getElementById('teacherLoading');
-                if (loading) {
-                    loading.style.display = 'none';
-                }
-                
-                // 創建講師卡片
-                const teacherGrid = document.getElementById('teacherGrid');
-                if (teacherGrid) {
-                    teacherGrid.innerHTML = '';
+        // 初始化講師報表功能
+        function initializeTeacherReport() {
+            console.log('📝 初始化講師報表功能');
+            
+            // 設置字數統計
+            const courseContent = document.getElementById('course-content');
+            const charCount = document.getElementById('char-count');
+            
+            if (courseContent && charCount) {
+                courseContent.addEventListener('input', function() {
+                    const count = this.value.length;
+                    charCount.textContent = count;
                     
-                    teachers.forEach(teacher => {
-                        const teacherCard = document.createElement('div');
-                        teacherCard.className = 'teacher-card';
-                        teacherCard.innerHTML = `
-                            <i class="${teacher.icon}"></i>
-                            <div class="teacher-name">${teacher.name}</div>
-                            <div class="teacher-role">${teacher.role}</div>
-                        `;
-                        
-                        // 添加點擊事件
-                        teacherCard.addEventListener('click', () => {
-                            selectTeacher(teacher.name);
-                        });
-                        
-                        teacherGrid.appendChild(teacherCard);
-                    });
-                }
+                    // 字數接近限制時變色
+                    if (count > 450) {
+                        charCount.style.color = '#dc3545';
+                    } else if (count > 400) {
+                        charCount.style.color = '#ffc107';
+                    } else {
+                        charCount.style.color = '#666';
+                    }
+                });
+            }
+            
+            // 設置身份選擇按鈕
+            const teacherModeBtn = document.getElementById('teacher-mode-btn');
+            const assistantModeBtn = document.getElementById('assistant-mode-btn');
+            const currentModeDisplay = document.getElementById('current-mode-display');
+            
+            if (teacherModeBtn && assistantModeBtn && currentModeDisplay) {
+                teacherModeBtn.addEventListener('click', () => {
+                    setTeacherMode();
+                });
                 
-                console.log('✅ 講師列表載入完成');
-                
-            } catch (error) {
-                console.error('❌ 載入講師列表失敗:', error);
-                
-                const teacherGrid = document.getElementById('teacherGrid');
-                if (teacherGrid) {
-                    teacherGrid.innerHTML = `
-                        <div style="
-                            text-align: center;
-                            padding: 40px;
-                            color: #dc3545;
-                            font-size: 1.1rem;
-                        ">
-                            <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 15px;"></i>
-                            <div>載入講師列表失敗</div>
-                            <div style="font-size: 0.9rem; margin-top: 10px; color: #666;">
-                                請稍後再試或聯繫管理員
-                            </div>
-                        </div>
-                    `;
-                }
+                assistantModeBtn.addEventListener('click', () => {
+                    setAssistantMode();
+                });
+            }
+            
+            // 設置提交按鈕
+            const submitBtn = document.getElementById('submitTeacherReport');
+            if (submitBtn) {
+                submitBtn.addEventListener('click', () => {
+                    submitTeacherReport();
+                });
             }
         }
 
-        // 選擇講師
-        function selectTeacher(teacherName) {
-            console.log('👨‍🏫 選擇講師:', teacherName);
+        // 設置講師模式
+        function setTeacherMode() {
+            console.log('👨‍🏫 設置講師模式');
             
-            // 移除所有選中狀態
-            document.querySelectorAll('.teacher-card').forEach(card => {
-                card.classList.remove('selected');
-            });
+            const teacherModeBtn = document.getElementById('teacher-mode-btn');
+            const assistantModeBtn = document.getElementById('assistant-mode-btn');
+            const currentModeDisplay = document.getElementById('current-mode-display');
             
-            // 添加選中狀態到當前卡片
-            event.currentTarget.classList.add('selected');
-            
-            // 顯示確認按鈕
-            const teacherActions = document.getElementById('teacherActions');
-            if (teacherActions) {
-                teacherActions.style.display = 'block';
+            if (teacherModeBtn && assistantModeBtn && currentModeDisplay) {
+                // 更新按鈕樣式
+                teacherModeBtn.style.background = 'linear-gradient(135deg, #ffd700, #ffed4e)';
+                teacherModeBtn.style.color = '#333';
+                teacherModeBtn.style.border = '2px solid #ffd700';
                 
-                // 添加確認按鈕點擊事件
-                const confirmBtn = document.getElementById('confirmTeacherAttendance');
-                if (confirmBtn) {
-                    confirmBtn.onclick = () => {
-                        confirmTeacherAttendance(teacherName);
-                    };
-                }
+                assistantModeBtn.style.background = '#f8f9fa';
+                assistantModeBtn.style.color = '#666';
+                assistantModeBtn.style.border = '2px solid #e9ecef';
+                
+                // 更新顯示
+                currentModeDisplay.textContent = '講師模式';
             }
         }
 
-        // 確認講師簽到
-        async function confirmTeacherAttendance(teacherName) {
+        // 設置助教模式
+        function setAssistantMode() {
+            console.log('👨‍🎓 設置助教模式');
+            
+            const teacherModeBtn = document.getElementById('teacher-mode-btn');
+            const assistantModeBtn = document.getElementById('assistant-mode-btn');
+            const currentModeDisplay = document.getElementById('current-mode-display');
+            
+            if (teacherModeBtn && assistantModeBtn && currentModeDisplay) {
+                // 更新按鈕樣式
+                assistantModeBtn.style.background = 'linear-gradient(135deg, #6c757d, #495057)';
+                assistantModeBtn.style.color = 'white';
+                assistantModeBtn.style.border = '2px solid #6c757d';
+                
+                teacherModeBtn.style.background = '#f8f9fa';
+                teacherModeBtn.style.color = '#666';
+                teacherModeBtn.style.border = '2px solid #e9ecef';
+                
+                // 更新顯示
+                currentModeDisplay.textContent = '助教模式';
+            }
+        }
+
+        // 提交講師報表
+        async function submitTeacherReport() {
             try {
-                console.log('✅ 確認講師簽到:', teacherName);
+                console.log('📤 提交講師報表');
+                
+                const courseContent = document.getElementById('course-content');
+                const currentModeDisplay = document.getElementById('current-mode-display');
+                const submitBtn = document.getElementById('submitTeacherReport');
+                
+                if (!courseContent || !courseContent.value.trim()) {
+                    showToast('請填寫課程內容', 'error');
+                    return;
+                }
                 
                 // 顯示載入狀態
-                const confirmBtn = document.getElementById('confirmTeacherAttendance');
-                if (confirmBtn) {
-                    confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>處理中...';
-                    confirmBtn.disabled = true;
+                if (submitBtn) {
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>提交中...';
+                    submitBtn.disabled = true;
                 }
                 
                 // 模擬API調用
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                await new Promise(resolve => setTimeout(resolve, 2000));
                 
                 // 顯示成功訊息
-                showToast(`講師 ${teacherName} 簽到成功！`, 'success');
+                const mode = currentModeDisplay ? currentModeDisplay.textContent : '講師模式';
+                showToast(`講師報表提交成功！(${mode})`, 'success');
                 
-                // 重置按鈕
-                if (confirmBtn) {
-                    confirmBtn.innerHTML = '<i class="fas fa-check-circle" style="margin-right: 8px;"></i>確認講師到場';
-                    confirmBtn.disabled = false;
+                // 重置表單
+                if (courseContent) {
+                    courseContent.value = '';
                 }
                 
-                // 可以添加更多邏輯，如發送通知等
-                
-            } catch (error) {
-                console.error('❌ 講師簽到失敗:', error);
-                showToast('講師簽到失敗，請稍後再試', 'error');
+                const charCount = document.getElementById('char-count');
+                if (charCount) {
+                    charCount.textContent = '0';
+                    charCount.style.color = '#666';
+                }
                 
                 // 重置按鈕
-                const confirmBtn = document.getElementById('confirmTeacherAttendance');
-                if (confirmBtn) {
-                    confirmBtn.innerHTML = '<i class="fas fa-check-circle" style="margin-right: 8px;"></i>確認講師到場';
-                    confirmBtn.disabled = false;
+                if (submitBtn) {
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane" style="margin-right: 8px;"></i>提交講師報表';
+                    submitBtn.disabled = false;
+                }
+                
+                console.log('✅ 講師報表提交完成');
+                
+            } catch (error) {
+                console.error('❌ 講師報表提交失敗:', error);
+                showToast('講師報表提交失敗，請稍後再試', 'error');
+                
+                // 重置按鈕
+                const submitBtn = document.getElementById('submitTeacherReport');
+                if (submitBtn) {
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane" style="margin-right: 8px;"></i>提交講師報表';
+                    submitBtn.disabled = false;
                 }
             }
         }
