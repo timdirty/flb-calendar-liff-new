@@ -7975,6 +7975,26 @@ async function loadTodayEvents() {
             // 如果學生資料已經載入完成，直接顯示學生列表
             if (window.loadedStudentsData) {
                 console.log('✅ 使用已載入的學生資料');
+                
+                // 先填充課程資訊
+                const teacherElement = document.getElementById('currentTeacher');
+                const courseElement = document.getElementById('currentCourse');
+                const timeElement = document.getElementById('currentTime');
+                const dateElement = document.getElementById('currentDate');
+                
+                if (teacherElement) teacherElement.textContent = window.loadedStudentsData.teacher;
+                if (courseElement) courseElement.textContent = window.loadedStudentsData.course;
+                if (timeElement) timeElement.textContent = window.loadedStudentsData.time;
+                if (dateElement) {
+                    const date = new Date(window.loadedStudentsData.start);
+                    dateElement.textContent = date.toLocaleDateString('zh-TW', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                    });
+                }
+                
+                // 然後顯示學生列表
                 displayStudents(window.loadedStudentsData.students, 
                               window.loadedStudentsData.teacher, 
                               window.loadedStudentsData.course, 
