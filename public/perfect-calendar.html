@@ -7899,10 +7899,37 @@ async function loadTodayEvents() {
                 return;
             }
             
-            const timeElement = modalContent.querySelector('#currentTime');
-            const dateElement = modalContent.querySelector('#currentDate');
-            const teacherElement = modalContent.querySelector('#currentTeacher');
-            const courseElement = modalContent.querySelector('#currentCourse');
+            // 嘗試找到課程資訊元素（支援兩種HTML結構）
+            let timeElement = modalContent.querySelector('#currentTime');
+            let dateElement = modalContent.querySelector('#currentDate');
+            let teacherElement = modalContent.querySelector('#currentTeacher');
+            let courseElement = modalContent.querySelector('#currentCourse');
+            
+            // 如果找不到ID元素，嘗試找到data-field元素
+            if (!timeElement) {
+                const timeField = modalContent.querySelector('[data-field="time"]');
+                if (timeField) {
+                    timeElement = timeField.querySelector('span') || timeField;
+                }
+            }
+            if (!dateElement) {
+                const dateField = modalContent.querySelector('[data-field="date"]');
+                if (dateField) {
+                    dateElement = dateField.querySelector('span') || dateField;
+                }
+            }
+            if (!teacherElement) {
+                const teacherField = modalContent.querySelector('[data-field="teacher"]');
+                if (teacherField) {
+                    teacherElement = teacherField.querySelector('span') || teacherField;
+                }
+            }
+            if (!courseElement) {
+                const courseField = modalContent.querySelector('[data-field="course"]');
+                if (courseField) {
+                    courseElement = courseField.querySelector('span') || courseField;
+                }
+            }
             
             console.log('🔍 元素檢查:', {
                 timeElement: !!timeElement,
@@ -7913,7 +7940,14 @@ async function loadTodayEvents() {
             
             if (timeElement && storedCourseInfo.time) {
                 console.log('🔍 更新時間元素:', storedCourseInfo.time);
-                timeElement.textContent = storedCourseInfo.time;
+                // 檢查是否是原始的data-field結構
+                if (timeElement.hasAttribute('data-field')) {
+                    // 原始結構：更新整個元素的innerHTML
+                    timeElement.innerHTML = `<strong style="color: #b8860b; font-weight: 600;">時間:</strong> ${storedCourseInfo.time}`;
+                } else {
+                    // 新結構：只更新textContent
+                    timeElement.textContent = storedCourseInfo.time;
+                }
                 console.log('✅ 時間元素已更新');
             } else {
                 console.log('❌ 時間元素更新失敗:', {
@@ -7924,7 +7958,14 @@ async function loadTodayEvents() {
             
             if (dateElement && storedCourseInfo.date) {
                 console.log('🔍 更新日期元素:', storedCourseInfo.date);
-                dateElement.textContent = storedCourseInfo.date;
+                // 檢查是否是原始的data-field結構
+                if (dateElement.hasAttribute('data-field')) {
+                    // 原始結構：更新整個元素的innerHTML
+                    dateElement.innerHTML = `<strong style="color: #b8860b; font-weight: 600;">日期:</strong> ${storedCourseInfo.date}`;
+                } else {
+                    // 新結構：只更新textContent
+                    dateElement.textContent = storedCourseInfo.date;
+                }
                 console.log('✅ 日期元素已更新');
             } else {
                 console.log('❌ 日期元素更新失敗:', {
@@ -7935,7 +7976,14 @@ async function loadTodayEvents() {
             
             if (teacherElement && storedCourseInfo.teacher) {
                 console.log('🔍 更新講師元素:', storedCourseInfo.teacher);
-                teacherElement.textContent = storedCourseInfo.teacher;
+                // 檢查是否是原始的data-field結構
+                if (teacherElement.hasAttribute('data-field')) {
+                    // 原始結構：更新整個元素的innerHTML
+                    teacherElement.innerHTML = `<strong style="color: #b8860b; font-weight: 600;">講師:</strong> ${storedCourseInfo.teacher}`;
+                } else {
+                    // 新結構：只更新textContent
+                    teacherElement.textContent = storedCourseInfo.teacher;
+                }
                 console.log('✅ 講師元素已更新');
             } else {
                 console.log('❌ 講師元素更新失敗:', {
@@ -7946,7 +7994,14 @@ async function loadTodayEvents() {
             
             if (courseElement && storedCourseInfo.course) {
                 console.log('🔍 更新課程元素:', storedCourseInfo.course);
-                courseElement.textContent = storedCourseInfo.course;
+                // 檢查是否是原始的data-field結構
+                if (courseElement.hasAttribute('data-field')) {
+                    // 原始結構：更新整個元素的innerHTML
+                    courseElement.innerHTML = `<strong style="color: #b8860b; font-weight: 600;">課程:</strong> ${storedCourseInfo.course}`;
+                } else {
+                    // 新結構：只更新textContent
+                    courseElement.textContent = storedCourseInfo.course;
+                }
                 console.log('✅ 課程元素已更新');
             } else {
                 console.log('❌ 課程元素更新失敗:', {
