@@ -3897,22 +3897,45 @@
             padding: 20px !important;
             margin-bottom: 15px !important;
             border: 2px solid rgba(255, 215, 0, 0.3) !important;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+        }
+        
+        /* 釋放動畫完成後的過渡狀態 */
+        .event-card.releasing.completing {
+            animation: none !important;
+            transform: scale(1) translateY(0px) !important;
+            box-shadow: 
+                0 8px 25px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8),
+                0 0 0 1px rgba(255, 215, 0, 0.2) !important;
+            border: 2px solid rgba(255, 215, 0, 0.3) !important;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.95) 0%, 
+                rgba(248, 250, 252, 0.9) 50%,
+                rgba(255, 255, 255, 0.95) 100%) !important;
         }
 
         @keyframes releaseAnimation {
             0% {
-                transform: scale(1.02) translateY(-1px);
+                transform: scale(1.05) translateY(-2px);
                 box-shadow: 
-                    0 12px 30px rgba(0, 0, 0, 0.2), 
+                    0 15px 35px rgba(0, 0, 0, 0.25), 
                     inset 0 1px 0 rgba(255, 255, 255, 0.9),
-                    0 0 0 2px rgba(255, 215, 0, 0.5);
+                    0 0 0 3px rgba(255, 215, 0, 0.6);
             }
-            50% {
-                transform: scale(0.98) translateY(1px);
+            30% {
+                transform: scale(0.95) translateY(1px);
                 box-shadow: 
-                    0 6px 20px rgba(0, 0, 0, 0.15), 
+                    0 8px 20px rgba(0, 0, 0, 0.18), 
                     inset 0 1px 0 rgba(255, 255, 255, 0.8),
-                    0 0 0 1px rgba(255, 215, 0, 0.3);
+                    0 0 0 2px rgba(255, 215, 0, 0.4);
+            }
+            70% {
+                transform: scale(1.01) translateY(-0.5px);
+                box-shadow: 
+                    0 9px 22px rgba(0, 0, 0, 0.16), 
+                    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+                    0 0 0 1px rgba(255, 215, 0, 0.25);
             }
             100% {
                 transform: scale(1) translateY(0px);
@@ -7749,15 +7772,18 @@ async function loadTodayEvents() {
                     // 震動回饋：釋放
                     triggerHapticFeedback('release');
                     
-                    // 簡化的釋放動畫邏輯
+                    // 優化的釋放動畫邏輯
                     eventCard.classList.remove('charging', 'pressing');
                     eventCard.classList.add('releasing');
                     
-                    // 動畫完成後直接移除類別，讓CSS自然過渡
+                    // 動畫完成後添加過渡狀態，然後平滑移除
                     setTimeout(() => {
-                        eventCard.classList.remove('releasing');
-                        isAnimating = false;
-                        console.log('✅ 滑鼠釋放動畫完成');
+                        eventCard.classList.add('completing');
+                        setTimeout(() => {
+                            eventCard.classList.remove('releasing', 'completing');
+                            isAnimating = false;
+                            console.log('✅ 滑鼠釋放動畫完成');
+                        }, 300);
                     }, 400);
                     
                     console.log('❌ 長按中斷，播放釋放動畫');
@@ -7787,15 +7813,18 @@ async function loadTodayEvents() {
                     // 震動回饋：釋放
                     triggerHapticFeedback('release');
                     
-                    // 簡化的釋放動畫邏輯
+                    // 優化的釋放動畫邏輯
                     eventCard.classList.remove('charging', 'pressing');
                     eventCard.classList.add('releasing');
                     
-                    // 動畫完成後直接移除類別，讓CSS自然過渡
+                    // 動畫完成後添加過渡狀態，然後平滑移除
                     setTimeout(() => {
-                        eventCard.classList.remove('releasing');
-                        isAnimating = false;
-                        console.log('✅ 滑鼠離開釋放動畫完成');
+                        eventCard.classList.add('completing');
+                        setTimeout(() => {
+                            eventCard.classList.remove('releasing', 'completing');
+                            isAnimating = false;
+                            console.log('✅ 滑鼠離開釋放動畫完成');
+                        }, 300);
                     }, 400);
                     
                     console.log('❌ 滑鼠離開，播放釋放動畫');
@@ -7905,8 +7934,11 @@ async function loadTodayEvents() {
                         eventCard.classList.add('releasing');
                         
                         setTimeout(() => {
-                            eventCard.classList.remove('releasing');
-                            isAnimating = false;
+                            eventCard.classList.add('completing');
+                            setTimeout(() => {
+                                eventCard.classList.remove('releasing', 'completing');
+                                isAnimating = false;
+                            }, 300);
                         }, 400);
                     }
                     
@@ -7947,15 +7979,18 @@ async function loadTodayEvents() {
                     // 震動回饋：釋放
                     triggerHapticFeedback('release');
                     
-                    // 簡化的釋放動畫邏輯
+                    // 優化的釋放動畫邏輯
                     eventCard.classList.remove('charging', 'pressing');
                     eventCard.classList.add('releasing');
                     
-                    // 動畫完成後直接移除類別，讓CSS自然過渡
+                    // 動畫完成後添加過渡狀態，然後平滑移除
                     setTimeout(() => {
-                        eventCard.classList.remove('releasing');
-                        isAnimating = false;
-                        console.log('✅ 觸控釋放動畫完成');
+                        eventCard.classList.add('completing');
+                        setTimeout(() => {
+                            eventCard.classList.remove('releasing', 'completing');
+                            isAnimating = false;
+                            console.log('✅ 觸控釋放動畫完成');
+                        }, 300);
                     }, 400);
                     
                     console.log('❌ 觸控長按中斷，播放釋放動畫');
@@ -7985,8 +8020,11 @@ async function loadTodayEvents() {
                     eventCard.classList.add('releasing');
                     
                     setTimeout(() => {
-                        eventCard.classList.remove('releasing');
-                        isAnimating = false;
+                        eventCard.classList.add('completing');
+                        setTimeout(() => {
+                            eventCard.classList.remove('releasing', 'completing');
+                            isAnimating = false;
+                        }, 300);
                     }, 400);
                 } else {
                     eventCard.classList.remove('pressing');
