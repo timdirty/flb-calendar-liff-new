@@ -61,6 +61,86 @@
             100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
         }
 
+        /* 新增動畫效果 */
+        @keyframes buttonPulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+        }
+
+        @keyframes buttonClick {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes fadeInUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(30px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        @keyframes slideInRight {
+            from { 
+                opacity: 0; 
+                transform: translateX(50px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateX(0); 
+            }
+        }
+
+        @keyframes bounceIn {
+            0% { 
+                opacity: 0; 
+                transform: scale(0.3) translateY(-50px); 
+            }
+            50% { 
+                opacity: 1; 
+                transform: scale(1.05) translateY(0); 
+            }
+            70% { 
+                transform: scale(0.9); 
+            }
+            100% { 
+                opacity: 1; 
+                transform: scale(1); 
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        @keyframes successPulse {
+            0% { 
+                transform: scale(1); 
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); 
+            }
+            70% { 
+                transform: scale(1.1); 
+                box-shadow: 0 0 0 15px rgba(76, 175, 80, 0); 
+            }
+            100% { 
+                transform: scale(1); 
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); 
+            }
+        }
+
+        @keyframes errorShake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
+            20%, 40%, 60%, 80% { transform: translateX(3px); }
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -4175,6 +4255,249 @@
                 border-width: 6px !important;
                 animation: chargingSpinMobile 0.8s linear infinite !important;
             }
+        }
+
+        /* 新增響應式設計優化 */
+        @media (max-width: 1024px) {
+            .container {
+                padding: 15px;
+                margin: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .events-container {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+                margin: 5px;
+                border-radius: 15px;
+            }
+            
+            .header {
+                padding: 15px;
+                margin-bottom: 15px;
+                border-radius: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .events-container {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .event-card {
+                padding: 15px;
+                border-radius: 12px;
+            }
+            
+            .event-card h3 {
+                font-size: 1.1rem;
+            }
+            
+            .event-card .event-time {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 8px;
+                margin: 3px;
+                border-radius: 12px;
+            }
+            
+            .header {
+                padding: 12px;
+                margin-bottom: 12px;
+                border-radius: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .events-container {
+                gap: 10px;
+            }
+            
+            .event-card {
+                padding: 12px;
+                border-radius: 10px;
+            }
+            
+            .event-card h3 {
+                font-size: 1rem;
+            }
+            
+            .event-card .event-time {
+                font-size: 0.8rem;
+            }
+        }
+
+        /* 平板端優化 */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .events-container {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 18px;
+            }
+            
+            .event-card {
+                padding: 18px;
+            }
+        }
+
+        /* 大屏幕優化 */
+        @media (min-width: 1200px) {
+            .container {
+                max-width: 1400px;
+                padding: 25px;
+            }
+            
+            .events-container {
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+                gap: 20px;
+            }
+            
+            .event-card {
+                padding: 20px;
+            }
+        }
+
+        /* 視覺反饋優化 */
+        .btn-animated {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-animated:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-animated:active {
+            transform: translateY(0);
+            animation: buttonClick 0.2s ease;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #45a049, #3d8b40);
+            animation: successPulse 0.6s ease;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #d32f2f, #b71c1c);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: white;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #f57c00, #ef6c00);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        .success-icon {
+            color: #4CAF50;
+            animation: successPulse 0.6s ease;
+        }
+
+        .error-icon {
+            color: #f44336;
+            animation: errorShake 0.5s ease;
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .slide-in-right {
+            animation: slideInRight 0.5s ease-out;
+        }
+
+        .bounce-in {
+            animation: bounceIn 0.6s ease-out;
+        }
+
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        /* 狀態指示器 */
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-success {
+            background-color: #4CAF50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+
+        .status-error {
+            background-color: #f44336;
+            box-shadow: 0 0 10px rgba(244, 67, 54, 0.5);
+        }
+
+        .status-warning {
+            background-color: #ff9800;
+            box-shadow: 0 0 10px rgba(255, 152, 0, 0.5);
+        }
+
+        .status-loading {
+            background-color: #2196F3;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         .event-card.charging::before {
@@ -9759,6 +10082,7 @@ async function loadTodayEvents() {
                 const loadingTimeout = setTimeout(() => {
                     if (isModalLoading) {
                         console.log('⏰ 載入超時，自動關閉模態框');
+                        errorHandler.showWarning('載入超時，請重試');
                         closeAttendanceModal();
                     }
                 }, 15000); // 15秒超時
@@ -9850,6 +10174,9 @@ async function loadTodayEvents() {
                 
             } catch (error) {
                 console.error('❌ 載入學生失敗:', error);
+                
+                // 使用錯誤處理器顯示錯誤
+                errorHandler.showError('載入學生名單失敗: ' + error.message, error);
                 
                 // 載入失敗，更新狀態
                 isStudentListLoading = false;
@@ -10945,6 +11272,230 @@ async function loadTodayEvents() {
                 }, 300);
             }, 3000);
         }
+
+        // 錯誤處理優化
+        class ErrorHandler {
+            constructor() {
+                this.retryCount = 0;
+                this.maxRetries = 3;
+                this.retryDelay = 1000;
+            }
+
+            // 顯示錯誤訊息
+            showError(message, error = null) {
+                console.error('❌ 錯誤:', message, error);
+                
+                // 創建錯誤通知
+                const errorToast = document.createElement('div');
+                errorToast.className = 'error-toast';
+                errorToast.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: linear-gradient(135deg, #f44336, #d32f2f);
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: 12px;
+                    box-shadow: 0 8px 25px rgba(244, 67, 54, 0.3);
+                    z-index: 10001;
+                    font-size: 14px;
+                    font-weight: 500;
+                    max-width: 350px;
+                    word-wrap: break-word;
+                    opacity: 0;
+                    transform: translateX(100%);
+                    transition: all 0.3s ease;
+                    border-left: 4px solid #ffcdd2;
+                    animation: errorShake 0.5s ease;
+                `;
+                
+                errorToast.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 16px;"></i>
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 4px;">錯誤</div>
+                            <div>${message}</div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(errorToast);
+                
+                // 顯示動畫
+                setTimeout(() => {
+                    errorToast.style.opacity = '1';
+                    errorToast.style.transform = 'translateX(0)';
+                }, 100);
+                
+                // 5秒後自動隱藏
+                setTimeout(() => {
+                    errorToast.style.opacity = '0';
+                    errorToast.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        if (errorToast.parentNode) {
+                            errorToast.parentNode.removeChild(errorToast);
+                        }
+                    }, 300);
+                }, 5000);
+            }
+
+            // 顯示成功訊息
+            showSuccess(message) {
+                console.log('✅ 成功:', message);
+                
+                const successToast = document.createElement('div');
+                successToast.className = 'success-toast';
+                successToast.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: linear-gradient(135deg, #4CAF50, #45a049);
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: 12px;
+                    box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+                    z-index: 10001;
+                    font-size: 14px;
+                    font-weight: 500;
+                    max-width: 350px;
+                    word-wrap: break-word;
+                    opacity: 0;
+                    transform: translateX(100%);
+                    transition: all 0.3s ease;
+                    border-left: 4px solid #c8e6c9;
+                    animation: successPulse 0.6s ease;
+                `;
+                
+                successToast.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-check-circle" style="font-size: 16px;"></i>
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 4px;">成功</div>
+                            <div>${message}</div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(successToast);
+                
+                // 顯示動畫
+                setTimeout(() => {
+                    successToast.style.opacity = '1';
+                    successToast.style.transform = 'translateX(0)';
+                }, 100);
+                
+                // 3秒後自動隱藏
+                setTimeout(() => {
+                    successToast.style.opacity = '0';
+                    successToast.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        if (successToast.parentNode) {
+                            successToast.parentNode.removeChild(successToast);
+                        }
+                    }, 300);
+                }, 3000);
+            }
+
+            // 顯示警告訊息
+            showWarning(message) {
+                console.warn('⚠️ 警告:', message);
+                
+                const warningToast = document.createElement('div');
+                warningToast.className = 'warning-toast';
+                warningToast.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: linear-gradient(135deg, #ff9800, #f57c00);
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: 12px;
+                    box-shadow: 0 8px 25px rgba(255, 152, 0, 0.3);
+                    z-index: 10001;
+                    font-size: 14px;
+                    font-weight: 500;
+                    max-width: 350px;
+                    word-wrap: break-word;
+                    opacity: 0;
+                    transform: translateX(100%);
+                    transition: all 0.3s ease;
+                    border-left: 4px solid #ffe0b2;
+                `;
+                
+                warningToast.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 16px;"></i>
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 4px;">警告</div>
+                            <div>${message}</div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(warningToast);
+                
+                // 顯示動畫
+                setTimeout(() => {
+                    warningToast.style.opacity = '1';
+                    warningToast.style.transform = 'translateX(0)';
+                }, 100);
+                
+                // 4秒後自動隱藏
+                setTimeout(() => {
+                    warningToast.style.opacity = '0';
+                    warningToast.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        if (warningToast.parentNode) {
+                            warningToast.parentNode.removeChild(warningToast);
+                        }
+                    }, 300);
+                }, 4000);
+            }
+
+            // 重試機制
+            async retry(fn, context = null) {
+                try {
+                    const result = await fn();
+                    this.retryCount = 0; // 重置重試計數
+                    return result;
+                } catch (error) {
+                    this.retryCount++;
+                    
+                    if (this.retryCount <= this.maxRetries) {
+                        console.warn(`⚠️ 重試 ${this.retryCount}/${this.maxRetries}:`, error.message);
+                        this.showWarning(`正在重試... (${this.retryCount}/${this.maxRetries})`);
+                        
+                        // 等待後重試
+                        await new Promise(resolve => setTimeout(resolve, this.retryDelay * this.retryCount));
+                        return this.retry(fn, context);
+                    } else {
+                        console.error('❌ 重試失敗，已達到最大重試次數:', error);
+                        this.showError(`操作失敗，已重試 ${this.maxRetries} 次`);
+                        throw error;
+                    }
+                }
+            }
+
+            // 全域錯誤捕獲
+            setupGlobalErrorHandling() {
+                // 捕獲未處理的Promise錯誤
+                window.addEventListener('unhandledrejection', (event) => {
+                    console.error('❌ 未處理的Promise錯誤:', event.reason);
+                    this.showError('發生未預期的錯誤，請重新整理頁面');
+                    event.preventDefault();
+                });
+
+                // 捕獲JavaScript錯誤
+                window.addEventListener('error', (event) => {
+                    console.error('❌ JavaScript錯誤:', event.error);
+                    this.showError('發生JavaScript錯誤，請檢查控制台');
+                });
+            }
+        }
+
+        // 創建全域錯誤處理器
+        const errorHandler = new ErrorHandler();
+        errorHandler.setupGlobalErrorHandling();
 
         // 更新學生狀態
         function updateStudentStatus(studentId, status) {
