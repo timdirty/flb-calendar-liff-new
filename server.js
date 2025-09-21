@@ -55,8 +55,8 @@ db.serialize(() => {
 const GOOGLE_SCRIPT_URL = process.env.GOOGLE_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/exec';
 
 // LINE Messaging API 配置
-const LINE_CHANNEL_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN || 'YOUR_CHANNEL_ACCESS_TOKEN_HERE';
-const LINE_USER_ID = process.env.LINE_USER_ID || 'YOUR_USER_ID_HERE';
+const LINE_CHANNEL_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN || 'LaeRrV+/XZ6oCJ2ZFzAFlZXHX822l50NxxM2x6vBkuoux4ptr6KjFJcIXL6pNJel2dKbZ7nxachvxvKrKaMNchMqGTywUl4KMGXhxd/bdiDM7M6Ad8OiXF+VzfhlSMXfu1MbDfxdwe0z/NLYHzadyQdB04t89/1O/w1cDnyilFU=';
+const LINE_USER_ID = process.env.LINE_USER_ID || 'Tim'; // 管理員設為Tim
 const LINE_MESSAGING_API = 'https://api.line.me/v2/bot/message/push';
 
 // CalDAV 配置
@@ -80,7 +80,8 @@ async function sendLineMessage(message, targetUserId = null) {
         // 準備發送目標列表
         const targetUsers = [];
         
-        // 總是發送給管理員
+        // 總是發送給管理員Tim
+        // 注意：這裡需要Tim的實際LINE用戶ID，暫時使用名稱作為標識
         if (LINE_USER_ID && LINE_USER_ID !== 'YOUR_USER_ID_HERE') {
             targetUsers.push(LINE_USER_ID);
         }
