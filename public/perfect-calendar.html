@@ -3779,6 +3779,9 @@
                 rgba(255, 255, 255, 0.95) 100%) !important;
             backdrop-filter: blur(20px) !important;
             -webkit-backdrop-filter: blur(20px) !important;
+            border-radius: 16px !important;
+            padding: 20px !important;
+            margin-bottom: 15px !important;
         }
 
         @keyframes releaseAnimation {
@@ -3814,8 +3817,11 @@
             }
             100% {
                 transform: scale(1) translateY(0px);
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-                border: 1px solid rgba(0, 0, 0, 0.1);
+                box-shadow: 
+                    0 8px 25px rgba(0, 0, 0, 0.15),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+                    0 0 0 1px rgba(255, 215, 0, 0.2);
+                border: 2px solid rgba(255, 215, 0, 0.3);
                 opacity: 1;
                 visibility: visible;
                 display: block;
@@ -7565,11 +7571,31 @@ async function loadTodayEvents() {
                     
                     // 釋放動畫完成後移除類別
                     setTimeout(() => {
-                        eventCard.classList.remove('releasing');
-                        // 確保元素保持可見
+                        // 先移除動畫，讓元素回到正常狀態
+                        eventCard.style.animation = 'none';
+                        eventCard.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                        
+                        // 重置到正常狀態
+                        eventCard.style.transform = 'scale(1) translateY(0px)';
+                        eventCard.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 0 0 1px rgba(255, 215, 0, 0.2)';
+                        eventCard.style.border = '2px solid rgba(255, 215, 0, 0.3)';
                         eventCard.style.opacity = '1';
                         eventCard.style.visibility = 'visible';
                         eventCard.style.display = 'block';
+                        
+                        // 短暫延遲後移除類別，讓過渡完成
+                        setTimeout(() => {
+                            eventCard.classList.remove('releasing');
+                            // 清除手動設定的樣式，讓CSS接管
+                            eventCard.style.animation = '';
+                            eventCard.style.transition = '';
+                            eventCard.style.transform = '';
+                            eventCard.style.boxShadow = '';
+                            eventCard.style.border = '';
+                            eventCard.style.opacity = '';
+                            eventCard.style.visibility = '';
+                            eventCard.style.display = '';
+                        }, 100);
                     }, 600);
                     
                     console.log('❌ 長按中斷，播放釋放動畫');
@@ -7597,11 +7623,31 @@ async function loadTodayEvents() {
                     
                     // 釋放動畫完成後移除類別
                     setTimeout(() => {
-                        eventCard.classList.remove('releasing');
-                        // 確保元素保持可見
+                        // 先移除動畫，讓元素回到正常狀態
+                        eventCard.style.animation = 'none';
+                        eventCard.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                        
+                        // 重置到正常狀態
+                        eventCard.style.transform = 'scale(1) translateY(0px)';
+                        eventCard.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 0 0 1px rgba(255, 215, 0, 0.2)';
+                        eventCard.style.border = '2px solid rgba(255, 215, 0, 0.3)';
                         eventCard.style.opacity = '1';
                         eventCard.style.visibility = 'visible';
                         eventCard.style.display = 'block';
+                        
+                        // 短暫延遲後移除類別，讓過渡完成
+                        setTimeout(() => {
+                            eventCard.classList.remove('releasing');
+                            // 清除手動設定的樣式，讓CSS接管
+                            eventCard.style.animation = '';
+                            eventCard.style.transition = '';
+                            eventCard.style.transform = '';
+                            eventCard.style.boxShadow = '';
+                            eventCard.style.border = '';
+                            eventCard.style.opacity = '';
+                            eventCard.style.visibility = '';
+                            eventCard.style.display = '';
+                        }, 100);
                     }, 600);
                     
                     console.log('❌ 滑鼠離開，播放釋放動畫');
@@ -7682,11 +7728,31 @@ async function loadTodayEvents() {
                     
                     // 釋放動畫完成後移除類別
                     setTimeout(() => {
-                        eventCard.classList.remove('releasing');
-                        // 確保元素保持可見
+                        // 先移除動畫，讓元素回到正常狀態
+                        eventCard.style.animation = 'none';
+                        eventCard.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                        
+                        // 重置到正常狀態
+                        eventCard.style.transform = 'scale(1) translateY(0px)';
+                        eventCard.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 0 0 1px rgba(255, 215, 0, 0.2)';
+                        eventCard.style.border = '2px solid rgba(255, 215, 0, 0.3)';
                         eventCard.style.opacity = '1';
                         eventCard.style.visibility = 'visible';
                         eventCard.style.display = 'block';
+                        
+                        // 短暫延遲後移除類別，讓過渡完成
+                        setTimeout(() => {
+                            eventCard.classList.remove('releasing');
+                            // 清除手動設定的樣式，讓CSS接管
+                            eventCard.style.animation = '';
+                            eventCard.style.transition = '';
+                            eventCard.style.transform = '';
+                            eventCard.style.boxShadow = '';
+                            eventCard.style.border = '';
+                            eventCard.style.opacity = '';
+                            eventCard.style.visibility = '';
+                            eventCard.style.display = '';
+                        }, 100);
                     }, 600);
                     
                     console.log('❌ 觸控長按中斷，播放釋放動畫');
