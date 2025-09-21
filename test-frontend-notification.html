@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前端通知功能測試</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: #f9f9f9;
+        }
+        .test-section h3 {
+            color: #555;
+            margin-top: 0;
+        }
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f0f0f0;
+            border-left: 4px solid #667eea;
+        }
+        .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔔 前端通知功能測試</h1>
+        
+        <div class="test-section">
+            <h3>📱 Toast 通知測試</h3>
+            <button onclick="testToast('success', '✅ 成功通知測試')">測試成功通知</button>
+            <button onclick="testToast('error', '❌ 錯誤通知測試')">測試錯誤通知</button>
+            <div id="toast-result" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📤 學生簽到通知測試</h3>
+            <button onclick="testStudentNotification('Ted', 'SPM', ['陳小明'], [], [])">單一學生出席</button>
+            <button onclick="testStudentNotification('Agnes', 'ESM', ['李小華', '王大雄'], ['張小美'], ['劉小強'])">多學生混合</button>
+            <button onclick="testStudentNotification('Hansen', 'BOOST', [], ['學生A', '學生B'], [])">全部缺席</button>
+            <button onclick="testStudentNotification('Yoki 🙏🏻', 'SPIKE', ['測試學生'], [], [])">特殊字符講師</button>
+            <div id="notification-result" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔍 講師查詢測試</h3>
+            <button onclick="testTeacherQuery('Tim')">查詢 Tim</button>
+            <button onclick="testTeacherQuery('Ted')">查詢 Ted</button>
+            <button onclick="testTeacherQuery('Yoki 🙏🏻')">查詢 Yoki 🙏🏻</button>
+            <button onclick="testTeacherQuery('UnknownTeacher')">查詢未知講師</button>
+            <div id="teacher-result" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Toast 通知函數
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.background = type === 'success' ? '#28a745' : '#dc3545';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        }
+        
+        // 測試 Toast 通知
+        function testToast(type, message) {
+            showToast(message, type);
+            const result = document.getElementById('toast-result');
+            result.style.display = 'block';
+            result.className = `result ${type}`;
+            result.innerHTML = `<strong>${type === 'success' ? '✅' : '❌'} Toast 測試結果:</strong><br>${message}`;
+        }
+        
+        // 測試學生簽到通知
+        async function testStudentNotification(teacherName, courseName, presentStudents, absentStudents, unmarkedStudents) {
+            const result = document.getElementById('notification-result');
+            result.style.display = 'block';
+            result.className = 'result';
+            result.innerHTML = '⏳ 正在發送通知...';
+            
+            try {
+                const response = await fetch('/api/student-attendance-notification', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: `📚 學生簽到通知\n\n👨‍🏫 講師：${teacherName}\n📖 課程：${courseName}\n📅 日期：${new Date().toLocaleDateString('zh-TW')}\n\n${presentStudents.length > 0 ? `✅ 出席 (${presentStudents.length}人)：\n${presentStudents.join('、')}\n\n` : ''}${absentStudents.length > 0 ? `❌ 缺席 (${absentStudents.length}人)：\n${absentStudents.join('、')}\n\n` : ''}${unmarkedStudents.length > 0 ? `⏳ 未選擇 (${unmarkedStudents.length}人)：\n${unmarkedStudents.join('、')}\n\n` : ''}⏰ 簽到時間：${new Date().toLocaleString('zh-TW')}`,
+                        teacherName: teacherName,
+                        courseName: courseName,
+                        presentStudents: presentStudents,
+                        absentStudents: absentStudents,
+                        unmarkedStudents: unmarkedStudents
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    result.className = 'result success';
+                    result.innerHTML = `<strong>✅ 通知發送成功!</strong><br>
+                        <strong>講師:</strong> ${teacherName}<br>
+                        <strong>課程:</strong> ${courseName}<br>
+                        <strong>講師 User ID:</strong> ${data.teacherUserId || '未找到'}<br>
+                        <strong>出席學生:</strong> ${presentStudents.length}人<br>
+                        <strong>缺席學生:</strong> ${absentStudents.length}人<br>
+                        <strong>未選擇學生:</strong> ${unmarkedStudents.length}人`;
+                    showToast('✅ 通知發送成功!', 'success');
+                } else {
+                    result.className = 'result error';
+                    result.innerHTML = `<strong>❌ 通知發送失敗!</strong><br>${data.error || data.message}`;
+                    showToast('❌ 通知發送失敗!', 'error');
+                }
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = `<strong>❌ 發送錯誤!</strong><br>${error.message}`;
+                showToast('❌ 發送錯誤!', 'error');
+            }
+        }
+        
+        // 測試講師查詢
+        async function testTeacherQuery(teacherName) {
+            const result = document.getElementById('teacher-result');
+            result.style.display = 'block';
+            result.className = 'result';
+            result.innerHTML = '⏳ 正在查詢講師...';
+            
+            try {
+                const response = await fetch(`/api/teacher-user-id/${encodeURIComponent(teacherName)}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    result.className = 'result success';
+                    result.innerHTML = `<strong>✅ 講師查詢成功!</strong><br>
+                        <strong>講師名稱:</strong> ${data.teacherName}<br>
+                        <strong>User ID:</strong> ${data.userId || '未找到'}`;
+                    showToast(`✅ 找到講師 ${teacherName}!`, 'success');
+                } else {
+                    result.className = 'result error';
+                    result.innerHTML = `<strong>❌ 講師查詢失敗!</strong><br>${data.error || data.message}`;
+                    showToast(`❌ 找不到講師 ${teacherName}!`, 'error');
+                }
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = `<strong>❌ 查詢錯誤!</strong><br>${error.message}`;
+                showToast('❌ 查詢錯誤!', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

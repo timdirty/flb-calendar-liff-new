@@ -8079,7 +8079,7 @@ async function loadTodayEvents() {
                         overflow: hidden;
                     ">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                            <div>
+                            <div style="flex: 1;">
                                 <h2 style="margin: 0; color: #333333; font-size: 1.5rem; text-shadow: none;">
                                     <i class="fas fa-calendar-check" style="color: #b8860b; margin-right: 10px; text-shadow: 0 0 10px rgba(184, 134, 11, 0.5);"></i>
                                     課程簽到系統
@@ -8095,6 +8095,7 @@ async function loadTodayEvents() {
                                         }
                                     </div>
                                 ` : ''}
+                                <div class="attendance-progress"></div>
                             </div>
                             <button id="closeAttendanceModal" class="close-attendance-modal" style="
                                 background: rgba(255, 255, 255, 0.2);
@@ -8116,6 +8117,8 @@ async function loadTodayEvents() {
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
+                        
+                        <div class="attendance-completion"></div>
                         
                         <div class="course-info" style="
                             margin-bottom: 20px; 
@@ -8933,12 +8936,23 @@ async function loadTodayEvents() {
                 
                 // 更新學生簽到狀態並觸發通知檢查
                 studentAttendanceStatus[studentId] = status;
+                updateAttendanceProgress(); // 更新進度顯示
                 startAttendanceCheckTimer();
                 
             } catch (error) {
                 console.error('❌ 儲存單筆簽到記錄失敗:', error);
                 alert(`儲存失敗: ${error.message}\n\n請重試。`);
             }
+        }
+
+        // 檢測是否所有學生都已簽到
+        function checkAllStudentsMarked() {
+            const studentCards = document.querySelectorAll('.student-card');
+            const totalStudents = studentCards.length;
+            const markedStudents = Object.keys(studentAttendanceStatus).length;
+            
+            console.log(`🔍 簽到完成檢測: ${markedStudents}/${totalStudents} 學生已標記`);
+            return markedStudents === totalStudents;
         }
 
         // 啟動簽到檢查定時器
@@ -8948,7 +8962,15 @@ async function loadTodayEvents() {
                 clearTimeout(attendanceCheckTimer);
             }
             
-            // 設置新的定時器，3秒後檢查並發送通知
+            // 如果所有學生都已簽到，立即發送通知
+            if (checkAllStudentsMarked()) {
+                console.log('✅ 所有學生已簽到完成，立即發送通知');
+                sendBatchAttendanceNotification();
+                return;
+            }
+            
+            // 否則等待3秒後檢查並發送通知
+            console.log('⏰ 等待3秒後發送通知...');
             attendanceCheckTimer = setTimeout(() => {
                 sendBatchAttendanceNotification();
             }, 3000);
@@ -8995,11 +9017,22 @@ async function loadTodayEvents() {
                 }
             });
             
+            // 檢查是否所有學生都已簽到
+            const allStudentsMarked = checkAllStudentsMarked();
+            const totalStudents = presentStudents.length + absentStudents.length + unmarkedStudents.length;
+            
             // 構建通知訊息
             let message = `📚 學生簽到通知\n\n`;
             message += `👨‍🏫 講師：${teacher || '未知講師'}\n`;
             message += `📖 課程：${course || '未知課程'}\n`;
             message += `📅 日期：${new Date().toLocaleDateString('zh-TW')}\n\n`;
+            
+            // 簽到完成狀態
+            if (allStudentsMarked) {
+                message += `🎉 簽到完成！所有學生已標記\n\n`;
+            } else {
+                message += `⏳ 簽到進行中 (${Object.keys(studentAttendanceStatus).length}/${totalStudents} 已標記)\n\n`;
+            }
             
             if (presentStudents.length > 0) {
                 message += `✅ 出席 (${presentStudents.length}人)：\n${presentStudents.join('、')}\n\n`;
@@ -9067,6 +9100,41 @@ async function loadTodayEvents() {
                 };
             }
             return null;
+        }
+
+        // 更新簽到進度顯示
+        function updateAttendanceProgress() {
+            const studentCards = document.querySelectorAll('.student-card');
+            const totalStudents = studentCards.length;
+            const markedStudents = Object.keys(studentAttendanceStatus).length;
+            const progress = totalStudents > 0 ? (markedStudents / totalStudents) * 100 : 0;
+            
+            // 更新modal標題中的進度
+            const progressElement = document.querySelector('.attendance-progress');
+            if (progressElement) {
+                progressElement.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+                        <div style="flex: 1; background: rgba(255,255,255,0.2); border-radius: 10px; height: 8px; overflow: hidden;">
+                            <div style="width: ${progress}%; height: 100%; background: linear-gradient(90deg, #28a745, #20c997); transition: width 0.3s ease; border-radius: 10px;"></div>
+                        </div>
+                        <span style="font-size: 0.9rem; font-weight: 600; color: #fff;">
+                            ${markedStudents}/${totalStudents}
+                        </span>
+                    </div>
+                `;
+            }
+            
+            // 如果所有學生都已簽到，顯示完成狀態
+            if (markedStudents === totalStudents && totalStudents > 0) {
+                const completionElement = document.querySelector('.attendance-completion');
+                if (completionElement) {
+                    completionElement.innerHTML = `
+                        <div style="text-align: center; margin-top: 15px; padding: 10px; background: rgba(40, 167, 69, 0.2); border-radius: 10px; border: 2px solid #28a745;">
+                            <span style="font-size: 1.1rem; font-weight: 600; color: #28a745;">🎉 簽到完成！</span>
+                        </div>
+                    `;
+                }
+            }
         }
 
         // 重置簽到通知狀態（當開始新的簽到時）
