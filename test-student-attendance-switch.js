@@ -176,3 +176,4 @@ async function testStudentAttendanceSwitch() {
 
 // 運行測試
 testStudentAttendanceSwitch().catch(console.error);
+
