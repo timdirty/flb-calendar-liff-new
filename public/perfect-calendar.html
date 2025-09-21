@@ -8660,10 +8660,11 @@ async function loadTodayEvents() {
             
         // 設置課程監聽器（延遲執行確保DOM已渲染）
         setTimeout(() => {
-            setupAttendanceEventListeners(teacher, course, time, start, end);
-            
-            // 設置學生卡片雙擊課程監聽器
+            // 先設置學生卡片雙擊課程監聽器（因為它會重新創建元素）
             setupStudentCardDoubleClickListeners();
+            
+            // 再設置按鈕事件監聽器
+            setupAttendanceEventListeners(teacher, course, time, start, end);
             
             updateAttendanceStats();
         }, 100);
@@ -9079,11 +9080,7 @@ async function loadTodayEvents() {
 
         // 設置學生卡片雙擊課程監聽器
         function setupStudentCardDoubleClickListeners() {
-            // 先移除所有現有的學生卡片事件監聽器
-            const existingCards = document.querySelectorAll('.student-card');
-            existingCards.forEach(card => {
-                card.replaceWith(card.cloneNode(true));
-            });
+            // 直接綁定學生卡片事件監聽器，不重新創建元素
             
             const studentCards = document.querySelectorAll('.student-card');
             studentCards.forEach(card => {
