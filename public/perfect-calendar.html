@@ -8200,6 +8200,19 @@ async function loadTodayEvents() {
                 console.log('✅ 找到已載入的學生資料，重新創建學生簽到內容');
                 // 如果已經有學生資料，重新創建學生簽到內容並顯示已載入的資料
                 recreateStudentAttendanceContent();
+            } else if (studentListLoadPromise) {
+                console.log('⏳ 學生資料正在背景載入中，等待載入完成');
+                // 如果正在背景載入，等待載入完成
+                showStudentLoadingState();
+                studentListLoadPromise.then(() => {
+                    console.log('✅ 背景載入完成，恢復學生簽到內容');
+                    hideStudentLoadingState();
+                    restoreStudentAttendanceContent(); // 遞歸調用，重新檢查
+                }).catch((error) => {
+                    console.error('❌ 背景載入失敗:', error);
+                    hideStudentLoadingState();
+                    showLoadingContent();
+                });
             } else {
                 console.log('⚠️ 沒有找到已載入的學生資料，顯示載入畫面');
                 // 如果沒有學生資料，顯示載入畫面
@@ -8823,9 +8836,27 @@ async function loadTodayEvents() {
         function startBackgroundStudentLoading() {
             console.log('🔄 開始背景載入學生名單...');
             
-            studentListLoadPromise = new Promise((resolve) => {
-                // 模擬載入過程
-                setTimeout(() => {
+            // 獲取當前課程資料
+            const currentData = window.currentAttendanceData;
+            if (!currentData) {
+                console.error('❌ 沒有當前課程資料，無法背景載入');
+                isStudentListLoading = false;
+                studentListLoadPromise = null;
+                return;
+            }
+            
+            studentListLoadPromise = new Promise(async (resolve) => {
+                try {
+                    // 實際載入學生資料
+                    await loadCourseStudents(
+                        currentData.teacher,
+                        currentData.course,
+                        currentData.time,
+                        currentData.start,
+                        currentData.end,
+                        currentData.minutesUntilStart
+                    );
+                    
                     console.log('✅ 背景載入學生名單完成');
                     isStudentListLoading = false;
                     studentListLoadPromise = null;
@@ -8834,7 +8865,16 @@ async function loadTodayEvents() {
                     showToast('學生名單載入完成！', 'success');
                     
                     resolve();
-                }, 3000); // 3秒載入時間
+                } catch (error) {
+                    console.error('❌ 背景載入學生名單失敗:', error);
+                    isStudentListLoading = false;
+                    studentListLoadPromise = null;
+                    
+                    // 顯示載入失敗通知
+                    showToast('學生名單載入失敗，請重試', 'error');
+                    
+                    resolve(); // 即使失敗也要resolve，避免Promise pending
+                }
             });
         }
 
