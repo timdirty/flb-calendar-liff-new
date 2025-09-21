@@ -56,8 +56,19 @@ const GOOGLE_SCRIPT_URL = process.env.GOOGLE_SCRIPT_URL || 'https://script.googl
 
 // LINE Messaging API 配置
 const LINE_CHANNEL_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN || 'LaeRrV+/XZ6oCJ2ZFzAFlZXHX822l50NxxM2x6vBkuoux4ptr6KjFJcIXL6pNJel2dKbZ7nxachvxvKrKaMNchMqGTywUl4KMGXhxd/bdiDM7M6Ad8OiXF+VzfhlSMXfu1MbDfxdwe0z/NLYHzadyQdB04t89/1O/w1cDnyilFU=';
-const LINE_USER_ID = process.env.LINE_USER_ID || 'Tim'; // 管理員設為Tim
 const LINE_MESSAGING_API = 'https://api.line.me/v2/bot/message/push';
+
+// 載入講師資料
+let teacherData = null;
+try {
+    teacherData = require('./teacher_data.json');
+    console.log('✅ 講師資料載入成功');
+} catch (error) {
+    console.error('❌ 載入講師資料失敗:', error.message);
+}
+
+// 管理員設定
+const ADMIN_USER_ID = teacherData?.teachers?.Tim || 'Udb51363eb6fdc605a6a9816379a38103'; // Tim的管理員ID
 
 // CalDAV 配置
 const CALDAV_CONFIG = {
@@ -81,13 +92,12 @@ async function sendLineMessage(message, targetUserId = null) {
         const targetUsers = [];
         
         // 總是發送給管理員Tim
-        // 注意：這裡需要Tim的實際LINE用戶ID，暫時使用名稱作為標識
-        if (LINE_USER_ID && LINE_USER_ID !== 'YOUR_USER_ID_HERE') {
-            targetUsers.push(LINE_USER_ID);
+        if (ADMIN_USER_ID) {
+            targetUsers.push(ADMIN_USER_ID);
         }
         
         // 如果指定了特定使用者，也發送給該使用者
-        if (targetUserId && targetUserId !== LINE_USER_ID) {
+        if (targetUserId && targetUserId !== ADMIN_USER_ID) {
             targetUsers.push(targetUserId);
         }
         
@@ -378,6 +388,17 @@ function getTeacherMatchHistory(userId) {
 // 根據講師名稱獲取user ID
 function getUserIdByTeacherName(teacherName) {
     return new Promise((resolve, reject) => {
+        // 首先嘗試從teacher_data.json中查找
+        if (teacherData && teacherData.teachers) {
+            const userId = teacherData.teachers[teacherName];
+            if (userId) {
+                console.log(`✅ 從teacher_data.json找到講師 "${teacherName}" 的user ID: ${userId}`);
+                resolve(userId);
+                return;
+            }
+        }
+        
+        // 如果沒找到，再從資料庫中查找
         db.get(
             'SELECT user_id FROM teacher_matches WHERE teacher_name = ? ORDER BY confidence DESC, created_at DESC LIMIT 1',
             [teacherName],
@@ -385,7 +406,13 @@ function getUserIdByTeacherName(teacherName) {
                 if (err) {
                     reject(err);
                 } else {
-                    resolve(row ? row.user_id : null);
+                    const userId = row ? row.user_id : null;
+                    if (userId) {
+                        console.log(`✅ 從資料庫找到講師 "${teacherName}" 的user ID: ${userId}`);
+                    } else {
+                        console.log(`❌ 找不到講師 "${teacherName}" 的user ID`);
+                    }
+                    resolve(userId);
                 }
             }
         );
@@ -395,6 +422,22 @@ function getUserIdByTeacherName(teacherName) {
 // 獲取所有講師與user ID的對應關係
 function getAllTeacherUserMapping() {
     return new Promise((resolve, reject) => {
+        // 優先使用teacher_data.json中的資料
+        if (teacherData && teacherData.teachers) {
+            const mapping = {};
+            Object.entries(teacherData.teachers).forEach(([teacherName, userId]) => {
+                mapping[teacherName] = {
+                    userId: userId,
+                    confidence: 1.0, // 從JSON文件來的資料信心度設為1.0
+                    source: 'teacher_data.json'
+                };
+            });
+            console.log('✅ 使用teacher_data.json中的講師映射資料');
+            resolve(mapping);
+            return;
+        }
+        
+        // 如果沒有JSON文件，從資料庫中查找
         db.all(
             `SELECT DISTINCT teacher_name, user_id, MAX(confidence) as max_confidence, MAX(created_at) as latest_match
              FROM teacher_matches 
@@ -411,10 +454,12 @@ function getAllTeacherUserMapping() {
                             mapping[row.teacher_name] = {
                                 userId: row.user_id,
                                 confidence: row.max_confidence,
-                                latestMatch: row.latest_match
+                                latestMatch: row.latest_match,
+                                source: 'database'
                             };
                         }
                     });
+                    console.log('✅ 使用資料庫中的講師映射資料');
                     resolve(mapping);
                 }
             }

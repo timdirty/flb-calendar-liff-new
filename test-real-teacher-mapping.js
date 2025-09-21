@@ -1,7 +1,7 @@
 const axios = require('axios');
 
-async function testTeacherMapping() {
-    console.log('🚀 開始測試講師user ID映射功能...');
+async function testRealTeacherMapping() {
+    console.log('🚀 開始測試真實講師user ID映射功能...');
     
     const baseUrl = 'http://localhost:3000';
     
@@ -13,7 +13,7 @@ async function testTeacherMapping() {
         
         // 測試根據講師名稱獲取user ID
         console.log('\n🔍 測試根據講師名稱獲取user ID...');
-        const testTeachers = ['Ted', 'Tim', 'Yoki', 'Agnes'];
+        const testTeachers = ['Tim', 'Ted', 'Yoki 🙏🏻', 'Agnes', 'Hansen'];
         
         for (const teacherName of testTeachers) {
             try {
@@ -24,7 +24,7 @@ async function testTeacherMapping() {
             }
         }
         
-        // 測試學生簽到通知（如果找到講師user ID）
+        // 測試學生簽到通知
         console.log('\n🔔 測試學生簽到通知...');
         const testNotificationData = {
             message: `📚 學生簽到通知測試\n\n👨‍🏫 講師：Ted\n📖 課程：SPM\n📅 日期：${new Date().toLocaleDateString('zh-TW')}\n\n✅ 出席 (1人)：\n測試學生\n\n⏰ 簽到時間：${new Date().toLocaleString('zh-TW')}`,
@@ -44,4 +44,4 @@ async function testTeacherMapping() {
 }
 
 // 執行測試
-testTeacherMapping().catch(console.error);
+testRealTeacherMapping().catch(console.error);
