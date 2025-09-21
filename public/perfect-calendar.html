@@ -7885,24 +7885,66 @@ async function loadTodayEvents() {
         
         // 使用儲存的課程資訊更新顯示
         function updateDisplayWithStoredInfo() {
+            console.log('🔄 使用儲存的課程資訊更新顯示');
+            console.log('🔍 storedCourseInfo:', storedCourseInfo);
+            
             const timeElement = document.getElementById('currentTime');
             const dateElement = document.getElementById('currentDate');
             const teacherElement = document.getElementById('currentTeacher');
             const courseElement = document.getElementById('currentCourse');
             
+            console.log('🔍 元素檢查:', {
+                timeElement: !!timeElement,
+                dateElement: !!dateElement,
+                teacherElement: !!teacherElement,
+                courseElement: !!courseElement
+            });
+            
             if (timeElement && storedCourseInfo.time) {
+                console.log('🔍 更新時間元素:', storedCourseInfo.time);
                 timeElement.textContent = storedCourseInfo.time;
+                console.log('✅ 時間元素已更新');
+            } else {
+                console.log('❌ 時間元素更新失敗:', {
+                    timeElement: !!timeElement,
+                    timeValue: storedCourseInfo.time
+                });
             }
+            
             if (dateElement && storedCourseInfo.date) {
+                console.log('🔍 更新日期元素:', storedCourseInfo.date);
                 dateElement.textContent = storedCourseInfo.date;
+                console.log('✅ 日期元素已更新');
+            } else {
+                console.log('❌ 日期元素更新失敗:', {
+                    dateElement: !!dateElement,
+                    dateValue: storedCourseInfo.date
+                });
             }
+            
             if (teacherElement && storedCourseInfo.teacher) {
+                console.log('🔍 更新講師元素:', storedCourseInfo.teacher);
                 teacherElement.textContent = storedCourseInfo.teacher;
+                console.log('✅ 講師元素已更新');
+            } else {
+                console.log('❌ 講師元素更新失敗:', {
+                    teacherElement: !!teacherElement,
+                    teacherValue: storedCourseInfo.teacher
+                });
             }
+            
             if (courseElement && storedCourseInfo.course) {
+                console.log('🔍 更新課程元素:', storedCourseInfo.course);
                 courseElement.textContent = storedCourseInfo.course;
+                console.log('✅ 課程元素已更新');
+            } else {
+                console.log('❌ 課程元素更新失敗:', {
+                    courseElement: !!courseElement,
+                    courseValue: storedCourseInfo.course
+                });
             }
-            console.log('🔄 使用儲存的課程資訊更新顯示');
+            
+            console.log('🔄 使用儲存的課程資訊更新顯示完成');
         }
         
         function updateCourseInfoDisplay() {
