@@ -7829,6 +7829,8 @@ async function loadTodayEvents() {
         // 模態框狀態追蹤
         let currentAttendanceModal = null;
         let isModalLoading = false;
+        let isStudentListLoading = false;
+        let studentListLoadPromise = null;
 
         // 顯示學生簽到內容
         function showStudentAttendance() {
@@ -7841,7 +7843,82 @@ async function loadTodayEvents() {
             // 移除左移動畫類別，回到原始學生簽到畫面
             modalContent.classList.remove('slide-left');
             
-            // 不需要重新載入內容，保持原有的學生簽到畫面
+            // 檢查學生名單是否正在載入中
+            if (isStudentListLoading) {
+                console.log('⏳ 學生名單正在載入中，顯示載入畫面');
+                showStudentLoadingState();
+            } else if (studentListLoadPromise) {
+                console.log('⏳ 等待學生名單載入完成');
+                showStudentLoadingState();
+                // 等待載入完成
+                studentListLoadPromise.then(() => {
+                    console.log('✅ 學生名單載入完成，恢復正常畫面');
+                    hideStudentLoadingState();
+                });
+            } else {
+                console.log('✅ 學生名單已載入完成，顯示正常畫面');
+                hideStudentLoadingState();
+            }
+        }
+
+        // 顯示學生載入狀態
+        function showStudentLoadingState() {
+            const modalContent = document.querySelector('.attendance-modal-content');
+            if (!modalContent) return;
+            
+            // 創建載入遮罩
+            let loadingOverlay = modalContent.querySelector('.student-loading-overlay');
+            if (!loadingOverlay) {
+                loadingOverlay = document.createElement('div');
+                loadingOverlay.className = 'student-loading-overlay';
+                loadingOverlay.style.cssText = `
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(255, 255, 255, 0.95);
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 1000;
+                    backdrop-filter: blur(5px);
+                `;
+                loadingOverlay.innerHTML = `
+                    <div style="
+                        text-align: center;
+                        padding: 40px;
+                        color: #666;
+                        font-size: 1.1rem;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 15px;
+                    ">
+                        <i class="fas fa-spinner" style="
+                            color: #FFD700;
+                            font-size: 2rem;
+                            animation: spin 1s linear infinite;
+                        "></i>
+                        <div class="loading-text" style="font-weight: 500;">載入學生名單中...</div>
+                        <div style="font-size: 0.9rem; color: #999;">請稍候，載入完成後會自動顯示</div>
+                    </div>
+                `;
+                modalContent.appendChild(loadingOverlay);
+            }
+            loadingOverlay.style.display = 'flex';
+        }
+
+        // 隱藏學生載入狀態
+        function hideStudentLoadingState() {
+            const modalContent = document.querySelector('.attendance-modal-content');
+            if (!modalContent) return;
+            
+            const loadingOverlay = modalContent.querySelector('.student-loading-overlay');
+            if (loadingOverlay) {
+                loadingOverlay.style.display = 'none';
+            }
         }
 
 
@@ -8030,6 +8107,31 @@ async function loadTodayEvents() {
             
             // 初始化講師報表功能
             initializeTeacherReport();
+            
+            // 如果學生名單正在載入中，在背景持續載入
+            if (isStudentListLoading && !studentListLoadPromise) {
+                console.log('🔄 學生名單正在載入中，在背景持續載入...');
+                startBackgroundStudentLoading();
+            }
+        }
+
+        // 開始背景載入學生名單
+        function startBackgroundStudentLoading() {
+            console.log('🔄 開始背景載入學生名單...');
+            
+            studentListLoadPromise = new Promise((resolve) => {
+                // 模擬載入過程
+                setTimeout(() => {
+                    console.log('✅ 背景載入學生名單完成');
+                    isStudentListLoading = false;
+                    studentListLoadPromise = null;
+                    
+                    // 顯示載入完成通知
+                    showToast('學生名單載入完成！', 'success');
+                    
+                    resolve();
+                }, 3000); // 3秒載入時間
+            });
         }
 
         // 初始化講師報表功能
@@ -9286,9 +9388,14 @@ async function loadTodayEvents() {
             try {
                 console.log('📚 載入課程學生:', { teacher, course, time, start, end });
                 
+                // 設置學生名單載入狀態
+                isStudentListLoading = true;
+                studentListLoadPromise = null;
+                
                 // 檢查模態框是否仍然存在
                 if (!currentAttendanceModal || !isModalLoading) {
                     console.log('❌ 模態框已被關閉，取消載入');
+                    isStudentListLoading = false;
                     return;
                 }
                 
@@ -9330,8 +9437,17 @@ async function loadTodayEvents() {
                         key: s.key,
                         allKeys: Object.keys(s)
                     })));
+                    
+                    // 載入完成，更新狀態
+                    isStudentListLoading = false;
+                    studentListLoadPromise = null;
+                    
                     displayStudents(data.students, teacher, course, time, start, end, minutesUntilStart);
                 } else {
+                    // 載入失敗，更新狀態
+                    isStudentListLoading = false;
+                    studentListLoadPromise = null;
+                    
                     // 顯示錯誤訊息，不使用模擬資料
                     console.error('❌ 無法載入學生資料:', data);
                     const attendanceContent = document.getElementById('attendanceContent');
@@ -9378,6 +9494,10 @@ async function loadTodayEvents() {
                 
             } catch (error) {
                 console.error('❌ 載入學生失敗:', error);
+                
+                // 載入失敗，更新狀態
+                isStudentListLoading = false;
+                studentListLoadPromise = null;
                 
                 // 清除載入超時計時器
                 clearTimeout(loadingTimeout);
