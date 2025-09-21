@@ -54,6 +54,11 @@ db.serialize(() => {
 // Google Apps Script API 配置
 const GOOGLE_SCRIPT_URL = process.env.GOOGLE_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/exec';
 
+// LINE Messaging API 配置
+const LINE_CHANNEL_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN || 'YOUR_CHANNEL_ACCESS_TOKEN_HERE';
+const LINE_USER_ID = process.env.LINE_USER_ID || 'YOUR_USER_ID_HERE';
+const LINE_MESSAGING_API = 'https://api.line.me/v2/bot/message/push';
+
 // CalDAV 配置
 const CALDAV_CONFIG = {
     baseUrl: process.env.CALDAV_URL || 'https://funlearnbar.synology.me:9102/caldav.php',
@@ -63,6 +68,80 @@ const CALDAV_CONFIG = {
 
 // 初始化 CalDAV 客戶端
 let caldavClient = null;
+
+// LINE Messaging API 通知函數
+async function sendLineMessage(message, targetUserId = null) {
+    try {
+        if (!LINE_CHANNEL_ACCESS_TOKEN || LINE_CHANNEL_ACCESS_TOKEN === 'YOUR_CHANNEL_ACCESS_TOKEN_HERE') {
+            console.log('LINE Channel Access Token 未設定，跳過通知');
+            return { success: false, message: 'LINE Channel Access Token 未設定' };
+        }
+
+        // 準備發送目標列表
+        const targetUsers = [];
+        
+        // 總是發送給管理員
+        if (LINE_USER_ID && LINE_USER_ID !== 'YOUR_USER_ID_HERE') {
+            targetUsers.push(LINE_USER_ID);
+        }
+        
+        // 如果指定了特定使用者，也發送給該使用者
+        if (targetUserId && targetUserId !== LINE_USER_ID) {
+            targetUsers.push(targetUserId);
+        }
+        
+        if (targetUsers.length === 0) {
+            console.log('沒有有效的發送目標，跳過通知');
+            return { success: false, message: '沒有有效的發送目標' };
+        }
+
+        // 發送給所有目標使用者（改為順序發送以便更好的錯誤處理）
+        const results = [];
+        
+        for (const userId of targetUsers) {
+            try {
+                console.log(`正在發送LINE訊息給 ${userId}...`);
+
+                const response = await axios.post(LINE_MESSAGING_API, {
+                    to: userId,
+                    messages: [{
+                        type: 'text',
+                        text: message
+                    }]
+                }, {
+                    headers: {
+                        'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    timeout: 10000 // 10秒超時
+                });
+                
+                console.log(`✅ LINE 訊息發送成功給 ${userId}:`, response.data);
+                results.push({ success: true, userId, data: response.data });
+                
+                // 添加小延遲避免API限制
+                await new Promise(resolve => setTimeout(resolve, 200));
+                
+            } catch (error) {
+                console.error(`❌ LINE 訊息發送失敗給 ${userId}:`, error.response?.data || error.message);
+                results.push({ success: false, userId, error: error.response?.data || error.message });
+            }
+        }
+
+        // 檢查是否有任何成功的發送
+        const hasSuccess = results.some(result => result.success);
+        
+        return {
+            success: hasSuccess,
+            message: hasSuccess ? '通知發送成功' : '所有通知發送失敗',
+            results: results
+        };
+        
+    } catch (error) {
+        console.error('LINE 通知發送錯誤:', error);
+        return { success: false, message: error.message };
+    }
+}
 try {
     caldavClient = new CalDAVClient(CALDAV_CONFIG.baseUrl, CALDAV_CONFIG.username, CALDAV_CONFIG.password);
     console.log('CalDAV 客戶端初始化成功');
@@ -344,6 +423,50 @@ app.get('/test-course-parsing', (req, res) => {
 // 正式版本路由
 app.get('/calendar', (req, res) => {
     res.sendFile(path.join(__dirname, 'perfect-calendar.html'));
+});
+
+// 學生簽到通知API
+app.post('/api/student-attendance-notification', async (req, res) => {
+    try {
+        const { message, teacherName, courseName, presentStudents, absentStudents, unmarkedStudents } = req.body;
+        
+        if (!message) {
+            return res.json({ success: false, message: '請提供通知訊息' });
+        }
+
+        // 構建通知訊息
+        let notificationMessage = `📚 學生簽到通知\n\n`;
+        notificationMessage += `👨‍🏫 講師：${teacherName || '未知講師'}\n`;
+        notificationMessage += `📖 課程：${courseName || '未知課程'}\n`;
+        notificationMessage += `📅 日期：${new Date().toLocaleDateString('zh-TW')}\n\n`;
+        
+        if (presentStudents && presentStudents.length > 0) {
+            notificationMessage += `✅ 出席 (${presentStudents.length}人)：\n${presentStudents.join('、')}\n\n`;
+        }
+        
+        if (absentStudents && absentStudents.length > 0) {
+            notificationMessage += `❌ 缺席 (${absentStudents.length}人)：\n${absentStudents.join('、')}\n\n`;
+        }
+        
+        if (unmarkedStudents && unmarkedStudents.length > 0) {
+            notificationMessage += `⏳ 未選擇 (${unmarkedStudents.length}人)：\n${unmarkedStudents.join('、')}\n\n`;
+        }
+        
+        notificationMessage += `⏰ 簽到時間：${new Date().toLocaleString('zh-TW')}`;
+        
+        // 發送通知
+        const result = await sendLineMessage(notificationMessage);
+        
+        res.json({
+            success: result.success,
+            message: result.success ? '學生簽到通知發送成功' : '學生簽到通知發送失敗',
+            error: result.message
+        });
+        
+    } catch (error) {
+        console.error('學生簽到通知發送錯誤:', error);
+        res.json({ success: false, message: '通知發送失敗', error: error.message });
+    }
 });
 
 // 代理 Google Sheets API 請求

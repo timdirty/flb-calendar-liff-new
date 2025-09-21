@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>測試學生簽到通知功能</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+        
+        .test-button.danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+        }
+        
+        .test-button.warning {
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+            color: #212529;
+        }
+        
+        .log-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #28a745;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+            padding: 8px;
+            background: white;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #007bff; }
+        .warning { color: #ffc107; }
+        
+        .notification-preview {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: monospace;
+            white-space: pre-line;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔔 測試學生簽到通知功能</h1>
+        <p>測試LINE通知API和前端通知邏輯</p>
+        
+        <div class="test-section">
+            <h3>🔧 測試控制</h3>
+            <button class="test-button" id="testNotificationBtn">🔔 測試發送通知</button>
+            <button class="test-button warning" id="testToastBtn">🍞 測試Toast通知</button>
+            <button class="test-button danger" id="testErrorBtn">❌ 測試錯誤通知</button>
+            <button class="test-button" id="clearLogBtn">🗑️ 清除日誌</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>📱 通知預覽</h3>
+            <div class="notification-preview" id="notificationPreview">
+📚 學生簽到通知
+
+👨‍🏫 講師：Ted
+📖 課程：SPM
+📅 日期：2025/9/21
+
+✅ 出席 (1人)：
+Essie
+
+⏳ 未選擇 (1人)：
+Luna
+
+⏰ 簽到時間：2025/9/21 上午10:33:16
+            </div>
+        </div>
+        
+        <div class="log-container">
+            <h3>📊 測試日誌</h3>
+            <div id="testLog"></div>
+        </div>
+    </div>
+
+    <script>
+        // 添加日誌
+        function addLog(message, type = 'info') {
+            const logContainer = document.getElementById('testLog');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        // 顯示 Toast 通知（從 perfect-calendar.html 複製）
+        function showToast(message, type = 'success') {
+            // 創建 toast 元素
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#28a745' : '#dc3545'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                z-index: 10000;
+                font-size: 14px;
+                font-weight: 500;
+                max-width: 300px;
+                word-wrap: break-word;
+                opacity: 0;
+                transform: translateX(100%);
+                transition: all 0.3s ease;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            // 顯示動畫
+            setTimeout(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // 3秒後自動隱藏
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+        
+        // 測試發送通知
+        async function testSendNotification() {
+            try {
+                addLog('🔔 開始測試發送通知...', 'info');
+                
+                const testData = {
+                    message: `📚 學生簽到通知\n\n👨‍🏫 講師：Ted\n📖 課程：SPM\n📅 日期：${new Date().toLocaleDateString('zh-TW')}\n\n✅ 出席 (1人)：\nEssie\n\n⏳ 未選擇 (1人)：\nLuna\n\n⏰ 簽到時間：${new Date().toLocaleString('zh-TW')}`,
+                    teacherName: 'Ted',
+                    courseName: 'SPM',
+                    presentStudents: ['Essie'],
+                    absentStudents: [],
+                    unmarkedStudents: ['Luna']
+                };
+                
+                addLog(`📤 發送測試資料: ${JSON.stringify(testData, null, 2)}`, 'info');
+                
+                const response = await fetch('/api/student-attendance-notification', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                addLog(`📡 回應狀態: ${response.status} ${response.statusText}`, 'info');
+                
+                const data = await response.json();
+                addLog(`📥 回應資料: ${JSON.stringify(data, null, 2)}`, data.success ? 'success' : 'error');
+                
+                if (data.success) {
+                    addLog('✅ 通知發送成功！', 'success');
+                    showToast('✅ 通知發送成功！');
+                } else {
+                    addLog(`❌ 通知發送失敗: ${data.error}`, 'error');
+                    showToast('❌ 通知發送失敗', 'error');
+                }
+                
+            } catch (error) {
+                addLog(`❌ 測試過程中發生錯誤: ${error.message}`, 'error');
+                showToast('❌ 測試失敗', 'error');
+            }
+        }
+        
+        // 測試Toast通知
+        function testToastNotification() {
+            addLog('🍞 測試Toast通知...', 'info');
+            showToast('✅ 這是一個成功的Toast通知！');
+            addLog('✅ Toast通知已顯示', 'success');
+        }
+        
+        // 測試錯誤Toast通知
+        function testErrorToastNotification() {
+            addLog('❌ 測試錯誤Toast通知...', 'info');
+            showToast('❌ 這是一個錯誤的Toast通知！', 'error');
+            addLog('✅ 錯誤Toast通知已顯示', 'success');
+        }
+        
+        // 清除日誌
+        function clearLog() {
+            document.getElementById('testLog').innerHTML = '';
+            addLog('🗑️ 日誌已清除', 'info');
+        }
+        
+        // 頁面載入完成後執行
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('📱 頁面載入完成，開始測試', 'info');
+            
+            // 綁定控制按鈕事件監聽器
+            document.getElementById('testNotificationBtn').addEventListener('click', testSendNotification);
+            document.getElementById('testToastBtn').addEventListener('click', testToastNotification);
+            document.getElementById('testErrorBtn').addEventListener('click', testErrorToastNotification);
+            document.getElementById('clearLogBtn').addEventListener('click', clearLog);
+        });
+    </script>
+</body>
+</html>

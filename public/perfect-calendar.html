@@ -8611,6 +8611,9 @@ async function loadTodayEvents() {
                 `;
             }).join('');
             
+            // 重置通知狀態
+            resetAttendanceNotification();
+            
             attendanceContent.innerHTML = `
                 <div style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
                     <h3 style="margin: 0 0 12px 0; color: #333333; font-size: 1.1rem; text-shadow: none;">
@@ -8847,6 +8850,11 @@ async function loadTodayEvents() {
             });
         }
 
+        // 通知相關變數
+        let attendanceNotificationSent = false;
+        let studentAttendanceStatus = {};
+        let attendanceCheckTimer = null;
+
         // 儲存單筆簽到記錄
         async function saveSingleAttendanceRecord(teacher, course, time, start, end, studentId, studentName, status) {
             try {
@@ -8923,10 +8931,198 @@ async function loadTodayEvents() {
                 updateStudentStatus(studentId, status);
                 updateAttendanceStats();
                 
+                // 更新學生簽到狀態並觸發通知檢查
+                studentAttendanceStatus[studentId] = status;
+                startAttendanceCheckTimer();
+                
             } catch (error) {
                 console.error('❌ 儲存單筆簽到記錄失敗:', error);
                 alert(`儲存失敗: ${error.message}\n\n請重試。`);
             }
+        }
+
+        // 啟動簽到檢查定時器
+        function startAttendanceCheckTimer() {
+            // 清除舊的定時器
+            if (attendanceCheckTimer) {
+                clearTimeout(attendanceCheckTimer);
+            }
+            
+            // 設置新的定時器，3秒後檢查並發送通知
+            attendanceCheckTimer = setTimeout(() => {
+                sendBatchAttendanceNotification();
+            }, 3000);
+        }
+
+        // 批量發送學生簽到通知
+        async function sendBatchAttendanceNotification() {
+            // 如果已經發送過通知，不再重複發送
+            if (attendanceNotificationSent) return;
+            
+            // 檢查是否有任何學生被標記
+            const hasMarkedStudents = Object.keys(studentAttendanceStatus).length > 0;
+            if (!hasMarkedStudents) return;
+            
+            console.log('📤 準備發送學生簽到通知...');
+            
+            // 獲取當前課程信息
+            const currentEvent = getCurrentEventInfo();
+            if (!currentEvent) {
+                console.log('❌ 無法獲取當前課程信息');
+                return;
+            }
+            
+            const { teacher, course, time } = currentEvent;
+            
+            // 分類學生狀態
+            const presentStudents = [];
+            const absentStudents = [];
+            const unmarkedStudents = [];
+            
+            // 獲取所有學生卡片
+            const studentCards = document.querySelectorAll('.student-card');
+            studentCards.forEach(card => {
+                const studentName = card.querySelector('.student-name')?.textContent?.trim();
+                if (studentName) {
+                    const status = studentAttendanceStatus[studentName];
+                    if (status === 'present') {
+                        presentStudents.push(studentName);
+                    } else if (status === 'absent') {
+                        absentStudents.push(studentName);
+                    } else {
+                        unmarkedStudents.push(studentName);
+                    }
+                }
+            });
+            
+            // 構建通知訊息
+            let message = `📚 學生簽到通知\n\n`;
+            message += `👨‍🏫 講師：${teacher || '未知講師'}\n`;
+            message += `📖 課程：${course || '未知課程'}\n`;
+            message += `📅 日期：${new Date().toLocaleDateString('zh-TW')}\n\n`;
+            
+            if (presentStudents.length > 0) {
+                message += `✅ 出席 (${presentStudents.length}人)：\n${presentStudents.join('、')}\n\n`;
+            }
+            
+            if (absentStudents.length > 0) {
+                message += `❌ 缺席 (${absentStudents.length}人)：\n${absentStudents.join('、')}\n\n`;
+            }
+            
+            if (unmarkedStudents.length > 0) {
+                message += `⏳ 未選擇 (${unmarkedStudents.length}人)：\n${unmarkedStudents.join('、')}\n\n`;
+            }
+            
+            message += `⏰ 簽到時間：${new Date().toLocaleString('zh-TW')}`;
+            
+            try {
+                // 發送通知
+                const response = await fetch('/api/student-attendance-notification', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        teacherName: teacher,
+                        courseName: course,
+                        presentStudents: presentStudents,
+                        absentStudents: absentStudents,
+                        unmarkedStudents: unmarkedStudents
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    attendanceNotificationSent = true;
+                    console.log('✅ 學生簽到通知已發送！');
+                    showToast('✅ 學生簽到通知已發送！');
+                } else {
+                    console.error('❌ 通知發送失敗:', data.error);
+                    showToast('❌ 通知發送失敗');
+                }
+            } catch (error) {
+                console.error('發送通知錯誤:', error);
+                showToast('❌ 通知發送失敗');
+            }
+        }
+
+        // 獲取當前課程信息
+        function getCurrentEventInfo() {
+            // 從模態框標題或其他地方獲取課程信息
+            const modalTitle = document.querySelector('.attendance-modal .attendance-title');
+            if (modalTitle) {
+                const titleText = modalTitle.textContent;
+                // 解析標題獲取講師和課程信息
+                // 假設格式為 "講師: XXX 課程: XXX 時間: XXX"
+                const teacherMatch = titleText.match(/講師[：:]\s*([^課程]+)/);
+                const courseMatch = titleText.match(/課程[：:]\s*([^時間]+)/);
+                const timeMatch = titleText.match(/時間[：:]\s*([^日期]+)/);
+                
+                return {
+                    teacher: teacherMatch ? teacherMatch[1].trim() : '未知講師',
+                    course: courseMatch ? courseMatch[1].trim() : '未知課程',
+                    time: timeMatch ? timeMatch[1].trim() : '未知時間'
+                };
+            }
+            return null;
+        }
+
+        // 重置簽到通知狀態（當開始新的簽到時）
+        function resetAttendanceNotification() {
+            attendanceNotificationSent = false;
+            studentAttendanceStatus = {};
+            
+            // 清除定時器
+            if (attendanceCheckTimer) {
+                clearTimeout(attendanceCheckTimer);
+                attendanceCheckTimer = null;
+            }
+        }
+
+        // 顯示 Toast 通知
+        function showToast(message, type = 'success') {
+            // 創建 toast 元素
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#28a745' : '#dc3545'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                z-index: 10000;
+                font-size: 14px;
+                font-weight: 500;
+                max-width: 300px;
+                word-wrap: break-word;
+                opacity: 0;
+                transform: translateX(100%);
+                transition: all 0.3s ease;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            // 顯示動畫
+            setTimeout(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // 3秒後自動隱藏
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
         }
 
         // 更新學生狀態
