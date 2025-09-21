@@ -3913,6 +3913,7 @@
                 rgba(255, 255, 255, 0.95) 0%, 
                 rgba(248, 250, 252, 0.9) 50%,
                 rgba(255, 255, 255, 0.95) 100%) !important;
+            transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
         }
 
         @keyframes releaseAnimation {
@@ -7781,9 +7782,12 @@ async function loadTodayEvents() {
                         eventCard.classList.add('completing');
                         setTimeout(() => {
                             eventCard.classList.remove('releasing', 'completing');
+                            // 清除所有動畫相關的樣式
+                            eventCard.style.animation = '';
+                            eventCard.style.transition = '';
                             isAnimating = false;
                             console.log('✅ 滑鼠釋放動畫完成');
-                        }, 300);
+                        }, 200);
                     }, 400);
                     
                     console.log('❌ 長按中斷，播放釋放動畫');
@@ -7822,9 +7826,12 @@ async function loadTodayEvents() {
                         eventCard.classList.add('completing');
                         setTimeout(() => {
                             eventCard.classList.remove('releasing', 'completing');
+                            // 清除所有動畫相關的樣式
+                            eventCard.style.animation = '';
+                            eventCard.style.transition = '';
                             isAnimating = false;
                             console.log('✅ 滑鼠離開釋放動畫完成');
-                        }, 300);
+                        }, 200);
                     }, 400);
                     
                     console.log('❌ 滑鼠離開，播放釋放動畫');
@@ -7937,8 +7944,11 @@ async function loadTodayEvents() {
                             eventCard.classList.add('completing');
                             setTimeout(() => {
                                 eventCard.classList.remove('releasing', 'completing');
+                                // 清除所有動畫相關的樣式
+                                eventCard.style.animation = '';
+                                eventCard.style.transition = '';
                                 isAnimating = false;
-                            }, 300);
+                            }, 200);
                         }, 400);
                     }
                     
@@ -7988,9 +7998,12 @@ async function loadTodayEvents() {
                         eventCard.classList.add('completing');
                         setTimeout(() => {
                             eventCard.classList.remove('releasing', 'completing');
+                            // 清除所有動畫相關的樣式
+                            eventCard.style.animation = '';
+                            eventCard.style.transition = '';
                             isAnimating = false;
                             console.log('✅ 觸控釋放動畫完成');
-                        }, 300);
+                        }, 200);
                     }, 400);
                     
                     console.log('❌ 觸控長按中斷，播放釋放動畫');
@@ -8023,8 +8036,11 @@ async function loadTodayEvents() {
                         eventCard.classList.add('completing');
                         setTimeout(() => {
                             eventCard.classList.remove('releasing', 'completing');
+                            // 清除所有動畫相關的樣式
+                            eventCard.style.animation = '';
+                            eventCard.style.transition = '';
                             isAnimating = false;
-                        }, 300);
+                        }, 200);
                     }, 400);
                 } else {
                     eventCard.classList.remove('pressing');
@@ -8670,6 +8686,21 @@ async function loadTodayEvents() {
             // 添加載入完成的過渡效果
             attendanceContent.style.background = 'transparent';
             attendanceContent.style.transition = 'all 0.5s ease';
+            
+            // 重新設置關閉按鈕事件監聽器（因為內容被重新生成）
+            const closeBtn = document.getElementById('closeAttendanceModal');
+            if (closeBtn) {
+                // 移除舊的事件監聽器
+                closeBtn.replaceWith(closeBtn.cloneNode(true));
+                // 重新獲取按鈕並添加事件監聽器
+                const newCloseBtn = document.getElementById('closeAttendanceModal');
+                if (newCloseBtn) {
+                    newCloseBtn.addEventListener('click', function() {
+                        console.log('❌ 用戶點擊關閉按鈕（學生載入後）');
+                        closeAttendanceModal();
+                    });
+                }
+            }
             
             const today = new Date().toISOString().split('T')[0];
             
