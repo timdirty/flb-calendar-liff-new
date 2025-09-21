@@ -7973,6 +7973,64 @@ async function loadTodayEvents() {
                 return;
             }
             
+            // 如果沒有儲存的課程資訊，但元素顯示"載入中"，嘗試從其他來源獲取
+            if (timeElement && timeElement.textContent === '載入中...' && 
+                dateElement && dateElement.textContent === '載入中...') {
+                console.log('🔍 檢測到載入中狀態，嘗試從其他來源獲取課程資訊');
+                
+                // 嘗試從 window.loadedStudentsData 獲取
+                if (window.loadedStudentsData && window.loadedStudentsData.teacher) {
+                    console.log('✅ 從 window.loadedStudentsData 獲取課程資訊');
+                    const teacher = window.loadedStudentsData.teacher;
+                    const course = window.loadedStudentsData.course;
+                    const time = window.loadedStudentsData.time;
+                    let date = window.loadedStudentsData.date;
+                    
+                    // 如果沒有 date，從 start 計算
+                    if (!date && window.loadedStudentsData.start) {
+                        const startDate = new Date(window.loadedStudentsData.start);
+                        date = startDate.toLocaleDateString('zh-TW', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit'
+                        });
+                    }
+                    
+                    // 儲存課程資訊
+                    if (teacher && course && time && date) {
+                        storeCourseInfo(teacher, course, time, date);
+                        updateDisplayWithStoredInfo();
+                        return;
+                    }
+                }
+                
+                // 嘗試從 window.currentAttendanceData 獲取
+                if (window.currentAttendanceData && window.currentAttendanceData.teacher) {
+                    console.log('✅ 從 window.currentAttendanceData 獲取課程資訊');
+                    const teacher = window.currentAttendanceData.teacher;
+                    const course = window.currentAttendanceData.course;
+                    const time = window.currentAttendanceData.time;
+                    let date = window.currentAttendanceData.date;
+                    
+                    // 如果沒有 date，從 start 計算
+                    if (!date && window.currentAttendanceData.start) {
+                        const startDate = new Date(window.currentAttendanceData.start);
+                        date = startDate.toLocaleDateString('zh-TW', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit'
+                        });
+                    }
+                    
+                    // 儲存課程資訊
+                    if (teacher && course && time && date) {
+                        storeCourseInfo(teacher, course, time, date);
+                        updateDisplayWithStoredInfo();
+                        return;
+                    }
+                }
+            }
+            
             // 如果沒有可用的數據，設置為預設值
             if (!window.loadedStudentsData && !window.currentAttendanceData) {
                 console.log('⚠️ 沒有可用的課程數據，設置為預設值');
