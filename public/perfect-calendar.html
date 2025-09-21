@@ -8645,11 +8645,29 @@ async function loadTodayEvents() {
 
         // 設置簽到課程監聽器
         function setupAttendanceEventListeners(teacher, course, time, start, end) {
+            console.log('🔧 設置簽到事件監聽器，找到按鈕數量:', {
+                presentBtns: document.querySelectorAll('.present-btn').length,
+                absentBtns: document.querySelectorAll('.absent-btn').length,
+                studentCards: document.querySelectorAll('.student-card').length
+            });
+            
+            // 先移除所有現有的事件監聽器
+            document.querySelectorAll('.present-btn').forEach(btn => {
+                btn.replaceWith(btn.cloneNode(true));
+            });
+            document.querySelectorAll('.absent-btn').forEach(btn => {
+                btn.replaceWith(btn.cloneNode(true));
+            });
+            
             // 出席按鈕
             document.querySelectorAll('.present-btn').forEach(btn => {
                 btn.addEventListener('click', async function() {
                     const studentId = this.dataset.studentId;
-                    const studentItem = document.querySelector(`[data-student-id="${studentId}"]`);
+                    console.log('🎯 出席按鈕點擊:', { studentId, button: this });
+                    
+                    const studentItem = document.querySelector(`.student-card[data-student-id="${studentId}"]`);
+                    console.log('🔍 找到學生卡片:', { studentItem, studentId });
+                    
                     const studentName = studentItem ? 
                         studentItem.querySelector('.student-name')?.textContent || studentId : 
                         studentId;
@@ -8675,7 +8693,7 @@ async function loadTodayEvents() {
             document.querySelectorAll('.absent-btn').forEach(btn => {
                 btn.addEventListener('click', async function() {
                     const studentId = this.dataset.studentId;
-                    const studentItem = document.querySelector(`[data-student-id="${studentId}"]`);
+                    const studentItem = document.querySelector(`.student-card[data-student-id="${studentId}"]`);
                     const studentName = studentItem ? 
                         studentItem.querySelector('.student-name')?.textContent || studentId : 
                         studentId;
@@ -8782,8 +8800,12 @@ async function loadTodayEvents() {
 
         // 更新學生狀態
         function updateStudentStatus(studentId, status) {
-            const studentItem = document.querySelector(`[data-student-id="${studentId}"]`);
-            if (!studentItem) return;
+            // 精確查找學生卡片，避免找到按鈕
+            const studentItem = document.querySelector(`.student-card[data-student-id="${studentId}"]`);
+            if (!studentItem) {
+                console.error(`❌ 找不到學生卡片: ${studentId}`);
+                return;
+            }
 
             // 添加狀態變更動畫
             studentItem.style.animation = 'statusChange 0.6s ease-out';
@@ -8928,6 +8950,12 @@ async function loadTodayEvents() {
 
         // 設置學生卡片雙擊課程監聽器
         function setupStudentCardDoubleClickListeners() {
+            // 先移除所有現有的學生卡片事件監聽器
+            const existingCards = document.querySelectorAll('.student-card');
+            existingCards.forEach(card => {
+                card.replaceWith(card.cloneNode(true));
+            });
+            
             const studentCards = document.querySelectorAll('.student-card');
             studentCards.forEach(card => {
                 let clickCount = 0;
