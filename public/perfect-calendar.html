@@ -7499,6 +7499,53 @@ async function loadTodayEvents() {
         let isCharging = false;
         let chargingStartTime = 0;
 
+        // 震動回饋函數
+        function triggerHapticFeedback(type) {
+            // 檢查是否支援震動API
+            if (!navigator.vibrate) {
+                console.log('📱 設備不支援震動功能');
+                return;
+            }
+
+            // 檢查是否在手機端
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (!isMobile) {
+                console.log('💻 非手機設備，跳過震動');
+                return;
+            }
+
+            try {
+                switch (type) {
+                    case 'start':
+                        // 開始集氣：輕微震動
+                        navigator.vibrate(30);
+                        console.log('📳 震動回饋：開始集氣');
+                        break;
+                    case 'loading':
+                        // 載入中：漸強震動
+                        navigator.vibrate([40, 60, 40]);
+                        console.log('📳 震動回饋：載入中');
+                        break;
+                    case 'complete':
+                        // 完成：強烈震動
+                        navigator.vibrate([80, 50, 80]);
+                        console.log('📳 震動回饋：完成');
+                        break;
+                    case 'release':
+                        // 釋放：輕微震動
+                        navigator.vibrate(20);
+                        console.log('📳 震動回饋：釋放');
+                        break;
+                    default:
+                        // 預設：短震動
+                        navigator.vibrate(50);
+                        console.log('📳 震動回饋：預設');
+                }
+            } catch (error) {
+                console.warn('📳 震動功能執行失敗:', error);
+            }
+        }
+
         document.addEventListener('mousedown', function(e) {
             // 確保 e.target 有 closest 方法
             if (!e.target || typeof e.target.closest !== 'function') return;
@@ -7525,6 +7572,9 @@ async function loadTodayEvents() {
                     // 立即添加按壓效果
                     eventCard.classList.add('pressing');
                     
+                    // 震動回饋：開始按壓
+                    triggerHapticFeedback('start');
+                    
                     // 0.3秒後開始集氣充能效果
                     longPressTimer = setTimeout(() => {
                         if (isCharging) {
@@ -7534,11 +7584,15 @@ async function loadTodayEvents() {
                             console.log('🔋 開始集氣充能...');
                             console.log('🔋 當前課程卡片類別:', eventCard.className);
                             
+                            // 震動回饋：開始集氣
+                            triggerHapticFeedback('start');
+                            
                             // 1秒後開始載入學生資料
                             setTimeout(() => {
                                 if (isCharging) {
                                     console.log('📚 開始載入學生資料...');
-                                    // 這裡可以預先載入一些資料
+                                    // 震動回饋：載入中
+                                    triggerHapticFeedback('loading');
                                 }
                             }, 1000);
                             
@@ -7547,6 +7601,8 @@ async function loadTodayEvents() {
                                 if (isCharging) {
                                     console.log('🚀 跳出載入畫面');
                                     eventCard.classList.remove('charging');
+                                    // 震動回饋：完成
+                                    triggerHapticFeedback('complete');
                                     handleDirectAttendance(title, instructor, start, end);
                                 }
                             }, 1500);
@@ -7565,6 +7621,9 @@ async function loadTodayEvents() {
                 longPressTimer = null;
                 
                 if (isCharging) {
+                    // 震動回饋：釋放
+                    triggerHapticFeedback('release');
+                    
                     // 添加釋放動畫
                     eventCard.classList.remove('charging', 'pressing');
                     eventCard.classList.add('releasing');
@@ -7617,6 +7676,9 @@ async function loadTodayEvents() {
                 longPressTimer = null;
                 
                 if (isCharging) {
+                    // 震動回饋：釋放
+                    triggerHapticFeedback('release');
+                    
                     // 添加釋放動畫
                     eventCard.classList.remove('charging', 'pressing');
                     eventCard.classList.add('releasing');
@@ -7685,6 +7747,9 @@ async function loadTodayEvents() {
                     // 立即添加按壓效果
                     eventCard.classList.add('pressing');
                     
+                    // 震動回饋：開始按壓
+                    triggerHapticFeedback('start');
+                    
                     // 0.3秒後開始集氣充能效果
                     longPressTimer = setTimeout(() => {
                         if (isCharging) {
@@ -7694,9 +7759,14 @@ async function loadTodayEvents() {
                             console.log('🔋 開始集氣充能...');
                             console.log('🔋 當前課程卡片類別:', eventCard.className);
                             
+                            // 震動回饋：開始集氣
+                            triggerHapticFeedback('start');
+                            
                             setTimeout(() => {
                                 if (isCharging) {
                                     console.log('📚 開始載入學生資料...');
+                                    // 震動回饋：載入中
+                                    triggerHapticFeedback('loading');
                                 }
                             }, 1000);
                             
@@ -7704,6 +7774,8 @@ async function loadTodayEvents() {
                                 if (isCharging) {
                                     console.log('🚀 跳出載入畫面');
                                     eventCard.classList.remove('charging');
+                                    // 震動回饋：完成
+                                    triggerHapticFeedback('complete');
                                     handleDirectAttendance(title, instructor, start, end);
                                 }
                             }, 1500);
@@ -7722,6 +7794,9 @@ async function loadTodayEvents() {
                 longPressTimer = null;
                 
                 if (isCharging) {
+                    // 震動回饋：釋放
+                    triggerHapticFeedback('release');
+                    
                     // 添加釋放動畫
                     eventCard.classList.remove('charging', 'pressing');
                     eventCard.classList.add('releasing');
