@@ -8151,8 +8151,8 @@ async function loadTodayEvents() {
                             overflow-y: auto; 
                             padding-right: 8px;
                             padding-bottom: 20px;
-                            max-height: 60vh;
-                            min-height: 200px;
+                            max-height: 50vh;
+                            min-height: 150px;
                             -webkit-overflow-scrolling: touch;
                         ">
                             <!-- 學生列表將在這裡顯示 -->
@@ -8538,9 +8538,9 @@ async function loadTodayEvents() {
                     display: flex;
                     flex-direction: column;
                     height: 100%;
-                    max-height: 70vh;
-                    min-height: 500px;
-                    gap: 15px;
+                    max-height: 60vh;
+                    min-height: 350px;
+                    gap: 8px;
                 ">
                     
                     <!-- 課程內容區域 -->
@@ -8553,7 +8553,7 @@ async function loadTodayEvents() {
                         -webkit-backdrop-filter: blur(20px);
                         border: 1px solid rgba(255, 255, 255, 0.2);
                         border-radius: 15px;
-                        padding: 15px;
+                        padding: 12px;
                         box-shadow: 
                             0 4px 15px rgba(0, 0, 0, 0.1),
                             inset 0 1px 0 rgba(255, 255, 255, 0.2);
@@ -8623,13 +8623,13 @@ async function loadTodayEvents() {
                         -webkit-backdrop-filter: blur(20px);
                         border: 1px solid rgba(255, 255, 255, 0.2);
                         border-radius: 15px;
-                        padding: 15px;
+                        padding: 12px;
                         box-shadow: 
                             0 4px 15px rgba(0, 0, 0, 0.1),
                             inset 0 1px 0 rgba(255, 255, 255, 0.2);
                     ">
                         <h4 style="
-                            margin: 0 0 8px 0;
+                            margin: 0 0 4px 0;
                             color: #333;
                             font-size: 0.9rem;
                             display: flex;
@@ -8640,7 +8640,7 @@ async function loadTodayEvents() {
                             身份選擇
                         </h4>
                         <p style="
-                            margin: 0 0 12px 0;
+                            margin: 0 0 4px 0;
                             color: #666;
                             font-size: 0.8rem;
                         ">請選擇您的身份以正確設定人數</p>
@@ -8649,7 +8649,7 @@ async function loadTodayEvents() {
                             display: grid;
                             grid-template-columns: 1fr 1fr;
                             gap: 10px;
-                            margin-bottom: 10px;
+                            margin-bottom: 8px;
                         ">
                             <button class="mode-btn teacher-mode active" id="teacher-mode-btn" style="
                                 background: linear-gradient(135deg, 
@@ -8719,14 +8719,14 @@ async function loadTodayEvents() {
                         -webkit-backdrop-filter: blur(20px);
                         border: 1px solid rgba(255, 255, 255, 0.2);
                         border-radius: 15px;
-                        padding: 15px;
+                        padding: 12px;
                         box-shadow: 
                             0 4px 15px rgba(0, 0, 0, 0.1),
                             inset 0 1px 0 rgba(255, 255, 255, 0.2);
                         display: none;
                     ">
                         <h4 style="
-                            margin: 0 0 8px 0;
+                            margin: 0 0 4px 0;
                             color: #333;
                             font-size: 0.9rem;
                             display: flex;
@@ -8737,7 +8737,7 @@ async function loadTodayEvents() {
                             人數設定
                         </h4>
                         <p style="
-                            margin: 0 0 12px 0;
+                            margin: 0 0 4px 0;
                             color: #666;
                             font-size: 0.8rem;
                         ">此課程沒有學生資料，請選擇實際出席人數</p>
@@ -8746,7 +8746,7 @@ async function loadTodayEvents() {
                             display: grid;
                             grid-template-columns: 1fr 1fr;
                             gap: 10px;
-                            margin-bottom: 10px;
+                            margin-bottom: 8px;
                         ">
                             <button class="count-btn" id="count-2-btn" onclick="setStudentCount(2)" style="
                                 background: white;
@@ -8800,7 +8800,7 @@ async function loadTodayEvents() {
                     <div style="
                         flex-shrink: 0;
                         text-align: center;
-                        padding: 15px;
+                        padding: 12px;
                         background: linear-gradient(135deg, 
                             rgba(255, 255, 255, 0.1) 0%, 
                             rgba(255, 255, 255, 0.05) 50%,
@@ -8912,16 +8912,24 @@ async function loadTodayEvents() {
             }
             
             // 填充課程資訊 - 立即更新並添加多次重試
+            console.log('🔄 講師報表頁面開始更新課程資訊');
             updateCourseInfoDisplay();
             setTimeout(() => {
+                console.log('🔄 講師報表頁面第一次重試更新課程資訊');
                 updateCourseInfoDisplay();
             }, 100);
             setTimeout(() => {
+                console.log('🔄 講師報表頁面第二次重試更新課程資訊');
                 updateCourseInfoDisplay();
             }, 300);
             setTimeout(() => {
+                console.log('🔄 講師報表頁面第三次重試更新課程資訊');
                 updateCourseInfoDisplay();
             }, 500);
+            setTimeout(() => {
+                console.log('🔄 講師報表頁面第四次重試更新課程資訊');
+                updateCourseInfoDisplay();
+            }, 1000);
             
             // 觸發講師報表動畫
             setTimeout(() => {
@@ -10643,7 +10651,7 @@ async function loadTodayEvents() {
                         background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 193, 7, 0.1));
                         border: 1px solid rgba(255, 193, 7, 0.4);
                         border-radius: 15px;
-                        padding: 15px;
+                        padding: 12px;
                         margin-bottom: 20px;
                         text-align: center;
                         color: #856404;
@@ -10875,8 +10883,8 @@ async function loadTodayEvents() {
                     display: flex;
                     flex-direction: column;
                     height: 100%;
-                    max-height: 70vh;
-                    min-height: 500px;
+                    max-height: 85vh;
+                    min-height: 400px;
                 ">
                     <!-- 學生列表區域 - 可滾動 -->
                     <div style="
@@ -10899,8 +10907,8 @@ async function loadTodayEvents() {
                             overflow-y: auto; 
                             padding-right: 8px;
                             padding-bottom: 20px;
-                            max-height: 60vh;
-                            min-height: 200px;
+                            max-height: 50vh;
+                            min-height: 150px;
                             -webkit-overflow-scrolling: touch;
                         ">
                             ${studentsHtml}
