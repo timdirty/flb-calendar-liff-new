@@ -2737,6 +2737,15 @@
             transform: scale(1.02);
         }
         
+        /* 倒數計時提示樣式 */
+        .countdown-toast {
+            position: fixed !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            z-index: 10000 !important;
+        }
+        
         /* 人數選擇按鈕樣式 */
         .count-btn:hover {
             transform: translateY(-3px);
@@ -11304,7 +11313,7 @@ async function loadTodayEvents() {
                                 border: 1px solid ${currentStatus === 'present' ? 'rgba(40, 167, 69, 0.8)' : minutesUntilStart !== null && minutesUntilStart > 10 ? 'rgba(108, 117, 125, 0.3)' : 'rgba(255, 255, 255, 0.4)'};
                                 padding: 6px 12px;
                                 border-radius: 15px;
-                                cursor: pointer;
+                                cursor: ${minutesUntilStart !== null && minutesUntilStart > 10 ? 'not-allowed' : 'pointer'};
                                 font-size: 0.75rem;
                                 font-weight: 600;
                                 transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -11319,6 +11328,8 @@ async function loadTodayEvents() {
                                 transform: ${currentStatus === 'present' ? 'scale(1.05)' : 'scale(1)'};
                                 white-space: nowrap;
                                 flex-shrink: 0;
+                                pointer-events: ${minutesUntilStart !== null && minutesUntilStart > 10 ? 'none' : 'auto'};
+                                disabled: ${minutesUntilStart !== null && minutesUntilStart > 10};
                             ">
                                 <span style="margin-right: 4px; font-size: 0.8rem;">✅</span> 出席
                             </button>
@@ -11336,7 +11347,7 @@ async function loadTodayEvents() {
                                 border: 1px solid ${currentStatus === 'absent' ? 'rgba(220, 53, 69, 0.8)' : minutesUntilStart !== null && minutesUntilStart > 10 ? 'rgba(108, 117, 125, 0.3)' : 'rgba(255, 255, 255, 0.4)'};
                                 padding: 6px 12px;
                                 border-radius: 15px;
-                                cursor: pointer;
+                                cursor: ${minutesUntilStart !== null && minutesUntilStart > 10 ? 'not-allowed' : 'pointer'};
                                 font-size: 0.75rem;
                                 font-weight: 600;
                                 transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -11351,6 +11362,8 @@ async function loadTodayEvents() {
                                 transform: ${currentStatus === 'absent' ? 'scale(1.05)' : 'scale(1)'};
                                 white-space: nowrap;
                                 flex-shrink: 0;
+                                pointer-events: ${minutesUntilStart !== null && minutesUntilStart > 10 ? 'none' : 'auto'};
+                                disabled: ${minutesUntilStart !== null && minutesUntilStart > 10};
                             ">
                                 <span style="margin-right: 4px; font-size: 0.8rem;">❌</span> 缺席
                             </button>
