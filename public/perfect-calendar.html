@@ -8204,126 +8204,73 @@ async function loadTodayEvents() {
             const modalContent = document.querySelector('.attendance-modal-content');
             if (!modalContent) return;
             
+            // 獲取已儲存的課程資訊
+            const teacher = storedCourseInfo && storedCourseInfo.teacher ? storedCourseInfo.teacher : '載入中...';
+            const course = storedCourseInfo && storedCourseInfo.course ? storedCourseInfo.course : '載入中...';
+            const time = storedCourseInfo && storedCourseInfo.time ? storedCourseInfo.time : '載入中...';
+            const date = storedCourseInfo && storedCourseInfo.date ? storedCourseInfo.date : '載入中...';
+            
+            console.log('🔍 使用儲存的課程資訊創建內容:', { teacher, course, time, date });
+            
             // 重新創建學生簽到內容結構
             modalContent.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <div style="flex: 1;">
                         <h2 style="margin: 0; color: #333333; font-size: 1.5rem; text-shadow: none;">
-                            <i class="fas fa-calendar-check" style="color: #b8860b; margin-right: 10px; text-shadow: 0 0 10px rgba(184, 134, 11, 0.5);"></i>
-                            課程簽到系統
+                            <span style="color: #b8860b; font-weight: 600;">📚 學生簽到系統</span>
                         </h2>
                     </div>
-                    <button id="closeAttendanceModal" class="close-attendance-modal" style="
-                        background: rgba(255, 255, 255, 0.2);
-                        border: 1px solid rgba(255, 215, 0, 0.4);
-                        font-size: 1.5rem;
-                        color: #333333;
-                        cursor: pointer;
-                        padding: 5px;
-                        border-radius: 50%;
-                        width: 40px;
-                        height: 40px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        transition: all 0.3s ease;
-                        backdrop-filter: blur(10px);
-                        -webkit-backdrop-filter: blur(10px);
-                    ">
-                        <i class="fas fa-times"></i>
+                    <button id="closeModalBtn" style="background: none; border: none; font-size: 1.5rem; color: #666; cursor: pointer; padding: 5px; border-radius: 50%; transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='#f0f0f0'" onmouseout="this.style.backgroundColor='transparent'">
+                        ✕
                     </button>
                 </div>
                 
-                <div class="course-info" style="
-                    margin-bottom: 20px; 
-                    padding: 20px; 
-                    background: 
-                        radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.05) 0%, transparent 70%),
-                        linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
-                    border-radius: 15px; 
-                    border: 1px solid rgba(255, 215, 0, 0.3);
-                    backdrop-filter: blur(10px);
-                    -webkit-backdrop-filter: blur(10px);
-                    box-shadow: 
-                        0 8px 32px rgba(0, 0, 0, 0.2),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-                ">
-                    <div class="course-info-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.8rem;">
-                        <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">載入中...</span></div>
-                        <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">載入中...</span></div>
-                        <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">載入中...</span></div>
-                        <div data-field="date" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">日期:</strong> <span id="currentDate">載入中...</span></div>
+                <div style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05)); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">${teacher}</span></div>
+                        <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">${course}</span></div>
+                        <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">${time}</span></div>
+                        <div data-field="date" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">日期:</strong> <span id="currentDate">${date}</span></div>
                     </div>
                 </div>
                 
-                <div id="attendanceContent" style="
-                    max-height: 500px;
-                    min-height: 500px;
-                    overflow-y: auto;
-                    overflow-x: hidden;
-                    padding-right: 8px;
-                    margin-bottom: 20px;
-                ">
+                <div id="studentsList" style="max-height: 500px; min-height: 500px; overflow-y: auto; margin-bottom: 20px; padding-right: 10px;">
                     <!-- 學生列表將在這裡動態生成 -->
                 </div>
                 
-                <!-- 統計欄位 - 接續在學生列表後面 -->
-                <div style="
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 12px 16px;
-                    background: 
-                        radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.08) 0%, transparent 70%),
-                        linear-gradient(135deg, 
-                            rgba(255, 255, 255, 0.15) 0%, 
-                            rgba(248, 249, 250, 0.1) 50%,
-                            rgba(255, 255, 255, 0.15) 100%);
-                    border-radius: 12px;
-                    border: 1px solid rgba(255, 215, 0, 0.4);
-                    backdrop-filter: blur(25px);
-                    -webkit-backdrop-filter: blur(25px);
-                    box-shadow: 
-                        0 8px 32px rgba(0, 0, 0, 0.15),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-                    position: sticky;
-                    bottom: 0;
-                    z-index: 10;
-                ">
-                    <div id="attendanceStats" style="font-size: 0.85rem; color: #333333; text-shadow: none;">
-                        統計載入中...
+                <div style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05)); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 15px; padding: 15px; position: sticky; bottom: 0; z-index: 10;">
+                    <div style="display: flex; justify-content: space-around; text-align: center; flex-wrap: nowrap;">
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="color: #28a745; font-weight: bold; font-size: 1.2rem;">${window.loadedStudentsData ? window.loadedStudentsData.students.filter(s => s.attendance && s.attendance.some(a => a.status === 'present')).length : 0}</div>
+                            <div style="color: #666; font-size: 0.9rem;">出席</div>
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="color: #dc3545; font-weight: bold; font-size: 1.2rem;">${window.loadedStudentsData ? window.loadedStudentsData.students.filter(s => s.attendance && s.attendance.some(a => a.status === 'absent')).length : 0}</div>
+                            <div style="color: #666; font-size: 0.9rem;">缺席</div>
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="color: #ffc107; font-weight: bold; font-size: 1.2rem;">${window.loadedStudentsData ? window.loadedStudentsData.students.filter(s => s.attendance && s.attendance.some(a => a.status === 'leave')).length : 0}</div>
+                            <div style="color: #666; font-size: 0.9rem;">請假</div>
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="color: #6c757d; font-weight: bold; font-size: 1.2rem;">${window.loadedStudentsData ? window.loadedStudentsData.students.filter(s => !s.attendance || !s.attendance.some(a => a.status)).length : 0}</div>
+                            <div style="color: #666; font-size: 0.9rem;">未選擇</div>
+                        </div>
                     </div>
                 </div>
             `;
             
-            // 重新設置關閉按鈕事件監聽器
-            const closeBtn = document.getElementById('closeAttendanceModal');
-            if (closeBtn) {
-                closeBtn.addEventListener('click', function() {
-                    closeAttendanceModal();
-                });
+            // 重新生成學生列表
+            if (window.loadedStudentsData && window.loadedStudentsData.students) {
+                displayStudents(window.loadedStudentsData.students);
             }
             
-            // 填充課程資訊
-            setTimeout(() => {
-                updateCourseInfoDisplay();
-            }, 100);
+            // 重新綁定事件
+            setupStudentCardEventListeners();
+            setupAttendanceEventListeners();
+            updateAttendanceStatistics();
             
-            // 如果學生資料已經載入完成，直接顯示學生列表
-            if (window.loadedStudentsData) {
-                console.log('✅ 使用已載入的學生資料');
-                
-                // 然後顯示學生列表
-                displayStudents(window.loadedStudentsData.students, 
-                              window.loadedStudentsData.teacher, 
-                              window.loadedStudentsData.course, 
-                              window.loadedStudentsData.time, 
-                              window.loadedStudentsData.start, 
-                              window.loadedStudentsData.end, 
-                              window.loadedStudentsData.minutesUntilStart);
-            } else {
-                console.log('⚠️ 沒有已載入的學生資料，顯示載入畫面');
-            }
+            console.log('✅ 學生簽到內容重新創建完成');
         }
 
         // 恢復原始學生簽到內容（有學生資料時）
@@ -8376,10 +8323,10 @@ async function loadTodayEvents() {
                         inset 0 1px 0 rgba(255, 255, 255, 0.1);
                 ">
                     <div class="course-info-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.8rem;">
-                        <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">載入中...</span></div>
-                        <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">載入中...</span></div>
-                        <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">載入中...</span></div>
-                        <div data-field="date" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">日期:</strong> <span id="currentDate">載入中...</span></div>
+                        <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">${storedCourseInfo && storedCourseInfo.teacher ? storedCourseInfo.teacher : "載入中..."}</span></div>
+                        <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">${storedCourseInfo && storedCourseInfo.course ? storedCourseInfo.course : "載入中..."}</span></div>
+                        <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">${storedCourseInfo && storedCourseInfo.time ? storedCourseInfo.time : "載入中..."}</span></div>
+                        <div data-field="date" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">日期:</strong> <span id="currentDate">${storedCourseInfo && storedCourseInfo.date ? storedCourseInfo.date : "載入中..."}</span></div>
                     </div>
                 </div>
                 
@@ -8504,10 +8451,10 @@ async function loadTodayEvents() {
                         inset 0 1px 0 rgba(255, 255, 255, 0.1);
                 ">
                     <div class="course-info-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.8rem;">
-                        <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">載入中...</span></div>
-                        <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">載入中...</span></div>
-                        <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">載入中...</span></div>
-                        <div data-field="date" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">日期:</strong> <span id="currentDate">載入中...</span></div>
+                        <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">${storedCourseInfo && storedCourseInfo.teacher ? storedCourseInfo.teacher : "載入中..."}</span></div>
+                        <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">${storedCourseInfo && storedCourseInfo.course ? storedCourseInfo.course : "載入中..."}</span></div>
+                        <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">${storedCourseInfo && storedCourseInfo.time ? storedCourseInfo.time : "載入中..."}</span></div>
+                        <div data-field="date" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">日期:</strong> <span id="currentDate">${storedCourseInfo && storedCourseInfo.date ? storedCourseInfo.date : "載入中..."}</span></div>
                     </div>
                 </div>
                 
@@ -9157,10 +9104,10 @@ async function loadTodayEvents() {
                         inset 0 1px 0 rgba(255, 255, 255, 0.1);
                 ">
                     <div class="course-info-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.8rem;">
-                        <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">載入中...</span></div>
-                        <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">載入中...</span></div>
-                        <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">載入中...</span></div>
-                        <div data-field="date" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">日期:</strong> <span id="currentDate">載入中...</span></div>
+                        <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">${storedCourseInfo && storedCourseInfo.teacher ? storedCourseInfo.teacher : "載入中..."}</span></div>
+                        <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">${storedCourseInfo && storedCourseInfo.course ? storedCourseInfo.course : "載入中..."}</span></div>
+                        <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">${storedCourseInfo && storedCourseInfo.time ? storedCourseInfo.time : "載入中..."}</span></div>
+                        <div data-field="date" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">日期:</strong> <span id="currentDate">${storedCourseInfo && storedCourseInfo.date ? storedCourseInfo.date : "載入中..."}</span></div>
                     </div>
                 </div>
                 
