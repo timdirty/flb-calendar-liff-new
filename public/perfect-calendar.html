@@ -8180,21 +8180,34 @@ async function loadTodayEvents() {
                 const attendanceContent = document.getElementById('attendanceContent');
                 if (attendanceContent) {
                     console.log('✅ 找到原始學生簽到內容，直接顯示');
-                    // 如果已經有原始的學生簽到內容，直接顯示它
-                    attendanceContent.style.display = 'block';
                     
-                    // 隱藏其他可能的內容
-                    const studentsList = document.getElementById('studentsList');
-                    if (studentsList) {
-                        studentsList.style.display = 'none';
+                    // 檢查attendanceContent是否包含學生簽到內容
+                    const hasStudentContent = attendanceContent.querySelector('.student-card') || 
+                                            attendanceContent.querySelector('.attendance-btn') ||
+                                            attendanceContent.innerHTML.includes('學生簽到');
+                    
+                    if (hasStudentContent) {
+                        console.log('✅ 確認是學生簽到內容，直接顯示');
+                        // 如果已經有原始的學生簽到內容，直接顯示它
+                        attendanceContent.style.display = 'block';
+                        
+                        // 隱藏其他可能的內容
+                        const studentsList = document.getElementById('studentsList');
+                        if (studentsList) {
+                            studentsList.style.display = 'none';
+                        }
+                        
+                        // 重新綁定事件
+                        setupStudentCardDoubleClickListeners();
+                        setupAttendanceEventListeners();
+                        updateStats();
+                        
+                        console.log('✅ 原先的學生簽到畫面已恢復');
+                    } else {
+                        console.log('⚠️ attendanceContent不是學生簽到內容，重新創建');
+                        // 如果attendanceContent不是學生簽到內容，重新創建
+                        recreateStudentAttendanceContent();
                     }
-                    
-                    // 重新綁定事件
-                    setupStudentCardDoubleClickListeners();
-                    setupAttendanceEventListeners();
-                    updateStats();
-                    
-                    console.log('✅ 原先的學生簽到畫面已恢復');
                 } else {
                     console.log('⚠️ 沒有找到原始學生簽到內容，重新創建');
                     // 如果沒有原始內容，才重新創建
@@ -9213,10 +9226,10 @@ async function loadTodayEvents() {
                         inset 0 1px 0 rgba(255, 255, 255, 0.1);
                 ">
                     <div class="course-info-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.8rem;">
-                        <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">${storedCourseInfo && storedCourseInfo.teacher ? storedCourseInfo.teacher : "載入中..."}</span></div>
-                        <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">${storedCourseInfo && storedCourseInfo.course ? storedCourseInfo.course : "載入中..."}</span></div>
-                        <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">${storedCourseInfo && storedCourseInfo.time ? storedCourseInfo.time : "載入中..."}</span></div>
-                        <div data-field="date" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">日期:</strong> <span id="currentDate">${storedCourseInfo && storedCourseInfo.date ? storedCourseInfo.date : "載入中..."}</span></div>
+                        <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">載入中...</span></div>
+                        <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">載入中...</span></div>
+                        <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">載入中...</span></div>
+                        <div data-field="date" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">日期:</strong> <span id="currentDate">載入中...</span></div>
                     </div>
                 </div>
                 
