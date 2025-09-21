@@ -2492,6 +2492,130 @@
             }
         }
 
+        /* 懸浮導航器樣式 */
+        .floating-navigator {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10001;
+            display: flex;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 8px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideDown {
+            0% {
+                transform: translateX(-50%) translateY(-20px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .nav-item {
+            padding: 12px 24px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #333;
+            position: relative;
+            overflow: hidden;
+            min-width: 120px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .nav-item:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, 
+                rgba(255, 215, 0, 0.8) 0%, 
+                rgba(255, 193, 7, 0.9) 100%);
+            border: 1px solid rgba(255, 215, 0, 0.6);
+            color: #333;
+            box-shadow: 
+                0 4px 15px rgba(255, 215, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .nav-item:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-item .icon {
+            font-size: 1.1rem;
+        }
+
+        .nav-item .text {
+            font-size: 0.85rem;
+        }
+
+        /* 手機優化 - 懸浮導航器 */
+        @media (max-width: 768px) {
+            .floating-navigator {
+                top: 15px;
+                padding: 6px;
+                border-radius: 20px;
+            }
+
+            .nav-item {
+                padding: 10px 18px;
+                min-width: 100px;
+                font-size: 0.8rem;
+            }
+
+            .nav-item .icon {
+                font-size: 1rem;
+            }
+
+            .nav-item .text {
+                font-size: 0.75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .floating-navigator {
+                top: 10px;
+                padding: 5px;
+                border-radius: 18px;
+            }
+
+            .nav-item {
+                padding: 8px 14px;
+                min-width: 90px;
+                font-size: 0.75rem;
+            }
+
+            .nav-item .icon {
+                font-size: 0.9rem;
+            }
+
+            .nav-item .text {
+                font-size: 0.7rem;
+            }
+        }
+
         /* 手機優化 - 簽到系統 */
         @media (max-width: 768px) {
             .attendance-modal-content {
@@ -7657,6 +7781,20 @@ async function loadTodayEvents() {
         let currentAttendanceModal = null;
         let isModalLoading = false;
 
+        // 顯示學生簽到內容
+        function showStudentAttendance() {
+            console.log('👥 顯示學生簽到內容');
+            // 這裡可以添加學生簽到的具體內容
+            // 目前保持原有的學生簽到邏輯
+        }
+
+        // 顯示講師簽到內容
+        function showTeacherAttendance() {
+            console.log('👨‍🏫 顯示講師簽到內容');
+            // 這裡可以添加講師簽到的具體內容
+            // 例如：講師確認到場、簽到時間等
+        }
+
         // 關閉簽到模態框
         function closeAttendanceModal() {
             if (currentAttendanceModal) {
@@ -7664,6 +7802,13 @@ async function loadTodayEvents() {
                 currentAttendanceModal.remove();
                 currentAttendanceModal = null;
                 isModalLoading = false;
+                
+                // 移除懸浮導航器
+                const floatingNavigator = document.querySelector('.floating-navigator');
+                if (floatingNavigator) {
+                    floatingNavigator.remove();
+                    console.log('✅ 懸浮導航器已移除');
+                }
                 
                 // 重置觸控狀態
                 isCharging = false;
@@ -8676,9 +8821,46 @@ async function loadTodayEvents() {
                     </div>
                 `;
                 
+                // 創建懸浮導航器
+                const floatingNavigator = document.createElement('div');
+                floatingNavigator.className = 'floating-navigator';
+                floatingNavigator.innerHTML = `
+                    <div class="nav-item active" data-tab="student-attendance">
+                        <i class="fas fa-user-graduate icon"></i>
+                        <span class="text">學生簽到</span>
+                    </div>
+                    <div class="nav-item" data-tab="teacher-attendance">
+                        <i class="fas fa-chalkboard-teacher icon"></i>
+                        <span class="text">講師簽到</span>
+                    </div>
+                `;
+
                 document.body.appendChild(modal);
+                document.body.appendChild(floatingNavigator);
                 currentAttendanceModal = modal;
                 isModalLoading = true;
+
+                // 添加導航器點擊事件
+                const navItems = floatingNavigator.querySelectorAll('.nav-item');
+                navItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        // 移除所有活動狀態
+                        navItems.forEach(nav => nav.classList.remove('active'));
+                        // 添加當前活動狀態
+                        this.classList.add('active');
+                        
+                        const tab = this.dataset.tab;
+                        console.log('🔄 切換到標籤:', tab);
+                        
+                        if (tab === 'teacher-attendance') {
+                            // 顯示講師簽到內容
+                            showTeacherAttendance();
+                        } else {
+                            // 顯示學生簽到內容
+                            showStudentAttendance();
+                        }
+                    });
+                });
                 
                 // 設置關閉按鈕課程
                 const closeBtn = document.getElementById('closeAttendanceModal');
