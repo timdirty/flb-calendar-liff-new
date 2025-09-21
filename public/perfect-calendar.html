@@ -9194,9 +9194,9 @@ async function loadTodayEvents() {
                 const data = await response.json();
                 console.log('📥 查詢回應數據:', data);
                 
-                if (data.success && data.records) {
+                if (data.success && data.attendance) {
                     // 顯示缺勤紀錄
-                    displayAttendanceRecords(modal, studentName, data.records);
+                    displayAttendanceRecords(modal, studentName, data.attendance);
                 } else {
                     // 顯示錯誤訊息
                     displayAttendanceRecordError(modal, data.error || '查詢失敗');

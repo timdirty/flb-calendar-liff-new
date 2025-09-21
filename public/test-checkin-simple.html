@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>簽到按鈕簡單測試</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+        }
+        
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+        
+        .test-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        .log-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #007bff;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+            padding: 8px;
+            background: white;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #007bff; }
+        .warning { color: #ffc107; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎯 簽到按鈕功能測試</h1>
+        <p>測試按鈕是否可以正常點擊並觸發簽到API</p>
+        
+        <div>
+            <button class="test-button" id="testPresentBtn">✅ 測試出席按鈕</button>
+            <button class="test-button" id="testAbsentBtn">❌ 測試缺席按鈕</button>
+            <button class="test-button" id="checkButtonStatusBtn">🔍 檢查按鈕狀態</button>
+            <button class="test-button" id="clearLogBtn">🗑️ 清除日誌</button>
+        </div>
+        
+        <div class="log-container">
+            <h3>📊 測試日誌</h3>
+            <div id="testLog"></div>
+        </div>
+    </div>
+
+    <script>
+        // 添加日誌
+        function addLog(message, type = 'info') {
+            const logContainer = document.getElementById('testLog');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        // 模擬簽到API
+        async function mockSaveAttendanceRecord(studentId, studentName, status) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const result = {
+                        success: true,
+                        message: `${studentName} ${status === 'present' ? '出席' : '缺席'} 記錄已保存`,
+                        studentId: studentId,
+                        status: status,
+                        timestamp: new Date().toLocaleString()
+                    };
+                    resolve(result);
+                }, 1000);
+            });
+        }
+        
+        // 測試出席按鈕
+        async function testPresentButton() {
+            addLog('🎯 開始測試出席按鈕', 'info');
+            
+            try {
+                addLog('🚀 調用模擬簽到API (出席)', 'info');
+                const result = await mockSaveAttendanceRecord('test-student', '測試學生', 'present');
+                addLog(`✅ API調用成功: ${JSON.stringify(result)}`, 'success');
+            } catch (error) {
+                addLog(`❌ API調用失敗: ${error.message}`, 'error');
+            }
+        }
+        
+        // 測試缺席按鈕
+        async function testAbsentButton() {
+            addLog('🎯 開始測試缺席按鈕', 'info');
+            
+            try {
+                addLog('🚀 調用模擬簽到API (缺席)', 'info');
+                const result = await mockSaveAttendanceRecord('test-student', '測試學生', 'absent');
+                addLog(`✅ API調用成功: ${JSON.stringify(result)}`, 'success');
+            } catch (error) {
+                addLog(`❌ API調用失敗: ${error.message}`, 'error');
+            }
+        }
+        
+        // 檢查按鈕狀態
+        function checkButtonStatus() {
+            addLog('🔍 檢查按鈕狀態:', 'info');
+            
+            const buttons = document.querySelectorAll('.test-button');
+            buttons.forEach((btn, index) => {
+                addLog(`按鈕 ${index + 1}: ${btn.textContent}, disabled=${btn.disabled}, pointerEvents=${btn.style.pointerEvents}`, 'info');
+            });
+        }
+        
+        // 清除日誌
+        function clearLog() {
+            document.getElementById('testLog').innerHTML = '';
+            addLog('🗑️ 日誌已清除', 'info');
+        }
+        
+        // 頁面載入完成後執行
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('📱 頁面載入完成，開始測試', 'info');
+            
+            // 綁定事件監聽器
+            document.getElementById('testPresentBtn').addEventListener('click', testPresentButton);
+            document.getElementById('testAbsentBtn').addEventListener('click', testAbsentButton);
+            document.getElementById('checkButtonStatusBtn').addEventListener('click', checkButtonStatus);
+            document.getElementById('clearLogBtn').addEventListener('click', clearLog);
+            
+            // 初始檢查
+            checkButtonStatus();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>查詢學生缺勤記錄測試</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+        
+        .student-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            border: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .student-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .student-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .student-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #333;
+        }
+        
+        .student-details h3 {
+            margin: 0;
+            color: #333;
+            font-size: 1.1rem;
+        }
+        
+        .student-status {
+            background: #6c757d;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+        
+        .query-hint {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
+        
+        .log-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #28a745;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+            padding: 8px;
+            background: white;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #007bff; }
+        .warning { color: #ffc107; }
+        
+        /* 模態框樣式 */
+        .attendance-record-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .attendance-record-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .attendance-record-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .attendance-record-title {
+            margin: 0;
+            color: #333;
+            font-size: 1.5rem;
+        }
+        
+        .close-attendance-record-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .attendance-record-loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .attendance-record-list {
+            margin-top: 20px;
+        }
+        
+        .attendance-record-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #28a745;
+        }
+        
+        .attendance-record-item.absent {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+        
+        .attendance-record-date {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .attendance-record-status {
+            color: #666;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔍 查詢學生缺勤記錄測試</h1>
+        <p>測試雙擊學生卡片查詢缺勤記錄功能</p>
+        
+        <div class="test-section">
+            <h3>🔧 測試控制</h3>
+            <button class="test-button" id="testQueryBtn">🔍 測試查詢陳杰睿</button>
+            <button class="test-button" id="testQueryBtn2">🔍 測試查詢顏世餘</button>
+            <button class="test-button" id="clearLogBtn">🗑️ 清除日誌</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>👥 學生卡片（雙擊查詢缺勤記錄）</h3>
+            <div class="query-hint">
+                💡 提示：雙擊學生卡片可以查詢該學生的缺勤記錄
+            </div>
+            
+            <div class="student-card" data-student-name="陳杰睿">
+                <div class="student-info">
+                    <div class="student-avatar">陳</div>
+                    <div class="student-details">
+                        <h3>陳杰睿</h3>
+                        <div class="student-status">⏰ 待簽到</div>
+                    </div>
+                </div>
+                <div style="color: #666; font-size: 0.9rem;">
+                    雙擊查詢缺勤記錄
+                </div>
+            </div>
+            
+            <div class="student-card" data-student-name="顏世餘">
+                <div class="student-info">
+                    <div class="student-avatar">顏</div>
+                    <div class="student-details">
+                        <h3>顏世餘</h3>
+                        <div class="student-status">⏰ 待簽到</div>
+                    </div>
+                </div>
+                <div style="color: #666; font-size: 0.9rem;">
+                    雙擊查詢缺勤記錄
+                </div>
+            </div>
+        </div>
+        
+        <div class="log-container">
+            <h3>📊 測試日誌</h3>
+            <div id="testLog"></div>
+        </div>
+    </div>
+
+    <script>
+        // 添加日誌
+        function addLog(message, type = 'info') {
+            const logContainer = document.getElementById('testLog');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        // 查詢學生缺勤記錄（模擬 perfect-calendar.html 的邏輯）
+        async function queryStudentAttendanceRecord(studentName) {
+            try {
+                addLog(`🔍 開始查詢學生缺勤記錄: ${studentName}`, 'info');
+                
+                // 創建模態框
+                const modal = document.createElement('div');
+                modal.className = 'attendance-record-modal';
+                modal.innerHTML = `
+                    <div class="attendance-record-content">
+                        <div class="attendance-record-header">
+                            <h3 class="attendance-record-title">
+                                <i class="fas fa-user-graduate"></i> ${studentName} 的缺勤記錄
+                            </h3>
+                            <button class="close-attendance-record-btn" id="closeAttendanceRecordBtn">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="attendance-record-loading">
+                            <div style="
+                                width: 40px;
+                                height: 40px;
+                                border: 4px solid rgba(255, 215, 0, 0.2);
+                                border-top: 4px solid #b8860b;
+                                border-radius: 50%;
+                                animation: spin 1s linear infinite;
+                                margin: 0 auto 20px;
+                            "></div>
+                            <p>正在查詢缺勤記錄...</p>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                
+                // 設置關閉按鈕事件
+                const closeBtn = modal.querySelector('#closeAttendanceRecordBtn');
+                closeBtn.addEventListener('click', () => {
+                    modal.remove();
+                });
+                
+                // 點擊背景關閉
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.remove();
+                    }
+                });
+                
+                // 查詢缺勤記錄
+                addLog(`📡 發送查詢請求: ${studentName}`, 'info');
+                
+                const response = await fetch('/api/proxy/google-sheets', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'query',
+                        name: studentName
+                    })
+                });
+                
+                addLog(`📡 查詢回應狀態: ${response.status} ${response.statusText}`, 'info');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                addLog(`📥 查詢回應數據: ${JSON.stringify(data)}`, 'success');
+                
+                if (data.success && data.attendance) {
+                    // 顯示缺勤記錄
+                    displayAttendanceRecords(modal, studentName, data.attendance);
+                    addLog(`✅ 成功顯示 ${data.attendance.length} 條記錄`, 'success');
+                } else {
+                    // 顯示錯誤訊息
+                    displayAttendanceRecordError(modal, data.error || '查詢失敗');
+                    addLog(`❌ 查詢失敗: ${data.error || '未知錯誤'}`, 'error');
+                }
+                
+            } catch (error) {
+                addLog(`❌ 查詢缺勤記錄錯誤: ${error.message}`, 'error');
+                console.error('查詢缺勤記錄錯誤:', error);
+            }
+        }
+        
+        // 顯示缺勤記錄
+        function displayAttendanceRecords(modal, studentName, records) {
+            const loadingDiv = modal.querySelector('.attendance-record-loading');
+            loadingDiv.innerHTML = `
+                <div class="attendance-record-list">
+                    <h4>📊 ${studentName} 的出席記錄 (${records.length} 條)</h4>
+                    ${records.map(record => `
+                        <div class="attendance-record-item ${record.present ? '' : 'absent'}">
+                            <div class="attendance-record-date">${record.date}</div>
+                            <div class="attendance-record-status">
+                                ${record.present ? '✅ 出席' : '❌ 缺席'}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        // 顯示錯誤訊息
+        function displayAttendanceRecordError(modal, errorMessage) {
+            const loadingDiv = modal.querySelector('.attendance-record-loading');
+            loadingDiv.innerHTML = `
+                <div style="text-align: center; color: #dc3545;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 15px;"></i>
+                    <h4>查詢失敗</h4>
+                    <p>${errorMessage}</p>
+                </div>
+            `;
+        }
+        
+        // 設置學生卡片雙擊事件
+        function setupStudentCardDoubleClick() {
+            addLog('🔧 設置學生卡片雙擊事件', 'info');
+            
+            document.querySelectorAll('.student-card').forEach(card => {
+                let clickCount = 0;
+                let clickTimer = null;
+                
+                card.addEventListener('click', function(e) {
+                    clickCount++;
+                    
+                    if (clickCount === 1) {
+                        // 第一次點擊，設置定時器
+                        clickTimer = setTimeout(() => {
+                            clickCount = 0;
+                        }, 300); // 300ms 內沒有第二次點擊則重置
+                    } else if (clickCount === 2) {
+                        // 第二次點擊，觸發雙擊事件
+                        clearTimeout(clickTimer);
+                        clickCount = 0;
+                        
+                        const studentName = this.dataset.studentName;
+                        addLog(`🖱️ 雙擊學生卡片: ${studentName}`, 'success');
+                        queryStudentAttendanceRecord(studentName);
+                    }
+                });
+            });
+            
+            addLog('✅ 學生卡片雙擊事件設置完成', 'success');
+        }
+        
+        // 清除日誌
+        function clearLog() {
+            document.getElementById('testLog').innerHTML = '';
+            addLog('🗑️ 日誌已清除', 'info');
+        }
+        
+        // 頁面載入完成後執行
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('📱 頁面載入完成，開始測試', 'info');
+            
+            // 綁定控制按鈕事件監聽器
+            document.getElementById('testQueryBtn').addEventListener('click', () => {
+                addLog('🎯 手動觸發查詢陳杰睿', 'info');
+                queryStudentAttendanceRecord('陳杰睿');
+            });
+            
+            document.getElementById('testQueryBtn2').addEventListener('click', () => {
+                addLog('🎯 手動觸發查詢顏世餘', 'info');
+                queryStudentAttendanceRecord('顏世餘');
+            });
+            
+            document.getElementById('clearLogBtn').addEventListener('click', clearLog);
+            
+            // 設置學生卡片雙擊事件
+            setupStudentCardDoubleClick();
+        });
+        
+        // 添加旋轉動畫
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
