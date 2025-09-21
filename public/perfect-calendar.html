@@ -7934,25 +7934,19 @@ async function loadTodayEvents() {
                         
                         // 強制更新，確保顯示正確
                         setTimeout(() => {
-                            if (timeElement.textContent === '載入中...') {
-                                console.log('🔄 強制更新時間元素');
-                                timeElement.textContent = timeString;
-                            }
+                            console.log('🔄 強制更新時間元素');
+                            timeElement.textContent = timeString;
                         }, 50);
                         
                         // 多次強制更新，確保顯示正確
                         setTimeout(() => {
-                            if (timeElement.textContent === '載入中...') {
-                                console.log('🔄 第二次強制更新時間元素');
-                                timeElement.textContent = timeString;
-                            }
+                            console.log('🔄 第二次強制更新時間元素');
+                            timeElement.textContent = timeString;
                         }, 200);
                         
                         setTimeout(() => {
-                            if (timeElement.textContent === '載入中...') {
-                                console.log('🔄 第三次強制更新時間元素');
-                                timeElement.textContent = timeString;
-                            }
+                            console.log('🔄 第三次強制更新時間元素');
+                            timeElement.textContent = timeString;
                         }, 500);
                     } else if (window.loadedStudentsData.time) {
                         console.log(timeFallbackMsg, window.loadedStudentsData.time);
@@ -7998,25 +7992,19 @@ async function loadTodayEvents() {
                         
                         // 強制更新，確保顯示正確
                         setTimeout(() => {
-                            if (dateElement.textContent === '載入中...') {
-                                console.log('🔄 強制更新日期元素');
-                                dateElement.textContent = dateString;
-                            }
+                            console.log('🔄 強制更新日期元素');
+                            dateElement.textContent = dateString;
                         }, 50);
                         
                         // 多次強制更新，確保顯示正確
                         setTimeout(() => {
-                            if (dateElement.textContent === '載入中...') {
-                                console.log('🔄 第二次強制更新日期元素');
-                                dateElement.textContent = dateString;
-                            }
+                            console.log('🔄 第二次強制更新日期元素');
+                            dateElement.textContent = dateString;
                         }, 200);
                         
                         setTimeout(() => {
-                            if (dateElement.textContent === '載入中...') {
-                                console.log('🔄 第三次強制更新日期元素');
-                                dateElement.textContent = dateString;
-                            }
+                            console.log('🔄 第三次強制更新日期元素');
+                            dateElement.textContent = dateString;
                         }, 500);
                     } else {
                         console.log(dateNotFoundMsg);
@@ -9563,24 +9551,17 @@ async function loadTodayEvents() {
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                background: linear-gradient(135deg, 
-                    rgba(255, 107, 53, 0.25) 0%, 
-                    rgba(247, 147, 30, 0.2) 50%,
-                    rgba(255, 107, 53, 0.25) 100%);
-                backdrop-filter: blur(30px);
-                -webkit-backdrop-filter: blur(30px);
+                background: transparent;
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
                 color: #2c3e50;
                 padding: 24px 36px;
                 border-radius: 25px;
                 font-size: 18px;
                 font-weight: 700;
                 z-index: 10000;
-                box-shadow: 
-                    0 12px 40px rgba(255, 107, 53, 0.3),
-                    0 6px 20px rgba(0, 0, 0, 0.1),
-                    inset 0 2px 0 rgba(255, 255, 255, 0.4),
-                    inset 0 -2px 0 rgba(0, 0, 0, 0.1);
-                border: 2px solid rgba(255, 255, 255, 0.3);
+                box-shadow: none;
+                border: none;
                 animation: countdownPulse 0.8s cubic-bezier(0.4, 0, 0.2, 1);
                 position: relative;
                 overflow: hidden;
@@ -9655,6 +9636,170 @@ async function loadTodayEvents() {
                 toast.remove();
             }
         }
+        
+        // 顯示載入動畫
+        function showLoadingToast(message) {
+            // 移除現有的載入提示
+            const existingToast = document.querySelector('.loading-toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+            
+            // 創建載入提示
+            const toast = document.createElement('div');
+            toast.className = 'loading-toast';
+            toast.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: transparent;
+                color: #2c3e50;
+                padding: 24px 36px;
+                border-radius: 25px;
+                font-size: 18px;
+                font-weight: 700;
+                z-index: 10000;
+                text-align: center;
+                min-width: 280px;
+            `;
+            
+            toast.innerHTML = `
+                <div style="position: relative; z-index: 1;">
+                    <i class="fas fa-spinner fa-spin" style="
+                        margin-right: 12px; 
+                        font-size: 1.3rem;
+                        color: #3498db;
+                    "></i>
+                    <span style="
+                        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                        color: #2c3e50;
+                    ">${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+        }
+        
+        // 隱藏載入動畫
+        function hideLoadingToast() {
+            const toast = document.querySelector('.loading-toast');
+            if (toast) {
+                toast.remove();
+            }
+        }
+        
+        // 顯示居中通知
+        function showCenterToast(message, type = 'success') {
+            // 移除現有的居中通知
+            const existingToast = document.querySelector('.center-toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+            
+            // 創建居中通知
+            const toast = document.createElement('div');
+            toast.className = 'center-toast';
+            
+            // 根據類型設定顏色
+            const colors = {
+                success: {
+                    icon: 'fas fa-check-circle',
+                    iconColor: '#28a745',
+                    textColor: '#2c3e50'
+                },
+                error: {
+                    icon: 'fas fa-exclamation-circle',
+                    iconColor: '#dc3545',
+                    textColor: '#2c3e50'
+                },
+                info: {
+                    icon: 'fas fa-info-circle',
+                    iconColor: '#3498db',
+                    textColor: '#2c3e50'
+                },
+                warning: {
+                    icon: 'fas fa-exclamation-triangle',
+                    iconColor: '#ffc107',
+                    textColor: '#2c3e50'
+                }
+            };
+            
+            const colorScheme = colors[type] || colors.info;
+            
+            toast.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: transparent;
+                color: ${colorScheme.textColor};
+                padding: 24px 36px;
+                border-radius: 25px;
+                font-size: 16px;
+                font-weight: 600;
+                z-index: 10000;
+                text-align: center;
+                min-width: 280px;
+                max-width: 400px;
+                word-wrap: break-word;
+                white-space: pre-line;
+                animation: centerToastPulse 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            `;
+            
+            toast.innerHTML = `
+                <div style="position: relative; z-index: 1;">
+                    <i class="${colorScheme.icon}" style="
+                        margin-right: 12px; 
+                        font-size: 1.3rem;
+                        color: ${colorScheme.iconColor};
+                        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+                    "></i>
+                    <span style="
+                        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                        color: ${colorScheme.textColor};
+                    ">${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // 添加動畫樣式
+            if (!document.querySelector('#center-toast-styles')) {
+                const style = document.createElement('style');
+                style.id = 'center-toast-styles';
+                style.textContent = `
+                    @keyframes centerToastPulse {
+                        0% { 
+                            transform: translate(-50%, -50%) scale(0.7); 
+                            opacity: 0; 
+                        }
+                        50% { 
+                            transform: translate(-50%, -50%) scale(1.05); 
+                            opacity: 1; 
+                        }
+                        100% { 
+                            transform: translate(-50%, -50%) scale(1); 
+                            opacity: 1; 
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            // 4秒後自動隱藏
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translate(-50%, -50%) scale(0.8)';
+                    setTimeout(() => {
+                        if (toast.parentElement) {
+                            toast.remove();
+                        }
+                    }, 300);
+                }
+            }, 4000);
+        }
 
         // 提交講師報表
         async function submitTeacherReport() {
@@ -9672,6 +9817,9 @@ async function loadTodayEvents() {
                     showToast('請填寫課程內容', 'error');
                     return;
                 }
+                
+                // 顯示載入動畫
+                showLoadingToast('正在提交講師報表...');
                 
                 // 顯示載入狀態（如果按鈕存在）
                 if (submitBtn) {
@@ -9780,6 +9928,9 @@ async function loadTodayEvents() {
                 
                 const result = await response.json();
                 
+                // 隱藏載入動畫
+                hideLoadingToast();
+                
                 if (response.ok && result.success) {
                     // 顯示成功訊息，包含API回應的詳細信息
                     const mode = currentModeDisplay ? currentModeDisplay.textContent : '講師模式';
@@ -9799,7 +9950,7 @@ async function loadTodayEvents() {
                         }
                     }
                     
-                    showToast(successMessage, 'success');
+                    showCenterToast(successMessage, 'success');
                     console.log('✅ 講師報表提交成功:', result.data);
                 } else {
                     throw new Error(result.message || 'API調用失敗');
@@ -9858,7 +10009,7 @@ async function loadTodayEvents() {
                     errorMessage += '\n請檢查網路連接或稍後重試';
                 }
                 
-                showToast(errorMessage, 'error');
+                showCenterToast(errorMessage, 'error');
                 
                 // 重置按鈕
                 const submitBtn = document.getElementById('submitTeacherReport');
