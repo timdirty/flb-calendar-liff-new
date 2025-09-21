@@ -8931,9 +8931,29 @@ async function loadTodayEvents() {
         // 更新學生狀態
         function updateStudentStatus(studentId, status) {
             // 精確查找學生卡片，避免找到按鈕
-            const studentItem = document.querySelector(`.student-card[data-student-id="${studentId}"]`);
+            let studentItem = document.querySelector(`.student-card[data-student-id="${studentId}"]`);
+            
+            // 如果找不到，嘗試通過學生姓名查找
+            if (!studentItem) {
+                console.log(`🔍 通過ID找不到學生卡片，嘗試通過姓名查找: ${studentId}`);
+                // 查找所有學生卡片，通過姓名匹配
+                const allStudentCards = document.querySelectorAll('.student-card');
+                for (let card of allStudentCards) {
+                    const studentName = card.querySelector('.student-name')?.textContent?.trim();
+                    if (studentName === studentId) {
+                        studentItem = card;
+                        console.log(`✅ 通過姓名找到學生卡片: ${studentName}`);
+                        break;
+                    }
+                }
+            }
+            
             if (!studentItem) {
                 console.error(`❌ 找不到學生卡片: ${studentId}`);
+                console.log('🔍 可用的學生卡片:', Array.from(document.querySelectorAll('.student-card')).map(card => ({
+                    id: card.dataset.studentId,
+                    name: card.querySelector('.student-name')?.textContent?.trim()
+                })));
                 return;
             }
 

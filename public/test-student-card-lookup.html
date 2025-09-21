@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>測試學生卡片查找功能</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+        
+        .student-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            border: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .student-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .student-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .student-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #333;
+        }
+        
+        .student-details h3 {
+            margin: 0;
+            color: #333;
+            font-size: 1.1rem;
+        }
+        
+        .student-status {
+            background: #6c757d;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+        
+        .log-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #28a745;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+            padding: 8px;
+            background: white;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #007bff; }
+        .warning { color: #ffc107; }
+        
+        .present { border-left-color: #28a745 !important; background: #d4edda !important; }
+        .absent { border-left-color: #dc3545 !important; background: #f8d7da !important; }
+        .leave { border-left-color: #ffc107 !important; background: #fff3cd !important; }
+        .pending { border-left-color: #6c757d !important; background: #e2e3e5 !important; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔍 測試學生卡片查找功能</h1>
+        <p>測試 updateStudentStatus 函數的學生卡片查找邏輯</p>
+        
+        <div class="test-section">
+            <h3>🔧 測試控制</h3>
+            <button class="test-button" id="testByIdBtn">🔍 測試通過ID查找</button>
+            <button class="test-button" id="testByNameBtn">🔍 測試通過姓名查找</button>
+            <button class="test-button" id="testInvalidBtn">🔍 測試無效ID查找</button>
+            <button class="test-button" id="clearLogBtn">🗑️ 清除日誌</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>👥 學生卡片</h3>
+            <div class="student-card" data-student-id="student_0">
+                <div class="student-info">
+                    <div class="student-avatar">陳</div>
+                    <div class="student-details">
+                        <h3 class="student-name">陳杰睿</h3>
+                        <div class="student-status">⏰ 待簽到</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="student-card" data-student-id="student_1">
+                <div class="student-info">
+                    <div class="student-avatar">顏</div>
+                    <div class="student-details">
+                        <h3 class="student-name">顏世餘</h3>
+                        <div class="student-status">⏰ 待簽到</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="log-container">
+            <h3>📊 測試日誌</h3>
+            <div id="testLog"></div>
+        </div>
+    </div>
+
+    <script>
+        // 添加日誌
+        function addLog(message, type = 'info') {
+            const logContainer = document.getElementById('testLog');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        // 模擬 updateStudentStatus 函數（從 perfect-calendar.html 複製）
+        function updateStudentStatus(studentId, status) {
+            addLog(`🔍 開始查找學生卡片: ${studentId}`, 'info');
+            
+            // 精確查找學生卡片，避免找到按鈕
+            let studentItem = document.querySelector(`.student-card[data-student-id="${studentId}"]`);
+            
+            // 如果找不到，嘗試通過學生姓名查找
+            if (!studentItem) {
+                addLog(`🔍 通過ID找不到學生卡片，嘗試通過姓名查找: ${studentId}`, 'warning');
+                // 查找所有學生卡片，通過姓名匹配
+                const allStudentCards = document.querySelectorAll('.student-card');
+                for (let card of allStudentCards) {
+                    const studentName = card.querySelector('.student-name')?.textContent?.trim();
+                    if (studentName === studentId) {
+                        studentItem = card;
+                        addLog(`✅ 通過姓名找到學生卡片: ${studentName}`, 'success');
+                        break;
+                    }
+                }
+            } else {
+                addLog(`✅ 通過ID找到學生卡片: ${studentId}`, 'success');
+            }
+            
+            if (!studentItem) {
+                addLog(`❌ 找不到學生卡片: ${studentId}`, 'error');
+                const availableCards = Array.from(document.querySelectorAll('.student-card')).map(card => ({
+                    id: card.dataset.studentId,
+                    name: card.querySelector('.student-name')?.textContent?.trim()
+                }));
+                addLog(`🔍 可用的學生卡片: ${JSON.stringify(availableCards)}`, 'info');
+                return;
+            }
+
+            // 添加狀態變更動畫
+            studentItem.style.animation = 'statusChange 0.6s ease-out';
+            studentItem.classList.remove('present', 'absent', 'leave', 'pending');
+            studentItem.classList.add(status);
+
+            // 重置所有按鈕樣式
+            const presentBtn = studentItem.querySelector('.present-btn');
+            const absentBtn = studentItem.querySelector('.absent-btn');
+
+            if (presentBtn) {
+                presentBtn.style.background = status === 'present' ? '#28a745' : '#6c757d';
+                presentBtn.style.opacity = status === 'present' ? '1' : '0.6';
+            }
+
+            if (absentBtn) {
+                absentBtn.style.background = status === 'absent' ? '#dc3545' : '#6c757d';
+                absentBtn.style.opacity = status === 'absent' ? '1' : '0.6';
+            }
+
+            // 更新狀態標籤
+            const statusElement = studentItem.querySelector('.student-status');
+            if (statusElement) {
+                const statusTexts = {
+                    present: '✅ 已出席',
+                    absent: '❌ 缺席',
+                    leave: '🚪 請假',
+                    pending: '⏰ 待簽到'
+                };
+                statusElement.textContent = statusTexts[status] || '⏰ 待簽到';
+            }
+
+            addLog(`✅ 成功更新學生狀態: ${studentId} -> ${status}`, 'success');
+        }
+        
+        // 清除日誌
+        function clearLog() {
+            document.getElementById('testLog').innerHTML = '';
+            addLog('🗑️ 日誌已清除', 'info');
+        }
+        
+        // 頁面載入完成後執行
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('📱 頁面載入完成，開始測試', 'info');
+            
+            // 綁定控制按鈕事件監聽器
+            document.getElementById('testByIdBtn').addEventListener('click', () => {
+                addLog('🎯 測試通過ID查找: student_0', 'info');
+                updateStudentStatus('student_0', 'present');
+            });
+            
+            document.getElementById('testByNameBtn').addEventListener('click', () => {
+                addLog('🎯 測試通過姓名查找: 顏世餘', 'info');
+                updateStudentStatus('顏世餘', 'absent');
+            });
+            
+            document.getElementById('testInvalidBtn').addEventListener('click', () => {
+                addLog('🎯 測試無效ID查找: invalid_id', 'info');
+                updateStudentStatus('invalid_id', 'present');
+            });
+            
+            document.getElementById('clearLogBtn').addEventListener('click', clearLog);
+        });
+        
+        // 添加狀態變更動畫
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes statusChange {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
