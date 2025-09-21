@@ -3879,15 +3879,16 @@
             z-index: 15 !important;
         }
 
-        /* 釋放動畫 */
+        /* 釋放動畫 - 優化版本 */
         .event-card.releasing {
-            animation: releaseAnimation 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            animation: releaseAnimation 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards !important;
+            transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
             opacity: 1 !important;
             visibility: visible !important;
             display: block !important;
             position: relative !important;
             z-index: 10 !important;
+            transform: scale(1) translateY(0px) !important;
             background: linear-gradient(135deg, 
                 rgba(255, 255, 255, 0.95) 0%, 
                 rgba(248, 250, 252, 0.9) 50%,
@@ -3897,38 +3898,46 @@
             border-radius: 16px !important;
             padding: 20px !important;
             margin-bottom: 15px !important;
+            border: 2px solid rgba(255, 215, 0, 0.3) !important;
+            box-shadow: 
+                0 8px 25px rgba(0, 0, 0, 0.15), 
+                inset 0 1px 0 rgba(255, 255, 255, 0.8),
+                0 0 0 1px rgba(255, 215, 0, 0.2) !important;
         }
 
         @keyframes releaseAnimation {
             0% {
+                transform: scale(1.05) translateY(-2px);
+                box-shadow: 
+                    0 15px 35px rgba(0, 0, 0, 0.25), 
+                    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+                    0 0 0 3px rgba(255, 215, 0, 0.6);
+                border: 2px solid rgba(255, 215, 0, 0.6);
+                opacity: 1;
+                visibility: visible;
+                display: block;
+            }
+            30% {
+                transform: scale(0.95) translateY(1px);
+                box-shadow: 
+                    0 8px 20px rgba(0, 0, 0, 0.18), 
+                    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+                    0 0 0 2px rgba(255, 215, 0, 0.4);
+                border: 2px solid rgba(255, 215, 0, 0.4);
+                opacity: 1;
+                visibility: visible;
+                display: block;
+            }
+            60% {
                 transform: scale(1.02) translateY(-1px);
                 box-shadow: 
-                    0 0 20px rgba(184, 134, 11, 0.4),
-                    0 0 40px rgba(184, 134, 11, 0.2),
-                    inset 0 0 20px rgba(184, 134, 11, 0.1);
-                border: 2px solid rgba(184, 134, 11, 0.6);
+                    0 10px 25px rgba(0, 0, 0, 0.16), 
+                    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+                    0 0 0 1px rgba(255, 215, 0, 0.3);
+                border: 2px solid rgba(255, 215, 0, 0.3);
                 opacity: 1;
                 visibility: visible;
                 display: block;
-                background: linear-gradient(135deg, 
-                    rgba(255, 255, 255, 0.95) 0%, 
-                    rgba(248, 250, 252, 0.9) 50%,
-                    rgba(255, 255, 255, 0.95) 100%);
-            }
-            50% {
-                transform: scale(1.05) translateY(-3px);
-                box-shadow: 
-                    0 0 30px rgba(184, 134, 11, 0.6),
-                    0 0 60px rgba(184, 134, 11, 0.3),
-                    inset 0 0 30px rgba(184, 134, 11, 0.15);
-                border: 2px solid rgba(184, 134, 11, 0.8);
-                opacity: 1;
-                visibility: visible;
-                display: block;
-                background: linear-gradient(135deg, 
-                    rgba(255, 255, 255, 0.95) 0%, 
-                    rgba(248, 250, 252, 0.9) 50%,
-                    rgba(255, 255, 255, 0.95) 100%);
             }
             100% {
                 transform: scale(1) translateY(0px);
@@ -3940,10 +3949,6 @@
                 opacity: 1;
                 visibility: visible;
                 display: block;
-                background: linear-gradient(135deg, 
-                    rgba(255, 255, 255, 0.95) 0%, 
-                    rgba(248, 250, 252, 0.9) 50%,
-                    rgba(255, 255, 255, 0.95) 100%);
             }
         }
 
@@ -7739,38 +7744,15 @@ async function loadTodayEvents() {
                     // 震動回饋：釋放
                     triggerHapticFeedback('release');
                     
-                    // 添加釋放動畫
+                    // 簡化的釋放動畫邏輯
                     eventCard.classList.remove('charging', 'pressing');
                     eventCard.classList.add('releasing');
                     
-                    // 釋放動畫完成後移除類別
+                    // 動畫完成後直接移除類別，讓CSS自然過渡
                     setTimeout(() => {
-                        // 先移除動畫，讓元素回到正常狀態
-                        eventCard.style.animation = 'none';
-                        eventCard.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-                        
-                        // 重置到正常狀態
-                        eventCard.style.transform = 'scale(1) translateY(0px)';
-                        eventCard.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 0 0 1px rgba(255, 215, 0, 0.2)';
-                        eventCard.style.border = '2px solid rgba(255, 215, 0, 0.3)';
-                        eventCard.style.opacity = '1';
-                        eventCard.style.visibility = 'visible';
-                        eventCard.style.display = 'block';
-                        
-                        // 短暫延遲後移除類別，讓過渡完成
-                        setTimeout(() => {
-                            eventCard.classList.remove('releasing');
-                            // 清除手動設定的樣式，讓CSS接管
-                            eventCard.style.animation = '';
-                            eventCard.style.transition = '';
-                            eventCard.style.transform = '';
-                            eventCard.style.boxShadow = '';
-                            eventCard.style.border = '';
-                            eventCard.style.opacity = '';
-                            eventCard.style.visibility = '';
-                            eventCard.style.display = '';
-                        }, 100);
-                    }, 600);
+                        eventCard.classList.remove('releasing');
+                        console.log('✅ 滑鼠釋放動畫完成');
+                    }, 400);
                     
                     console.log('❌ 長按中斷，播放釋放動畫');
                 } else {
@@ -7794,38 +7776,15 @@ async function loadTodayEvents() {
                     // 震動回饋：釋放
                     triggerHapticFeedback('release');
                     
-                    // 添加釋放動畫
+                    // 簡化的釋放動畫邏輯
                     eventCard.classList.remove('charging', 'pressing');
                     eventCard.classList.add('releasing');
                     
-                    // 釋放動畫完成後移除類別
+                    // 動畫完成後直接移除類別，讓CSS自然過渡
                     setTimeout(() => {
-                        // 先移除動畫，讓元素回到正常狀態
-                        eventCard.style.animation = 'none';
-                        eventCard.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-                        
-                        // 重置到正常狀態
-                        eventCard.style.transform = 'scale(1) translateY(0px)';
-                        eventCard.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 0 0 1px rgba(255, 215, 0, 0.2)';
-                        eventCard.style.border = '2px solid rgba(255, 215, 0, 0.3)';
-                        eventCard.style.opacity = '1';
-                        eventCard.style.visibility = 'visible';
-                        eventCard.style.display = 'block';
-                        
-                        // 短暫延遲後移除類別，讓過渡完成
-                        setTimeout(() => {
-                            eventCard.classList.remove('releasing');
-                            // 清除手動設定的樣式，讓CSS接管
-                            eventCard.style.animation = '';
-                            eventCard.style.transition = '';
-                            eventCard.style.transform = '';
-                            eventCard.style.boxShadow = '';
-                            eventCard.style.border = '';
-                            eventCard.style.opacity = '';
-                            eventCard.style.visibility = '';
-                            eventCard.style.display = '';
-                        }, 100);
-                    }, 600);
+                        eventCard.classList.remove('releasing');
+                        console.log('✅ 滑鼠離開釋放動畫完成');
+                    }, 400);
                     
                     console.log('❌ 滑鼠離開，播放釋放動畫');
                 } else {
@@ -7912,38 +7871,15 @@ async function loadTodayEvents() {
                     // 震動回饋：釋放
                     triggerHapticFeedback('release');
                     
-                    // 添加釋放動畫
+                    // 簡化的釋放動畫邏輯
                     eventCard.classList.remove('charging', 'pressing');
                     eventCard.classList.add('releasing');
                     
-                    // 釋放動畫完成後移除類別
+                    // 動畫完成後直接移除類別，讓CSS自然過渡
                     setTimeout(() => {
-                        // 先移除動畫，讓元素回到正常狀態
-                        eventCard.style.animation = 'none';
-                        eventCard.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-                        
-                        // 重置到正常狀態
-                        eventCard.style.transform = 'scale(1) translateY(0px)';
-                        eventCard.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 0 0 1px rgba(255, 215, 0, 0.2)';
-                        eventCard.style.border = '2px solid rgba(255, 215, 0, 0.3)';
-                        eventCard.style.opacity = '1';
-                        eventCard.style.visibility = 'visible';
-                        eventCard.style.display = 'block';
-                        
-                        // 短暫延遲後移除類別，讓過渡完成
-                        setTimeout(() => {
-                            eventCard.classList.remove('releasing');
-                            // 清除手動設定的樣式，讓CSS接管
-                            eventCard.style.animation = '';
-                            eventCard.style.transition = '';
-                            eventCard.style.transform = '';
-                            eventCard.style.boxShadow = '';
-                            eventCard.style.border = '';
-                            eventCard.style.opacity = '';
-                            eventCard.style.visibility = '';
-                            eventCard.style.display = '';
-                        }, 100);
-                    }, 600);
+                        eventCard.classList.remove('releasing');
+                        console.log('✅ 觸控釋放動畫完成');
+                    }, 400);
                     
                     console.log('❌ 觸控長按中斷，播放釋放動畫');
                 } else {
