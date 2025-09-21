@@ -8428,6 +8428,11 @@ async function loadTodayEvents() {
                 });
             }
             
+            // 填充課程資訊
+            setTimeout(() => {
+                updateCourseInfoDisplay();
+            }, 100);
+            
             // 如果學生資料已經載入完成，直接顯示學生列表
             if (window.loadedStudentsData) {
                 console.log('✅ 使用已載入的學生資料');
@@ -8694,6 +8699,11 @@ async function loadTodayEvents() {
                     closeAttendanceModal();
                 });
             }
+            
+            // 填充課程資訊
+            setTimeout(() => {
+                updateCourseInfoDisplay();
+            }, 100);
             
             console.log('✅ 載入畫面已顯示');
         }
