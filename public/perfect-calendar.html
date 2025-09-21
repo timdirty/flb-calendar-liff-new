@@ -2028,13 +2028,25 @@
         }
         
         .present-btn:hover {
-            transform: scale(1.05) !important;
-            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.5) !important;
+            transform: scale(1.08) !important;
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.6) !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
         }
         
         .absent-btn:hover {
-            transform: scale(1.05) !important;
-            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.5) !important;
+            transform: scale(1.08) !important;
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.6) !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        
+        .present-btn:active {
+            transform: scale(0.95) !important;
+            transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        
+        .absent-btn:active {
+            transform: scale(0.95) !important;
+            transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1) !important;
         }
         
         .refresh-students-btn:hover {
@@ -2581,6 +2593,8 @@
             transform: translateX(-50%);
             z-index: 10001;
             display: flex;
+            flex-wrap: nowrap;
+            white-space: nowrap;
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
@@ -4179,7 +4193,7 @@
 
         /* 釋放動畫 - 完全優化版本 */
         .event-card.releasing {
-            animation: releaseAnimation 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards !important;
+            animation: releaseAnimation 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
             opacity: 1 !important;
             visibility: visible !important;
             display: block !important;
@@ -4195,7 +4209,8 @@
             padding: 20px !important;
             margin-bottom: 15px !important;
             border: 2px solid rgba(255, 215, 0, 0.3) !important;
-            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            will-change: transform, opacity !important;
         }
         
         /* 釋放動畫完成後的過渡狀態 */
@@ -8215,6 +8230,12 @@ async function loadTodayEvents() {
             setTimeout(() => {
                 console.log('🔄 在showStudentAttendance中調用updateCourseInfoDisplay');
                 updateCourseInfoDisplay();
+                
+                // 再次確保課程資訊正確顯示
+                setTimeout(() => {
+                    console.log('🔄 二次確認課程資訊顯示');
+                    updateCourseInfoDisplay();
+                }, 200);
             }, 300);
         }
 
@@ -8881,6 +8902,9 @@ async function loadTodayEvents() {
             // 創建講師報表內容
             const teacherAttendanceContent = document.createElement('div');
             teacherAttendanceContent.className = 'teacher-attendance-content';
+            teacherAttendanceContent.style.opacity = '0';
+            teacherAttendanceContent.style.transform = 'translateX(20px)';
+            teacherAttendanceContent.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
             teacherAttendanceContent.innerHTML = `
                 <div class="teacher-attendance-header">
                     <h2 style="
@@ -9129,6 +9153,12 @@ async function loadTodayEvents() {
             // 清空原有內容並添加講師報表內容
             modalContent.innerHTML = '';
             modalContent.appendChild(teacherAttendanceContent);
+            
+            // 觸發講師報表動畫
+            setTimeout(() => {
+                teacherAttendanceContent.style.opacity = '1';
+                teacherAttendanceContent.style.transform = 'translateX(0)';
+            }, 100);
             
             // 初始化講師報表功能
             initializeTeacherReport();
@@ -9734,8 +9764,8 @@ async function loadTodayEvents() {
                             eventCard.style.transition = '';
                             isAnimating = false;
                             console.log('✅ 滑鼠釋放動畫完成');
-                        }, 200);
-                    }, 400);
+                        }, 150);
+                    }, 300);
                     
                     console.log('❌ 長按中斷，播放釋放動畫');
                 } else {
@@ -10995,7 +11025,7 @@ async function loadTodayEvents() {
                                 ${student.id ? `<div style="color: rgba(0, 0, 0, 0.6); font-size: 0.7rem; margin-top: 2px;">${student.id}</div>` : ''}
                             </div>
                         </div>
-                        <div style="display: flex; gap: 8px;">
+                        <div style="display: flex; gap: 6px; flex-wrap: nowrap; min-width: 0;">
                             <button class="attendance-btn present-btn liquid-button" data-student-id="${studentId}" 
                                 data-minutes-until-start="${minutesUntilStart}"
                                 data-disabled="${minutesUntilStart !== null && minutesUntilStart > 10}"
@@ -11008,10 +11038,10 @@ async function loadTodayEvents() {
                                         : 'linear-gradient(135deg, rgba(40, 167, 69, 0.6), rgba(32, 201, 151, 0.5))'};
                                 color: ${minutesUntilStart !== null && minutesUntilStart > 10 ? 'rgba(0, 0, 0, 0.4)' : 'white'};
                                 border: 1px solid ${currentStatus === 'present' ? 'rgba(40, 167, 69, 0.8)' : minutesUntilStart !== null && minutesUntilStart > 10 ? 'rgba(108, 117, 125, 0.3)' : 'rgba(255, 255, 255, 0.4)'};
-                                padding: 8px 16px;
-                                border-radius: 20px;
+                                padding: 6px 12px;
+                                border-radius: 15px;
                                 cursor: pointer;
-                                font-size: 0.85rem;
+                                font-size: 0.75rem;
                                 font-weight: 600;
                                 transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
                                 opacity: 1;
@@ -11023,8 +11053,10 @@ async function loadTodayEvents() {
                                     ? '0 6px 20px rgba(40, 167, 69, 0.5)' 
                                     : '0 3px 12px rgba(40, 167, 69, 0.3)'};
                                 transform: ${currentStatus === 'present' ? 'scale(1.05)' : 'scale(1)'};
+                                white-space: nowrap;
+                                flex-shrink: 0;
                             ">
-                                <span style="margin-right: 6px; font-size: 0.9rem;">✅</span> 出席
+                                <span style="margin-right: 4px; font-size: 0.8rem;">✅</span> 出席
                             </button>
                             <button class="attendance-btn absent-btn liquid-button" data-student-id="${studentId}" 
                                 data-minutes-until-start="${minutesUntilStart}"
@@ -11038,10 +11070,10 @@ async function loadTodayEvents() {
                                         : 'linear-gradient(135deg, rgba(220, 53, 69, 0.6), rgba(231, 76, 60, 0.5))'};
                                 color: ${minutesUntilStart !== null && minutesUntilStart > 10 ? 'rgba(0, 0, 0, 0.4)' : 'white'};
                                 border: 1px solid ${currentStatus === 'absent' ? 'rgba(220, 53, 69, 0.8)' : minutesUntilStart !== null && minutesUntilStart > 10 ? 'rgba(108, 117, 125, 0.3)' : 'rgba(255, 255, 255, 0.4)'};
-                                padding: 8px 16px;
-                                border-radius: 20px;
+                                padding: 6px 12px;
+                                border-radius: 15px;
                                 cursor: pointer;
-                                font-size: 0.85rem;
+                                font-size: 0.75rem;
                                 font-weight: 600;
                                 transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
                                 opacity: 1;
@@ -11053,8 +11085,10 @@ async function loadTodayEvents() {
                                     ? '0 6px 20px rgba(220, 53, 69, 0.5)' 
                                     : '0 3px 12px rgba(220, 53, 69, 0.3)'};
                                 transform: ${currentStatus === 'absent' ? 'scale(1.05)' : 'scale(1)'};
+                                white-space: nowrap;
+                                flex-shrink: 0;
                             ">
-                                <span style="margin-right: 6px; font-size: 0.9rem;">❌</span> 缺席
+                                <span style="margin-right: 4px; font-size: 0.8rem;">❌</span> 缺席
                             </button>
                         </div>
                     </div>
