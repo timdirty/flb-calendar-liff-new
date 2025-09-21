@@ -8187,10 +8187,11 @@ async function loadTodayEvents() {
                 restoreStudentAttendanceContent();
             }
             
-            // 確保課程資訊正確顯示
+            // 確保課程資訊正確顯示 - 增加延遲時間
             setTimeout(() => {
+                console.log('🔄 在showStudentAttendance中調用updateCourseInfoDisplay');
                 updateCourseInfoDisplay();
-            }, 100);
+            }, 300);
         }
 
         // 更新課程資訊顯示
@@ -8202,6 +8203,19 @@ async function loadTodayEvents() {
             console.log(logPrefix);
             console.log(dataCheckPrefix, window.loadedStudentsData);
             console.log(currentDataCheckPrefix, window.currentAttendanceData);
+            
+            // 檢查元素是否存在
+            const timeElement = document.getElementById('currentTime');
+            const dateElement = document.getElementById('currentDate');
+            const teacherElement = document.getElementById('currentTeacher');
+            const courseElement = document.getElementById('currentCourse');
+            
+            console.log('🔍 元素檢查:', {
+                timeElement: !!timeElement,
+                dateElement: !!dateElement,
+                teacherElement: !!teacherElement,
+                courseElement: !!courseElement
+            });
             
             // 檢查是否有已載入的學生資料
             if (window.loadedStudentsData) {
@@ -8501,10 +8515,11 @@ async function loadTodayEvents() {
                 });
             }
             
-            // 填充課程資訊
+            // 填充課程資訊 - 增加延遲時間確保元素完全創建
             setTimeout(() => {
+                console.log('🔄 開始填充課程資訊...');
                 updateCourseInfoDisplay();
-            }, 100);
+            }, 200);
             
             // 如果學生資料已經載入完成，直接顯示學生列表
             if (window.loadedStudentsData) {
