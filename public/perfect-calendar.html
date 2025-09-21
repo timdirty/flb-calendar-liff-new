@@ -8263,15 +8263,92 @@ async function loadTodayEvents() {
             // 重新生成學生列表 - 使用完整的參數
             if (window.loadedStudentsData && window.loadedStudentsData.students) {
                 console.log('🔍 重新生成學生列表，使用完整參數');
-                displayStudents(
-                    window.loadedStudentsData.students,
-                    window.loadedStudentsData.teacher,
-                    window.loadedStudentsData.course,
-                    window.loadedStudentsData.time,
-                    window.loadedStudentsData.start,
-                    window.loadedStudentsData.end,
-                    window.loadedStudentsData.minutesUntilStart
-                );
+                
+                // 直接生成學生列表HTML，因為displayStudents函數會尋找attendanceContent元素
+                const studentsList = document.getElementById('studentsList');
+                if (studentsList && window.loadedStudentsData.students.length > 0) {
+                    console.log('📝 生成學生列表HTML');
+                    
+                    // 生成學生卡片HTML
+                    const studentsHTML = window.loadedStudentsData.students.map((student, index) => {
+                        const studentId = student.student_id || student.studentId || student.key || student.name;
+                        const studentName = student.name || '未知學生';
+                        
+                        return `
+                            <div class="student-card" data-student-id="${studentId}" style="
+                                background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+                                border: 1px solid rgba(255, 255, 255, 0.3);
+                                border-radius: 12px;
+                                padding: 15px;
+                                margin-bottom: 10px;
+                                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                                transition: all 0.3s ease;
+                                cursor: pointer;
+                            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(0, 0, 0, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0, 0, 0, 0.1)'">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; color: #333; margin-bottom: 8px; font-size: 1.1rem;">
+                                            ${studentName}
+                                        </div>
+                                        <div style="font-size: 0.9rem; color: #666;">
+                                            ID: ${studentId}
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; gap: 8px;">
+                                        <button class="attendance-btn present-btn liquid-button" 
+                                                data-student-id="${studentId}" 
+                                                style="
+                                                    background: linear-gradient(135deg, #28a745, #20c997);
+                                                    color: white;
+                                                    border: none;
+                                                    border-radius: 8px;
+                                                    padding: 8px 16px;
+                                                    font-size: 0.9rem;
+                                                    font-weight: 600;
+                                                    cursor: pointer;
+                                                    transition: all 0.3s ease;
+                                                    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+                                                "
+                                                onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(40, 167, 69, 0.4)'"
+                                                onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 8px rgba(40, 167, 69, 0.3)'">
+                                            出席
+                                        </button>
+                                        <button class="attendance-btn absent-btn liquid-button" 
+                                                data-student-id="${studentId}" 
+                                                style="
+                                                    background: linear-gradient(135deg, #dc3545, #fd7e14);
+                                                    color: white;
+                                                    border: none;
+                                                    border-radius: 8px;
+                                                    padding: 8px 16px;
+                                                    font-size: 0.9rem;
+                                                    font-weight: 600;
+                                                    cursor: pointer;
+                                                    transition: all 0.3s ease;
+                                                    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+                                                "
+                                                onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(220, 53, 69, 0.4)'"
+                                                onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 8px rgba(220, 53, 69, 0.3)'">
+                                            缺席
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    studentsList.innerHTML = studentsHTML;
+                    console.log('✅ 學生列表HTML生成完成');
+                }
+            }
+            
+            // 重新綁定關閉按鈕事件
+            const closeBtn = document.getElementById('closeModalBtn');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    console.log('❌ 用戶點擊關閉按鈕（重新創建後）');
+                    closeAttendanceModal();
+                });
             }
             
             // 重新綁定事件
