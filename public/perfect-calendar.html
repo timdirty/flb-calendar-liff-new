@@ -2702,6 +2702,41 @@
             height: 100%;
         }
         
+        /* 液態玻璃卡片樣式 */
+        .glass-card {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* 光效動畫 */
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(30deg);
+            }
+            100% {
+                transform: translateX(100%) translateY(100%) rotate(30deg);
+            }
+        }
+        
+        /* 按鈕懸停效果 */
+        .mode-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 8px 25px rgba(0, 0, 0, 0.15),
+                0 4px 8px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+        }
+        
+        .mode-btn:hover .shimmer-effect {
+            left: 100%;
+        }
+        
+        /* 文字輸入框焦點效果 */
+        #course-content:focus {
+            transform: scale(1.02);
+        }
+        
         /* 人數選擇按鈕樣式 */
         .count-btn:hover {
             transform: translateY(-3px);
@@ -8615,193 +8650,340 @@ async function loadTodayEvents() {
                     height: 100%;
                     max-height: 70vh;
                     min-height: 300px;
-                    gap: 6px;
+                    gap: 12px;
                     overflow-y: auto;
                     -webkit-overflow-scrolling: touch;
+                    padding: 8px;
                 ">
                     
-                    <!-- 課程內容區域 -->
-                    <div style="
-                        background: linear-gradient(135deg, 
-                            rgba(255, 255, 255, 0.1) 0%, 
-                            rgba(255, 255, 255, 0.05) 50%,
-                            rgba(255, 255, 255, 0.1) 100%);
-                        backdrop-filter: blur(20px);
-                        -webkit-backdrop-filter: blur(20px);
-                        border: 1px solid rgba(255, 255, 255, 0.2);
-                        border-radius: 15px;
-                        padding: 10px;
-                        box-shadow: 
-                            0 4px 15px rgba(0, 0, 0, 0.1),
-                            inset 0 1px 0 rgba(255, 255, 255, 0.2);
-                    ">
-                        <h3 style="
-                            margin: 0 0 10px 0;
-                            color: #333;
-                            font-size: 0.9rem;
-                            font-weight: 600;
-                            display: flex;
-                            align-items: center;
-                            gap: 8px;
-                        ">
-                            <i class="fas fa-calendar-day" style="color: #ffd700;"></i>
-                            今日報表
-                        </h3>
-                        
-                        <div style="margin-bottom: 10px;">
-                            <label for="course-content" style="
-                                display: block;
-                                margin-bottom: 3px;
-                                font-weight: 600;
-                                color: #333;
-                                font-size: 0.8rem;
-                            ">課程內容：</label>
-                            <textarea 
-                                id="course-content" 
-                                placeholder="請描述今天的課程內容..."
-                                rows="3"
-                                maxlength="500"
-                                style="
-                                    width: 100%;
-                                    padding: 10px;
-                                    background: rgba(255, 255, 255, 0.1);
-                                    backdrop-filter: blur(10px);
-                                    -webkit-backdrop-filter: blur(10px);
-                                    border: 1px solid rgba(255, 255, 255, 0.2);
-                                    border-radius: 10px;
-                                    font-size: 0.8rem;
-                                    font-family: inherit;
-                                    resize: vertical;
-                                    transition: all 0.3s ease;
-                                    color: #333;
-                                    box-shadow: 
-                                        inset 0 1px 3px rgba(0, 0, 0, 0.1),
-                                        0 1px 0 rgba(255, 255, 255, 0.2);
-                                "
-                            ></textarea>
-                            <div class="char-count" style="
-                                text-align: right;
-                                margin-top: 5px;
-                                font-size: 0.8rem;
-                                color: #666;
-                            ">
-                                <span id="char-count">0</span>/500
-                            </div>
-                        </div>
-                    </div>
-                    
                     <!-- 身份選擇區域 -->
-                    <div style="
+                    <div class="glass-card" style="
                         background: linear-gradient(135deg, 
-                            rgba(255, 255, 255, 0.1) 0%, 
-                            rgba(255, 255, 255, 0.05) 50%,
-                            rgba(255, 255, 255, 0.1) 100%);
-                        backdrop-filter: blur(20px);
-                        -webkit-backdrop-filter: blur(20px);
-                        border: 1px solid rgba(255, 255, 255, 0.2);
-                        border-radius: 15px;
-                        padding: 10px;
+                            rgba(255, 255, 255, 0.25) 0%, 
+                            rgba(255, 255, 255, 0.1) 50%,
+                            rgba(255, 255, 255, 0.2) 100%);
+                        backdrop-filter: blur(25px);
+                        -webkit-backdrop-filter: blur(25px);
+                        border: 1px solid rgba(255, 255, 255, 0.3);
+                        border-radius: 20px;
+                        padding: 16px;
                         box-shadow: 
-                            0 4px 15px rgba(0, 0, 0, 0.1),
-                            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+                            0 8px 32px rgba(0, 0, 0, 0.1),
+                            0 2px 8px rgba(0, 0, 0, 0.05),
+                            inset 0 1px 0 rgba(255, 255, 255, 0.4),
+                            inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+                        position: relative;
+                        overflow: hidden;
                     ">
-                        <h4 style="
-                            margin: 0 0 3px 0;
-                            color: #333;
-                            font-size: 0.9rem;
-                            display: flex;
-                            align-items: center;
-                            gap: 8px;
-                        ">
-                            <i class="fas fa-users"></i>
-                            身份選擇
-                        </h4>
-                        <p style="
-                            margin: 0 0 3px 0;
-                            color: #666;
-                            font-size: 0.8rem;
-                        ">請選擇您的身份以正確設定人數</p>
+                        <!-- 背景光效 -->
+                        <div style="
+                            position: absolute;
+                            top: -50%;
+                            left: -50%;
+                            width: 200%;
+                            height: 200%;
+                            background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+                            animation: shimmer 3s ease-in-out infinite;
+                            pointer-events: none;
+                        "></div>
+                        
+                        <div style="position: relative; z-index: 1;">
+                            <h4 style="
+                                margin: 0 0 8px 0;
+                                color: #2c3e50;
+                                font-size: 1rem;
+                                font-weight: 700;
+                                display: flex;
+                                align-items: center;
+                                gap: 10px;
+                                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+                            ">
+                                <i class="fas fa-users" style="
+                                    color: #ffd700;
+                                    font-size: 1.1rem;
+                                    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+                                "></i>
+                                身份選擇
+                            </h4>
+                            <p style="
+                                margin: 0 0 12px 0;
+                                color: #5a6c7d;
+                                font-size: 0.85rem;
+                                line-height: 1.4;
+                            ">請選擇您的身份以正確設定人數</p>
                         
                         <div style="
                             display: grid;
                             grid-template-columns: 1fr 1fr;
-                            gap: 10px;
-                            margin-bottom: 3px;
+                            gap: 12px;
+                            margin-bottom: 12px;
                         ">
                             <button class="mode-btn teacher-mode active" id="teacher-mode-btn" style="
                                 background: linear-gradient(135deg, 
-                                    rgba(255, 215, 0, 0.2) 0%, 
-                                    rgba(255, 215, 0, 0.1) 50%,
-                                    rgba(255, 215, 0, 0.2) 100%);
-                                backdrop-filter: blur(15px);
-                                -webkit-backdrop-filter: blur(15px);
-                                color: #333;
-                                border: 1px solid rgba(255, 215, 0, 0.3);
-                                padding: 10px;
-                                border-radius: 12px;
+                                    rgba(255, 215, 0, 0.3) 0%, 
+                                    rgba(255, 215, 0, 0.15) 50%,
+                                    rgba(255, 215, 0, 0.25) 100%);
+                                backdrop-filter: blur(20px);
+                                -webkit-backdrop-filter: blur(20px);
+                                color: #2c3e50;
+                                border: 2px solid rgba(255, 215, 0, 0.4);
+                                padding: 14px 12px;
+                                border-radius: 16px;
                                 cursor: pointer;
-                                transition: all 0.3s ease;
+                                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
                                 text-align: center;
                                 box-shadow: 
-                                    0 2px 8px rgba(255, 215, 0, 0.2),
-                                    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+                                    0 4px 16px rgba(255, 215, 0, 0.3),
+                                    0 2px 4px rgba(0, 0, 0, 0.1),
+                                    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+                                    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+                                position: relative;
+                                overflow: hidden;
+                                font-family: inherit;
                             ">
-                                <i class="fas fa-chalkboard-teacher" style="font-size: 1.2rem; margin-bottom: 4px; display: block; color: #ffd700;"></i>
-                                <div style="font-weight: 600; margin-bottom: 2px; font-size: 0.8rem;">講師模式</div>
-                                <div style="font-size: 0.7rem; opacity: 0.8;">根據學生數量</div>
+                                <!-- 按鈕光效 -->
+                                <div style="
+                                    position: absolute;
+                                    top: 0;
+                                    left: -100%;
+                                    width: 100%;
+                                    height: 100%;
+                                    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+                                    transition: left 0.6s ease;
+                                "></div>
+                                
+                                <i class="fas fa-chalkboard-teacher" style="
+                                    font-size: 1.4rem; 
+                                    margin-bottom: 6px; 
+                                    display: block; 
+                                    color: #ffd700;
+                                    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+                                "></i>
+                                <div style="
+                                    font-weight: 700; 
+                                    margin-bottom: 4px; 
+                                    font-size: 0.9rem;
+                                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+                                ">講師模式</div>
+                                <div style="
+                                    font-size: 0.75rem; 
+                                    opacity: 0.9;
+                                    color: #5a6c7d;
+                                ">根據學生數量</div>
                             </button>
+                            
                             <button class="mode-btn assistant-mode" id="assistant-mode-btn" style="
                                 background: linear-gradient(135deg, 
-                                    rgba(255, 255, 255, 0.1) 0%, 
-                                    rgba(255, 255, 255, 0.05) 50%,
-                                    rgba(255, 255, 255, 0.1) 100%);
-                                backdrop-filter: blur(15px);
-                                -webkit-backdrop-filter: blur(15px);
-                                color: #666;
-                                border: 1px solid rgba(255, 255, 255, 0.2);
-                                padding: 10px;
-                                border-radius: 12px;
+                                    rgba(108, 117, 125, 0.2) 0%, 
+                                    rgba(108, 117, 125, 0.1) 50%,
+                                    rgba(108, 117, 125, 0.15) 100%);
+                                backdrop-filter: blur(20px);
+                                -webkit-backdrop-filter: blur(20px);
+                                color: #5a6c7d;
+                                border: 2px solid rgba(108, 117, 125, 0.3);
+                                padding: 14px 12px;
+                                border-radius: 16px;
                                 cursor: pointer;
-                                transition: all 0.3s ease;
+                                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
                                 text-align: center;
                                 box-shadow: 
-                                    0 2px 8px rgba(0, 0, 0, 0.1),
-                                    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+                                    0 4px 16px rgba(0, 0, 0, 0.1),
+                                    0 2px 4px rgba(0, 0, 0, 0.05),
+                                    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                                    inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+                                position: relative;
+                                overflow: hidden;
+                                font-family: inherit;
                             ">
-                                <i class="fas fa-user-graduate" style="font-size: 1.2rem; margin-bottom: 4px; display: block; color: #6c757d;"></i>
-                                <div style="font-weight: 600; margin-bottom: 2px; font-size: 0.8rem;">助教模式</div>
-                                <div style="font-size: 0.7rem; opacity: 0.8;">人數設為 0</div>
+                                <!-- 按鈕光效 -->
+                                <div style="
+                                    position: absolute;
+                                    top: 0;
+                                    left: -100%;
+                                    width: 100%;
+                                    height: 100%;
+                                    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+                                    transition: left 0.6s ease;
+                                "></div>
+                                
+                                <i class="fas fa-user-graduate" style="
+                                    font-size: 1.4rem; 
+                                    margin-bottom: 6px; 
+                                    display: block; 
+                                    color: #6c757d;
+                                    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+                                "></i>
+                                <div style="
+                                    font-weight: 700; 
+                                    margin-bottom: 4px; 
+                                    font-size: 0.9rem;
+                                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+                                ">助教模式</div>
+                                <div style="
+                                    font-size: 0.75rem; 
+                                    opacity: 0.9;
+                                    color: #5a6c7d;
+                                ">人數設為 0</div>
                             </button>
                         </div>
                         
                         <div style="
                             text-align: center;
-                            padding: 8px;
-                            background: rgba(255, 215, 0, 0.1);
-                            border-radius: 6px;
-                            font-size: 0.8rem;
+                            padding: 12px;
+                            background: linear-gradient(135deg, 
+                                rgba(255, 215, 0, 0.15) 0%, 
+                                rgba(255, 215, 0, 0.08) 100%);
+                            border-radius: 12px;
+                            font-size: 0.85rem;
+                            border: 1px solid rgba(255, 215, 0, 0.2);
+                            box-shadow: 
+                                inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                                inset 0 -1px 0 rgba(0, 0, 0, 0.05);
                         ">
-                            <span style="color: #666;">目前模式：</span>
-                            <span id="current-mode-display" style="font-weight: 600; color: #333;">講師模式</span>
+                            <span style="color: #5a6c7d; font-weight: 500;">目前模式：</span>
+                            <span id="current-mode-display" style="
+                                font-weight: 700; 
+                                color: #2c3e50;
+                                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+                            ">講師模式</span>
+                        </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 課程內容區域 -->
+                    <div class="glass-card" style="
+                        background: linear-gradient(135deg, 
+                            rgba(255, 255, 255, 0.25) 0%, 
+                            rgba(255, 255, 255, 0.1) 50%,
+                            rgba(255, 255, 255, 0.2) 100%);
+                        backdrop-filter: blur(25px);
+                        -webkit-backdrop-filter: blur(25px);
+                        border: 1px solid rgba(255, 255, 255, 0.3);
+                        border-radius: 20px;
+                        padding: 16px;
+                        box-shadow: 
+                            0 8px 32px rgba(0, 0, 0, 0.1),
+                            0 2px 8px rgba(0, 0, 0, 0.05),
+                            inset 0 1px 0 rgba(255, 255, 255, 0.4),
+                            inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+                        position: relative;
+                        overflow: hidden;
+                    ">
+                        <!-- 背景光效 -->
+                        <div style="
+                            position: absolute;
+                            top: -50%;
+                            left: -50%;
+                            width: 200%;
+                            height: 200%;
+                            background: radial-gradient(circle, rgba(52, 152, 219, 0.1) 0%, transparent 70%);
+                            animation: shimmer 3s ease-in-out infinite;
+                            pointer-events: none;
+                        "></div>
+                        
+                        <div style="position: relative; z-index: 1;">
+                            <h3 style="
+                                margin: 0 0 12px 0;
+                                color: #2c3e50;
+                                font-size: 1rem;
+                                font-weight: 700;
+                                display: flex;
+                                align-items: center;
+                                gap: 10px;
+                                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+                            ">
+                                <i class="fas fa-calendar-day" style="
+                                    color: #3498db;
+                                    font-size: 1.1rem;
+                                    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+                                "></i>
+                                今日報表
+                            </h3>
+                        
+                        <div style="margin-bottom: 12px;">
+                            <label for="course-content" style="
+                                display: block;
+                                margin-bottom: 8px;
+                                font-weight: 600;
+                                color: #2c3e50;
+                                font-size: 0.9rem;
+                                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+                            ">課程內容：</label>
+                            <textarea 
+                                id="course-content" 
+                                placeholder="請描述今天的課程內容..."
+                                rows="4"
+                                maxlength="500"
+                                style="
+                                    width: 100%;
+                                    padding: 14px;
+                                    background: linear-gradient(135deg, 
+                                        rgba(255, 255, 255, 0.2) 0%, 
+                                        rgba(255, 255, 255, 0.1) 100%);
+                                    backdrop-filter: blur(15px);
+                                    -webkit-backdrop-filter: blur(15px);
+                                    border: 2px solid rgba(255, 255, 255, 0.3);
+                                    border-radius: 12px;
+                                    font-size: 0.85rem;
+                                    font-family: inherit;
+                                    resize: vertical;
+                                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                                    color: #2c3e50;
+                                    box-shadow: 
+                                        inset 0 2px 4px rgba(0, 0, 0, 0.1),
+                                        inset 0 1px 0 rgba(255, 255, 255, 0.4),
+                                        0 2px 8px rgba(0, 0, 0, 0.05);
+                                    outline: none;
+                                "
+                                onfocus="this.style.borderColor='rgba(52, 152, 219, 0.5)'; this.style.boxShadow='inset 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 0 3px rgba(52, 152, 219, 0.1)'"
+                                onblur="this.style.borderColor='rgba(255, 255, 255, 0.3)'; this.style.boxShadow='inset 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 8px rgba(0, 0, 0, 0.05)'"
+                            ></textarea>
+                            <div class="char-count" style="
+                                text-align: right;
+                                margin-top: 8px;
+                                font-size: 0.8rem;
+                                color: #5a6c7d;
+                                font-weight: 500;
+                            ">
+                                <span id="char-count">0</span>/500
+                            </div>
+                        </div>
                         </div>
                     </div>
                     
                     <!-- 人數選擇（僅在沒有學生時顯示） -->
-                    <div id="student-count-selection" style="
+                    <div id="student-count-selection" class="glass-card" style="
                         background: linear-gradient(135deg, 
-                            rgba(255, 255, 255, 0.1) 0%, 
-                            rgba(255, 255, 255, 0.05) 50%,
-                            rgba(255, 255, 255, 0.1) 100%);
-                        backdrop-filter: blur(20px);
-                        -webkit-backdrop-filter: blur(20px);
-                        border: 1px solid rgba(255, 255, 255, 0.2);
-                        border-radius: 15px;
-                        padding: 10px;
+                            rgba(255, 255, 255, 0.25) 0%, 
+                            rgba(255, 255, 255, 0.1) 50%,
+                            rgba(255, 255, 255, 0.2) 100%);
+                        backdrop-filter: blur(25px);
+                        -webkit-backdrop-filter: blur(25px);
+                        border: 1px solid rgba(255, 255, 255, 0.3);
+                        border-radius: 20px;
+                        padding: 16px;
                         box-shadow: 
-                            0 4px 15px rgba(0, 0, 0, 0.1),
-                            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+                            0 8px 32px rgba(0, 0, 0, 0.1),
+                            0 2px 8px rgba(0, 0, 0, 0.05),
+                            inset 0 1px 0 rgba(255, 255, 255, 0.4),
+                            inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+                        position: relative;
+                        overflow: hidden;
                         display: none;
                     ">
+                        <!-- 背景光效 -->
+                        <div style="
+                            position: absolute;
+                            top: -50%;
+                            left: -50%;
+                            width: 200%;
+                            height: 200%;
+                            background: radial-gradient(circle, rgba(46, 204, 113, 0.1) 0%, transparent 70%);
+                            animation: shimmer 3s ease-in-out infinite;
+                            pointer-events: none;
+                        "></div>
+                        
+                        <div style="position: relative; z-index: 1;">
                         <h4 style="
                             margin: 0 0 3px 0;
                             color: #333;
@@ -9156,12 +9338,9 @@ async function loadTodayEvents() {
                     } else {
                         charCount.style.color = '#666';
                     }
-                    
-                    // 觸發自動提交檢查
-                    checkAutoSubmit();
                 });
                 
-                // 監聽失去焦點事件
+                // 監聽失去焦點事件 - 只在輸入完成時觸發自動提交檢查
                 courseContent.addEventListener('blur', function() {
                     checkAutoSubmit();
                 });
@@ -9335,22 +9514,47 @@ async function loadTodayEvents() {
                 top: 20px;
                 left: 50%;
                 transform: translateX(-50%);
-                background: linear-gradient(135deg, #ff6b35, #f7931e);
+                background: linear-gradient(135deg, 
+                    rgba(255, 107, 53, 0.95) 0%, 
+                    rgba(247, 147, 30, 0.95) 100%);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
                 color: white;
-                padding: 12px 24px;
-                border-radius: 25px;
+                padding: 16px 28px;
+                border-radius: 30px;
                 font-size: 16px;
-                font-weight: bold;
+                font-weight: 700;
                 z-index: 10000;
-                box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
-                animation: countdownPulse 0.5s ease-in-out;
+                box-shadow: 
+                    0 8px 32px rgba(255, 107, 53, 0.4),
+                    0 4px 16px rgba(0, 0, 0, 0.1),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                animation: countdownPulse 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+                position: relative;
+                overflow: hidden;
+            `;
+            
+            // 添加背景光效
+            const shimmerEffect = document.createElement('div');
+            shimmerEffect.style.cssText = `
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+                animation: shimmerSlide 2s ease-in-out infinite;
+                pointer-events: none;
             `;
             
             toast.innerHTML = `
-                <i class="fas fa-clock" style="margin-right: 8px;"></i>
-                ${autoSubmitCountdown} 秒後自動提交
+                <i class="fas fa-clock" style="margin-right: 10px; font-size: 1.1rem;"></i>
+                <span style="text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);">${autoSubmitCountdown} 秒後自動提交</span>
             `;
             
+            toast.appendChild(shimmerEffect);
             document.body.appendChild(toast);
             
             // 添加動畫樣式
@@ -9359,9 +9563,23 @@ async function loadTodayEvents() {
                 style.id = 'countdown-styles';
                 style.textContent = `
                     @keyframes countdownPulse {
-                        0% { transform: translateX(-50%) scale(0.8); opacity: 0; }
-                        50% { transform: translateX(-50%) scale(1.1); opacity: 1; }
-                        100% { transform: translateX(-50%) scale(1); opacity: 1; }
+                        0% { 
+                            transform: translateX(-50%) scale(0.8); 
+                            opacity: 0; 
+                        }
+                        50% { 
+                            transform: translateX(-50%) scale(1.05); 
+                            opacity: 1; 
+                        }
+                        100% { 
+                            transform: translateX(-50%) scale(1); 
+                            opacity: 1; 
+                        }
+                    }
+                    @keyframes shimmerSlide {
+                        0% { left: -100%; }
+                        50% { left: 100%; }
+                        100% { left: 100%; }
                     }
                 `;
                 document.head.appendChild(style);
