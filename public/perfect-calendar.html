@@ -7596,6 +7596,28 @@ async function loadTodayEvents() {
         let touchCurrentPos = { x: 0, y: 0 };
         let isScrolling = false;
         let scrollThreshold = 10; // 滑動閾值（像素）
+        
+        // 模態框狀態追蹤
+        let currentAttendanceModal = null;
+        let isModalLoading = false;
+
+        // 關閉簽到模態框
+        function closeAttendanceModal() {
+            if (currentAttendanceModal) {
+                console.log('❌ 關閉簽到模態框');
+                currentAttendanceModal.remove();
+                currentAttendanceModal = null;
+                isModalLoading = false;
+                
+                // 重置通知狀態
+                attendanceNotificationSent = false;
+                studentAttendanceStatus = {};
+                if (attendanceCheckTimer) {
+                    clearTimeout(attendanceCheckTimer);
+                    attendanceCheckTimer = null;
+                }
+            }
+        }
 
         // 震動回饋函數
         function triggerHapticFeedback(type) {
@@ -8443,24 +8465,31 @@ async function loadTodayEvents() {
                 `;
                 
                 document.body.appendChild(modal);
+                currentAttendanceModal = modal;
+                isModalLoading = true;
                 
                 // 設置關閉按鈕課程
                 const closeBtn = document.getElementById('closeAttendanceModal');
                 if (closeBtn) {
                     closeBtn.addEventListener('click', function() {
-                        modal.remove();
+                        console.log('❌ 用戶點擊關閉按鈕，取消載入');
+                        closeAttendanceModal();
                     });
                 }
                 
                 // 點擊背景關閉
                 modal.addEventListener('click', function(e) {
                     if (e.target === modal) {
-                        modal.remove();
+                        console.log('❌ 用戶點擊背景，取消載入');
+                        closeAttendanceModal();
                     }
                 });
                 
                 // 載入學生名單
                 await loadCourseStudents(teacher, course, time, start, end, minutesUntilStart);
+                
+                // 載入完成，更新狀態
+                isModalLoading = false;
                 
             } catch (error) {
                 console.error('❌ 開啟簽到系統失敗:', error);
@@ -8472,6 +8501,12 @@ async function loadTodayEvents() {
         async function loadCourseStudents(teacher, course, time, start, end, minutesUntilStart = null) {
             try {
                 console.log('📚 載入課程學生:', { teacher, course, time, start, end });
+                
+                // 檢查模態框是否仍然存在
+                if (!currentAttendanceModal || !isModalLoading) {
+                    console.log('❌ 模態框已被關閉，取消載入');
+                    return;
+                }
                 
                 const response = await fetch('/api/proxy/google-sheets', {
                     method: 'POST',
@@ -8487,6 +8522,12 @@ async function loadTodayEvents() {
                 
                 const data = await response.json();
                 console.log('📊 學生資料回應:', data);
+                
+                // 再次檢查模態框是否仍然存在
+                if (!currentAttendanceModal || !isModalLoading) {
+                    console.log('❌ 模態框已被關閉，取消處理學生資料');
+                    return;
+                }
                 
                 if (data.success && data.students) {
                     console.log('🔍 學生數據結構檢查:', data.students.map(s => ({
