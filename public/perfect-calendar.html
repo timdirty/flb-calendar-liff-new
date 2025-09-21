@@ -8901,7 +8901,12 @@ async function loadTodayEvents() {
                     </div>
                 </div>
                 
-                <div id="attendanceContent">
+                <div id="attendanceContent" style="
+                    flex: 1;
+                    overflow-y: auto;
+                    padding-right: 8px;
+                    min-height: 0;
+                ">
                     ${teacherAttendanceContent.innerHTML}
                 </div>
             `;
@@ -8914,10 +8919,17 @@ async function loadTodayEvents() {
                 });
             }
             
-            // 填充課程資訊
+            // 填充課程資訊 - 立即更新並添加多次重試
+            updateCourseInfoDisplay();
             setTimeout(() => {
                 updateCourseInfoDisplay();
             }, 100);
+            setTimeout(() => {
+                updateCourseInfoDisplay();
+            }, 300);
+            setTimeout(() => {
+                updateCourseInfoDisplay();
+            }, 500);
             
             // 觸發講師報表動畫
             setTimeout(() => {
