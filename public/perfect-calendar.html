@@ -8971,20 +8971,20 @@ async function loadTodayEvents() {
                         ">
                             <button class="mode-btn teacher-mode active" id="teacher-mode-btn" style="
                                 background: linear-gradient(135deg, 
-                                    rgba(255, 215, 0, 0.3) 0%, 
-                                    rgba(255, 215, 0, 0.15) 50%,
-                                    rgba(255, 215, 0, 0.25) 100%);
+                                    rgba(59, 130, 246, 0.3) 0%, 
+                                    rgba(59, 130, 246, 0.15) 50%,
+                                    rgba(59, 130, 246, 0.25) 100%);
                                 backdrop-filter: blur(20px);
                                 -webkit-backdrop-filter: blur(20px);
-                                color: #2c3e50;
-                                border: 2px solid rgba(255, 215, 0, 0.4);
+                                color: #1e40af;
+                                border: 2px solid rgba(59, 130, 246, 0.4);
                                 padding: 14px 12px;
                                 border-radius: 16px;
                                 cursor: pointer;
                                 transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
                                 text-align: center;
                                 box-shadow: 
-                                    0 4px 16px rgba(255, 215, 0, 0.3),
+                                    0 4px 16px rgba(59, 130, 246, 0.3),
                                     0 2px 4px rgba(0, 0, 0, 0.1),
                                     inset 0 1px 0 rgba(255, 255, 255, 0.5),
                                     inset 0 -1px 0 rgba(0, 0, 0, 0.1);
@@ -9017,31 +9017,32 @@ async function loadTodayEvents() {
                                     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
                                 ">講師模式</div>
                                 <div style="
-                                    font-size: 0.75rem; 
+                                    font-size: 0.65rem; 
                                     opacity: 0.9;
                                     color: #5a6c7d;
+                                    line-height: 1.2;
                                 ">特殊課程自動設為99人</div>
                             </button>
                             
                             <button class="mode-btn assistant-mode" id="assistant-mode-btn" style="
                                 background: linear-gradient(135deg, 
-                                    rgba(108, 117, 125, 0.2) 0%, 
-                                    rgba(108, 117, 125, 0.1) 50%,
-                                    rgba(108, 117, 125, 0.15) 100%);
+                                    rgba(34, 197, 94, 0.3) 0%, 
+                                    rgba(34, 197, 94, 0.15) 50%,
+                                    rgba(34, 197, 94, 0.25) 100%);
                                 backdrop-filter: blur(20px);
                                 -webkit-backdrop-filter: blur(20px);
-                                color: #5a6c7d;
-                                border: 2px solid rgba(108, 117, 125, 0.3);
+                                color: #166534;
+                                border: 2px solid rgba(34, 197, 94, 0.4);
                                 padding: 14px 12px;
                                 border-radius: 16px;
                                 cursor: pointer;
                                 transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
                                 text-align: center;
                                 box-shadow: 
-                                    0 4px 16px rgba(0, 0, 0, 0.1),
-                                    0 2px 4px rgba(0, 0, 0, 0.05),
-                                    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-                                    inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+                                    0 4px 16px rgba(34, 197, 94, 0.3),
+                                    0 2px 4px rgba(0, 0, 0, 0.1),
+                                    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+                                    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
                                 position: relative;
                                 overflow: hidden;
                                 font-family: inherit;
@@ -9638,8 +9639,46 @@ async function loadTodayEvents() {
             const currentModeDisplay = document.getElementById('current-mode-display');
             
             if (teacherModeBtn && assistantModeBtn && currentModeDisplay) {
+                // 添加講師模式按鈕的hover效果
+                teacherModeBtn.addEventListener('mouseenter', () => {
+                    teacherModeBtn.style.transform = 'translateY(-2px) scale(1.02)';
+                    teacherModeBtn.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.4), 0 4px 8px rgba(0, 0, 0, 0.15)';
+                });
+                
+                teacherModeBtn.addEventListener('mouseleave', () => {
+                    if (currentModeDisplay.textContent === '講師模式') {
+                        teacherModeBtn.style.transform = 'translateY(0) scale(1)';
+                        teacherModeBtn.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(0, 0, 0, 0.1)';
+                    } else {
+                        teacherModeBtn.style.transform = 'translateY(0) scale(1)';
+                        teacherModeBtn.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.05)';
+                    }
+                });
+                
+                // 添加助教模式按鈕的hover效果
+                assistantModeBtn.addEventListener('mouseenter', () => {
+                    assistantModeBtn.style.transform = 'translateY(-2px) scale(1.02)';
+                    assistantModeBtn.style.boxShadow = '0 8px 25px rgba(34, 197, 94, 0.4), 0 4px 8px rgba(0, 0, 0, 0.15)';
+                });
+                
+                assistantModeBtn.addEventListener('mouseleave', () => {
+                    if (currentModeDisplay.textContent === '助教模式') {
+                        assistantModeBtn.style.transform = 'translateY(0) scale(1)';
+                        assistantModeBtn.style.boxShadow = '0 4px 16px rgba(34, 197, 94, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(0, 0, 0, 0.1)';
+                    } else {
+                        assistantModeBtn.style.transform = 'translateY(0) scale(1)';
+                        assistantModeBtn.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.05)';
+                    }
+                });
+                
                 teacherModeBtn.addEventListener('click', () => {
                     console.log('👨‍🏫 講師模式按鈕被點擊');
+                    // 添加點擊效果
+                    teacherModeBtn.style.transform = 'translateY(0) scale(0.98)';
+                    setTimeout(() => {
+                        teacherModeBtn.style.transform = 'translateY(-2px) scale(1.02)';
+                    }, 150);
+                    
                     // 停止當前的倒數計時
                     stopAutoSubmitCountdown();
                     setTeacherMode();
@@ -9652,6 +9691,12 @@ async function loadTodayEvents() {
                 
                 assistantModeBtn.addEventListener('click', () => {
                     console.log('👨‍🎓 助教模式按鈕被點擊');
+                    // 添加點擊效果
+                    assistantModeBtn.style.transform = 'translateY(0) scale(0.98)';
+                    setTimeout(() => {
+                        assistantModeBtn.style.transform = 'translateY(-2px) scale(1.02)';
+                    }, 150);
+                    
                     // 停止當前的倒數計時
                     stopAutoSubmitCountdown();
                     setAssistantMode();
@@ -9679,14 +9724,16 @@ async function loadTodayEvents() {
             const currentModeDisplay = document.getElementById('current-mode-display');
             
             if (teacherModeBtn && assistantModeBtn && currentModeDisplay) {
-                // 更新按鈕樣式
-                teacherModeBtn.style.background = 'linear-gradient(135deg, #ffd700, #ffed4e)';
-                teacherModeBtn.style.color = '#333';
-                teacherModeBtn.style.border = '2px solid #ffd700';
+                // 更新按鈕樣式 - 講師模式為藍色
+                teacherModeBtn.style.background = 'linear-gradient(135deg, #3b82f6, #60a5fa)';
+                teacherModeBtn.style.color = '#1e40af';
+                teacherModeBtn.style.border = '2px solid #3b82f6';
+                teacherModeBtn.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(0, 0, 0, 0.1)';
                 
                 assistantModeBtn.style.background = '#f8f9fa';
                 assistantModeBtn.style.color = '#666';
                 assistantModeBtn.style.border = '2px solid #e9ecef';
+                assistantModeBtn.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.05)';
                 
                 // 更新顯示
                 currentModeDisplay.textContent = '講師模式';
@@ -9705,14 +9752,16 @@ async function loadTodayEvents() {
             const currentModeDisplay = document.getElementById('current-mode-display');
             
             if (teacherModeBtn && assistantModeBtn && currentModeDisplay) {
-                // 更新按鈕樣式
-                assistantModeBtn.style.background = 'linear-gradient(135deg, #6c757d, #495057)';
-                assistantModeBtn.style.color = 'white';
-                assistantModeBtn.style.border = '2px solid #6c757d';
+                // 更新按鈕樣式 - 助教模式為綠色
+                assistantModeBtn.style.background = 'linear-gradient(135deg, #22c55e, #4ade80)';
+                assistantModeBtn.style.color = '#166534';
+                assistantModeBtn.style.border = '2px solid #22c55e';
+                assistantModeBtn.style.boxShadow = '0 4px 16px rgba(34, 197, 94, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(0, 0, 0, 0.1)';
                 
                 teacherModeBtn.style.background = '#f8f9fa';
                 teacherModeBtn.style.color = '#666';
                 teacherModeBtn.style.border = '2px solid #e9ecef';
+                teacherModeBtn.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.05)';
                 
                 // 更新顯示
                 currentModeDisplay.textContent = '助教模式';
@@ -9755,7 +9804,7 @@ async function loadTodayEvents() {
                         `;
                         specialNotice.innerHTML = `
                             <i class="fas fa-star" style="margin-right: 6px; color: #ffc107;"></i>
-                            <strong>特殊模式課程</strong> - 此課程包含客製化或到府服務
+                            <strong>特殊模式課程</strong> - 包含客製化或到府服務
                             <br><small>提交時會自動添加特殊標記，人數設為99</small>
                         `;
                         courseContentLabel.parentNode.insertBefore(specialNotice, courseContentLabel.nextSibling);
