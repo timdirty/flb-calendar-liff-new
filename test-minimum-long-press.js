@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 
-async function testTouchCancelOptimization() {
-    console.log('🧪 開始測試觸控取消優化...');
+async function testMinimumLongPress() {
+    console.log('🧪 開始測試最小長按時間（1秒）...');
     
     const browser = await puppeteer.launch({ 
         headless: false,
@@ -15,7 +15,7 @@ async function testTouchCancelOptimization() {
         // 監聽控制台消息
         page.on('console', msg => {
             const text = msg.text();
-            if (text.includes('觸控') || text.includes('取消') || text.includes('滑動') || text.includes('充電') || text.includes('釋放') || text.includes('距離') || text.includes('速度')) {
+            if (text.includes('觸控') || text.includes('持續時間') || text.includes('太短') || text.includes('充電') || text.includes('載入')) {
                 console.log('📱 控制台:', text);
             }
         });
@@ -38,8 +38,8 @@ async function testTouchCancelOptimization() {
         
         const firstCard = eventCards[0];
         
-        // 測試1：觸控取消機制（移動15px以上）
-        console.log('🔄 測試1：觸控取消機制（移動15px以上）');
+        // 測試1：短按（0.5秒）- 應該不觸發
+        console.log('🔄 測試1：短按（0.5秒）- 應該不觸發');
         
         await page.evaluate((card) => {
             const rect = card.getBoundingClientRect();
@@ -58,28 +58,9 @@ async function testTouchCancelOptimization() {
             card.dispatchEvent(touchStartEvent);
         }, firstCard);
         
-        // 等待按壓效果
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // 等待0.5秒
+        await new Promise(resolve => setTimeout(resolve, 500));
         
-        // 移動20px（超過取消閾值15px）
-        await page.evaluate((card) => {
-            const rect = card.getBoundingClientRect();
-            const startX = rect.left + card.width / 2;
-            const startY = rect.top + card.height / 2;
-            
-            const touchMoveEvent = new TouchEvent('touchmove', {
-                touches: [{
-                    clientX: startX + 20, // 向右移動20px
-                    clientY: startY + 20, // 向下移動20px
-                    identifier: 1
-                }],
-                bubbles: true,
-                cancelable: true
-            });
-            card.dispatchEvent(touchMoveEvent);
-        }, firstCard);
-        
-        // 觸控結束
         await page.evaluate((card) => {
             const rect = card.getBoundingClientRect();
             const startX = rect.left + card.width / 2;
@@ -87,8 +68,8 @@ async function testTouchCancelOptimization() {
             
             const touchEndEvent = new TouchEvent('touchend', {
                 changedTouches: [{
-                    clientX: startX + 20,
-                    clientY: startY + 20,
+                    clientX: startX,
+                    clientY: startY,
                     identifier: 1
                 }],
                 bubbles: true,
@@ -100,8 +81,8 @@ async function testTouchCancelOptimization() {
         // 等待動畫完成
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // 測試2：滑動檢測（移動5-15px之間）
-        console.log('🔄 測試2：滑動檢測（移動5-15px之間）');
+        // 測試2：中按（0.8秒）- 應該不觸發
+        console.log('🔄 測試2：中按（0.8秒）- 應該不觸發');
         
         await page.evaluate((card) => {
             const rect = card.getBoundingClientRect();
@@ -120,28 +101,9 @@ async function testTouchCancelOptimization() {
             card.dispatchEvent(touchStartEvent);
         }, firstCard);
         
-        // 等待按壓效果
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // 等待0.8秒
+        await new Promise(resolve => setTimeout(resolve, 800));
         
-        // 移動10px（在滑動閾值範圍內）
-        await page.evaluate((card) => {
-            const rect = card.getBoundingClientRect();
-            const startX = rect.left + card.width / 2;
-            const startY = rect.top + card.height / 2;
-            
-            const touchMoveEvent = new TouchEvent('touchmove', {
-                touches: [{
-                    clientX: startX + 10, // 向右移動10px
-                    clientY: startY + 10, // 向下移動10px
-                    identifier: 1
-                }],
-                bubbles: true,
-                cancelable: true
-            });
-            card.dispatchEvent(touchMoveEvent);
-        }, firstCard);
-        
-        // 觸控結束
         await page.evaluate((card) => {
             const rect = card.getBoundingClientRect();
             const startX = rect.left + card.width / 2;
@@ -149,8 +111,8 @@ async function testTouchCancelOptimization() {
             
             const touchEndEvent = new TouchEvent('touchend', {
                 changedTouches: [{
-                    clientX: startX + 10,
-                    clientY: startY + 10,
+                    clientX: startX,
+                    clientY: startY,
                     identifier: 1
                 }],
                 bubbles: true,
@@ -162,8 +124,8 @@ async function testTouchCancelOptimization() {
         // 等待動畫完成
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // 測試3：正常長按觸發（0.5秒）
-        console.log('🔄 測試3：正常長按觸發（0.5秒）');
+        // 測試3：長按（1.2秒）- 應該觸發
+        console.log('🔄 測試3：長按（1.2秒）- 應該觸發');
         
         await page.evaluate((card) => {
             const rect = card.getBoundingClientRect();
@@ -182,45 +144,46 @@ async function testTouchCancelOptimization() {
             card.dispatchEvent(touchStartEvent);
         }, firstCard);
         
-        // 等待長按動畫完成（0.5秒 + 1.5秒）
+        // 等待1.2秒
+        await new Promise(resolve => setTimeout(resolve, 1200));
+        
+        await page.evaluate((card) => {
+            const rect = card.getBoundingClientRect();
+            const startX = rect.left + card.width / 2;
+            const startY = rect.top + card.height / 2;
+            
+            const touchEndEvent = new TouchEvent('touchend', {
+                changedTouches: [{
+                    clientX: startX,
+                    clientY: startY,
+                    identifier: 1
+                }],
+                bubbles: true,
+                cancelable: true
+            });
+            card.dispatchEvent(touchEndEvent);
+        }, firstCard);
+        
+        // 等待載入完成
         await new Promise(resolve => setTimeout(resolve, 2000));
         
         // 檢查模態框是否出現
         const modal = await page.$('.attendance-modal-content');
         if (modal) {
-            console.log('✅ 簽到模態框已出現');
+            console.log('✅ 簽到模態框已出現（長按1.2秒觸發成功）');
             
-            // 測試4：載入中關閉按鈕
-            console.log('🔄 測試4：載入中關閉按鈕');
-            
-            // 等待載入開始
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // 點擊關閉按鈕
+            // 關閉模態框
             const closeBtn = await page.$('#closeAttendanceModal');
             if (closeBtn) {
                 await closeBtn.click();
-                console.log('✅ 點擊了關閉按鈕');
-                
-                // 等待模態框關閉
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                // 檢查模態框是否已關閉
-                const modalAfterClose = await page.$('.attendance-modal-content');
-                if (!modalAfterClose) {
-                    console.log('✅ 模態框已成功關閉');
-                } else {
-                    console.log('❌ 模態框未關閉');
-                }
-            } else {
-                console.log('❌ 沒有找到關閉按鈕');
+                console.log('✅ 關閉了模態框');
             }
         } else {
-            console.log('❌ 簽到模態框未出現');
+            console.log('❌ 簽到模態框未出現（長按1.2秒未觸發）');
         }
         
-        // 測試5：快速觸控取消（立即移動）
-        console.log('🔄 測試5：快速觸控取消（立即移動）');
+        // 測試4：邊界測試（0.95秒）- 應該不觸發
+        console.log('🔄 測試4：邊界測試（0.95秒）- 應該不觸發');
         
         await page.evaluate((card) => {
             const rect = card.getBoundingClientRect();
@@ -239,27 +202,9 @@ async function testTouchCancelOptimization() {
             card.dispatchEvent(touchStartEvent);
         }, firstCard);
         
-        // 立即移動（50ms後）
-        await new Promise(resolve => setTimeout(resolve, 50));
+        // 等待0.95秒
+        await new Promise(resolve => setTimeout(resolve, 950));
         
-        await page.evaluate((card) => {
-            const rect = card.getBoundingClientRect();
-            const startX = rect.left + card.width / 2;
-            const startY = rect.top + card.height / 2;
-            
-            const touchMoveEvent = new TouchEvent('touchmove', {
-                touches: [{
-                    clientX: startX + 25, // 快速移動25px
-                    clientY: startY + 25,
-                    identifier: 1
-                }],
-                bubbles: true,
-                cancelable: true
-            });
-            card.dispatchEvent(touchMoveEvent);
-        }, firstCard);
-        
-        // 觸控結束
         await page.evaluate((card) => {
             const rect = card.getBoundingClientRect();
             const startX = rect.left + card.width / 2;
@@ -267,8 +212,8 @@ async function testTouchCancelOptimization() {
             
             const touchEndEvent = new TouchEvent('touchend', {
                 changedTouches: [{
-                    clientX: startX + 25,
-                    clientY: startY + 25,
+                    clientX: startX,
+                    clientY: startY,
                     identifier: 1
                 }],
                 bubbles: true,
@@ -280,7 +225,65 @@ async function testTouchCancelOptimization() {
         // 等待動畫完成
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        console.log('🎉 觸控取消優化測試完成！');
+        // 測試5：邊界測試（1.05秒）- 應該觸發
+        console.log('🔄 測試5：邊界測試（1.05秒）- 應該觸發');
+        
+        await page.evaluate((card) => {
+            const rect = card.getBoundingClientRect();
+            const startX = rect.left + card.width / 2;
+            const startY = rect.top + card.height / 2;
+            
+            const touchStartEvent = new TouchEvent('touchstart', {
+                touches: [{
+                    clientX: startX,
+                    clientY: startY,
+                    identifier: 1
+                }],
+                bubbles: true,
+                cancelable: true
+            });
+            card.dispatchEvent(touchStartEvent);
+        }, firstCard);
+        
+        // 等待1.05秒
+        await new Promise(resolve => setTimeout(resolve, 1050));
+        
+        await page.evaluate((card) => {
+            const rect = card.getBoundingClientRect();
+            const startX = rect.left + card.width / 2;
+            const startY = rect.top + card.height / 2;
+            
+            const touchEndEvent = new TouchEvent('touchend', {
+                changedTouches: [{
+                    clientX: startX,
+                    clientY: startY,
+                    identifier: 1
+                }],
+                bubbles: true,
+                cancelable: true
+            });
+            card.dispatchEvent(touchEndEvent);
+        }, firstCard);
+        
+        // 等待載入完成
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // 檢查模態框是否出現
+        const modal2 = await page.$('.attendance-modal-content');
+        if (modal2) {
+            console.log('✅ 簽到模態框已出現（長按1.05秒觸發成功）');
+            
+            // 關閉模態框
+            const closeBtn2 = await page.$('#closeAttendanceModal');
+            if (closeBtn2) {
+                await closeBtn2.click();
+                console.log('✅ 關閉了模態框');
+            }
+        } else {
+            console.log('❌ 簽到模態框未出現（長按1.05秒未觸發）');
+        }
+        
+        console.log('🎉 最小長按時間測試完成！');
         
         // 等待一下讓用戶看到結果
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -293,4 +296,4 @@ async function testTouchCancelOptimization() {
 }
 
 // 運行測試
-testTouchCancelOptimization().catch(console.error);
+testMinimumLongPress().catch(console.error);

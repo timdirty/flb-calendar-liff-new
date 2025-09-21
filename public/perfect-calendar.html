@@ -7430,7 +7430,7 @@ async function loadTodayEvents() {
                         opacity: 0;
                         transition: opacity 0.3s ease;
                     ">
-                        <i class="fas fa-hand-pointer"></i> 長按此方塊進行簽到<br>
+                        <i class="fas fa-hand-pointer"></i> 長按1秒進行簽到<br>
                         <small style="font-size: 0.65rem; color: rgba(51, 51, 51, 0.5);">
                             <i class="fas fa-hand-paper"></i> 移動手指可取消
                         </small>
@@ -7936,7 +7936,7 @@ async function loadTodayEvents() {
                     // 震動回饋：開始按壓
                     triggerHapticFeedback('start');
                     
-                    // 0.5秒後開始集氣充能效果（增加難度）
+                    // 1秒後開始集氣充能效果（與最小長按時間匹配）
                     longPressTimer = setTimeout(() => {
                         if (isCharging && !isScrolling) {
                             console.log('🔋 觸控設備觸發充電動畫，移除 pressing 類別，添加 charging 類別');
@@ -7954,7 +7954,7 @@ async function loadTodayEvents() {
                                     // 震動回饋：載入中
                                     triggerHapticFeedback('loading');
                                 }
-                            }, 1000);
+                            }, 500);
                             
                             setTimeout(() => {
                                 if (isCharging && !isScrolling) {
@@ -7964,9 +7964,9 @@ async function loadTodayEvents() {
                                     triggerHapticFeedback('complete');
                                     handleDirectAttendance(title, instructor, start, end);
                                 }
-                            }, 1500);
+                            }, 1000);
                         }
-                    }, 300);
+                    }, 1000);
                 }
             }
         });
@@ -8089,6 +8089,20 @@ async function loadTodayEvents() {
                 // 檢查是否為滑動操作
                 if (isScrolling) {
                     console.log('📱 觸控結束：滑動操作，不觸發長按功能');
+                    eventCard.classList.remove('pressing', 'charging');
+                    isCharging = false;
+                    isScrolling = false;
+                    isTouchActive = false;
+                    return;
+                }
+                
+                // 計算觸控持續時間
+                touchDuration = Date.now() - touchStartTime;
+                console.log('📱 觸控結束，持續時間:', touchDuration + 'ms');
+                
+                // 檢查最小長按時間（1秒）
+                if (touchDuration < 1000) {
+                    console.log('📱 觸控時間太短（< 1秒），不觸發長按功能');
                     eventCard.classList.remove('pressing', 'charging');
                     isCharging = false;
                     isScrolling = false;
