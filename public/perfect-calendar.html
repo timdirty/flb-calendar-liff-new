@@ -8219,10 +8219,8 @@ async function loadTodayEvents() {
                 const timeElement = document.getElementById('currentTime');
                 if (timeElement) {
                     console.log('🔍 找到時間元素，準備更新');
-                    if (window.loadedStudentsData.time) {
-                        console.log('🔍 使用 window.loadedStudentsData.time:', window.loadedStudentsData.time);
-                        timeElement.textContent = window.loadedStudentsData.time;
-                    } else if (window.loadedStudentsData.start) {
+                    // 優先使用 start 和 end 計算時間，確保格式正確
+                    if (window.loadedStudentsData.start) {
                         console.log('🔍 使用 window.loadedStudentsData.start 和 end 計算時間');
                         const startDate = new Date(window.loadedStudentsData.start);
                         const endDate = new Date(window.loadedStudentsData.end);
@@ -8239,6 +8237,9 @@ async function loadTodayEvents() {
                         const timeString = `${startTime}-${endTime}`;
                         console.log('🔍 計算出的時間字串:', timeString);
                         timeElement.textContent = timeString;
+                    } else if (window.loadedStudentsData.time) {
+                        console.log('🔍 使用 window.loadedStudentsData.time:', window.loadedStudentsData.time);
+                        timeElement.textContent = window.loadedStudentsData.time;
                     } else {
                         console.log('⚠️ 沒有找到時間資料');
                     }
@@ -8290,10 +8291,8 @@ async function loadTodayEvents() {
                 const timeElement = document.getElementById('currentTime');
                 if (timeElement) {
                     console.log('🔍 找到時間元素，準備更新（使用 currentAttendanceData）');
-                    if (currentData.time) {
-                        console.log('🔍 使用 currentData.time:', currentData.time);
-                        timeElement.textContent = currentData.time;
-                    } else if (currentData.start) {
+                    // 優先使用 start 和 end 計算時間，確保格式正確
+                    if (currentData.start) {
                         console.log('🔍 使用 currentData.start 和 end 計算時間');
                         const startDate = new Date(currentData.start);
                         const endDate = new Date(currentData.end);
@@ -8310,6 +8309,9 @@ async function loadTodayEvents() {
                         const timeString = `${startTime}-${endTime}`;
                         console.log('🔍 計算出的時間字串:', timeString);
                         timeElement.textContent = timeString;
+                    } else if (currentData.time) {
+                        console.log('🔍 使用 currentData.time:', currentData.time);
+                        timeElement.textContent = currentData.time;
                     } else {
                         console.log('⚠️ 沒有找到時間資料');
                     }
