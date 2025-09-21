@@ -8529,6 +8529,7 @@ async function loadTodayEvents() {
                             <button class="attendance-btn present-btn liquid-button" data-student-id="${student.id}" 
                                 ${minutesUntilStart !== null && minutesUntilStart > 10 ? 'disabled' : ''}
                                 data-minutes-until-start="${minutesUntilStart}"
+                                data-disabled="${minutesUntilStart !== null && minutesUntilStart > 10}"
                                 style="
                                 background: ${currentStatus === 'present' 
                                     ? 'linear-gradient(135deg, rgba(40, 167, 69, 1), rgba(32, 201, 151, 0.9))' 
@@ -8558,6 +8559,7 @@ async function loadTodayEvents() {
                             <button class="attendance-btn absent-btn liquid-button" data-student-id="${student.id}" 
                                 ${minutesUntilStart !== null && minutesUntilStart > 10 ? 'disabled' : ''}
                                 data-minutes-until-start="${minutesUntilStart}"
+                                data-disabled="${minutesUntilStart !== null && minutesUntilStart > 10}"
                                 style="
                                 background: ${currentStatus === 'absent' 
                                     ? 'linear-gradient(135deg, rgba(220, 53, 69, 1), rgba(231, 76, 60, 0.9))' 
@@ -8661,6 +8663,7 @@ async function loadTodayEvents() {
                 console.log(`🔍 按鈕 ${index + 1} 狀態:`, {
                     studentId: btn.dataset.studentId,
                     disabled: btn.disabled,
+                    dataDisabled: btn.dataset.disabled,
                     pointerEvents: btn.style.pointerEvents,
                     className: btn.className,
                     minutesUntilStart: btn.dataset.minutesUntilStart,
@@ -8694,11 +8697,6 @@ async function loadTodayEvents() {
                     pointerEvents: btn.style.pointerEvents
                 });
                 
-                // 添加簡單的測試點擊事件
-                btn.addEventListener('click', function(e) {
-                    console.log('🎯 簡單測試：出席按鈕被點擊了！');
-                });
-                
                 btn.addEventListener('click', async function(e) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -8727,8 +8725,10 @@ async function loadTodayEvents() {
                     this.style.pointerEvents = 'none';
                     
                     try {
+                        console.log('🚀 開始調用 saveSingleAttendanceRecord API');
                         // 立即發送出席記錄
                         await saveSingleAttendanceRecord(teacher, course, time, start, end, studentId, studentName, 'present');
+                        console.log('✅ saveSingleAttendanceRecord API 調用完成');
                         
                         // 恢復按鈕狀態
                         setTimeout(() => {
@@ -8783,8 +8783,10 @@ async function loadTodayEvents() {
                     this.style.pointerEvents = 'none';
                     
                     try {
+                        console.log('🚀 開始調用 saveSingleAttendanceRecord API (缺席)');
                         // 立即發送缺席記錄
                         await saveSingleAttendanceRecord(teacher, course, time, start, end, studentId, studentName, 'absent');
+                        console.log('✅ saveSingleAttendanceRecord API 調用完成 (缺席)');
                         
                         // 恢復按鈕狀態
                         setTimeout(() => {
@@ -9050,7 +9052,11 @@ async function loadTodayEvents() {
                 
                 card.addEventListener('click', function(e) {
                     // 防止課程冒泡到按鈕
-                    if (e.target.closest('.present-btn, .absent-btn')) {
+                    if (e.target.classList.contains('present-btn') || 
+                        e.target.classList.contains('absent-btn') ||
+                        e.target.closest('.present-btn') || 
+                        e.target.closest('.absent-btn')) {
+                        console.log('🚫 學生卡片點擊被阻止，因為點擊了按鈕');
                         return;
                     }
                     
