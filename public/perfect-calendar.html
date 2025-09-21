@@ -11577,58 +11577,36 @@ async function loadTodayEvents() {
             try {
                 console.log('🔍 查找講師Web API:', teacherName);
                 
-                // 從API獲取講師列表
-                const response = await fetch('https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/exec', {
+                // 使用後端API獲取講師Web API URL
+                const response = await fetch('/api/teacher-web-api', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        action: 'getTeacherList'
+                        teacherName: teacherName
                     })
                 });
                 
                 if (!response.ok) {
-                    throw new Error('無法從API獲取講師列表');
+                    throw new Error('無法從後端API獲取講師Web API');
                 }
                 
                 const data = await response.json();
-                console.log('📋 獲取到的講師列表:', data);
+                console.log('📋 後端API回應:', data);
                 
-                // 檢查API回應格式
-                if (!data || !Array.isArray(data)) {
-                    throw new Error('API回應格式不正確');
+                if (data.success && data.webApi) {
+                    console.log('✅ 找到講師Web API:', data.webApi);
+                    return data.webApi;
+                } else {
+                    console.log('⚠️ 講師沒有配置Web API:', data.message);
+                    return null;
                 }
-                
-                // 查找匹配的講師
-                for (const teacher of data) {
-                    // 假設API回應格式為: {name: "講師名稱", webApi: "API_URL", ...}
-                    const apiTeacherName = teacher.name || teacher.teacherName || teacher.老師;
-                    const webApi = teacher.webApi || teacher.Web_API || teacher.連結;
-                    
-                    if (apiTeacherName) {
-                        // 模糊匹配講師名稱（忽略空格和大小寫）
-                        if (apiTeacherName.toLowerCase().replace(/\s+/g, '') === 
-                            teacherName.toLowerCase().replace(/\s+/g, '')) {
-                            
-                            if (webApi && webApi !== '') {
-                                console.log('✅ 找到講師Web API:', webApi);
-                                return webApi;
-                            } else {
-                                console.log('⚠️ 講師沒有配置Web API:', apiTeacherName);
-                                return null;
-                            }
-                        }
-                    }
-                }
-                
-                console.log('❌ 找不到講師:', teacherName);
-                return null;
                 
             } catch (error) {
                 console.error('❌ 獲取講師Web API失敗:', error);
                 
-                // 如果API失敗，嘗試使用本地CSV文件作為備用
+                // 如果後端API失敗，嘗試使用本地CSV文件作為備用
                 console.log('🔄 嘗試使用本地CSV文件作為備用...');
                 return await getTeacherWebApiFromCSV(teacherName);
             }

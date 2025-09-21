@@ -978,6 +978,131 @@ app.post('/api/refresh-teachers', async (req, res) => {
     }
 });
 
+// 講師報表API
+app.post('/api/teacher-report', async (req, res) => {
+    try {
+        const { teacherName, courseName, courseTime, date, studentCount, courseContent, webApi } = req.body;
+        
+        console.log('📤 收到講師報表提交:', { teacherName, courseName, courseTime, date, studentCount, courseContent, webApi });
+        
+        if (!teacherName || !courseName || !courseTime || !date || !webApi) {
+            return res.status(400).json({
+                success: false,
+                message: '缺少必要參數'
+            });
+        }
+        
+        // 準備Google Apps Script API請求
+        const payload = {
+            action: 'appendTeacherCourse',
+            sheetName: '報表',
+            teacherName: teacherName,
+            '課程名稱': courseName,
+            '上課時間': courseTime,
+            '課程日期': date,
+            '人數 / 助教': studentCount || 0,
+            '課程內容': courseContent || ''
+        };
+        
+        console.log('📤 發送講師報表到Google Sheets:', payload);
+        
+        // 使用講師的Web API URL
+        const response = await axios.post(webApi, payload, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Cookie': process.env.GOOGLE_SCRIPT_COOKIE || 'NID=525=nsWVvbAon67C2qpyiEHQA3SUio_GqBd7RqUFU6BwB97_4LHggZxLpDgSheJ7WN4w3Z4dCQBiFPG9YKAqZgAokFYCuuQw04dkm-FX9-XHAIBIqJf1645n3RZrg86GcUVJOf3gN-5eTHXFIaovTmgRC6cXllv82SnQuKsGMq7CHH60XDSwyC99s9P2gmyXLppI'
+            },
+            timeout: 10000
+        });
+        
+        console.log('📥 講師報表API回應:', response.data);
+        
+        res.json({
+            success: true,
+            message: '講師報表提交成功',
+            data: response.data
+        });
+        
+    } catch (error) {
+        console.error('❌ 講師報表提交失敗:', error);
+        res.status(500).json({
+            success: false,
+            message: '講師報表提交失敗',
+            error: error.message
+        });
+    }
+});
+
+// 獲取講師Web API URL
+app.post('/api/teacher-web-api', async (req, res) => {
+    try {
+        const { teacherName } = req.body;
+        
+        if (!teacherName) {
+            return res.status(400).json({
+                success: false,
+                message: '請提供講師名稱'
+            });
+        }
+        
+        console.log('🔍 查找講師Web API:', teacherName);
+        
+        // 從Google Apps Script獲取講師列表
+        const response = await axios.post(GOOGLE_SCRIPT_URL, {
+            action: 'getTeacherList'
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Cookie': process.env.GOOGLE_SCRIPT_COOKIE || 'NID=525=nsWVvbAon67C2qpyiEHQA3SUio_GqBd7RqUFU6BwB97_4LHggZxLpDgSheJ7WN4w3Z4dCQBiFPG9YKAqZgAokFYCuuQw04dkm-FX9-XHAIBIqJf1645n3RZrg86GcUVJOf3gN-5eTHXFIaovTmgRC6cXllv82SnQuKsGMq7CHH60XDSwyC99s9P2gmyXLppI'
+            },
+            timeout: 10000
+        });
+        
+        if (!response.data || !Array.isArray(response.data)) {
+            throw new Error('API回應格式不正確');
+        }
+        
+        // 查找匹配的講師
+        for (const teacher of response.data) {
+            const apiTeacherName = teacher.name || teacher.teacherName || teacher.老師;
+            const webApi = teacher.webApi || teacher.Web_API || teacher.連結;
+            
+            if (apiTeacherName && apiTeacherName.toLowerCase().replace(/\s+/g, '') === 
+                teacherName.toLowerCase().replace(/\s+/g, '')) {
+                
+                if (webApi && webApi !== '') {
+                    console.log('✅ 找到講師Web API:', webApi);
+                    return res.json({
+                        success: true,
+                        teacherName: teacherName,
+                        webApi: webApi
+                    });
+                } else {
+                    console.log('⚠️ 講師沒有配置Web API:', apiTeacherName);
+                    return res.json({
+                        success: false,
+                        message: `講師 "${teacherName}" 沒有配置Web API`
+                    });
+                }
+            }
+        }
+        
+        console.log('❌ 找不到講師:', teacherName);
+        res.json({
+            success: false,
+            message: `找不到講師 "${teacherName}"`
+        });
+        
+    } catch (error) {
+        console.error('❌ 獲取講師Web API失敗:', error);
+        res.status(500).json({
+            success: false,
+            message: '獲取講師Web API失敗',
+            error: error.message
+        });
+    }
+});
+
 // 獲取當日事件（最快載入）
 app.get('/api/events/today', async (req, res) => {
     try {
