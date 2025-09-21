@@ -7903,35 +7903,24 @@ async function loadTodayEvents() {
             
             // 檢查是否有已載入的學生資料
             if (window.loadedStudentsData) {
-                const successMsg = '✅ 使用已載入的學生資料更新課程資訊';
-                console.log(successMsg);
+                console.log('✅ 使用已載入的學生資料更新課程資訊');
                 
                 // 更新講師資訊
-                const teacherElement = document.getElementById('currentTeacher');
                 if (teacherElement) {
                     teacherElement.textContent = window.loadedStudentsData.teacher;
                 }
                 
                 // 更新課程資訊
-                const courseElement = document.getElementById('currentCourse');
                 if (courseElement) {
                     courseElement.textContent = window.loadedStudentsData.course;
                 }
                 
                 // 更新時間資訊
-                const timeElement = document.getElementById('currentTime');
-                const timeFoundMsg = '🔍 找到時間元素，準備更新';
-                const timeCalcMsg = '🔍 使用 window.loadedStudentsData.start 和 end 計算時間';
-                const timeFallbackMsg = '🔍 使用 window.loadedStudentsData.time:';
-                const timeNotFoundMsg = '⚠️ 沒有找到時間資料';
-                const timeElementNotFoundMsg = '❌ 找不到時間元素';
-                const timeStringMsg = '🔍 計算出的時間字串:';
-                
                 if (timeElement) {
-                    console.log(timeFoundMsg);
+                    console.log('🔍 找到時間元素，準備更新');
                     // 優先使用 start 和 end 計算時間，確保格式正確
                     if (window.loadedStudentsData.start) {
-                        console.log(timeCalcMsg);
+                        console.log('🔍 使用 window.loadedStudentsData.start 和 end 計算時間');
                         console.log('🔍 start 值:', window.loadedStudentsData.start);
                         console.log('🔍 end 值:', window.loadedStudentsData.end);
                         const startDate = new Date(window.loadedStudentsData.start);
@@ -7949,7 +7938,7 @@ async function loadTodayEvents() {
                             hour12: false
                         });
                         const timeString = `${startTime}-${endTime}`;
-                        console.log(timeStringMsg, timeString);
+                        console.log('🔍 計算出的時間字串:', timeString);
                         console.log('🔍 設置時間元素內容:', timeString);
                         timeElement.textContent = timeString;
                         
@@ -7959,7 +7948,6 @@ async function loadTodayEvents() {
                             timeElement.textContent = timeString;
                         }, 50);
                         
-                        // 多次強制更新，確保顯示正確
                         setTimeout(() => {
                             console.log('🔄 第二次強制更新時間元素');
                             timeElement.textContent = timeString;
@@ -7970,35 +7958,26 @@ async function loadTodayEvents() {
                             timeElement.textContent = timeString;
                         }, 500);
                     } else if (window.loadedStudentsData.time) {
-                        console.log(timeFallbackMsg, window.loadedStudentsData.time);
+                        console.log('🔍 使用 window.loadedStudentsData.time:', window.loadedStudentsData.time);
                         timeElement.textContent = window.loadedStudentsData.time;
                         
                         // 強制更新，確保顯示正確
                         setTimeout(() => {
-                            if (timeElement.textContent === '載入中...') {
-                                console.log('🔄 強制更新時間元素（備用）');
-                                timeElement.textContent = window.loadedStudentsData.time;
-                            }
+                            console.log('🔄 強制更新時間元素（備用）');
+                            timeElement.textContent = window.loadedStudentsData.time;
                         }, 50);
                     } else {
-                        console.log(timeNotFoundMsg);
+                        console.log('⚠️ 沒有找到時間資料');
                     }
                 } else {
-                    console.log(timeElementNotFoundMsg);
+                    console.log('❌ 找不到時間元素');
                 }
                 
                 // 更新日期資訊
-                const dateElement = document.getElementById('currentDate');
-                const dateFoundMsg = '🔍 找到日期元素，準備更新';
-                const dateCalcMsg = '🔍 使用 window.loadedStudentsData.start 計算日期';
-                const dateNotFoundMsg = '⚠️ 沒有找到日期資料';
-                const dateElementNotFoundMsg = '❌ 找不到日期元素';
-                const dateStringMsg = '🔍 計算出的日期字串:';
-                
                 if (dateElement) {
-                    console.log(dateFoundMsg);
+                    console.log('🔍 找到日期元素，準備更新');
                     if (window.loadedStudentsData.start) {
-                        console.log(dateCalcMsg);
+                        console.log('🔍 使用 window.loadedStudentsData.start 計算日期');
                         console.log('🔍 日期計算 start 值:', window.loadedStudentsData.start);
                         const date = new Date(window.loadedStudentsData.start);
                         console.log('🔍 日期計算 date 對象:', date);
@@ -8007,7 +7986,7 @@ async function loadTodayEvents() {
                             month: '2-digit',
                             day: '2-digit'
                         });
-                        console.log(dateStringMsg, dateString);
+                        console.log('🔍 計算出的日期字串:', dateString);
                         console.log('🔍 設置日期元素內容:', dateString);
                         dateElement.textContent = dateString;
                         
@@ -8017,7 +7996,6 @@ async function loadTodayEvents() {
                             dateElement.textContent = dateString;
                         }, 50);
                         
-                        // 多次強制更新，確保顯示正確
                         setTimeout(() => {
                             console.log('🔄 第二次強制更新日期元素');
                             dateElement.textContent = dateString;
@@ -8028,47 +8006,35 @@ async function loadTodayEvents() {
                             dateElement.textContent = dateString;
                         }, 500);
                     } else {
-                        console.log(dateNotFoundMsg);
+                        console.log('⚠️ 沒有找到日期資料');
                     }
                 } else {
-                    console.log(dateElementNotFoundMsg);
+                    console.log('❌ 找不到日期元素');
                 }
                 
-                const updateCompleteMsg = '✅ 課程資訊更新完成';
-                console.log(updateCompleteMsg);
+                console.log('✅ 課程資訊更新完成');
             } else if (window.currentAttendanceData) {
-                const currentDataMsg = '✅ 使用當前課程資料更新課程資訊';
-                console.log(currentDataMsg);
+                console.log('✅ 使用當前課程資料更新課程資訊');
                 
                 // 使用當前課程資料
                 const currentData = window.currentAttendanceData;
                 
                 // 更新講師資訊
-                const teacherElement = document.getElementById('currentTeacher');
                 if (teacherElement) {
                     teacherElement.textContent = currentData.teacher;
                 }
                 
                 // 更新課程資訊
-                const courseElement = document.getElementById('currentCourse');
                 if (courseElement) {
                     courseElement.textContent = currentData.course;
                 }
                 
                 // 更新時間資訊
-                const timeElement = document.getElementById('currentTime');
-                const timeFoundCurrentMsg = '🔍 找到時間元素，準備更新（使用 currentAttendanceData）';
-                const timeCalcCurrentMsg = '🔍 使用 currentData.start 和 end 計算時間';
-                const timeFallbackCurrentMsg = '🔍 使用 currentData.time:';
-                const timeNotFoundCurrentMsg = '⚠️ 沒有找到時間資料';
-                const timeElementNotFoundCurrentMsg = '❌ 找不到時間元素';
-                const timeStringCurrentMsg = '🔍 計算出的時間字串:';
-                
                 if (timeElement) {
-                    console.log(timeFoundCurrentMsg);
+                    console.log('🔍 找到時間元素，準備更新（使用 currentAttendanceData）');
                     // 優先使用 start 和 end 計算時間，確保格式正確
                     if (currentData.start) {
-                        console.log(timeCalcCurrentMsg);
+                        console.log('🔍 使用 currentData.start 和 end 計算時間');
                         const startDate = new Date(currentData.start);
                         const endDate = new Date(currentData.end);
                         const startTime = startDate.toLocaleTimeString('zh-TW', {
@@ -8082,50 +8048,41 @@ async function loadTodayEvents() {
                             hour12: false
                         });
                         const timeString = `${startTime}-${endTime}`;
-                        console.log(timeStringCurrentMsg, timeString);
+                        console.log('🔍 計算出的時間字串:', timeString);
                         timeElement.textContent = timeString;
                     } else if (currentData.time) {
-                        console.log(timeFallbackCurrentMsg, currentData.time);
+                        console.log('🔍 使用 currentData.time:', currentData.time);
                         timeElement.textContent = currentData.time;
                     } else {
-                        console.log(timeNotFoundCurrentMsg);
+                        console.log('⚠️ 沒有找到時間資料');
                     }
                 } else {
-                    console.log(timeElementNotFoundCurrentMsg);
+                    console.log('❌ 找不到時間元素');
                 }
                 
                 // 更新日期資訊
-                const dateElement = document.getElementById('currentDate');
-                const dateFoundCurrentMsg = '🔍 找到日期元素，準備更新（使用 currentAttendanceData）';
-                const dateCalcCurrentMsg = '🔍 使用 currentData.start 計算日期';
-                const dateNotFoundCurrentMsg = '⚠️ 沒有找到日期資料';
-                const dateElementNotFoundCurrentMsg = '❌ 找不到日期元素';
-                const dateStringCurrentMsg = '🔍 計算出的日期字串:';
-                
                 if (dateElement) {
-                    console.log(dateFoundCurrentMsg);
+                    console.log('🔍 找到日期元素，準備更新（使用 currentAttendanceData）');
                     if (currentData.start) {
-                        console.log(dateCalcCurrentMsg);
+                        console.log('🔍 使用 currentData.start 計算日期');
                         const date = new Date(currentData.start);
                         const dateString = date.toLocaleDateString('zh-TW', {
                             year: 'numeric',
                             month: '2-digit',
                             day: '2-digit'
                         });
-                        console.log(dateStringCurrentMsg, dateString);
+                        console.log('🔍 計算出的日期字串:', dateString);
                         dateElement.textContent = dateString;
                     } else {
-                        console.log(dateNotFoundCurrentMsg);
+                        console.log('⚠️ 沒有找到日期資料');
                     }
                 } else {
-                    console.log(dateElementNotFoundCurrentMsg);
+                    console.log('❌ 找不到日期元素');
                 }
                 
-                const updateCompleteCurrentMsg = '✅ 課程資訊更新完成';
-                console.log(updateCompleteCurrentMsg);
+                console.log('✅ 課程資訊更新完成');
             } else {
-                const noDataMsg = '⚠️ 沒有找到課程資料，無法更新課程資訊';
-                console.log(noDataMsg);
+                console.log('⚠️ 沒有找到課程資料，無法更新課程資訊');
             }
         }
 
