@@ -7854,13 +7854,13 @@ async function loadTodayEvents() {
                 studentListLoadPromise.then(() => {
                     console.log('✅ 學生名單載入完成，恢復正常畫面');
                     hideStudentLoadingState();
-                    // 重新載入學生簽到內容
+                    // 直接恢復學生簽到內容，不重新載入
                     restoreStudentAttendanceContent();
                 });
             } else {
                 console.log('✅ 學生名單已載入完成，顯示正常畫面');
                 hideStudentLoadingState();
-                // 重新載入學生簽到內容
+                // 直接恢復學生簽到內容，不重新載入
                 restoreStudentAttendanceContent();
             }
         }
@@ -7872,7 +7872,114 @@ async function loadTodayEvents() {
             const modalContent = document.querySelector('.attendance-modal-content');
             if (!modalContent) return;
             
-            // 重新創建原始的學生簽到內容結構
+            // 檢查是否有已載入的學生資料
+            const existingStudentsList = document.querySelector('#studentsList');
+            if (existingStudentsList) {
+                console.log('✅ 找到已載入的學生資料，直接恢復');
+                // 如果已經有學生資料，直接恢復原始結構
+                restoreOriginalStudentContent();
+            } else {
+                console.log('⚠️ 沒有找到已載入的學生資料，顯示載入畫面');
+                // 如果沒有學生資料，顯示載入畫面
+                showLoadingContent();
+            }
+        }
+
+        // 恢復原始學生簽到內容（有學生資料時）
+        function restoreOriginalStudentContent() {
+            const modalContent = document.querySelector('.attendance-modal-content');
+            if (!modalContent) return;
+            
+            // 重新創建原始的學生簽到內容結構，但保持學生資料
+            modalContent.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div style="flex: 1;">
+                        <h2 style="margin: 0; color: #333333; font-size: 1.5rem; text-shadow: none;">
+                            <i class="fas fa-calendar-check" style="color: #b8860b; margin-right: 10px; text-shadow: 0 0 10px rgba(184, 134, 11, 0.5);"></i>
+                            課程簽到系統
+                        </h2>
+                    </div>
+                    <button id="closeAttendanceModal" class="close-attendance-modal" style="
+                        background: rgba(255, 255, 255, 0.2);
+                        border: 1px solid rgba(255, 215, 0, 0.4);
+                        font-size: 1.5rem;
+                        color: #333333;
+                        cursor: pointer;
+                        padding: 5px;
+                        border-radius: 50%;
+                        width: 40px;
+                        height: 40px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        transition: all 0.3s ease;
+                        backdrop-filter: blur(10px);
+                        -webkit-backdrop-filter: blur(10px);
+                    ">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="course-info" style="
+                    margin-bottom: 20px; 
+                    padding: 20px; 
+                    background: 
+                        radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.05) 0%, transparent 70%),
+                        linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+                    border-radius: 15px; 
+                    border: 1px solid rgba(255, 215, 0, 0.3);
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                    box-shadow: 
+                        0 8px 32px rgba(0, 0, 0, 0.2),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                ">
+                    <div class="course-info-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.9rem;">
+                        <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">載入中...</span></div>
+                        <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">載入中...</span></div>
+                        <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">載入中...</span></div>
+                        <div data-field="date" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">日期:</strong> <span id="currentDate">載入中...</span></div>
+                    </div>
+                </div>
+                
+                <div id="attendanceContent">
+                    <div style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
+                        <h3 style="margin: 0 0 12px 0; color: #333333; font-size: 1.1rem; text-shadow: none;">
+                            <i class="fas fa-users" style="color: #b8860b; margin-right: 8px; text-shadow: 0 0 10px rgba(184, 134, 11, 0.5);"></i>
+                            學生名單 (載入中...)
+                        </h3>
+                        <div id="studentsList" style="
+                            display: flex; 
+                            flex-direction: column; 
+                            gap: 8px; 
+                            flex: 1; 
+                            overflow-y: auto; 
+                            padding-right: 8px;
+                            max-height: 400px;
+                        ">
+                            <!-- 學生列表將在這裡顯示 -->
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 重新設置關閉按鈕事件監聽器
+            const closeBtn = document.getElementById('closeAttendanceModal');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    closeAttendanceModal();
+                });
+            }
+            
+            console.log('✅ 原始學生簽到內容已恢復');
+        }
+
+        // 顯示載入內容（沒有學生資料時）
+        function showLoadingContent() {
+            const modalContent = document.querySelector('.attendance-modal-content');
+            if (!modalContent) return;
+            
+            // 重新創建載入畫面
             modalContent.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <div style="flex: 1;">
@@ -7982,11 +8089,7 @@ async function loadTodayEvents() {
                 });
             }
             
-            // 重新載入學生資料
-            if (window.currentAttendanceData) {
-                const { teacher, course, time, start, end, minutesUntilStart } = window.currentAttendanceData;
-                loadCourseStudents(teacher, course, time, start, end, minutesUntilStart);
-            }
+            console.log('✅ 載入畫面已顯示');
         }
 
         // 顯示學生載入狀態
