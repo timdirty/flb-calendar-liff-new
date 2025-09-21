@@ -3879,16 +3879,14 @@
             z-index: 15 !important;
         }
 
-        /* 釋放動畫 - 優化版本 */
+        /* 釋放動畫 - 完全優化版本 */
         .event-card.releasing {
             animation: releaseAnimation 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards !important;
-            transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
             opacity: 1 !important;
             visibility: visible !important;
             display: block !important;
             position: relative !important;
             z-index: 10 !important;
-            transform: scale(1) translateY(0px) !important;
             background: linear-gradient(135deg, 
                 rgba(255, 255, 255, 0.95) 0%, 
                 rgba(248, 250, 252, 0.9) 50%,
@@ -3899,45 +3897,22 @@
             padding: 20px !important;
             margin-bottom: 15px !important;
             border: 2px solid rgba(255, 215, 0, 0.3) !important;
-            box-shadow: 
-                0 8px 25px rgba(0, 0, 0, 0.15), 
-                inset 0 1px 0 rgba(255, 255, 255, 0.8),
-                0 0 0 1px rgba(255, 215, 0, 0.2) !important;
         }
 
         @keyframes releaseAnimation {
             0% {
-                transform: scale(1.05) translateY(-2px);
-                box-shadow: 
-                    0 15px 35px rgba(0, 0, 0, 0.25), 
-                    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-                    0 0 0 3px rgba(255, 215, 0, 0.6);
-                border: 2px solid rgba(255, 215, 0, 0.6);
-                opacity: 1;
-                visibility: visible;
-                display: block;
-            }
-            30% {
-                transform: scale(0.95) translateY(1px);
-                box-shadow: 
-                    0 8px 20px rgba(0, 0, 0, 0.18), 
-                    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-                    0 0 0 2px rgba(255, 215, 0, 0.4);
-                border: 2px solid rgba(255, 215, 0, 0.4);
-                opacity: 1;
-                visibility: visible;
-                display: block;
-            }
-            60% {
                 transform: scale(1.02) translateY(-1px);
                 box-shadow: 
-                    0 10px 25px rgba(0, 0, 0, 0.16), 
-                    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+                    0 12px 30px rgba(0, 0, 0, 0.2), 
+                    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+                    0 0 0 2px rgba(255, 215, 0, 0.5);
+            }
+            50% {
+                transform: scale(0.98) translateY(1px);
+                box-shadow: 
+                    0 6px 20px rgba(0, 0, 0, 0.15), 
+                    inset 0 1px 0 rgba(255, 255, 255, 0.8),
                     0 0 0 1px rgba(255, 215, 0, 0.3);
-                border: 2px solid rgba(255, 215, 0, 0.3);
-                opacity: 1;
-                visibility: visible;
-                display: block;
             }
             100% {
                 transform: scale(1) translateY(0px);
@@ -3945,10 +3920,6 @@
                     0 8px 25px rgba(0, 0, 0, 0.15),
                     inset 0 1px 0 rgba(255, 255, 255, 0.8),
                     0 0 0 1px rgba(255, 215, 0, 0.2);
-                border: 2px solid rgba(255, 215, 0, 0.3);
-                opacity: 1;
-                visibility: visible;
-                display: block;
             }
         }
 
@@ -7618,6 +7589,7 @@ async function loadTodayEvents() {
         let longPressTimer = null;
         let isCharging = false;
         let chargingStartTime = 0;
+        let isAnimating = false; // 防止動畫衝突
 
         // 震動回饋函數
         function triggerHapticFeedback(type) {
@@ -7737,10 +7709,15 @@ async function loadTodayEvents() {
             
             const eventCard = e.target.closest('.event-card');
             if (eventCard && (longPressTimer || isCharging)) {
+                // 防止重複觸發
+                if (isAnimating) return;
+                
                 clearTimeout(longPressTimer);
                 longPressTimer = null;
                 
                 if (isCharging) {
+                    isAnimating = true;
+                    
                     // 震動回饋：釋放
                     triggerHapticFeedback('release');
                     
@@ -7751,6 +7728,7 @@ async function loadTodayEvents() {
                     // 動畫完成後直接移除類別，讓CSS自然過渡
                     setTimeout(() => {
                         eventCard.classList.remove('releasing');
+                        isAnimating = false;
                         console.log('✅ 滑鼠釋放動畫完成');
                     }, 400);
                     
@@ -7769,10 +7747,15 @@ async function loadTodayEvents() {
             
             const eventCard = e.target.closest('.event-card');
             if (eventCard && (longPressTimer || isCharging)) {
+                // 防止重複觸發
+                if (isAnimating) return;
+                
                 clearTimeout(longPressTimer);
                 longPressTimer = null;
                 
                 if (isCharging) {
+                    isAnimating = true;
+                    
                     // 震動回饋：釋放
                     triggerHapticFeedback('release');
                     
@@ -7783,6 +7766,7 @@ async function loadTodayEvents() {
                     // 動畫完成後直接移除類別，讓CSS自然過渡
                     setTimeout(() => {
                         eventCard.classList.remove('releasing');
+                        isAnimating = false;
                         console.log('✅ 滑鼠離開釋放動畫完成');
                     }, 400);
                     
@@ -7864,10 +7848,15 @@ async function loadTodayEvents() {
             
             const eventCard = e.target.closest('.event-card');
             if (eventCard && (longPressTimer || isCharging)) {
+                // 防止重複觸發
+                if (isAnimating) return;
+                
                 clearTimeout(longPressTimer);
                 longPressTimer = null;
                 
                 if (isCharging) {
+                    isAnimating = true;
+                    
                     // 震動回饋：釋放
                     triggerHapticFeedback('release');
                     
@@ -7878,6 +7867,7 @@ async function loadTodayEvents() {
                     // 動畫完成後直接移除類別，讓CSS自然過渡
                     setTimeout(() => {
                         eventCard.classList.remove('releasing');
+                        isAnimating = false;
                         console.log('✅ 觸控釋放動畫完成');
                     }, 400);
                     
