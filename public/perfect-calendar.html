@@ -7867,8 +7867,12 @@ async function loadTodayEvents() {
                     // 優先使用 start 和 end 計算時間，確保格式正確
                     if (window.loadedStudentsData.start) {
                         console.log(timeCalcMsg);
+                        console.log('🔍 start 值:', window.loadedStudentsData.start);
+                        console.log('🔍 end 值:', window.loadedStudentsData.end);
                         const startDate = new Date(window.loadedStudentsData.start);
                         const endDate = new Date(window.loadedStudentsData.end);
+                        console.log('🔍 startDate:', startDate);
+                        console.log('🔍 endDate:', endDate);
                         const startTime = startDate.toLocaleTimeString('zh-TW', {
                             hour: '2-digit',
                             minute: '2-digit',
@@ -7881,6 +7885,7 @@ async function loadTodayEvents() {
                         });
                         const timeString = `${startTime}-${endTime}`;
                         console.log(timeStringMsg, timeString);
+                        console.log('🔍 設置時間元素內容:', timeString);
                         timeElement.textContent = timeString;
                         
                         // 強制更新，確保顯示正確
@@ -7920,13 +7925,16 @@ async function loadTodayEvents() {
                     console.log(dateFoundMsg);
                     if (window.loadedStudentsData.start) {
                         console.log(dateCalcMsg);
+                        console.log('🔍 日期計算 start 值:', window.loadedStudentsData.start);
                         const date = new Date(window.loadedStudentsData.start);
+                        console.log('🔍 日期計算 date 對象:', date);
                         const dateString = date.toLocaleDateString('zh-TW', {
                             year: 'numeric',
                             month: '2-digit',
                             day: '2-digit'
                         });
                         console.log(dateStringMsg, dateString);
+                        console.log('🔍 設置日期元素內容:', dateString);
                         dateElement.textContent = dateString;
                         
                         // 強制更新，確保顯示正確
@@ -8531,25 +8539,6 @@ async function loadTodayEvents() {
                     min-height: 500px;
                     gap: 15px;
                 ">
-                    <!-- 講師報表標題 -->
-                    <div style="
-                        text-align: center;
-                        margin-bottom: 10px;
-                    ">
-                        <h2 style="
-                            margin: 0;
-                            color: #333;
-                            font-size: 1.3rem;
-                            font-weight: 700;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            gap: 8px;
-                        ">
-                            <i class="fas fa-clipboard-list" style="color: #ffd700;"></i>
-                            講師報表
-                        </h2>
-                    </div>
                     
                     <!-- 課程內容區域 -->
                     <div style="
