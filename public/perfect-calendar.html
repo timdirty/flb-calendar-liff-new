@@ -2420,18 +2420,21 @@
             
             .attendance-student-item .student-actions {
                 display: flex !important;
-                gap: 8px !important;
-                justify-content: flex-end !important;
+                gap: 4px !important;
+                justify-content: space-between !important;
                 flex-shrink: 0 !important;
-                width: auto !important;
+                width: 100% !important;
+                max-width: 140px !important;
             }
             
             .attendance-btn {
-                padding: 8px 12px !important;
-                font-size: 0.8rem !important;
-                min-height: 36px !important;
-                min-width: 60px !important;
-                max-width: 80px !important;
+                padding: 6px 8px !important;
+                font-size: 0.75rem !important;
+                min-height: 32px !important;
+                min-width: 50px !important;
+                max-width: 65px !important;
+                flex: 1 !important;
+                margin: 2px !important;
             }
             
             .attendance-stats {
@@ -2491,16 +2494,20 @@
             }
             
             .attendance-student-item .student-actions {
-                gap: 8px !important;
+                gap: 3px !important;
                 flex-shrink: 0 !important;
+                width: 100% !important;
+                max-width: 120px !important;
             }
             
             .attendance-btn {
-                padding: 6px 10px !important;
-                font-size: 0.75rem !important;
-                min-height: 32px !important;
-                min-width: 50px !important;
-                max-width: 70px !important;
+                padding: 4px 6px !important;
+                font-size: 0.7rem !important;
+                min-height: 28px !important;
+                min-width: 45px !important;
+                max-width: 60px !important;
+                flex: 1 !important;
+                margin: 1px !important;
             }
             
             .attendance-stats .stats-grid {
@@ -3737,9 +3744,12 @@
 
         .event-card.charging {
             animation: chargingBounce 0.8s ease-in-out infinite !important;
-            box-shadow: 0 12px 40px rgba(184, 134, 11, 0.6) !important;
-            border: 2px solid rgba(184, 134, 11, 0.8) !important;
-            background: linear-gradient(135deg, rgba(184, 134, 11, 0.1), rgba(255, 215, 0, 0.05)) !important;
+            box-shadow: 
+                0 0 20px rgba(184, 134, 11, 0.4),
+                0 0 40px rgba(184, 134, 11, 0.2),
+                inset 0 0 20px rgba(184, 134, 11, 0.1) !important;
+            border: 2px solid rgba(184, 134, 11, 0.6) !important;
+            background: transparent !important;
             opacity: 1 !important;
             visibility: visible !important;
             display: block !important;
@@ -3756,8 +3766,12 @@
         @media (max-width: 768px) {
             .event-card.charging {
                 animation: chargingBounceMobile 0.6s ease-in-out infinite !important;
-                box-shadow: 0 16px 50px rgba(184, 134, 11, 0.8) !important;
-                border: 3px solid rgba(184, 134, 11, 1) !important;
+                box-shadow: 
+                    0 0 25px rgba(184, 134, 11, 0.5),
+                    0 0 50px rgba(184, 134, 11, 0.3),
+                    inset 0 0 25px rgba(184, 134, 11, 0.15) !important;
+                border: 3px solid rgba(184, 134, 11, 0.8) !important;
+                background: transparent !important;
                 opacity: 1 !important;
                 visibility: visible !important;
                 display: block !important;
@@ -3792,16 +3806,16 @@
             bottom: 0 !important;
             background: linear-gradient(90deg, 
                 transparent 0%, 
-                rgba(184, 134, 11, 0.3) 20%,
-                rgba(255, 215, 0, 0.5) 40%,
-                rgba(255, 255, 255, 0.4) 50%,
-                rgba(255, 215, 0, 0.5) 60%,
-                rgba(184, 134, 11, 0.3) 80%,
+                rgba(184, 134, 11, 0.1) 20%,
+                rgba(255, 215, 0, 0.2) 40%,
+                rgba(255, 255, 255, 0.15) 50%,
+                rgba(255, 215, 0, 0.2) 60%,
+                rgba(184, 134, 11, 0.1) 80%,
                 transparent 100%) !important;
             animation: chargingSweep 1.2s ease-in-out infinite !important;
             z-index: 1 !important;
             border-radius: inherit !important;
-            box-shadow: inset 0 0 20px rgba(184, 134, 11, 0.2) !important;
+            box-shadow: inset 0 0 15px rgba(184, 134, 11, 0.1) !important;
             pointer-events: none !important;
         }
 
@@ -3828,20 +3842,32 @@
 
         @keyframes chargingBounce {
             0%, 100% { 
-                transform: scale(1.02) translateY(0px);
-                box-shadow: 0 8px 25px rgba(184, 134, 11, 0.4);
+                transform: scale(1.01) translateY(0px);
+                box-shadow: 
+                    0 0 15px rgba(184, 134, 11, 0.3),
+                    0 0 30px rgba(184, 134, 11, 0.15),
+                    inset 0 0 15px rgba(184, 134, 11, 0.08);
             }
             25% { 
-                transform: scale(1.04) translateY(-2px);
-                box-shadow: 0 12px 35px rgba(184, 134, 11, 0.6);
+                transform: scale(1.02) translateY(-1px);
+                box-shadow: 
+                    0 0 20px rgba(184, 134, 11, 0.4),
+                    0 0 40px rgba(184, 134, 11, 0.2),
+                    inset 0 0 20px rgba(184, 134, 11, 0.1);
             }
             50% { 
-                transform: scale(1.06) translateY(-3px);
-                box-shadow: 0 16px 45px rgba(184, 134, 11, 0.8);
+                transform: scale(1.03) translateY(-2px);
+                box-shadow: 
+                    0 0 25px rgba(184, 134, 11, 0.5),
+                    0 0 50px rgba(184, 134, 11, 0.25),
+                    inset 0 0 25px rgba(184, 134, 11, 0.12);
             }
             75% { 
-                transform: scale(1.04) translateY(-2px);
-                box-shadow: 0 12px 35px rgba(184, 134, 11, 0.6);
+                transform: scale(1.02) translateY(-1px);
+                box-shadow: 
+                    0 0 20px rgba(184, 134, 11, 0.4),
+                    0 0 40px rgba(184, 134, 11, 0.2),
+                    inset 0 0 20px rgba(184, 134, 11, 0.1);
             }
         }
 
@@ -3917,20 +3943,32 @@
         /* 手機端專用動畫 */
         @keyframes chargingBounceMobile {
             0%, 100% { 
-                transform: scale(1.03) translateY(0px) rotate(0deg);
-                box-shadow: 0 10px 30px rgba(184, 134, 11, 0.6);
+                transform: scale(1.02) translateY(0px) rotate(0deg);
+                box-shadow: 
+                    0 0 20px rgba(184, 134, 11, 0.4),
+                    0 0 40px rgba(184, 134, 11, 0.2),
+                    inset 0 0 20px rgba(184, 134, 11, 0.1);
             }
             25% { 
-                transform: scale(1.06) translateY(-3px) rotate(0.5deg);
-                box-shadow: 0 14px 40px rgba(184, 134, 11, 0.8);
+                transform: scale(1.04) translateY(-2px) rotate(0.3deg);
+                box-shadow: 
+                    0 0 25px rgba(184, 134, 11, 0.5),
+                    0 0 50px rgba(184, 134, 11, 0.25),
+                    inset 0 0 25px rgba(184, 134, 11, 0.12);
             }
             50% { 
-                transform: scale(1.08) translateY(-4px) rotate(0deg);
-                box-shadow: 0 18px 50px rgba(184, 134, 11, 1);
+                transform: scale(1.05) translateY(-3px) rotate(0deg);
+                box-shadow: 
+                    0 0 30px rgba(184, 134, 11, 0.6),
+                    0 0 60px rgba(184, 134, 11, 0.3),
+                    inset 0 0 30px rgba(184, 134, 11, 0.15);
             }
             75% { 
-                transform: scale(1.06) translateY(-3px) rotate(-0.5deg);
-                box-shadow: 0 14px 40px rgba(184, 134, 11, 0.8);
+                transform: scale(1.04) translateY(-2px) rotate(-0.3deg);
+                box-shadow: 
+                    0 0 25px rgba(184, 134, 11, 0.5),
+                    0 0 50px rgba(184, 134, 11, 0.25),
+                    inset 0 0 25px rgba(184, 134, 11, 0.12);
             }
         }
 
@@ -4112,7 +4150,7 @@
                     <!-- 統計信息文字顯示 -->
                     <div class="stats-text" id="statsText" style="text-align: center; margin-top: 8px; padding: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; font-size: 0.75rem; color: rgba(51, 51, 51, 0.8); max-width: 100%;">
                         <div class="stats-row" style="margin-bottom: 4px;">
-                            <span id="totalEventsText">總事件: 0</span> | 
+                            <span id="totalEventsText">總課程: 0</span> | 
                             <span id="instructorCountText">講師: 0</span>
                 </div>
                         <div class="stats-row">
@@ -4125,7 +4163,7 @@
         </div>
 
 
-            <!-- 事件列表 -->
+            <!-- 課程列表 -->
         <div class="events-container" id="eventsContainer">
             <div class="no-events">
                 <i class="fas fa-calendar-times"></i>
@@ -4241,7 +4279,7 @@
             // 顯示載入動畫
             showLoadingAnimation();
             
-            // 設置事件監聽器
+            // 設置課程監聽器
             setupEventListeners();
             
             // 初始化系統
@@ -4304,7 +4342,7 @@
             }
         }
 
-        // 為事件卡片添加進入動畫
+        // 為課程卡片添加進入動畫
         function animateEventCards() {
             const eventCards = document.querySelectorAll('.event-card');
             eventCards.forEach((card, index) => {
@@ -4874,7 +4912,7 @@
                                 instructorSelect.value = matchedOption.value;
                                 console.log('自動選擇講師:', matchedOption.value);
                                 
-                                // 立即更新統計和渲染事件（在跳轉前）
+                                // 立即更新統計和渲染課程（在跳轉前）
                                 updateStats();
                                 renderEvents();
                                 
@@ -4899,7 +4937,7 @@
                         console.log('比對失敗，將顯示全部講師');
                         if (instructorSelect) {
                         instructorSelect.value = ''; // 選擇全部講師
-                            // 立即更新統計和渲染事件
+                            // 立即更新統計和渲染課程
                             updateStats();
                             renderEvents();
                         }
@@ -4912,7 +4950,7 @@
                         console.log('比對失敗，將顯示全部講師');
                         if (instructorSelect) {
                         instructorSelect.value = ''; // 選擇全部講師
-                            // 立即更新統計和渲染事件
+                            // 立即更新統計和渲染課程
                             updateStats();
                             renderEvents();
                         }
@@ -5107,29 +5145,29 @@
         }
 
 
-        // 綁定重新整理按鈕事件
+        // 綁定重新整理按鈕課程
         function bindRefreshButton() {
             const refreshButton = document.getElementById('refreshButton');
             if (refreshButton) {
-                // 移除舊的事件監聽器
+                // 移除舊的課程監聽器
                 refreshButton.removeEventListener('click', handleRefreshClick);
-                // 添加新的事件監聽器
+                // 添加新的課程監聽器
                 refreshButton.addEventListener('click', handleRefreshClick);
-                console.log('✅ 重新整理按鈕事件已綁定');
+                console.log('✅ 重新整理按鈕課程已綁定');
             } else {
                 console.warn('⚠️ 重新整理按鈕元素未找到');
             }
         }
 
-        // 綁定簽到系統選單事件
+        // 綁定簽到系統選單課程
         function bindAttendanceMenu() {
             const attendanceMenu = document.getElementById('attendanceMenu');
             if (attendanceMenu) {
-                // 移除舊的事件監聽器
+                // 移除舊的課程監聽器
                 attendanceMenu.removeEventListener('click', handleAttendanceMenuClick);
-                // 添加新的事件監聽器
+                // 添加新的課程監聽器
                 attendanceMenu.addEventListener('click', handleAttendanceMenuClick);
-                console.log('✅ 簽到系統選單事件已綁定');
+                console.log('✅ 簽到系統選單課程已綁定');
             } else {
                 console.warn('⚠️ 簽到系統選單元素未找到');
             }
@@ -5188,11 +5226,11 @@
             const now = new Date();
             const upcomingEvents = {};
             
-            // 獲取所有有效的未來事件
+            // 獲取所有有效的未來課程
             const futureEvents = allEvents.filter(event => {
                 if (!event || !event.start || !event.instructor) return false;
                 const eventDate = new Date(event.start);
-                return eventDate > now; // 只考慮未來的事件
+                return eventDate > now; // 只考慮未來的課程
             });
             
             // 按講師分組並找到每個講師的下一個課程
@@ -5214,7 +5252,7 @@
             return upcomingEvents;
         }
 
-        // 檢查事件是否為即將到來的課程
+        // 檢查課程是否為即將到來的課程
         function isUpcomingEvent(event) {
             if (!event || !event.start || !event.instructor) return false;
             
@@ -5267,10 +5305,10 @@
                 // 顯示載入動畫
                 showLoadingAnimation();
                 
-                // 重新載入事件數據
+                // 重新載入課程數據
                 await loadTodayEvents();
                 
-                // 重新綁定所有事件監聽器
+                // 重新綁定所有課程監聽器
                 bindViewButtons();
                 updateViewButtonStates();
                 
@@ -5394,11 +5432,11 @@
 
         // 滑動功能已移除 - 避免與按鈕點擊衝突
 
-        // 設置事件監聽器
+        // 設置課程監聽器
         function setupEventListeners() {
             // 滑動功能已移除
             
-            // 講師篩選事件監聽器
+            // 講師篩選課程監聽器
             const instructorSelect = document.getElementById('instructorSelect');
             if (instructorSelect) {
                 instructorSelect.addEventListener('change', function() {
@@ -5406,17 +5444,17 @@
                     console.log('📱 講師選擇變更:', selectedInstructor);
                     
                     if (selectedInstructor) {
-                        // 智慧判斷：檢查講師在不同視圖下的事件數量
+                        // 智慧判斷：檢查講師在不同視圖下的課程數量
                         const instructorEvents = allEvents.filter(event => 
                             event && event.instructor === selectedInstructor
                         );
                         
                         if (instructorEvents.length === 0) {
-                            console.log('⚠️ 該講師沒有任何事件');
+                            console.log('⚠️ 該講師沒有任何課程');
                             currentView = '全部';
                             window.currentView = '全部';
                         } else {
-                            // 檢查今日是否有事件
+                            // 檢查今日是否有課程
                             const now = new Date();
                             const todayEvents = instructorEvents.filter(event => {
                                 const eventDate = new Date(event.start);
@@ -5426,11 +5464,11 @@
                             });
                             
                             if (todayEvents.length > 0) {
-                                console.log('✅ 講師今日有事件，保持今日視圖');
+                                console.log('✅ 講師今日有課程，保持今日視圖');
                                 currentView = '今日';
                                 window.currentView = '今日';
                             } else {
-                                // 檢查本週是否有事件
+                                // 檢查本週是否有課程
                                 const weekStart = new Date(now);
                                 const dayOfWeek = now.getDay();
                                 const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
@@ -5446,11 +5484,11 @@
                                 });
                                 
                                 if (weekEvents.length > 0) {
-                                    console.log('✅ 講師本週有事件，切換到本週視圖');
+                                    console.log('✅ 講師本週有課程，切換到本週視圖');
                                     currentView = '本週';
                                     window.currentView = '本週';
                                 } else {
-                                    // 檢查本月是否有事件
+                                    // 檢查本月是否有課程
                                     const monthEvents = instructorEvents.filter(event => {
                                         const eventDate = new Date(event.start);
                                         return eventDate.getFullYear() === now.getFullYear() &&
@@ -5458,11 +5496,11 @@
                                     });
                                     
                                     if (monthEvents.length > 0) {
-                                        console.log('✅ 講師本月有事件，切換到本月視圖');
+                                        console.log('✅ 講師本月有課程，切換到本月視圖');
                                         currentView = '本月';
                                         window.currentView = '本月';
                                     } else {
-                                        console.log('✅ 講師只有其他月份的事件，切換到全部視圖');
+                                        console.log('✅ 講師只有其他月份的課程，切換到全部視圖');
                                         currentView = '全部';
                                         window.currentView = '全部';
                                     }
@@ -5484,7 +5522,7 @@
                 });
             }
             
-            // 時段篩選事件監聽器
+            // 時段篩選課程監聽器
             const timeFilter = document.getElementById('timeFilter');
             if (timeFilter) {
                 timeFilter.addEventListener('change', function() {
@@ -5494,7 +5532,7 @@
                 });
             }
             
-            // 日期篩選事件監聽器
+            // 日期篩選課程監聽器
             const dateFilter = document.getElementById('dateFilter');
             if (dateFilter) {
                 dateFilter.addEventListener('change', function() {
@@ -5513,7 +5551,7 @@
             
             // 快速篩選功能已移除
             
-            // 綁定用戶按鈕事件監聽器
+            // 綁定用戶按鈕課程監聽器
             const bindUserBtn = document.getElementById('bindUserBtn');
             if (bindUserBtn) {
                 bindUserBtn.addEventListener('click', bindUser);
@@ -5585,7 +5623,7 @@
             document.documentElement.style.setProperty('--ev3-color', colorSettings.ev3);
             document.documentElement.style.setProperty('--minecraft-color', colorSettings.minecraft);
             
-            // 重新渲染事件
+            // 重新渲染課程
             if (allEvents.length > 0) {
                 renderEvents();
             }
@@ -5681,10 +5719,10 @@
             return '#000000';
         }
 
-// 載入當日事件（直接載入完整數據）
+// 載入當日課程（直接載入完整數據）
 async function loadTodayEvents() {
             try {
-        console.log('🚀 開始載入完整事件數據...');
+        console.log('🚀 開始載入完整課程數據...');
         addLoadingLog('🌐 正在連接 CalDAV 伺服器...', 'info');
         
                 const response = await fetch('/api/events');
@@ -5693,28 +5731,28 @@ async function loadTodayEvents() {
                 const data = await response.json();
                 
                 if (data.success) {
-            addLoadingLog(`📊 成功獲取 ${data.data.length} 個事件`, 'success');
+            addLoadingLog(`📊 成功獲取 ${data.data.length} 個課程`, 'success');
             
-                    // 過濾掉 null 值和無效事件
+                    // 過濾掉 null 值和無效課程
                     allEvents = data.data.filter(event => {
                         if (!event) {
-                            console.warn('⚠️ loadTodayEvents: 發現 null 事件，已過濾');
+                            console.warn('⚠️ loadTodayEvents: 發現 null 課程，已過濾');
                             return false;
                         }
                         if (!event.start || !event.end || !event.title || !event.instructor) {
-                            console.warn('⚠️ loadTodayEvents: 事件缺少必要屬性，已過濾', event);
+                            console.warn('⚠️ loadTodayEvents: 課程缺少必要屬性，已過濾', event);
                             return false;
                         }
                         return true;
                     });
                     
                     console.log('🔍 loadTodayEvents: allEvents 過濾完成，數量:', allEvents.length);
-                    console.log('🔍 loadTodayEvents: allEvents 前5個事件:', allEvents.slice(0, 5));
+                    console.log('🔍 loadTodayEvents: allEvents 前5個課程:', allEvents.slice(0, 5));
                     
                     // 調試 allEvents 的狀態
                     console.log('🔍 loadTodayEvents: 開始填充 allInstructors');
                     console.log('🔍 loadTodayEvents: allEvents 長度:', allEvents.length);
-                    console.log('🔍 loadTodayEvents: allEvents 前3個事件的講師:', allEvents.slice(0, 3).map(event => event.instructor));
+                    console.log('🔍 loadTodayEvents: allEvents 前3個課程的講師:', allEvents.slice(0, 3).map(event => event.instructor));
                     
                     allInstructors = [...new Set(allEvents.map(event => event.instructor).filter(Boolean))];
             
@@ -5727,26 +5765,26 @@ async function loadTodayEvents() {
                         generateRandomInstructorColors();
                     }
                     
-                    addLoadingLog('🔄 正在渲染事件列表...', 'info');
+                    addLoadingLog('🔄 正在渲染課程列表...', 'info');
                     await populateInstructorDropdown();
                     renderEvents();
                     updateStats();
                     
             
-            console.log(`✅ 完整事件載入完成: ${allEvents.length} 個事件`);
-            addLoadingLog(`✅ 載入完成！共 ${allEvents.length} 個事件`, 'success');
+            console.log(`✅ 完整課程載入完成: ${allEvents.length} 個課程`);
+            addLoadingLog(`✅ 載入完成！共 ${allEvents.length} 個課程`, 'success');
             hideLoadingMessage();
                 } else {
-                    showError('載入事件失敗: ' + data.message);
+                    showError('載入課程失敗: ' + data.message);
                 }
             } catch (error) {
-                console.error('載入事件錯誤:', error);
+                console.error('載入課程錯誤:', error);
                 showError('無法連接到服務器');
     }
 }
 
 
-        // 載入事件資料（向後相容）
+        // 載入課程資料（向後相容）
         async function loadEvents() {
             return loadTodayEvents();
         }
@@ -5939,7 +5977,7 @@ async function loadTodayEvents() {
             // 清空現有選項
             timeFilter.innerHTML = '<option value="">全部時段</option>';
             
-            // 獲取要統計的事件（根據講師篩選）
+            // 獲取要統計的課程（根據講師篩選）
             let eventsToAnalyze = allEvents;
             if (instructorFilter) {
                 eventsToAnalyze = allEvents.filter(event => 
@@ -5969,7 +6007,7 @@ async function loadTodayEvents() {
                 }
             });
             
-            // 只添加有事件的時段選項
+            // 只添加有課程的時段選項
             if (timeSlots.morning > 0) {
                 const option = document.createElement('option');
                 option.value = 'morning';
@@ -6011,7 +6049,7 @@ async function loadTodayEvents() {
                 timestamp: new Date().toISOString()
             });
             
-            // 防止滑動事件干擾點擊
+            // 防止滑動課程干擾點擊
             e.preventDefault();
             e.stopPropagation();
             
@@ -6035,10 +6073,10 @@ async function loadTodayEvents() {
             updateStats();
             renderEvents();
             autoScrollToViewButtons(); // 自動滾動到視圖按鈕
-            console.log(`📱 視圖已切換到 ${view}，事件已重新渲染`);
+            console.log(`📱 視圖已切換到 ${view}，課程已重新渲染`);
         }
 
-        // 為視圖按鈕添加事件監聽器
+        // 為視圖按鈕添加課程監聽器
         function bindViewButtons() {
             console.log('🔗 開始綁定視圖按鈕...');
             const viewButtons = document.querySelectorAll('.view-buttons .btn-primary');
@@ -6066,7 +6104,7 @@ async function loadTodayEvents() {
             viewButtons.forEach((button, index) => {
                 console.log(`🔗 綁定按鈕 ${index + 1}: ${button.getAttribute('data-view')}`);
                 
-                // 清除所有舊的事件監聽器和屬性
+                // 清除所有舊的課程監聽器和屬性
                 button.removeEventListener('click', handleViewButtonClick);
                 button.removeEventListener('touchstart', handleViewButtonClick);
                 button.removeEventListener('touchend', handleViewButtonClick);
@@ -6102,7 +6140,7 @@ async function loadTodayEvents() {
                     button.style.touchAction = 'manipulation';
                 }
                 
-                // 簡化的按鈕事件處理 - 確保按鈕可以正常點擊
+                // 簡化的按鈕課程處理 - 確保按鈕可以正常點擊
                 const buttonClickHandler = function(e) {
                     console.log(`📱 按鈕點擊觸發: ${button.getAttribute('data-view')}`);
                     e.preventDefault();
@@ -6110,13 +6148,13 @@ async function loadTodayEvents() {
                     handleViewButtonClick.call(this, e);
                 };
                 
-                // 清除所有舊的事件監聽器
+                // 清除所有舊的課程監聽器
                 button.removeEventListener('click', buttonClickHandler);
                 button.removeEventListener('touchstart', buttonClickHandler);
                 button.removeEventListener('touchend', buttonClickHandler);
                 button.removeEventListener('mousedown', buttonClickHandler);
                 
-                // 添加新的事件監聽器
+                // 添加新的課程監聽器
                 button.addEventListener('click', buttonClickHandler, { passive: false });
                 button.addEventListener('touchstart', buttonClickHandler, { passive: false });
                 button.addEventListener('touchend', buttonClickHandler, { passive: false });
@@ -6227,7 +6265,7 @@ async function loadTodayEvents() {
         };
 
 
-        // 通用篩選函數，根據當前篩選條件篩選事件（不包含視圖篩選）
+        // 通用篩選函數，根據當前篩選條件篩選課程（不包含視圖篩選）
         function getFilteredEvents() {
             const instructorFilter = document.getElementById('instructorSelect').value;
             const timeFilter = document.getElementById('timeFilter').value;
@@ -6302,26 +6340,26 @@ async function loadTodayEvents() {
 
         // 移除快速篩選功能 - 所有快速篩選相關代碼已移除
         
-        // 渲染事件列表
+        // 渲染課程列表
         function renderEvents() {
             const container = document.getElementById('eventsContainer');
             const instructorFilter = document.getElementById('instructorSelect').value;
             const timeFilter = document.getElementById('timeFilter').value;
             const dateFilter = document.getElementById('dateFilter').value;
             
-            console.log('🎨 renderEvents - 開始篩選，總事件數:', allEvents.length, '當前視圖:', currentView);
+            console.log('🎨 renderEvents - 開始篩選，總課程數:', allEvents.length, '當前視圖:', currentView);
             
             // 使用簡單直接的篩選邏輯，先過濾掉 null 值
             let filteredEvents = allEvents.filter(event => {
-                // 先檢查事件是否為 null 或 undefined
+                // 先檢查課程是否為 null 或 undefined
                 if (!event) {
-                    console.warn('⚠️ renderEvents: 發現 null 事件，已過濾');
+                    console.warn('⚠️ renderEvents: 發現 null 課程，已過濾');
                     return false;
                 }
                 
                 // 檢查必要屬性是否存在
                 if (!event.start || !event.end || !event.title || !event.instructor) {
-                    console.warn('⚠️ renderEvents: 事件缺少必要屬性，已過濾', event);
+                    console.warn('⚠️ renderEvents: 課程缺少必要屬性，已過濾', event);
                     return false;
                 }
                 
@@ -6409,14 +6447,14 @@ async function loadTodayEvents() {
                 return shouldShow;
             });
             
-            console.log('🎨 renderEvents - 篩選後事件數量:', filteredEvents.length, '當前視圖:', currentView);
+            console.log('🎨 renderEvents - 篩選後課程數量:', filteredEvents.length, '當前視圖:', currentView);
             
             // 清空容器
             if (container) {
                 container.innerHTML = '';
             }
             
-            // 排序事件
+            // 排序課程
             filteredEvents.sort((a, b) => {
                 const now = new Date();
                 const eventA = new Date(a.start);
@@ -6424,7 +6462,7 @@ async function loadTodayEvents() {
                 const endA = new Date(a.end);
                 const endB = new Date(b.end);
                 
-                // 判斷事件狀態
+                // 判斷課程狀態
                 const isEventAOngoing = eventA <= now && endA > now;
                 const isEventBOngoing = eventB <= now && endB > now;
                 const isEventAPast = endA < now;
@@ -6447,7 +6485,7 @@ async function loadTodayEvents() {
                 container.innerHTML = `
                     <div class="no-events">
                         <i class="fas fa-calendar-times"></i>
-                        <h3>沒有找到事件</h3>
+                        <h3>沒有找到課程</h3>
                         <p>請嘗試調整篩選條件</p>
                     </div>
                 `;
@@ -6456,7 +6494,7 @@ async function loadTodayEvents() {
             
             container.innerHTML = filteredEvents.map(event => createEventCard(event)).join('');
             
-            // 觸發事件卡片動畫（移除延遲）
+            // 觸發課程卡片動畫（移除延遲）
                 animateEventCards();
                 // 更新倒數計時
                 updateAllCountdowns();
@@ -6522,7 +6560,7 @@ async function loadTodayEvents() {
             );
         }
 
-        // 檢查是否為代課/帶班事件
+        // 檢查是否為代課/帶班課程
         function isSubstitute(event) {
             const title = event.title || '';
             const description = event.description || '';
@@ -6560,7 +6598,7 @@ async function loadTodayEvents() {
             return null;
         }
 
-        // 檢查是否為體驗事件
+        // 檢查是否為體驗課程
         function isExperience(event) {
             if (!event || !event.title) return false;
             
@@ -6608,17 +6646,17 @@ async function loadTodayEvents() {
             return null;
         }
 
-        // 創建事件卡片
+        // 創建課程卡片
         function createEventCard(event) {
-            // 檢查事件是否為 null 或 undefined
+            // 檢查課程是否為 null 或 undefined
             if (!event) {
-                console.error('❌ createEventCard: 事件為 null 或 undefined');
+                console.error('❌ createEventCard: 課程為 null 或 undefined');
                 return '';
             }
             
             // 檢查必要屬性是否存在
             if (!event.start || !event.end || !event.title || !event.instructor) {
-                console.error('❌ createEventCard: 事件缺少必要屬性', event);
+                console.error('❌ createEventCard: 課程缺少必要屬性', event);
                 return '';
             }
             
@@ -6626,11 +6664,11 @@ async function loadTodayEvents() {
             const endDate = new Date(event.end);
             const isCancelledEvent = isCancelled(event);
             
-            // 檢測是否為代課/帶班事件
+            // 檢測是否為代課/帶班課程
             const isSubstituteEvent = isSubstitute(event);
             const substituteInfo = isSubstituteEvent ? getSubstituteInfo(event) : null;
             
-            // 檢測是否為體驗事件
+            // 檢測是否為體驗課程
             const isExperienceEvent = isExperience(event);
             const experienceInfo = isExperienceEvent ? getExperienceInfo(event) : null;
             
@@ -6873,7 +6911,7 @@ async function loadTodayEvents() {
             const instructorCount = uniqueInstructors.size;
             
             // 調試日誌：顯示篩選結果
-            console.log(`📊 統計更新 - 模式: ${currentView}, 總事件: ${allEvents.length}, 篩選後: ${filteredEvents.length}`);
+            console.log(`📊 統計更新 - 模式: ${currentView}, 總課程: ${allEvents.length}, 篩選後: ${filteredEvents.length}`);
             
             // 根據當前篩選模式計算日期範圍
             let dateRange = '-';
@@ -6919,7 +6957,7 @@ async function loadTodayEvents() {
             
             // 動畫更新統計數字
             if (totalEventsText) {
-                animateCounter(totalEventsText, `總事件: ${filteredEvents.length}`);
+                animateCounter(totalEventsText, `總課程: ${filteredEvents.length}`);
             }
             if (instructorCountText) {
                 animateCounter(instructorCountText, `講師: ${instructorCount}`);
@@ -6928,7 +6966,7 @@ async function loadTodayEvents() {
                 animateCounter(dateRangeText, `日期: ${dateRange}`);
             }
             
-            // 觸發統計更新事件，通知懸浮選單更新
+            // 觸發統計更新課程，通知懸浮選單更新
             document.dispatchEvent(new CustomEvent('statsUpdated'));
         }
 
@@ -6970,7 +7008,7 @@ async function loadTodayEvents() {
             });
         }
 
-        // 設置按鈕事件監聽器
+        // 設置按鈕課程監聽器
         document.addEventListener('DOMContentLoaded', function() {
             // 關閉設置按鈕
             const closeSettingsBtn = document.getElementById('closeSettingsBtn');
@@ -6985,7 +7023,7 @@ async function loadTodayEvents() {
             }
         });
 
-        // 長按簽到事件監聽器
+        // 長按簽到課程監聽器
         let longPressTimer = null;
         let isCharging = false;
         let chargingStartTime = 0;
@@ -7016,7 +7054,7 @@ async function loadTodayEvents() {
                             eventCard.classList.remove('pressing');
                             eventCard.classList.add('charging');
                             console.log('🔋 開始集氣充能...');
-                            console.log('🔋 當前事件卡片類別:', eventCard.className);
+                            console.log('🔋 當前課程卡片類別:', eventCard.className);
                             
                             // 1秒後開始載入學生資料
                             setTimeout(() => {
@@ -7091,7 +7129,7 @@ async function loadTodayEvents() {
                             eventCard.classList.remove('pressing');
                             eventCard.classList.add('charging');
                             console.log('🔋 開始集氣充能...');
-                            console.log('🔋 當前事件卡片類別:', eventCard.className);
+                            console.log('🔋 當前課程卡片類別:', eventCard.className);
                             
                             setTimeout(() => {
                                 if (isCharging) {
@@ -7127,7 +7165,7 @@ async function loadTodayEvents() {
 
         // ==================== 簽到系統功能 ====================
         
-        // 特殊事件類型定義
+        // 特殊課程類型定義
         const SPECIAL_EVENT_TYPES = {
             "停課": ["停課", "取消", "暫停", "休息", "放假", "請假"],
             "體驗": ["體驗", "體驗課", "體驗班", "體課", "體"],
@@ -7995,7 +8033,7 @@ async function loadTodayEvents() {
                 </div>
             `;
             
-        // 設置事件監聽器
+        // 設置課程監聽器
         setupAttendanceEventListeners(teacher, course, time, start, end);
         
         // 設置學生卡片雙擊事件監聽器
