@@ -8912,6 +8912,11 @@ async function loadTodayEvents() {
                         // 有成功的記錄，更新UI
                         updateStudentStatus(studentId, status);
                         updateAttendanceStats();
+                        
+                        // 更新學生簽到狀態並觸發通知檢查
+                        studentAttendanceStatus[studentId] = status;
+                        updateAttendanceProgress(); // 更新進度顯示
+                        startAttendanceCheckTimer();
                         return;
                     } else if (failedResults.length > 0) {
                         // 所有記錄都失敗，顯示錯誤
