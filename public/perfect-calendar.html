@@ -7590,6 +7590,12 @@ async function loadTodayEvents() {
         let isCharging = false;
         let chargingStartTime = 0;
         let isAnimating = false; // 防止動畫衝突
+        
+        // 觸控滑動檢測
+        let touchStartPos = { x: 0, y: 0 };
+        let touchCurrentPos = { x: 0, y: 0 };
+        let isScrolling = false;
+        let scrollThreshold = 10; // 滑動閾值（像素）
 
         // 震動回饋函數
         function triggerHapticFeedback(type) {
@@ -7799,6 +7805,14 @@ async function loadTodayEvents() {
                         return;
                     }
                     
+                    // 記錄觸控開始位置
+                    const touch = e.touches[0];
+                    touchStartPos.x = touch.clientX;
+                    touchStartPos.y = touch.clientY;
+                    touchCurrentPos.x = touch.clientX;
+                    touchCurrentPos.y = touch.clientY;
+                    isScrolling = false;
+                    
                     chargingStartTime = Date.now();
                     isCharging = true;
                     
@@ -7810,7 +7824,7 @@ async function loadTodayEvents() {
                     
                     // 0.3秒後開始集氣充能效果
                     longPressTimer = setTimeout(() => {
-                        if (isCharging) {
+                        if (isCharging && !isScrolling) {
                             console.log('🔋 觸控設備觸發充電動畫，移除 pressing 類別，添加 charging 類別');
                             eventCard.classList.remove('pressing');
                             eventCard.classList.add('charging');
@@ -7821,7 +7835,7 @@ async function loadTodayEvents() {
                             triggerHapticFeedback('start');
                             
                             setTimeout(() => {
-                                if (isCharging) {
+                                if (isCharging && !isScrolling) {
                                     console.log('📚 開始載入學生資料...');
                                     // 震動回饋：載入中
                                     triggerHapticFeedback('loading');
@@ -7829,7 +7843,7 @@ async function loadTodayEvents() {
                             }, 1000);
                             
                             setTimeout(() => {
-                                if (isCharging) {
+                                if (isCharging && !isScrolling) {
                                     console.log('🚀 跳出載入畫面');
                                     eventCard.classList.remove('charging');
                                     // 震動回饋：完成
@@ -7839,6 +7853,48 @@ async function loadTodayEvents() {
                             }, 1500);
                         }
                     }, 300);
+                }
+            }
+        });
+
+        // 觸控移動事件 - 檢測滑動
+        document.addEventListener('touchmove', function(e) {
+            if (!e.target || typeof e.target.closest !== 'function') return;
+            
+            const eventCard = e.target.closest('.event-card');
+            if (eventCard && isCharging) {
+                const touch = e.touches[0];
+                touchCurrentPos.x = touch.clientX;
+                touchCurrentPos.y = touch.clientY;
+                
+                // 計算移動距離
+                const deltaX = Math.abs(touchCurrentPos.x - touchStartPos.x);
+                const deltaY = Math.abs(touchCurrentPos.y - touchStartPos.y);
+                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                
+                // 如果移動距離超過閾值，標記為滑動
+                if (distance > scrollThreshold) {
+                    isScrolling = true;
+                    console.log('📱 檢測到滑動，取消長按功能');
+                    
+                    // 如果正在充電，立即停止
+                    if (eventCard.classList.contains('charging')) {
+                        eventCard.classList.remove('charging', 'pressing');
+                        eventCard.classList.add('releasing');
+                        
+                        setTimeout(() => {
+                            eventCard.classList.remove('releasing');
+                            isAnimating = false;
+                        }, 400);
+                    }
+                    
+                    // 清除長按計時器
+                    if (longPressTimer) {
+                        clearTimeout(longPressTimer);
+                        longPressTimer = null;
+                    }
+                    
+                    isCharging = false;
                 }
             }
         });
@@ -7853,6 +7909,15 @@ async function loadTodayEvents() {
                 
                 clearTimeout(longPressTimer);
                 longPressTimer = null;
+                
+                // 檢查是否為滑動操作
+                if (isScrolling) {
+                    console.log('📱 觸控結束：滑動操作，不觸發長按功能');
+                    eventCard.classList.remove('pressing', 'charging');
+                    isCharging = false;
+                    isScrolling = false;
+                    return;
+                }
                 
                 if (isCharging) {
                     isAnimating = true;
@@ -7878,6 +7943,35 @@ async function loadTodayEvents() {
                 }
                 
                 isCharging = false;
+                isScrolling = false; // 重置滑動狀態
+            }
+        });
+
+        // 觸控取消事件 - 處理意外中斷
+        document.addEventListener('touchcancel', function(e) {
+            if (!e.target || typeof e.target.closest !== 'function') return;
+            
+            const eventCard = e.target.closest('.event-card');
+            if (eventCard && (longPressTimer || isCharging)) {
+                console.log('📱 觸控取消事件');
+                
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+                
+                if (isCharging) {
+                    eventCard.classList.remove('charging', 'pressing');
+                    eventCard.classList.add('releasing');
+                    
+                    setTimeout(() => {
+                        eventCard.classList.remove('releasing');
+                        isAnimating = false;
+                    }, 400);
+                } else {
+                    eventCard.classList.remove('pressing');
+                }
+                
+                isCharging = false;
+                isScrolling = false;
             }
         });
 
