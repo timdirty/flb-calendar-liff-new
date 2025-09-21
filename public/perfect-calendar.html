@@ -9186,14 +9186,7 @@ async function loadTodayEvents() {
                 clearTimeout(attendanceCheckTimer);
             }
             
-            // 如果所有學生都已簽到，立即發送通知
-            if (checkAllStudentsMarked()) {
-                console.log('✅ 所有學生已簽到完成，立即發送通知');
-                sendBatchAttendanceNotification();
-                return;
-            }
-            
-            // 否則等待3秒後檢查並發送通知
+            // 等待3秒後檢查並發送通知（給用戶時間重新修正狀態）
             console.log('⏰ 等待3秒後發送通知...');
             attendanceCheckTimer = setTimeout(() => {
                 sendBatchAttendanceNotification();
