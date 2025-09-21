@@ -10162,13 +10162,27 @@ async function loadTodayEvents() {
                                   window.loadedStudentsData.students.length > 0;
                 
                 if (!hasStudents) {
-                    // 沒有學生資料：使用選擇的人數
-                    if (selectedStudentCount === null) {
-                        showToast('請選擇實際出席人數', 'error');
-                        return;
+                    // 沒有學生資料：檢查是否為客製化課程
+                    const originalTitle = window.currentAttendanceData.originalTitle || '';
+                    const isCustomizedCourse = originalTitle.includes('客製化') || 
+                                            originalTitle.includes('到府') || 
+                                            originalTitle.includes('客制化') || 
+                                            originalTitle.includes('客製') || 
+                                            originalTitle.includes('客制');
+                    
+                    if (isCustomizedCourse) {
+                        // 客製化課程：人數直接設為99
+                        studentCount = 99;
+                        console.log('📊 客製化課程，人數設為99:', originalTitle);
+                    } else {
+                        // 一般課程：使用選擇的人數
+                        if (selectedStudentCount === null) {
+                            showToast('請選擇實際出席人數', 'error');
+                            return;
+                        }
+                        studentCount = selectedStudentCount;
+                        console.log('📊 沒有學生資料，使用選擇的人數:', studentCount);
                     }
-                    studentCount = selectedStudentCount;
-                    console.log('📊 沒有學生資料，使用選擇的人數:', studentCount);
                 } else if (currentMode === '助教模式') {
                     // 助教模式：人數設為 0
                     studentCount = 0;
@@ -11126,8 +11140,8 @@ async function loadTodayEvents() {
                 const finalCourseName = courseName;
                 const finalTimeString = timeInfo || `${new Date(start).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${new Date(end).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
                 
-                // 開啟原生簽到系統（傳入時間限制資訊）
-                await openNativeAttendanceSystem(matchedInstructor, finalCourseName, finalTimeString, start, end, minutesUntilStart);
+                // 開啟原生簽到系統（傳入時間限制資訊和原始標題）
+                await openNativeAttendanceSystem(matchedInstructor, finalCourseName, finalTimeString, start, end, minutesUntilStart, title);
                 
             } catch (error) {
                 console.error('❌ 直接簽到失敗:', error);
@@ -11136,12 +11150,12 @@ async function loadTodayEvents() {
         }
 
         // 開啟原生簽到系統
-        async function openNativeAttendanceSystem(teacher, course, time, start, end, minutesUntilStart = null) {
+        async function openNativeAttendanceSystem(teacher, course, time, start, end, minutesUntilStart = null, originalTitle = '') {
             try {
-                console.log('🎯 開啟原生簽到系統:', { teacher, course, time, start, end });
+                console.log('🎯 開啟原生簽到系統:', { teacher, course, time, start, end, originalTitle });
                 
                 // 保存當前簽到數據，以便在恢復學生簽到內容時使用
-                window.currentAttendanceData = { teacher, course, time, start, end, minutesUntilStart };
+                window.currentAttendanceData = { teacher, course, time, start, end, minutesUntilStart, originalTitle };
                 
                 // 創建簽到系統模態框
                 const modal = document.createElement('div');
