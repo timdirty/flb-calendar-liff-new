@@ -8809,6 +8809,23 @@ async function loadTodayEvents() {
             // 添加左移動畫類別
             modalContent.classList.add('slide-left');
             
+            // 在替換內容之前，先保存原始的學生簽到內容
+            const attendanceContent = document.getElementById('attendanceContent');
+            let originalStudentContent = null;
+            if (attendanceContent) {
+                // 檢查是否包含學生簽到內容
+                const hasStudentContent = attendanceContent.querySelector('.student-card') || 
+                                        attendanceContent.querySelector('.attendance-btn') ||
+                                        attendanceContent.innerHTML.includes('學生簽到');
+                
+                if (hasStudentContent) {
+                    console.log('💾 在切換到講師簽到前保存原始學生簽到內容');
+                    originalStudentContent = attendanceContent.innerHTML;
+                    window.originalStudentContent = originalStudentContent;
+                    console.log('✅ 原始學生簽到內容已保存到 window.originalStudentContent');
+                }
+            }
+            
             // 創建講師報表內容
             const teacherAttendanceContent = document.createElement('div');
             teacherAttendanceContent.className = 'teacher-attendance-content';
@@ -9341,29 +9358,11 @@ async function loadTodayEvents() {
                 });
             }
             
-            // 保存原始的學生簽到內容（如果存在）
-            const attendanceContent = document.getElementById('attendanceContent');
-            let originalStudentContent = null;
-            if (attendanceContent) {
-                // 檢查是否包含學生簽到內容
-                const hasStudentContent = attendanceContent.querySelector('.student-card') || 
-                                        attendanceContent.querySelector('.attendance-btn') ||
-                                        attendanceContent.innerHTML.includes('學生簽到');
-                
-                if (hasStudentContent) {
-                    console.log('💾 保存原始學生簽到內容');
-                    originalStudentContent = attendanceContent.innerHTML;
-                }
-                
-                // 插入講師報表內容
+            // 插入講師報表內容到 attendanceContent
+            const newAttendanceContent = document.getElementById('attendanceContent');
+            if (newAttendanceContent) {
                 console.log('🔄 插入講師報表內容到 attendanceContent');
-                attendanceContent.innerHTML = teacherAttendanceContent.innerHTML;
-                
-                // 將原始學生內容保存到全域變數
-                if (originalStudentContent) {
-                    window.originalStudentContent = originalStudentContent;
-                    console.log('✅ 原始學生簽到內容已保存到 window.originalStudentContent');
-                }
+                newAttendanceContent.innerHTML = teacherAttendanceContent.innerHTML;
             }
             
             // 填充課程資訊 - 立即更新並添加多次重試
