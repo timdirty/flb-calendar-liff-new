@@ -1000,7 +1000,7 @@ app.post('/api/teacher-report', async (req, res) => {
             '課程名稱': courseName,
             '上課時間': courseTime,
             '課程日期': date,
-            '人數 / 助教': studentCount || 0,  // 使用正確的欄位名稱和數字類型
+            '人數_助教': (studentCount || 0).toString(),  // 使用正確的欄位名稱並轉換為字串
             '課程內容': courseContent || ''
         };
         
