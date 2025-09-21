@@ -8032,7 +8032,7 @@ async function loadTodayEvents() {
                     if (window.loadedStudentsData.start) {
                         console.log('🔍 使用 window.loadedStudentsData.start 計算日期');
                         console.log('🔍 日期計算 start 值:', window.loadedStudentsData.start);
-                        const date = new Date(window.loadedStudentsData.start);
+                        let date = new Date(window.loadedStudentsData.start);
                         console.log('🔍 日期計算 date 對象:', date);
                         date = date.toLocaleDateString('zh-TW', {
                             year: 'numeric',
@@ -8127,7 +8127,7 @@ async function loadTodayEvents() {
                     console.log('🔍 找到日期元素，準備更新（使用 currentAttendanceData）');
                     if (currentData.start) {
                         console.log('🔍 使用 currentData.start 計算日期');
-                        const date = new Date(currentData.start);
+                        let date = new Date(currentData.start);
                         date = date.toLocaleDateString('zh-TW', {
                             year: 'numeric',
                             month: '2-digit',
@@ -8244,77 +8244,42 @@ async function loadTodayEvents() {
                     </div>
                 </div>
                 
-                <div id="attendanceContent">
-                    <!-- 學生名單標題 -->
-                    <h3 style="margin: 0 0 12px 0; color: #333333; font-size: 1.1rem; text-shadow: none;">
-                        <i class="fas fa-users" style="color: #b8860b; margin-right: 8px; text-shadow: 0 0 10px rgba(184, 134, 11, 0.5);"></i>
-                        學生名單 (載入中...)
-                    </h3>
-                    
-                    <!-- 學生列表 - 接續在標題後面 -->
-                    <div id="studentsList" style="
-                        display: flex; 
-                        flex-direction: column; 
-                        gap: 8px; 
-                        margin-bottom: 16px;
-                        height: 500px;
-                        max-height: 500px;
-                        min-height: 500px;
-                        overflow-y: scroll;
-                        overflow-x: hidden;
-                        -webkit-overflow-scrolling: touch;
-                        scroll-behavior: smooth;
-                        position: relative;
-                        padding-right: 8px;
-                        /* 確保滾動條可見 */
-                        scrollbar-width: thin;
-                        scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
-                        /* 設置固定高度以確保滾動 */
-                        flex: 1;
-                        box-sizing: border-box;
-                    ">
-                        <!-- 學生列表將在這裡顯示 -->
-                        <!-- 透明的虛擬學生卡片，用於增加滾動高度 -->
-                        <div class="virtual-student-card" style="
-                            height: 275px !important;
-                            background: transparent;
-                            border: none;
-                            margin: 0;
-                            padding: 0;
-                            pointer-events: none;
-                            opacity: 0.01;
-                            visibility: visible;
-                            width: 100%;
-                            overflow: hidden;
-                            position: relative;
-                            min-height: 275px;
-                            max-height: 275px;
-                        "></div>
-                    </div>
-                    
-                    <!-- 統計欄位 - 接續在學生列表後面 -->
-                    <div style="
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        padding: 12px 16px;
-                        background: 
-                            radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.08) 0%, transparent 70%),
-                            linear-gradient(135deg, 
-                                rgba(255, 255, 255, 0.15) 0%, 
-                                rgba(248, 249, 250, 0.1) 50%,
-                                rgba(255, 255, 255, 0.15) 100%);
-                        border-radius: 12px;
-                        border: 1px solid rgba(255, 215, 0, 0.4);
-                        backdrop-filter: blur(25px);
-                        -webkit-backdrop-filter: blur(25px);
-                        box-shadow: 
-                            0 8px 32px rgba(0, 0, 0, 0.15),
-                            inset 0 1px 0 rgba(255, 255, 255, 0.2);
-                    ">
-                        <div id="attendanceStats" style="font-size: 0.85rem; color: #333333; text-shadow: none;">
-                            統計載入中...
-                        </div>
+                <div id="attendanceContent" style="
+                    max-height: 500px;
+                    min-height: 500px;
+                    overflow-y: auto;
+                    overflow-x: hidden;
+                    padding-right: 8px;
+                    margin-bottom: 20px;
+                ">
+                    <!-- 學生列表將在這裡動態生成 -->
+                </div>
+                
+                <!-- 統計欄位 - 接續在學生列表後面 -->
+                <div style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 12px 16px;
+                    background: 
+                        radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.08) 0%, transparent 70%),
+                        linear-gradient(135deg, 
+                            rgba(255, 255, 255, 0.15) 0%, 
+                            rgba(248, 249, 250, 0.1) 50%,
+                            rgba(255, 255, 255, 0.15) 100%);
+                    border-radius: 12px;
+                    border: 1px solid rgba(255, 215, 0, 0.4);
+                    backdrop-filter: blur(25px);
+                    -webkit-backdrop-filter: blur(25px);
+                    box-shadow: 
+                        0 8px 32px rgba(0, 0, 0, 0.15),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+                    position: sticky;
+                    bottom: 0;
+                    z-index: 10;
+                ">
+                    <div id="attendanceStats" style="font-size: 0.85rem; color: #333333; text-shadow: none;">
+                        統計載入中...
                     </div>
                 </div>
             `;
@@ -8327,17 +8292,10 @@ async function loadTodayEvents() {
                 });
             }
             
-            // 填充課程資訊 - 增加延遲時間確保元素完全創建
+            // 填充課程資訊
             setTimeout(() => {
-                console.log('🔄 開始填充課程資訊...');
                 updateCourseInfoDisplay();
-                
-                // 再次確保課程資訊正確顯示
-                setTimeout(() => {
-                    console.log('🔄 二次確認課程資訊顯示...');
-                    updateCourseInfoDisplay();
-                }, 100);
-            }, 200);
+            }, 100);
             
             // 如果學生資料已經載入完成，直接顯示學生列表
             if (window.loadedStudentsData) {
