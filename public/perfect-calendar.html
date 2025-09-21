@@ -9349,9 +9349,18 @@ async function loadTodayEvents() {
                     }
                 });
                 
-                // 監聽失去焦點事件 - 只在輸入完成時觸發自動提交檢查
+                // 監聽輸入事件 - 輸入時停止倒數
+                courseContent.addEventListener('input', function() {
+                    // 停止當前的倒數計時
+                    stopAutoSubmitCountdown();
+                });
+                
+                // 監聽失去焦點事件 - 輸入完成時觸發自動提交檢查
                 courseContent.addEventListener('blur', function() {
-                    checkAutoSubmit();
+                    // 延遲一點時間再檢查，確保用戶已經完成輸入
+                    setTimeout(() => {
+                        checkAutoSubmit();
+                    }, 100);
                 });
             }
             
@@ -9362,13 +9371,23 @@ async function loadTodayEvents() {
             
             if (teacherModeBtn && assistantModeBtn && currentModeDisplay) {
                 teacherModeBtn.addEventListener('click', () => {
+                    // 停止當前的倒數計時
+                    stopAutoSubmitCountdown();
                     setTeacherMode();
-                    checkAutoSubmit(); // 觸發自動提交檢查
+                    // 延遲一點時間再檢查，確保模式已設置完成
+                    setTimeout(() => {
+                        checkAutoSubmit();
+                    }, 100);
                 });
                 
                 assistantModeBtn.addEventListener('click', () => {
+                    // 停止當前的倒數計時
+                    stopAutoSubmitCountdown();
                     setAssistantMode();
-                    checkAutoSubmit(); // 觸發自動提交檢查
+                    // 延遲一點時間再檢查，確保模式已設置完成
+                    setTimeout(() => {
+                        checkAutoSubmit();
+                    }, 100);
                 });
             }
             
@@ -9446,12 +9465,17 @@ async function loadTodayEvents() {
                 hasMode,
                 shouldAutoSubmit,
                 content: courseContent ? courseContent.value.trim() : '',
-                mode: currentModeDisplay ? currentModeDisplay.textContent : ''
+                mode: currentModeDisplay ? currentModeDisplay.textContent : '',
+                isCurrentlyCounting: isAutoSubmitEnabled
             });
             
             if (shouldAutoSubmit) {
-                startAutoSubmitCountdown();
+                // 如果條件滿足且當前沒有在倒數，才開始倒數
+                if (!isAutoSubmitEnabled) {
+                    startAutoSubmitCountdown();
+                }
             } else {
+                // 如果條件不滿足，停止倒數
                 stopAutoSubmitCountdown();
             }
         }
@@ -9474,6 +9498,22 @@ async function loadTodayEvents() {
             
             // 開始倒數計時
             autoSubmitTimer = setInterval(() => {
+                // 檢查條件是否仍然滿足
+                const courseContent = document.getElementById('course-content');
+                const currentModeDisplay = document.getElementById('current-mode-display');
+                
+                const hasContent = courseContent && courseContent.value.trim().length > 0;
+                const hasMode = currentModeDisplay && 
+                               (currentModeDisplay.textContent === '講師模式' || 
+                                currentModeDisplay.textContent === '助教模式');
+                
+                if (!hasContent || !hasMode) {
+                    // 條件不滿足，停止倒數
+                    console.log('⏹️ 條件不滿足，停止倒數');
+                    stopAutoSubmitCountdown();
+                    return;
+                }
+                
                 autoSubmitCountdown--;
                 console.log('⏰ 自動提交倒數:', autoSubmitCountdown);
                 
@@ -11134,7 +11174,9 @@ async function loadTodayEvents() {
                 }
             }
             
-            const today = new Date().toISOString().split('T')[0];
+            // 使用課程的實際日期而不是當前日期
+            const courseDate = new Date(start).toISOString().split('T')[0];
+            console.log('📅 課程日期:', courseDate, '當前日期:', new Date().toISOString().split('T')[0]);
             
             // 添加時間限制提示
             let timeRestrictionMessage = '';
@@ -11169,19 +11211,19 @@ async function loadTodayEvents() {
                     allKeys: Object.keys(student)
                 });
                 
-                // 檢查今天的簽到狀態
-                const todayAttendance = student.attendance.find(record => record.date === today);
+                // 檢查課程日期的簽到狀態
+                const courseDateAttendance = student.attendance.find(record => record.date === courseDate);
                 let currentStatus = null;
                 let statusText = '';
                 
-                if (todayAttendance) {
-                    if (todayAttendance.present === true) {
+                if (courseDateAttendance) {
+                    if (courseDateAttendance.present === true) {
                         currentStatus = 'present';
                         statusText = '✅ 已出席';
-                    } else if (todayAttendance.present === false) {
+                    } else if (courseDateAttendance.present === false) {
                         currentStatus = 'absent';
                         statusText = '❌ 已缺席';
-                    } else if (todayAttendance.present === 'leave') {
+                    } else if (courseDateAttendance.present === 'leave') {
                         currentStatus = 'leave';
                         statusText = '⚠️ 已請假';
                     }
