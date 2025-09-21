@@ -7872,18 +7872,15 @@ async function loadTodayEvents() {
             const modalContent = document.querySelector('.attendance-modal-content');
             if (!modalContent) return;
             
-            // 檢查是否有已載入的學生資料
-            const existingStudentsList = document.querySelector('#studentsList');
-            if (existingStudentsList) {
-                console.log('✅ 找到已載入的學生資料，直接恢復到原始狀態');
-                // 如果已經有學生資料，直接恢復到原始學生簽到狀態
-                // 不需要重新創建內容，只需要確保模態框回到原始位置
-                return;
-            } else {
-                console.log('⚠️ 沒有找到已載入的學生資料，重新創建學生簽到內容');
-                // 如果沒有學生資料，重新創建學生簽到內容
-                // 但不需要重新載入，因為學生資料已經載入完成
+            // 檢查是否有已載入的學生資料（檢查全域變數而不是DOM元素）
+            if (window.loadedStudentsData) {
+                console.log('✅ 找到已載入的學生資料，重新創建學生簽到內容');
+                // 如果已經有學生資料，重新創建學生簽到內容並顯示已載入的資料
                 recreateStudentAttendanceContent();
+            } else {
+                console.log('⚠️ 沒有找到已載入的學生資料，顯示載入畫面');
+                // 如果沒有學生資料，顯示載入畫面
+                showLoadingContent();
             }
         }
 
