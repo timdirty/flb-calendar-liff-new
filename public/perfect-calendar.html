@@ -4184,7 +4184,7 @@
         }
 
         .event-card.charging {
-            animation: chargingBounce 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+            animation: chargingBounce 2s ease-in-out infinite !important;
             box-shadow: 
                 0 0 20px rgba(184, 134, 11, 0.4),
                 0 0 40px rgba(184, 134, 11, 0.2),
@@ -4597,278 +4597,46 @@
 
         @keyframes chargingBounce {
             0% { 
-                transform: scale(1.0) translateY(0px) rotate(0deg);
-                box-shadow: 
-                    0 0 10px rgba(184, 134, 11, 0.2),
-                    0 0 20px rgba(184, 134, 11, 0.1),
-                    inset 0 0 10px rgba(184, 134, 11, 0.05);
-                filter: brightness(1) saturate(1);
-            }
-            5% { 
-                transform: scale(1.005) translateY(-0.2px) rotate(0.1deg);
-                box-shadow: 
-                    0 0 12px rgba(184, 134, 11, 0.25),
-                    0 0 24px rgba(184, 134, 11, 0.12),
-                    inset 0 0 12px rgba(184, 134, 11, 0.06);
-                filter: brightness(1.02) saturate(1.05);
-            }
-            10% { 
-                transform: scale(1.01) translateY(-0.4px) rotate(0.2deg);
-                box-shadow: 
-                    0 0 14px rgba(184, 134, 11, 0.3),
-                    0 0 28px rgba(184, 134, 11, 0.15),
-                    inset 0 0 14px rgba(184, 134, 11, 0.07);
-                filter: brightness(1.04) saturate(1.1);
-            }
-            15% { 
-                transform: scale(1.015) translateY(-0.6px) rotate(0.3deg);
-                box-shadow: 
-                    0 0 16px rgba(184, 134, 11, 0.35),
-                    0 0 32px rgba(184, 134, 11, 0.17),
-                    inset 0 0 16px rgba(184, 134, 11, 0.08);
-                filter: brightness(1.06) saturate(1.15);
-            }
-            20% { 
-                transform: scale(1.02) translateY(-0.8px) rotate(0.4deg);
-                box-shadow: 
-                    0 0 18px rgba(184, 134, 11, 0.4),
-                    0 0 36px rgba(184, 134, 11, 0.2),
-                    inset 0 0 18px rgba(184, 134, 11, 0.09);
-                filter: brightness(1.08) saturate(1.2);
-            }
-            25% { 
-                transform: scale(1.025) translateY(-1px) rotate(0.5deg);
-                box-shadow: 
-                    0 0 20px rgba(184, 134, 11, 0.45),
-                    0 0 40px rgba(184, 134, 11, 0.22),
-                    inset 0 0 20px rgba(184, 134, 11, 0.1);
-                filter: brightness(1.1) saturate(1.25);
-            }
-            30% { 
-                transform: scale(1.03) translateY(-1.2px) rotate(0.6deg);
-                box-shadow: 
-                    0 0 22px rgba(184, 134, 11, 0.5),
-                    0 0 44px rgba(184, 134, 11, 0.25),
-                    inset 0 0 22px rgba(184, 134, 11, 0.11);
-                filter: brightness(1.12) saturate(1.3);
-            }
-            35% { 
-                transform: scale(1.035) translateY(-1.4px) rotate(0.7deg);
-                box-shadow: 
-                    0 0 24px rgba(184, 134, 11, 0.55),
-                    0 0 48px rgba(184, 134, 11, 0.27),
-                    inset 0 0 24px rgba(184, 134, 11, 0.12);
-                filter: brightness(1.14) saturate(1.35);
-            }
-            40% { 
-                transform: scale(1.04) translateY(-1.6px) rotate(0.8deg);
-                box-shadow: 
-                    0 0 26px rgba(184, 134, 11, 0.6),
-                    0 0 52px rgba(184, 134, 11, 0.3),
-                    inset 0 0 26px rgba(184, 134, 11, 0.13);
-                filter: brightness(1.16) saturate(1.4);
-            }
-            45% { 
-                transform: scale(1.045) translateY(-1.8px) rotate(0.9deg);
-                box-shadow: 
-                    0 0 28px rgba(184, 134, 11, 0.65),
-                    0 0 56px rgba(184, 134, 11, 0.32),
-                    inset 0 0 28px rgba(184, 134, 11, 0.14);
-                filter: brightness(1.18) saturate(1.45);
+                transform: scale(1.0);
+                box-shadow: 0 0 10px rgba(184, 134, 11, 0.3);
             }
             50% { 
-                transform: scale(1.05) translateY(-2px) rotate(1deg);
-                box-shadow: 
-                    0 0 30px rgba(184, 134, 11, 0.7),
-                    0 0 60px rgba(184, 134, 11, 0.35),
-                    inset 0 0 30px rgba(184, 134, 11, 0.15);
-                filter: brightness(1.2) saturate(1.5);
-            }
-            55% { 
-                transform: scale(1.045) translateY(-1.8px) rotate(0.9deg);
-                box-shadow: 
-                    0 0 28px rgba(184, 134, 11, 0.65),
-                    0 0 56px rgba(184, 134, 11, 0.32),
-                    inset 0 0 28px rgba(184, 134, 11, 0.14);
-                filter: brightness(1.18) saturate(1.45);
-            }
-            60% { 
-                transform: scale(1.04) translateY(-1.6px) rotate(0.8deg);
-                box-shadow: 
-                    0 0 26px rgba(184, 134, 11, 0.6),
-                    0 0 52px rgba(184, 134, 11, 0.3),
-                    inset 0 0 26px rgba(184, 134, 11, 0.13);
-                filter: brightness(1.16) saturate(1.4);
-            }
-            65% { 
-                transform: scale(1.035) translateY(-1.4px) rotate(0.7deg);
-                box-shadow: 
-                    0 0 24px rgba(184, 134, 11, 0.55),
-                    0 0 48px rgba(184, 134, 11, 0.27),
-                    inset 0 0 24px rgba(184, 134, 11, 0.12);
-                filter: brightness(1.14) saturate(1.35);
-            }
-            70% { 
-                transform: scale(1.03) translateY(-1.2px) rotate(0.6deg);
-                box-shadow: 
-                    0 0 22px rgba(184, 134, 11, 0.5),
-                    0 0 44px rgba(184, 134, 11, 0.25),
-                    inset 0 0 22px rgba(184, 134, 11, 0.11);
-                filter: brightness(1.12) saturate(1.3);
-            }
-            75% { 
-                transform: scale(1.025) translateY(-1px) rotate(0.5deg);
-                box-shadow: 
-                    0 0 20px rgba(184, 134, 11, 0.45),
-                    0 0 40px rgba(184, 134, 11, 0.22),
-                    inset 0 0 20px rgba(184, 134, 11, 0.1);
-                filter: brightness(1.1) saturate(1.25);
-            }
-            80% { 
-                transform: scale(1.02) translateY(-0.8px) rotate(0.4deg);
-                box-shadow: 
-                    0 0 18px rgba(184, 134, 11, 0.4),
-                    0 0 36px rgba(184, 134, 11, 0.2),
-                    inset 0 0 18px rgba(184, 134, 11, 0.09);
-                filter: brightness(1.08) saturate(1.2);
-            }
-            85% { 
-                transform: scale(1.015) translateY(-0.6px) rotate(0.3deg);
-                box-shadow: 
-                    0 0 16px rgba(184, 134, 11, 0.35),
-                    0 0 32px rgba(184, 134, 11, 0.17),
-                    inset 0 0 16px rgba(184, 134, 11, 0.08);
-                filter: brightness(1.06) saturate(1.15);
-            }
-            90% { 
-                transform: scale(1.01) translateY(-0.4px) rotate(0.2deg);
-                box-shadow: 
-                    0 0 14px rgba(184, 134, 11, 0.3),
-                    0 0 28px rgba(184, 134, 11, 0.15),
-                    inset 0 0 14px rgba(184, 134, 11, 0.07);
-                filter: brightness(1.04) saturate(1.1);
-            }
-            95% { 
-                transform: scale(1.005) translateY(-0.2px) rotate(0.1deg);
-                box-shadow: 
-                    0 0 12px rgba(184, 134, 11, 0.25),
-                    0 0 24px rgba(184, 134, 11, 0.12),
-                    inset 0 0 12px rgba(184, 134, 11, 0.06);
-                filter: brightness(1.02) saturate(1.05);
+                transform: scale(1.05);
+                box-shadow: 0 0 20px rgba(184, 134, 11, 0.6);
             }
             100% { 
-                transform: scale(1.0) translateY(0px) rotate(0deg);
-                box-shadow: 
-                    0 0 10px rgba(184, 134, 11, 0.2),
-                    0 0 20px rgba(184, 134, 11, 0.1),
-                    inset 0 0 10px rgba(184, 134, 11, 0.05);
-                filter: brightness(1) saturate(1);
+                transform: scale(1.0);
+                box-shadow: 0 0 10px rgba(184, 134, 11, 0.3);
             }
         }
 
         @keyframes chargingSweep {
             0% { 
-                transform: translateX(-120%) scaleY(1.1) rotate(1.5deg);
-                opacity: 0.4;
-                filter: blur(1px);
-            }
-            10% {
-                transform: translateX(-100%) scaleY(1.2) rotate(1.2deg);
-                opacity: 0.5;
-                filter: blur(0.8px);
-            }
-            20% {
-                transform: translateX(-80%) scaleY(1.3) rotate(0.9deg);
-                opacity: 0.6;
-                filter: blur(0.6px);
-            }
-            30% {
-                transform: translateX(-60%) scaleY(1.4) rotate(0.6deg);
-                opacity: 0.7;
-                filter: blur(0.4px);
-            }
-            40% {
-                transform: translateX(-40%) scaleY(1.5) rotate(0.3deg);
-                opacity: 0.8;
-                filter: blur(0.2px);
+                transform: translateX(-100%);
+                opacity: 0.3;
             }
             50% {
-                transform: translateX(0%) scaleY(1.6) rotate(0deg);
-                opacity: 1;
-                filter: blur(0px);
-            }
-            60% {
-                transform: translateX(40%) scaleY(1.5) rotate(-0.3deg);
+                transform: translateX(0%);
                 opacity: 0.8;
-                filter: blur(0.2px);
             }
-            70% {
-                transform: translateX(60%) scaleY(1.4) rotate(-0.6deg);
-                opacity: 0.7;
-                filter: blur(0.4px);
-            }
-            80% {
-                transform: translateX(80%) scaleY(1.3) rotate(-0.9deg);
-                opacity: 0.6;
-                filter: blur(0.6px);
-            }
-            90% {
-                transform: translateX(100%) scaleY(1.2) rotate(-1.2deg);
-                opacity: 0.5;
-                filter: blur(0.8px);
-            }
-            100% { 
-                transform: translateX(120%) scaleY(1.1) rotate(-1.5deg);
-                opacity: 0.4;
-                filter: blur(1px);
+            100% {
+                transform: translateX(100%);
+                opacity: 0.3;
             }
         }
 
         @keyframes chargingSpin {
             0% { 
-                transform: rotate(0deg) scale(1) translateY(0px);
+                transform: rotate(0deg);
                 opacity: 0.6;
-                filter: brightness(1) contrast(1);
-            }
-            12.5% {
-                transform: rotate(45deg) scale(1.05) translateY(-1px);
-                opacity: 0.7;
-                filter: brightness(1.1) contrast(1.05);
-            }
-            25% {
-                transform: rotate(90deg) scale(1.1) translateY(-2px);
-                opacity: 0.8;
-                filter: brightness(1.2) contrast(1.1);
-            }
-            37.5% {
-                transform: rotate(135deg) scale(1.15) translateY(-3px);
-                opacity: 0.9;
-                filter: brightness(1.3) contrast(1.15);
             }
             50% {
-                transform: rotate(180deg) scale(1.2) translateY(-4px);
+                transform: rotate(180deg);
                 opacity: 1;
-                filter: brightness(1.4) contrast(1.2);
-            }
-            62.5% {
-                transform: rotate(225deg) scale(1.15) translateY(-3px);
-                opacity: 0.9;
-                filter: brightness(1.3) contrast(1.15);
-            }
-            75% {
-                transform: rotate(270deg) scale(1.1) translateY(-2px);
-                opacity: 0.8;
-                filter: brightness(1.2) contrast(1.1);
-            }
-            87.5% {
-                transform: rotate(315deg) scale(1.05) translateY(-1px);
-                opacity: 0.7;
-                filter: brightness(1.1) contrast(1.05);
             }
             100% { 
-                transform: rotate(360deg) scale(1) translateY(0px);
+                transform: rotate(360deg);
                 opacity: 0.6;
-                filter: brightness(1) contrast(1);
             }
         }
 
@@ -4898,278 +4666,46 @@
         /* 手機端專用動畫 */
         @keyframes chargingBounceMobile {
             0% { 
-                transform: scale(1.02) translateY(0px) rotate(0deg);
-                box-shadow: 
-                    0 0 15px rgba(184, 134, 11, 0.3),
-                    0 0 30px rgba(184, 134, 11, 0.15),
-                    inset 0 0 15px rgba(184, 134, 11, 0.08);
-                filter: brightness(1) saturate(1);
-            }
-            5% { 
-                transform: scale(1.025) translateY(-0.3px) rotate(0.15deg);
-                box-shadow: 
-                    0 0 18px rgba(184, 134, 11, 0.35),
-                    0 0 36px rgba(184, 134, 11, 0.17),
-                    inset 0 0 18px rgba(184, 134, 11, 0.09);
-                filter: brightness(1.05) saturate(1.1);
-            }
-            10% { 
-                transform: scale(1.03) translateY(-0.6px) rotate(0.3deg);
-                box-shadow: 
-                    0 0 22px rgba(184, 134, 11, 0.4),
-                    0 0 44px rgba(184, 134, 11, 0.2),
-                    inset 0 0 22px rgba(184, 134, 11, 0.1);
-                filter: brightness(1.1) saturate(1.2);
-            }
-            15% { 
-                transform: scale(1.035) translateY(-0.9px) rotate(0.45deg);
-                box-shadow: 
-                    0 0 25px rgba(184, 134, 11, 0.45),
-                    0 0 50px rgba(184, 134, 11, 0.22),
-                    inset 0 0 25px rgba(184, 134, 11, 0.11);
-                filter: brightness(1.15) saturate(1.3);
-            }
-            20% { 
-                transform: scale(1.04) translateY(-1.2px) rotate(0.6deg);
-                box-shadow: 
-                    0 0 28px rgba(184, 134, 11, 0.5),
-                    0 0 56px rgba(184, 134, 11, 0.25),
-                    inset 0 0 28px rgba(184, 134, 11, 0.12);
-                filter: brightness(1.2) saturate(1.4);
-            }
-            25% { 
-                transform: scale(1.045) translateY(-1.5px) rotate(0.75deg);
-                box-shadow: 
-                    0 0 30px rgba(184, 134, 11, 0.55),
-                    0 0 60px rgba(184, 134, 11, 0.27),
-                    inset 0 0 30px rgba(184, 134, 11, 0.13);
-                filter: brightness(1.25) saturate(1.5);
-            }
-            30% { 
-                transform: scale(1.05) translateY(-1.8px) rotate(0.9deg);
-                box-shadow: 
-                    0 0 32px rgba(184, 134, 11, 0.6),
-                    0 0 64px rgba(184, 134, 11, 0.3),
-                    inset 0 0 32px rgba(184, 134, 11, 0.14);
-                filter: brightness(1.3) saturate(1.6);
-            }
-            35% { 
-                transform: scale(1.055) translateY(-2.1px) rotate(1.05deg);
-                box-shadow: 
-                    0 0 34px rgba(184, 134, 11, 0.65),
-                    0 0 68px rgba(184, 134, 11, 0.32),
-                    inset 0 0 34px rgba(184, 134, 11, 0.15);
-                filter: brightness(1.35) saturate(1.7);
-            }
-            40% { 
-                transform: scale(1.06) translateY(-2.4px) rotate(1.2deg);
-                box-shadow: 
-                    0 0 36px rgba(184, 134, 11, 0.7),
-                    0 0 72px rgba(184, 134, 11, 0.35),
-                    inset 0 0 36px rgba(184, 134, 11, 0.16);
-                filter: brightness(1.4) saturate(1.8);
-            }
-            45% { 
-                transform: scale(1.065) translateY(-2.7px) rotate(1.35deg);
-                box-shadow: 
-                    0 0 38px rgba(184, 134, 11, 0.75),
-                    0 0 76px rgba(184, 134, 11, 0.37),
-                    inset 0 0 38px rgba(184, 134, 11, 0.17);
-                filter: brightness(1.45) saturate(1.9);
+                transform: scale(1.02);
+                box-shadow: 0 0 15px rgba(184, 134, 11, 0.3);
             }
             50% { 
-                transform: scale(1.07) translateY(-3px) rotate(1.5deg);
-                box-shadow: 
-                    0 0 40px rgba(184, 134, 11, 0.8),
-                    0 0 80px rgba(184, 134, 11, 0.4),
-                    inset 0 0 40px rgba(184, 134, 11, 0.18);
-                filter: brightness(1.5) saturate(2);
-            }
-            55% { 
-                transform: scale(1.065) translateY(-2.7px) rotate(1.35deg);
-                box-shadow: 
-                    0 0 38px rgba(184, 134, 11, 0.75),
-                    0 0 76px rgba(184, 134, 11, 0.37),
-                    inset 0 0 38px rgba(184, 134, 11, 0.17);
-                filter: brightness(1.45) saturate(1.9);
-            }
-            60% { 
-                transform: scale(1.06) translateY(-2.4px) rotate(1.2deg);
-                box-shadow: 
-                    0 0 36px rgba(184, 134, 11, 0.7),
-                    0 0 72px rgba(184, 134, 11, 0.35),
-                    inset 0 0 36px rgba(184, 134, 11, 0.16);
-                filter: brightness(1.4) saturate(1.8);
-            }
-            65% { 
-                transform: scale(1.055) translateY(-2.1px) rotate(1.05deg);
-                box-shadow: 
-                    0 0 34px rgba(184, 134, 11, 0.65),
-                    0 0 68px rgba(184, 134, 11, 0.32),
-                    inset 0 0 34px rgba(184, 134, 11, 0.15);
-                filter: brightness(1.35) saturate(1.7);
-            }
-            70% { 
-                transform: scale(1.05) translateY(-1.8px) rotate(0.9deg);
-                box-shadow: 
-                    0 0 32px rgba(184, 134, 11, 0.6),
-                    0 0 64px rgba(184, 134, 11, 0.3),
-                    inset 0 0 32px rgba(184, 134, 11, 0.14);
-                filter: brightness(1.3) saturate(1.6);
-            }
-            75% { 
-                transform: scale(1.045) translateY(-1.5px) rotate(0.75deg);
-                box-shadow: 
-                    0 0 30px rgba(184, 134, 11, 0.55),
-                    0 0 60px rgba(184, 134, 11, 0.27),
-                    inset 0 0 30px rgba(184, 134, 11, 0.13);
-                filter: brightness(1.25) saturate(1.5);
-            }
-            80% { 
-                transform: scale(1.04) translateY(-1.2px) rotate(0.6deg);
-                box-shadow: 
-                    0 0 28px rgba(184, 134, 11, 0.5),
-                    0 0 56px rgba(184, 134, 11, 0.25),
-                    inset 0 0 28px rgba(184, 134, 11, 0.12);
-                filter: brightness(1.2) saturate(1.4);
-            }
-            85% { 
-                transform: scale(1.035) translateY(-0.9px) rotate(0.45deg);
-                box-shadow: 
-                    0 0 25px rgba(184, 134, 11, 0.45),
-                    0 0 50px rgba(184, 134, 11, 0.22),
-                    inset 0 0 25px rgba(184, 134, 11, 0.11);
-                filter: brightness(1.15) saturate(1.3);
-            }
-            90% { 
-                transform: scale(1.03) translateY(-0.6px) rotate(0.3deg);
-                box-shadow: 
-                    0 0 22px rgba(184, 134, 11, 0.4),
-                    0 0 44px rgba(184, 134, 11, 0.2),
-                    inset 0 0 22px rgba(184, 134, 11, 0.1);
-                filter: brightness(1.1) saturate(1.2);
-            }
-            95% { 
-                transform: scale(1.025) translateY(-0.3px) rotate(0.15deg);
-                box-shadow: 
-                    0 0 18px rgba(184, 134, 11, 0.35),
-                    0 0 36px rgba(184, 134, 11, 0.17),
-                    inset 0 0 18px rgba(184, 134, 11, 0.09);
-                filter: brightness(1.05) saturate(1.1);
+                transform: scale(1.07);
+                box-shadow: 0 0 25px rgba(184, 134, 11, 0.6);
             }
             100% { 
-                transform: scale(1.02) translateY(0px) rotate(0deg);
-                box-shadow: 
-                    0 0 15px rgba(184, 134, 11, 0.3),
-                    0 0 30px rgba(184, 134, 11, 0.15),
-                    inset 0 0 15px rgba(184, 134, 11, 0.08);
-                filter: brightness(1) saturate(1);
+                transform: scale(1.02);
+                box-shadow: 0 0 15px rgba(184, 134, 11, 0.3);
             }
         }
 
         @keyframes chargingSweepMobile {
             0% { 
-                transform: translateX(-150%) scaleY(1.3) rotate(2deg);
-                opacity: 0.5;
-                filter: blur(1.5px);
-            }
-            10% {
-                transform: translateX(-120%) scaleY(1.4) rotate(1.6deg);
-                opacity: 0.6;
-                filter: blur(1.2px);
-            }
-            20% {
-                transform: translateX(-90%) scaleY(1.5) rotate(1.2deg);
-                opacity: 0.7;
-                filter: blur(0.9px);
-            }
-            30% {
-                transform: translateX(-60%) scaleY(1.6) rotate(0.8deg);
-                opacity: 0.8;
-                filter: blur(0.6px);
-            }
-            40% {
-                transform: translateX(-30%) scaleY(1.7) rotate(0.4deg);
-                opacity: 0.9;
-                filter: blur(0.3px);
+                transform: translateX(-100%);
+                opacity: 0.3;
             }
             50% {
-                transform: translateX(0%) scaleY(1.8) rotate(0deg);
-                opacity: 1;
-                filter: blur(0px);
-            }
-            60% {
-                transform: translateX(30%) scaleY(1.7) rotate(-0.4deg);
-                opacity: 0.9;
-                filter: blur(0.3px);
-            }
-            70% {
-                transform: translateX(60%) scaleY(1.6) rotate(-0.8deg);
+                transform: translateX(0%);
                 opacity: 0.8;
-                filter: blur(0.6px);
-            }
-            80% {
-                transform: translateX(90%) scaleY(1.5) rotate(-1.2deg);
-                opacity: 0.7;
-                filter: blur(0.9px);
-            }
-            90% {
-                transform: translateX(120%) scaleY(1.4) rotate(-1.6deg);
-                opacity: 0.6;
-                filter: blur(1.2px);
             }
             100% { 
-                transform: translateX(150%) scaleY(1.3) rotate(-2deg);
-                opacity: 0.5;
-                filter: blur(1.5px);
+                transform: translateX(100%);
+                opacity: 0.3;
             }
         }
 
         @keyframes chargingSpinMobile {
             0% { 
-                transform: rotate(0deg) scale(1) translateY(0px);
+                transform: rotate(0deg);
                 opacity: 0.7;
-                filter: brightness(1) contrast(1);
-            }
-            12.5% {
-                transform: rotate(45deg) scale(1.1) translateY(-1.5px);
-                opacity: 0.8;
-                filter: brightness(1.1) contrast(1.05);
-            }
-            25% {
-                transform: rotate(90deg) scale(1.2) translateY(-3px);
-                opacity: 0.9;
-                filter: brightness(1.2) contrast(1.1);
-            }
-            37.5% {
-                transform: rotate(135deg) scale(1.3) translateY(-4.5px);
-                opacity: 1;
-                filter: brightness(1.3) contrast(1.15);
             }
             50% {
-                transform: rotate(180deg) scale(1.4) translateY(-6px);
+                transform: rotate(180deg);
                 opacity: 1;
-                filter: brightness(1.4) contrast(1.2);
-            }
-            62.5% {
-                transform: rotate(225deg) scale(1.3) translateY(-4.5px);
-                opacity: 1;
-                filter: brightness(1.3) contrast(1.15);
-            }
-            75% {
-                transform: rotate(270deg) scale(1.2) translateY(-3px);
-                opacity: 0.9;
-                filter: brightness(1.2) contrast(1.1);
-            }
-            87.5% {
-                transform: rotate(315deg) scale(1.1) translateY(-1.5px);
-                opacity: 0.8;
-                filter: brightness(1.1) contrast(1.05);
             }
             100% { 
-                transform: rotate(360deg) scale(1) translateY(0px);
+                transform: rotate(360deg);
                 opacity: 0.7;
-                filter: brightness(1) contrast(1);
             }
         }
 
@@ -8587,6 +8123,7 @@ async function loadTodayEvents() {
                             flex: 1; 
                             overflow-y: auto; 
                             padding-right: 8px;
+                            padding-bottom: 20px;
                             max-height: 350px;
                             min-height: 200px;
                         ">
@@ -8691,22 +8228,64 @@ async function loadTodayEvents() {
                 </div>
                 
                 <div id="attendanceContent">
-                    <div style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
-                        <h3 style="margin: 0 0 12px 0; color: #333333; font-size: 1.1rem; text-shadow: none;">
-                            <i class="fas fa-users" style="color: #b8860b; margin-right: 8px; text-shadow: 0 0 10px rgba(184, 134, 11, 0.5);"></i>
-                            學生名單 (載入中...)
-                        </h3>
-                        <div id="studentsList" style="
-                            display: flex; 
-                            flex-direction: column; 
-                            gap: 8px; 
-                            flex: 1; 
-                            overflow-y: auto; 
-                            padding-right: 8px;
-                            max-height: 350px;
-                            min-height: 200px;
+                    <div style="
+                        display: flex;
+                        flex-direction: column;
+                        height: 100%;
+                        max-height: 70vh;
+                        min-height: 500px;
+                    ">
+                        <!-- 學生列表區域 - 可滾動 -->
+                        <div style="
+                            flex: 1;
+                            display: flex;
+                            flex-direction: column;
+                            min-height: 0;
+                            overflow: hidden;
                         ">
-                            <!-- 學生列表將在這裡顯示 -->
+                            <h3 style="margin: 0 0 12px 0; color: #333333; font-size: 1.1rem; text-shadow: none;">
+                                <i class="fas fa-users" style="color: #b8860b; margin-right: 8px; text-shadow: 0 0 10px rgba(184, 134, 11, 0.5);"></i>
+                                學生名單 (載入中...)
+                            </h3>
+                            <div id="studentsList" style="
+                                display: flex; 
+                                flex-direction: column; 
+                                gap: 8px; 
+                                flex: 1; 
+                                overflow-y: auto; 
+                                padding-right: 8px;
+                                padding-bottom: 20px;
+                                min-height: 200px;
+                            ">
+                                <!-- 學生列表將在這裡顯示 -->
+                            </div>
+                        </div>
+                        
+                        <!-- 統計欄位 - 固定在底部 -->
+                        <div style="
+                            flex-shrink: 0;
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            padding: 16px 20px;
+                            background: 
+                                radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.08) 0%, transparent 70%),
+                                linear-gradient(135deg, 
+                                    rgba(255, 255, 255, 0.15) 0%, 
+                                    rgba(248, 249, 250, 0.1) 50%,
+                                    rgba(255, 255, 255, 0.15) 100%);
+                            border-radius: 15px;
+                            margin-top: 16px;
+                            border: 1px solid rgba(255, 215, 0, 0.4);
+                            backdrop-filter: blur(25px);
+                            -webkit-backdrop-filter: blur(25px);
+                            box-shadow: 
+                                0 8px 32px rgba(0, 0, 0, 0.15),
+                                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+                        ">
+                            <div id="attendanceStats" style="font-size: 0.85rem; color: #333333; text-shadow: none;">
+                                統計載入中...
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -11174,50 +10753,65 @@ async function loadTodayEvents() {
             resetAttendanceNotification();
             
             attendanceContent.innerHTML = `
-                <div style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
-                    <h3 style="margin: 0 0 12px 0; color: #333333; font-size: 1.1rem; text-shadow: none;">
-                        <i class="fas fa-users" style="color: #b8860b; margin-right: 8px; text-shadow: 0 0 10px rgba(184, 134, 11, 0.5);"></i>
-                        學生名單 (${students.length} 人)
-                    </h3>
-                    ${timeRestrictionMessage}
-                    <div id="studentsList" style="
-                        display: flex; 
-                        flex-direction: column; 
-                        gap: 8px; 
-                        flex: 1; 
-                        overflow-y: auto; 
-                        padding-right: 8px;
-                        max-height: 350px;
-                        min-height: 200px;
-                    ">
-                        ${studentsHtml}
-                    </div>
-                </div>
-                
                 <div style="
-                    position: sticky;
-                    bottom: 0;
                     display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 16px 20px;
-                    background: 
-                        radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.08) 0%, transparent 70%),
-                        linear-gradient(135deg, 
-                            rgba(255, 255, 255, 0.15) 0%, 
-                            rgba(248, 249, 250, 0.1) 50%,
-                            rgba(255, 255, 255, 0.15) 100%);
-                    border-radius: 15px;
-                    margin-top: 16px;
-                    border: 1px solid rgba(255, 215, 0, 0.4);
-                    backdrop-filter: blur(25px);
-                    -webkit-backdrop-filter: blur(25px);
-                    box-shadow: 
-                        0 8px 32px rgba(0, 0, 0, 0.15),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+                    flex-direction: column;
+                    height: 100%;
+                    max-height: 70vh;
+                    min-height: 500px;
                 ">
-                    <div id="attendanceStats" style="font-size: 0.85rem; color: #333333; text-shadow: none;">
-                        統計載入中...
+                    <!-- 學生列表區域 - 可滾動 -->
+                    <div style="
+                        flex: 1;
+                        display: flex;
+                        flex-direction: column;
+                        min-height: 0;
+                        overflow: hidden;
+                    ">
+                        <h3 style="margin: 0 0 12px 0; color: #333333; font-size: 1.1rem; text-shadow: none;">
+                            <i class="fas fa-users" style="color: #b8860b; margin-right: 8px; text-shadow: 0 0 10px rgba(184, 134, 11, 0.5);"></i>
+                            學生名單 (${students.length} 人)
+                        </h3>
+                        ${timeRestrictionMessage}
+                        <div id="studentsList" style="
+                            display: flex; 
+                            flex-direction: column; 
+                            gap: 8px; 
+                            flex: 1; 
+                            overflow-y: auto; 
+                            padding-right: 8px;
+                            padding-bottom: 20px;
+                            min-height: 200px;
+                        ">
+                            ${studentsHtml}
+                        </div>
+                    </div>
+                    
+                    <!-- 統計欄位 - 固定在底部 -->
+                    <div style="
+                        flex-shrink: 0;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        padding: 16px 20px;
+                        background: 
+                            radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.08) 0%, transparent 70%),
+                            linear-gradient(135deg, 
+                                rgba(255, 255, 255, 0.15) 0%, 
+                                rgba(248, 249, 250, 0.1) 50%,
+                                rgba(255, 255, 255, 0.15) 100%);
+                        border-radius: 15px;
+                        margin-top: 16px;
+                        border: 1px solid rgba(255, 215, 0, 0.4);
+                        backdrop-filter: blur(25px);
+                        -webkit-backdrop-filter: blur(25px);
+                        box-shadow: 
+                            0 8px 32px rgba(0, 0, 0, 0.15),
+                            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+                    ">
+                        <div id="attendanceStats" style="font-size: 0.85rem; color: #333333; text-shadow: none;">
+                            統計載入中...
+                        </div>
                     </div>
                 </div>
             `;
