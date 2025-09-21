@@ -3858,6 +3858,20 @@
         .event-card:hover .long-press-hint {
             opacity: 1 !important;
         }
+        
+        .event-card.pressing .long-press-hint {
+            opacity: 1 !important;
+            color: #ff6b6b !important;
+            font-weight: bold !important;
+            animation: pulse 1s infinite !important;
+        }
+        
+        .event-card.charging .long-press-hint {
+            opacity: 1 !important;
+            color: #ffd93d !important;
+            font-weight: bold !important;
+            animation: pulse 0.5s infinite !important;
+        }
 
         .event-card.pressing {
             transform: scale(0.98);
@@ -7416,7 +7430,10 @@ async function loadTodayEvents() {
                         opacity: 0;
                         transition: opacity 0.3s ease;
                     ">
-                        <i class="fas fa-hand-pointer"></i> 長按此方塊進行簽到
+                        <i class="fas fa-hand-pointer"></i> 長按此方塊進行簽到<br>
+                        <small style="font-size: 0.65rem; color: rgba(51, 51, 51, 0.5);">
+                            <i class="fas fa-hand-paper"></i> 移動手指可取消
+                        </small>
                     </div>
                 </div>
             `;
@@ -7626,10 +7643,12 @@ async function loadTodayEvents() {
         let touchStartPos = { x: 0, y: 0 };
         let touchCurrentPos = { x: 0, y: 0 };
         let isScrolling = false;
-        let scrollThreshold = 8; // 滑動閾值（像素）- 降低以提高精度
+        let scrollThreshold = 5; // 滑動閾值（像素）- 進一步降低以提高精度
         let touchStartTime = 0;
         let touchDuration = 0;
         let isTouchActive = false;
+        let touchCancelThreshold = 15; // 觸控取消閾值（像素）
+        let isTouchCancelled = false;
         
         // 模態框狀態追蹤
         let currentAttendanceModal = null;
@@ -7643,6 +7662,16 @@ async function loadTodayEvents() {
                 currentAttendanceModal = null;
                 isModalLoading = false;
                 
+                // 重置觸控狀態
+                isCharging = false;
+                isTouchActive = false;
+                isTouchCancelled = false;
+                isScrolling = false;
+                if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
+                
                 // 重置通知狀態
                 attendanceNotificationSent = false;
                 studentAttendanceStatus = {};
@@ -7654,6 +7683,14 @@ async function loadTodayEvents() {
                 // 清除所有可能的載入狀態
                 const loadingElements = document.querySelectorAll('.attendance-loading, .loading-spinner');
                 loadingElements.forEach(el => el.remove());
+                
+                // 清除所有事件卡片的動畫狀態
+                const eventCards = document.querySelectorAll('.event-card');
+                eventCards.forEach(card => {
+                    card.classList.remove('pressing', 'charging', 'releasing', 'completing');
+                    card.style.animation = '';
+                    card.style.transition = '';
+                });
                 
                 console.log('✅ 模態框狀態已完全重置');
             }
@@ -7888,6 +7925,7 @@ async function loadTodayEvents() {
                     touchStartTime = Date.now();
                     isScrolling = false;
                     isTouchActive = true;
+                    isTouchCancelled = false;
                     
                     chargingStartTime = Date.now();
                     isCharging = true;
@@ -7898,7 +7936,7 @@ async function loadTodayEvents() {
                     // 震動回饋：開始按壓
                     triggerHapticFeedback('start');
                     
-                    // 0.2秒後開始集氣充能效果（更快響應）
+                    // 0.5秒後開始集氣充能效果（增加難度）
                     longPressTimer = setTimeout(() => {
                         if (isCharging && !isScrolling) {
                             console.log('🔋 觸控設備觸發充電動畫，移除 pressing 類別，添加 charging 類別');
@@ -7953,8 +7991,45 @@ async function loadTodayEvents() {
                 const timeDelta = currentTime - touchStartTime;
                 const velocity = distance / (timeDelta || 1);
                 
-                // 如果移動距離超過閾值或速度過快，標記為滑動
-                if (distance > scrollThreshold || velocity > 0.5) {
+                // 如果移動距離超過取消閾值，標記為觸控取消
+                if (distance > touchCancelThreshold) {
+                    isTouchCancelled = true;
+                    console.log('📱 檢測到觸控取消，距離:', distance);
+                    
+                    // 震動回饋：觸控取消
+                    triggerHapticFeedback('release');
+                    
+                    // 立即停止充電
+                    if (eventCard.classList.contains('charging')) {
+                        eventCard.classList.remove('charging', 'pressing');
+                        eventCard.classList.add('releasing');
+                        
+                        setTimeout(() => {
+                            eventCard.classList.add('completing');
+                            setTimeout(() => {
+                                eventCard.classList.remove('releasing', 'completing');
+                                eventCard.style.animation = '';
+                                eventCard.style.transition = '';
+                                isAnimating = false;
+                            }, 200);
+                        }, 400);
+                    } else {
+                        eventCard.classList.remove('pressing');
+                    }
+                    
+                    // 清除長按計時器
+                    if (longPressTimer) {
+                        clearTimeout(longPressTimer);
+                        longPressTimer = null;
+                    }
+                    
+                    isCharging = false;
+                    isTouchActive = false;
+                    return;
+                }
+                
+                // 如果移動距離超過滑動閾值或速度過快，標記為滑動
+                if (distance > scrollThreshold || velocity > 0.3) {
                     isScrolling = true;
                     console.log('📱 檢測到滑動，取消長按功能', { distance, velocity });
                     
@@ -8001,12 +8076,23 @@ async function loadTodayEvents() {
                 clearTimeout(longPressTimer);
                 longPressTimer = null;
                 
+                // 檢查是否為觸控取消
+                if (isTouchCancelled) {
+                    console.log('📱 觸控結束：觸控已取消，不觸發長按功能');
+                    eventCard.classList.remove('pressing', 'charging');
+                    isCharging = false;
+                    isScrolling = false;
+                    isTouchActive = false;
+                    return;
+                }
+                
                 // 檢查是否為滑動操作
                 if (isScrolling) {
                     console.log('📱 觸控結束：滑動操作，不觸發長按功能');
                     eventCard.classList.remove('pressing', 'charging');
                     isCharging = false;
                     isScrolling = false;
+                    isTouchActive = false;
                     return;
                 }
                 
@@ -8080,6 +8166,7 @@ async function loadTodayEvents() {
                 isCharging = false;
                 isScrolling = false;
                 isTouchActive = false;
+                isTouchCancelled = false;
             }
         });
 
