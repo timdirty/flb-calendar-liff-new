@@ -9149,12 +9149,78 @@ async function loadTodayEvents() {
                     submitBtn.disabled = true;
                 }
                 
-                // 模擬API調用
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                // 檢查是否有課程資料
+                if (!window.currentAttendanceData) {
+                    showToast('無法獲取課程資料，請重新開啟簽到系統', 'error');
+                    return;
+                }
                 
-                // 顯示成功訊息
-                const mode = currentModeDisplay ? currentModeDisplay.textContent : '講師模式';
-                showToast(`講師報表提交成功！(${mode})`, 'success');
+                // 準備API請求資料
+                const currentData = window.currentAttendanceData;
+                const today = new Date();
+                const dateString = `${today.getFullYear()}/${String(today.getMonth() + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')}`;
+                
+                // 格式化時間（從 start 和 end 計算）
+                let courseTime = '';
+                if (currentData.start && currentData.end) {
+                    const startDate = new Date(currentData.start);
+                    const endDate = new Date(currentData.end);
+                    const startTime = startDate.toLocaleTimeString('zh-TW', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    });
+                    const endTime = endDate.toLocaleTimeString('zh-TW', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    });
+                    courseTime = `${startTime}-${endTime}`;
+                } else {
+                    courseTime = currentData.time || '未知時間';
+                }
+                
+                // 獲取學生人數（從已載入的學生資料）
+                let studentCount = 0;
+                if (window.loadedStudentsData && window.loadedStudentsData.students) {
+                    studentCount = window.loadedStudentsData.students.length;
+                }
+                
+                console.log('📊 講師報表資料:', {
+                    teacherName: currentData.teacher,
+                    courseName: currentData.course,
+                    courseTime: courseTime,
+                    date: dateString,
+                    studentCount: studentCount,
+                    courseContent: courseContent.value.trim()
+                });
+                
+                // 調用講師報表API
+                const response = await fetch('/api/teacher-report', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        teacherName: currentData.teacher,
+                        courseName: currentData.course,
+                        courseTime: courseTime,
+                        date: dateString,
+                        studentCount: studentCount,
+                        courseContent: courseContent.value.trim(),
+                        webApi: '' // 暫時留空
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    // 顯示成功訊息
+                    const mode = currentModeDisplay ? currentModeDisplay.textContent : '講師模式';
+                    showToast(`講師報表提交成功！(${mode})`, 'success');
+                } else {
+                    throw new Error(result.message || 'API調用失敗');
+                }
                 
                 // 重置表單
                 if (courseContent) {
@@ -9177,7 +9243,7 @@ async function loadTodayEvents() {
                 
             } catch (error) {
                 console.error('❌ 講師報表提交失敗:', error);
-                showToast('講師報表提交失敗，請稍後再試', 'error');
+                showToast(`講師報表提交失敗: ${error.message}`, 'error');
                 
                 // 重置按鈕
                 const submitBtn = document.getElementById('submitTeacherReport');
