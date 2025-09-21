@@ -3846,6 +3846,13 @@
             overflow: hidden;
             -webkit-touch-callout: none;
             -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
         .event-card:hover .long-press-hint {
@@ -7619,7 +7626,10 @@ async function loadTodayEvents() {
         let touchStartPos = { x: 0, y: 0 };
         let touchCurrentPos = { x: 0, y: 0 };
         let isScrolling = false;
-        let scrollThreshold = 10; // 滑動閾值（像素）
+        let scrollThreshold = 8; // 滑動閾值（像素）- 降低以提高精度
+        let touchStartTime = 0;
+        let touchDuration = 0;
+        let isTouchActive = false;
         
         // 模態框狀態追蹤
         let currentAttendanceModal = null;
@@ -7869,13 +7879,15 @@ async function loadTodayEvents() {
                         return;
                     }
                     
-                    // 記錄觸控開始位置
+                    // 記錄觸控開始位置和時間
                     const touch = e.touches[0];
                     touchStartPos.x = touch.clientX;
                     touchStartPos.y = touch.clientY;
                     touchCurrentPos.x = touch.clientX;
                     touchCurrentPos.y = touch.clientY;
+                    touchStartTime = Date.now();
                     isScrolling = false;
+                    isTouchActive = true;
                     
                     chargingStartTime = Date.now();
                     isCharging = true;
@@ -7886,7 +7898,7 @@ async function loadTodayEvents() {
                     // 震動回饋：開始按壓
                     triggerHapticFeedback('start');
                     
-                    // 0.3秒後開始集氣充能效果
+                    // 0.2秒後開始集氣充能效果（更快響應）
                     longPressTimer = setTimeout(() => {
                         if (isCharging && !isScrolling) {
                             console.log('🔋 觸控設備觸發充電動畫，移除 pressing 類別，添加 charging 類別');
@@ -7931,15 +7943,23 @@ async function loadTodayEvents() {
                 touchCurrentPos.x = touch.clientX;
                 touchCurrentPos.y = touch.clientY;
                 
-                // 計算移動距離
-                const deltaX = Math.abs(touchCurrentPos.x - touchStartPos.x);
-                const deltaY = Math.abs(touchCurrentPos.y - touchStartPos.y);
+                // 計算移動距離和方向
+                const deltaX = touchCurrentPos.x - touchStartPos.x;
+                const deltaY = touchCurrentPos.y - touchStartPos.y;
                 const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
                 
-                // 如果移動距離超過閾值，標記為滑動
-                if (distance > scrollThreshold) {
+                // 計算移動速度
+                const currentTime = Date.now();
+                const timeDelta = currentTime - touchStartTime;
+                const velocity = distance / (timeDelta || 1);
+                
+                // 如果移動距離超過閾值或速度過快，標記為滑動
+                if (distance > scrollThreshold || velocity > 0.5) {
                     isScrolling = true;
-                    console.log('📱 檢測到滑動，取消長按功能');
+                    console.log('📱 檢測到滑動，取消長按功能', { distance, velocity });
+                    
+                    // 震動回饋：滑動取消
+                    triggerHapticFeedback('release');
                     
                     // 如果正在充電，立即停止
                     if (eventCard.classList.contains('charging')) {
@@ -7965,6 +7985,7 @@ async function loadTodayEvents() {
                     }
                     
                     isCharging = false;
+                    isTouchActive = false;
                 }
             }
         });
@@ -8019,7 +8040,8 @@ async function loadTodayEvents() {
                 }
                 
                 isCharging = false;
-                isScrolling = false; // 重置滑動狀態
+                isScrolling = false;
+                isTouchActive = false; // 重置觸控狀態
             }
         });
 
@@ -8028,11 +8050,14 @@ async function loadTodayEvents() {
             if (!e.target || typeof e.target.closest !== 'function') return;
             
             const eventCard = e.target.closest('.event-card');
-            if (eventCard && (longPressTimer || isCharging)) {
+            if (eventCard && (longPressTimer || isCharging) && isTouchActive) {
                 console.log('📱 觸控取消事件');
                 
                 clearTimeout(longPressTimer);
                 longPressTimer = null;
+                
+                // 震動回饋：取消
+                triggerHapticFeedback('release');
                 
                 if (isCharging) {
                     eventCard.classList.remove('charging', 'pressing');
@@ -8054,6 +8079,7 @@ async function loadTodayEvents() {
                 
                 isCharging = false;
                 isScrolling = false;
+                isTouchActive = false;
             }
         });
 
