@@ -8181,13 +8181,17 @@ async function loadTodayEvents() {
                         gap: 8px; 
                         margin-bottom: 16px;
                         height: auto;
-                        max-height: 60vh;
-                        min-height: 300px;
+                        max-height: 80vh;
+                        min-height: 500px;
                         overflow-y: scroll;
                         overflow-x: hidden;
                         -webkit-overflow-scrolling: touch;
                         scroll-behavior: smooth;
                         position: relative;
+                        padding-right: 8px;
+                        /* 確保滾動條可見 */
+                        scrollbar-width: thin;
+                        scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
                     ">
                         <!-- 學生列表將在這裡顯示 -->
                     </div>
@@ -8318,7 +8322,7 @@ async function loadTodayEvents() {
                         display: flex;
                         flex-direction: column;
                         max-height: 90vh;
-                        min-height: 450px;
+                        min-height: 500px;
                         overflow-y: auto;
                         -webkit-overflow-scrolling: touch;
                     ">
@@ -8948,7 +8952,6 @@ async function loadTodayEvents() {
                 </div>
                 
                 <div id="attendanceContent" style="
-                    flex: 1;
                     overflow-y: auto;
                     padding-right: 8px;
                     min-height: 0;
@@ -10937,8 +10940,8 @@ async function loadTodayEvents() {
                 <div style="
                     display: flex;
                     flex-direction: column;
-                    max-height: 85vh;
-                    min-height: 400px;
+                    max-height: 90vh;
+                    min-height: 500px;
                     overflow-y: auto;
                     -webkit-overflow-scrolling: touch;
                 ">
@@ -10956,13 +10959,17 @@ async function loadTodayEvents() {
                         gap: 8px; 
                         margin-bottom: 16px;
                         height: auto;
-                        max-height: 60vh;
-                        min-height: 300px;
+                        max-height: 80vh;
+                        min-height: 500px;
                         overflow-y: scroll;
                         overflow-x: hidden;
                         -webkit-overflow-scrolling: touch;
                         scroll-behavior: smooth;
                         position: relative;
+                        padding-right: 8px;
+                        /* 確保滾動條可見 */
+                        scrollbar-width: thin;
+                        scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
                     ">
                         ${studentsHtml}
                     </div>
