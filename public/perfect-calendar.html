@@ -7787,7 +7787,39 @@ async function loadTodayEvents() {
                             // 震動回饋：開始集氣
                             triggerHapticFeedback('start');
                             
-                            // 載入邏輯已移至觸控事件中處理
+                            // 0.5秒後開始集氣充能效果
+                            longPressTimer = setTimeout(() => {
+                                if (isCharging) {
+                                    console.log('🔋 滑鼠設備觸發充電動畫，移除 pressing 類別，添加 charging 類別');
+                                    eventCard.classList.remove('pressing');
+                                    eventCard.classList.add('charging');
+                                    console.log('🔋 開始集氣充能...');
+                                    console.log('🔋 當前課程卡片類別:', eventCard.className);
+                                    
+                                    // 震動回饋：開始集氣
+                                    triggerHapticFeedback('start');
+                                    
+                                    // 1秒後開始後端預載入（0.5秒後）
+                                    setTimeout(() => {
+                                        if (isCharging) {
+                                            console.log('📚 開始後端預載入學生資料...');
+                                            // 震動回饋：載入中
+                                            triggerHapticFeedback('loading');
+                                        }
+                                    }, 500);
+                                    
+                                    // 1.5秒後跳出載入動畫（1秒後）
+                                    setTimeout(() => {
+                                        if (isCharging) {
+                                            console.log('🚀 跳出載入畫面');
+                                            eventCard.classList.remove('charging');
+                                            // 震動回饋：完成
+                                            triggerHapticFeedback('complete');
+                                            handleDirectAttendance(title, instructor, start, end);
+                                        }
+                                    }, 1000);
+                                }
+                            }, 500);
                         }
                     }, 300);
                 }
