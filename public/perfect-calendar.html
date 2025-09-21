@@ -7838,21 +7838,32 @@ async function loadTodayEvents() {
                 restoreStudentAttendanceContent();
             }
             
-            // 確保課程資訊正確顯示 - 增加延遲時間
+            // 確保課程資訊正確顯示 - 使用已載入的學生資料
             setTimeout(() => {
                 console.log('🔄 在showStudentAttendance中調用updateCourseInfoDisplay');
-                updateCourseInfoDisplay();
+                // 確保有正確的數據才更新
+                if (window.loadedStudentsData) {
+                    updateCourseInfoDisplay();
+                } else if (window.currentAttendanceData) {
+                    updateCourseInfoDisplay();
+                } else {
+                    console.log('⚠️ 沒有可用的課程數據，跳過更新');
+                }
                 
                 // 再次確保課程資訊正確顯示
                 setTimeout(() => {
                     console.log('🔄 二次確認課程資訊顯示');
-                    updateCourseInfoDisplay();
+                    if (window.loadedStudentsData || window.currentAttendanceData) {
+                        updateCourseInfoDisplay();
+                    }
                 }, 200);
                 
                 // 第三次確認，確保元素已完全載入
                 setTimeout(() => {
                     console.log('🔄 三次確認課程資訊顯示');
-                    updateCourseInfoDisplay();
+                    if (window.loadedStudentsData || window.currentAttendanceData) {
+                        updateCourseInfoDisplay();
+                    }
                 }, 500);
             }, 300);
         }
@@ -7879,6 +7890,12 @@ async function loadTodayEvents() {
                 teacherElement: !!teacherElement,
                 courseElement: !!courseElement
             });
+            
+            // 如果沒有可用的數據，不要更新元素
+            if (!window.loadedStudentsData && !window.currentAttendanceData) {
+                console.log('⚠️ 沒有可用的課程數據，跳過更新課程資訊');
+                return;
+            }
             
             // 檢查是否有已載入的學生資料
             if (window.loadedStudentsData) {
@@ -9359,21 +9376,25 @@ async function loadTodayEvents() {
             
             if (teacherModeBtn && assistantModeBtn && currentModeDisplay) {
                 teacherModeBtn.addEventListener('click', () => {
+                    console.log('👨‍🏫 講師模式按鈕被點擊');
                     // 停止當前的倒數計時
                     stopAutoSubmitCountdown();
                     setTeacherMode();
                     // 延遲一點時間再檢查，確保模式已設置完成
                     setTimeout(() => {
+                        console.log('🔄 講師模式設置完成，檢查自動提交條件');
                         checkAutoSubmit();
                     }, 100);
                 });
                 
                 assistantModeBtn.addEventListener('click', () => {
+                    console.log('👨‍🎓 助教模式按鈕被點擊');
                     // 停止當前的倒數計時
                     stopAutoSubmitCountdown();
                     setAssistantMode();
                     // 延遲一點時間再檢查，確保模式已設置完成
                     setTimeout(() => {
+                        console.log('🔄 助教模式設置完成，檢查自動提交條件');
                         checkAutoSubmit();
                     }, 100);
                 });
@@ -9551,17 +9572,24 @@ async function loadTodayEvents() {
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                background: transparent;
-                backdrop-filter: none;
-                -webkit-backdrop-filter: none;
+                background: linear-gradient(135deg, 
+                    rgba(255, 255, 255, 0.1) 0%, 
+                    rgba(255, 255, 255, 0.05) 50%,
+                    rgba(255, 255, 255, 0.1) 100%);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
                 color: #2c3e50;
                 padding: 24px 36px;
                 border-radius: 25px;
                 font-size: 18px;
                 font-weight: 700;
                 z-index: 10000;
-                box-shadow: none;
-                border: none;
+                box-shadow: 
+                    0 8px 32px rgba(0, 0, 0, 0.1),
+                    0 4px 16px rgba(0, 0, 0, 0.05),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
                 animation: countdownPulse 0.8s cubic-bezier(0.4, 0, 0.2, 1);
                 position: relative;
                 overflow: hidden;
