@@ -1846,6 +1846,101 @@
             animation: shimmer2 0.8s infinite;
         }
         
+        /* 浮動通知樣式 */
+        .floating-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            max-width: 300px;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            color: #333;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+        
+        .floating-notification.show {
+            transform: translateX(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .floating-notification.progress {
+            background: rgba(40, 167, 69, 0.15);
+            border-color: rgba(40, 167, 69, 0.3);
+            color: #155724;
+        }
+        
+        .floating-notification.completion {
+            background: rgba(255, 193, 7, 0.15);
+            border-color: rgba(255, 193, 7, 0.3);
+            color: #856404;
+            animation: celebration 0.6s ease;
+        }
+        
+        @keyframes celebration {
+            0% { transform: translateX(100%) scale(0.8); }
+            50% { transform: translateX(0) scale(1.05); }
+            100% { transform: translateX(0) scale(1); }
+        }
+        
+        .progress-bar-floating {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+        
+        .progress-fill-floating {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        .notification-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .notification-icon {
+            font-size: 1.2rem;
+        }
+        
+        .notification-text {
+            flex: 1;
+        }
+        
+        .notification-close {
+            background: none;
+            border: none;
+            color: inherit;
+            font-size: 1.1rem;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+        }
+        
+        .notification-close:hover {
+            opacity: 1;
+        }
+
         /* CSP 兼容的 hover 效果 */
         .close-attendance-modal:hover {
             background: rgba(220, 53, 69, 0.1) !important;
@@ -2375,6 +2470,26 @@
             text-align: center;
             padding: 40px;
             color: #dc3545;
+        }
+
+        /* 手機優化 - 浮動通知 */
+        @media (max-width: 768px) {
+            .floating-notification {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+                font-size: 0.85rem;
+                padding: 12px 16px;
+            }
+            
+            .notification-content {
+                gap: 8px;
+            }
+            
+            .notification-icon {
+                font-size: 1.1rem;
+            }
         }
 
         /* 手機優化 - 簽到系統 */
@@ -8170,7 +8285,6 @@ async function loadTodayEvents() {
                                         }
                                     </div>
                                 ` : ''}
-                                <div class="attendance-progress"></div>
                             </div>
                             <button id="closeAttendanceModal" class="close-attendance-modal" style="
                                 background: rgba(255, 255, 255, 0.2);
@@ -8193,7 +8307,6 @@ async function loadTodayEvents() {
                             </button>
                         </div>
                         
-                        <div class="attendance-completion"></div>
                         
                         <div class="course-info" style="
                             margin-bottom: 20px; 
@@ -9229,37 +9342,90 @@ async function loadTodayEvents() {
             
             console.log(`📊 更新進度顯示: ${markedStudents}/${totalStudents} (${progress}%)`);
             
-            // 更新modal標題中的進度
-            const progressElement = document.querySelector('.attendance-progress');
-            console.log('🔍 進度元素:', progressElement);
+            // 移除舊的浮動通知
+            const existingNotification = document.querySelector('.floating-notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
             
-            if (progressElement) {
-                progressElement.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
-                        <div style="flex: 1; background: rgba(255,255,255,0.2); border-radius: 10px; height: 8px; overflow: hidden;">
-                            <div style="width: ${progress}%; height: 100%; background: linear-gradient(90deg, #28a745, #20c997); transition: width 0.3s ease; border-radius: 10px;"></div>
+            // 創建新的浮動通知
+            const notification = document.createElement('div');
+            notification.className = 'floating-notification progress';
+            
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <div class="notification-icon">📊</div>
+                    <div class="notification-text">
+                        <div>簽到進度</div>
+                        <div class="progress-bar-floating">
+                            <div class="progress-fill-floating" style="width: ${progress}%"></div>
                         </div>
-                        <span style="font-size: 0.9rem; font-weight: 600; color: #333;">
-                            ${markedStudents}/${totalStudents}
-                        </span>
+                        <div style="font-size: 0.8rem; opacity: 0.8;">${markedStudents}/${totalStudents} 學生已標記</div>
                     </div>
-                `;
-                console.log('✅ 進度條已更新');
-            } else {
-                console.log('❌ 找不到進度元素 .attendance-progress');
+                    <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // 觸發顯示動畫
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            // 如果所有學生都已簽到，顯示完成通知
+            if (markedStudents === totalStudents && totalStudents > 0) {
+                setTimeout(() => {
+                    showCompletionNotification();
+                }, 500);
             }
             
-            // 如果所有學生都已簽到，顯示完成狀態
-            if (markedStudents === totalStudents && totalStudents > 0) {
-                const completionElement = document.querySelector('.attendance-completion');
-                if (completionElement) {
-                    completionElement.innerHTML = `
-                        <div style="text-align: center; margin-top: 15px; padding: 10px; background: rgba(40, 167, 69, 0.2); border-radius: 10px; border: 2px solid #28a745;">
-                            <span style="font-size: 1.1rem; font-weight: 600; color: #28a745;">🎉 簽到完成！</span>
-                        </div>
-                    `;
-                }
+            console.log('✅ 浮動進度通知已顯示');
+        }
+        
+        // 顯示完成通知
+        function showCompletionNotification() {
+            // 移除進度通知
+            const progressNotification = document.querySelector('.floating-notification.progress');
+            if (progressNotification) {
+                progressNotification.remove();
             }
+            
+            // 創建完成通知
+            const notification = document.createElement('div');
+            notification.className = 'floating-notification completion';
+            
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <div class="notification-icon">🎉</div>
+                    <div class="notification-text">
+                        <div>簽到完成！</div>
+                        <div style="font-size: 0.8rem; opacity: 0.8;">所有學生已標記</div>
+                    </div>
+                    <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // 觸發顯示動畫
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            // 5秒後自動隱藏
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        if (notification.parentElement) {
+                            notification.remove();
+                        }
+                    }, 400);
+                }
+            }, 5000);
+            
+            console.log('✅ 浮動完成通知已顯示');
         }
 
         // 重置簽到通知狀態（當開始新的簽到時）
