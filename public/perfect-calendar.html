@@ -7911,6 +7911,44 @@ async function loadTodayEvents() {
             console.log('🔍 window.currentAttendanceData:', window.currentAttendanceData);
             console.log('🔍 已儲存的課程資訊:', storedCourseInfo);
             
+            // 強制檢查並儲存課程資訊
+            if (window.loadedStudentsData && !isCourseInfoStored()) {
+                console.log('💾 強制儲存課程資訊 (loadedStudentsData)');
+                const teacher = window.loadedStudentsData.teacher;
+                const course = window.loadedStudentsData.course;
+                let time = window.loadedStudentsData.time;
+                let date = window.loadedStudentsData.date;
+                
+                // 如果沒有 time 和 date，從 start 和 end 計算
+                if (!time && window.loadedStudentsData.start) {
+                    const startDate = new Date(window.loadedStudentsData.start);
+                    const endDate = new Date(window.loadedStudentsData.end);
+                    time = startDate.toLocaleTimeString('zh-TW', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    }) + '-' + endDate.toLocaleTimeString('zh-TW', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    });
+                }
+                
+                if (!date && window.loadedStudentsData.start) {
+                    const startDate = new Date(window.loadedStudentsData.start);
+                    date = startDate.toLocaleDateString('zh-TW', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                    });
+                }
+                
+                if (teacher && course && time && date) {
+                    storeCourseInfo(teacher, course, time, date);
+                    console.log('💾 強制儲存完成:', storedCourseInfo);
+                }
+            }
+            
             // 檢查元素是否存在
             const timeElement = document.getElementById('currentTime');
             const dateElement = document.getElementById('currentDate');
@@ -8065,9 +8103,13 @@ async function loadTodayEvents() {
                     console.log('❌ 找不到日期元素');
                 }
                 
-                // 儲存課程資訊
+                // 儲存課程資訊 - 強制儲存
                 if (teacher && course && time && date) {
+                    console.log('💾 準備儲存課程資訊:', { teacher, course, time, date });
                     storeCourseInfo(teacher, course, time, date);
+                    console.log('💾 儲存完成，檢查 storedCourseInfo:', storedCourseInfo);
+                } else {
+                    console.log('⚠️ 課程資訊不完整，無法儲存:', { teacher, course, time, date });
                 }
                 
                 console.log('✅ 課程資訊更新完成');
@@ -8142,9 +8184,13 @@ async function loadTodayEvents() {
                     console.log('❌ 找不到日期元素');
                 }
                 
-                // 儲存課程資訊
+                // 儲存課程資訊 - 強制儲存
                 if (teacher && course && time && date) {
+                    console.log('💾 準備儲存課程資訊:', { teacher, course, time, date });
                     storeCourseInfo(teacher, course, time, date);
+                    console.log('💾 儲存完成，檢查 storedCourseInfo:', storedCourseInfo);
+                } else {
+                    console.log('⚠️ 課程資訊不完整，無法儲存:', { teacher, course, time, date });
                 }
                 
                 console.log('✅ 課程資訊更新完成');
