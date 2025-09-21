@@ -3913,7 +3913,7 @@
                 rgba(255, 255, 255, 0.95) 0%, 
                 rgba(248, 250, 252, 0.9) 50%,
                 rgba(255, 255, 255, 0.95) 100%) !important;
-            transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+            transition: none !important;
         }
 
         @keyframes releaseAnimation {
@@ -7640,6 +7640,12 @@ async function loadTodayEvents() {
                     clearTimeout(attendanceCheckTimer);
                     attendanceCheckTimer = null;
                 }
+                
+                // 清除所有可能的載入狀態
+                const loadingElements = document.querySelectorAll('.attendance-loading, .loading-spinner');
+                loadingElements.forEach(el => el.remove());
+                
+                console.log('✅ 模態框狀態已完全重置');
             }
         }
 
@@ -8562,6 +8568,14 @@ async function loadTodayEvents() {
                     return;
                 }
                 
+                // 設置載入超時保護
+                const loadingTimeout = setTimeout(() => {
+                    if (isModalLoading) {
+                        console.log('⏰ 載入超時，自動關閉模態框');
+                        closeAttendanceModal();
+                    }
+                }, 15000); // 15秒超時
+                
                 const response = await fetch('/api/proxy/google-sheets', {
                     method: 'POST',
                     headers: {
@@ -8635,8 +8649,14 @@ async function loadTodayEvents() {
                     }
                 }
                 
+                // 清除載入超時計時器
+                clearTimeout(loadingTimeout);
+                
             } catch (error) {
                 console.error('❌ 載入學生失敗:', error);
+                
+                // 清除載入超時計時器
+                clearTimeout(loadingTimeout);
                 // 顯示錯誤訊息，不使用模擬資料
                 const attendanceContent = document.getElementById('attendanceContent');
                 if (attendanceContent) {
