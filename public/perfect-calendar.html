@@ -7252,13 +7252,13 @@ async function loadTodayEvents() {
             return matrix[len2][len1];
         }
 
-        // 移除特殊事件類型
+        // 移除特殊課程類型
         function removeSpecialEventTypes(timeInfo) {
             if (!timeInfo) return timeInfo;
             
             let cleanedTimeInfo = timeInfo;
             
-            // 移除特殊事件類型
+            // 移除特殊課程類型
             for (const [category, keywords] of Object.entries(SPECIAL_EVENT_TYPES)) {
                 for (const keyword of keywords) {
                     const regex = new RegExp(`\\s*${keyword}\\s*`, 'gi');
@@ -7326,7 +7326,7 @@ async function loadTodayEvents() {
                         timeInfo += ` ${location}`;
                     }
 
-                    // 移除特殊事件類型
+                    // 移除特殊課程類型
                     timeInfo = removeSpecialEventTypes(timeInfo);
 
                     console.log(`✅ 解析成功: 課程="${courseName}", 時間資訊="${timeInfo}"`);
@@ -7631,7 +7631,7 @@ async function loadTodayEvents() {
                 
                 document.body.appendChild(modal);
                 
-                // 設置關閉按鈕事件
+                // 設置關閉按鈕課程
                 const closeBtn = document.getElementById('closeAttendanceModal');
                 if (closeBtn) {
                     closeBtn.addEventListener('click', function() {
@@ -8036,12 +8036,12 @@ async function loadTodayEvents() {
         // 設置課程監聽器
         setupAttendanceEventListeners(teacher, course, time, start, end);
         
-        // 設置學生卡片雙擊事件監聽器
+        // 設置學生卡片雙擊課程監聽器
         setupStudentCardDoubleClickListeners();
             updateAttendanceStats();
         }
 
-        // 設置簽到事件監聽器
+        // 設置簽到課程監聽器
         function setupAttendanceEventListeners(teacher, course, time, start, end) {
             // 出席按鈕
             document.querySelectorAll('.present-btn').forEach(btn => {
@@ -8324,7 +8324,7 @@ async function loadTodayEvents() {
             }
         }
 
-        // 設置學生卡片雙擊事件監聽器
+        // 設置學生卡片雙擊課程監聽器
         function setupStudentCardDoubleClickListeners() {
             const studentCards = document.querySelectorAll('.student-card');
             studentCards.forEach(card => {
@@ -8332,7 +8332,7 @@ async function loadTodayEvents() {
                 let clickTimer = null;
                 
                 card.addEventListener('click', function(e) {
-                    // 防止事件冒泡到按鈕
+                    // 防止課程冒泡到按鈕
                     if (e.target.closest('.present-btn, .absent-btn')) {
                         return;
                     }
@@ -8345,7 +8345,7 @@ async function loadTodayEvents() {
                             clickCount = 0;
                         }, 300); // 300ms 內沒有第二次點擊則重置
                     } else if (clickCount === 2) {
-                        // 第二次點擊，觸發雙擊事件
+                        // 第二次點擊，觸發雙擊課程
                         clearTimeout(clickTimer);
                         clickCount = 0;
                         
@@ -8398,7 +8398,7 @@ async function loadTodayEvents() {
                 
                 document.body.appendChild(modal);
                 
-                // 設置關閉按鈕事件
+                // 設置關閉按鈕課程
                 const closeBtn = modal.querySelector('#closeAttendanceRecordBtn');
                 closeBtn.addEventListener('click', () => {
                     modal.remove();
@@ -8581,7 +8581,7 @@ async function loadTodayEvents() {
                 }
             }
             
-            // 監聽統計更新事件
+            // 監聽統計更新課程
             document.addEventListener('statsUpdated', updateFloatingMenuContent);
             
             // 初始化篩選按鈕
@@ -8670,7 +8670,7 @@ async function loadTodayEvents() {
                 window.updateDateRange(startDate, endDate);
             }
             
-            // 觸發事件重新載入
+            // 觸發課程重新載入
             if (window.loadEvents) {
                 window.loadEvents();
             }
