@@ -8179,11 +8179,13 @@ async function loadTodayEvents() {
                             gap: 8px; 
                             flex: 1; 
                             overflow-y: auto; 
+                            overflow-x: hidden;
                             padding-right: 8px;
                             padding-bottom: 20px;
-                        max-height: 70vh;
-                        min-height: 300px;
+                            max-height: 70vh;
+                            min-height: 300px;
                             -webkit-overflow-scrolling: touch;
+                            scroll-behavior: smooth;
                         ">
                             <!-- 學生列表將在這裡顯示 -->
                         </div>
@@ -8307,10 +8309,12 @@ async function loadTodayEvents() {
                             flex-direction: column; 
                             gap: 8px; 
                             margin-bottom: 16px;
-                        max-height: 70vh;
-                        min-height: 300px;
+                            max-height: 70vh;
+                            min-height: 300px;
                             overflow-y: auto;
+                            overflow-x: hidden;
                             -webkit-overflow-scrolling: touch;
+                            scroll-behavior: smooth;
                         ">
                             <!-- 學生列表將在這裡顯示 -->
                         </div>
@@ -10224,9 +10228,10 @@ async function loadTodayEvents() {
                         border-radius: 25px;
                         padding: 30px;
                         max-width: 90%;
-                        max-height: 90%;
+                        max-height: 95%;
                         width: 800px;
                         overflow-y: auto;
+                        overflow-x: hidden;
                         box-shadow: 
                             0 20px 60px rgba(0, 0, 0, 0.4),
                             0 0 0 1px rgba(255, 215, 0, 0.2),
@@ -10925,10 +10930,13 @@ async function loadTodayEvents() {
                         flex-direction: column; 
                         gap: 8px; 
                         margin-bottom: 16px;
-                        max-height: 70vh;
-                        min-height: 300px;
+                        max-height: 75vh;
+                        min-height: 350px;
                         overflow-y: auto;
+                        overflow-x: hidden;
                         -webkit-overflow-scrolling: touch;
+                        scroll-behavior: smooth;
+                        position: relative;
                     ">
                         ${studentsHtml}
                     </div>
