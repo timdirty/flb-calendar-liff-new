@@ -8718,7 +8718,7 @@ async function loadTodayEvents() {
                             <div style="flex: 1;">
                                 <div class="student-name" style="font-weight: 600; color: rgba(0, 0, 0, 0.9); font-size: 0.85rem; margin-bottom: 4px;">${student.name}</div>
                                 <!-- 狀態標籤 - 名字下方 -->
-                                <div style="
+                                <div class="status-tag" style="
                                     background: ${statusStyles.statusColor};
                                     color: white;
                                     padding: 2px 6px;
@@ -9153,9 +9153,18 @@ async function loadTodayEvents() {
                     const hasStatus = card.querySelector('.status-tag');
                     const statusText = hasStatus ? hasStatus.textContent.trim() : '';
                     
-                    // 如果有當次簽到狀態，或者有歷史狀態標籤（不是"未簽到"），就算有進度
-                    if (currentStatus || (statusText && statusText !== '未簽到' && statusText !== '待簽到')) {
+                    // 如果有當次簽到狀態，或者有歷史狀態標籤（包含出席、缺席、請假等），就算有進度
+                    // 排除"待簽到"、"未簽到"等無進度狀態
+                    if (currentStatus || 
+                        (statusText && 
+                         !statusText.includes('待簽到') && !statusText.includes('未簽到') && !statusText.includes('待選擇') &&
+                         (statusText.includes('出席') || statusText.includes('Present') || statusText.includes('✅') || statusText.includes('已出席') ||
+                          statusText.includes('缺席') || statusText.includes('Absent') || statusText.includes('❌') || statusText.includes('已缺席') ||
+                          statusText.includes('請假') || statusText.includes('Leave') || statusText.includes('⚠️') || statusText.includes('已請假')))) {
                         markedStudents++;
+                        console.log(`✅ 學生 ${studentName} 有進度: 當次=${currentStatus}, 歷史=${statusText}`);
+                    } else {
+                        console.log(`⏳ 學生 ${studentName} 無進度: 當次=${currentStatus}, 歷史=${statusText}`);
                     }
                 }
             });
@@ -9229,28 +9238,51 @@ async function loadTodayEvents() {
                         const statusTag = card.querySelector('.status-tag');
                         if (statusTag) {
                             const statusText = statusTag.textContent.trim();
-                            if (statusText === '出席' || statusText === 'Present') {
-                                status = 'present';
-                            } else if (statusText === '缺席' || statusText === 'Absent') {
-                                status = 'absent';
-                            } else if (statusText === '請假' || statusText === 'Leave') {
-                                status = 'leave';
+                            console.log(`🔍 檢查學生 ${studentName} 的歷史狀態: "${statusText}"`);
+                            
+                            // 排除"待簽到"、"未簽到"等無進度狀態
+                            if (!statusText.includes('待簽到') && !statusText.includes('未簽到') && !statusText.includes('待選擇')) {
+                                if (statusText.includes('出席') || statusText.includes('Present') || statusText.includes('✅') || statusText.includes('已出席')) {
+                                    status = 'present';
+                                    console.log(`✅ 學生 ${studentName} 歷史狀態為出席`);
+                                } else if (statusText.includes('缺席') || statusText.includes('Absent') || statusText.includes('❌') || statusText.includes('已缺席')) {
+                                    status = 'absent';
+                                    console.log(`❌ 學生 ${studentName} 歷史狀態為缺席`);
+                                } else if (statusText.includes('請假') || statusText.includes('Leave') || statusText.includes('⚠️') || statusText.includes('已請假')) {
+                                    status = 'leave';
+                                    console.log(`⚠️ 學生 ${studentName} 歷史狀態為請假`);
+                                }
+                            } else {
+                                console.log(`⏳ 學生 ${studentName} 歷史狀態為待簽到，不算進度`);
                             }
                         }
+                    } else {
+                        console.log(`📝 學生 ${studentName} 當次簽到狀態: ${status}`);
                     }
                     
                     // 根據狀態分類
                     if (status === 'present') {
                         presentStudents.push(studentName);
+                        console.log(`✅ 學生 ${studentName} 歸類為出席`);
                     } else if (status === 'absent') {
                         absentStudents.push(studentName);
+                        console.log(`❌ 學生 ${studentName} 歸類為缺席`);
                     } else if (status === 'leave') {
                         // 請假也算進度，可以單獨分類或歸類到缺席
                         absentStudents.push(studentName + '(請假)');
+                        console.log(`⚠️ 學生 ${studentName} 歸類為請假`);
                     } else {
                         unmarkedStudents.push(studentName);
+                        console.log(`⏳ 學生 ${studentName} 歸類為未選擇`);
                     }
                 }
+            });
+            
+            console.log(`📊 學生狀態分類結果:`, {
+                present: presentStudents,
+                absent: absentStudents,
+                unmarked: unmarkedStudents,
+                total: presentStudents.length + absentStudents.length + unmarkedStudents.length
             });
             
             // 檢查是否所有學生都已簽到
@@ -9400,8 +9432,14 @@ async function loadTodayEvents() {
                     const hasStatus = card.querySelector('.status-tag');
                     const statusText = hasStatus ? hasStatus.textContent.trim() : '';
                     
-                    // 如果有當次簽到狀態，或者有歷史狀態標籤（不是"未簽到"），就算有進度
-                    if (currentStatus || (statusText && statusText !== '未簽到' && statusText !== '待簽到')) {
+                    // 如果有當次簽到狀態，或者有歷史狀態標籤（包含出席、缺席、請假等），就算有進度
+                    // 排除"待簽到"、"未簽到"等無進度狀態
+                    if (currentStatus || 
+                        (statusText && 
+                         !statusText.includes('待簽到') && !statusText.includes('未簽到') && !statusText.includes('待選擇') &&
+                         (statusText.includes('出席') || statusText.includes('Present') || statusText.includes('✅') || statusText.includes('已出席') ||
+                          statusText.includes('缺席') || statusText.includes('Absent') || statusText.includes('❌') || statusText.includes('已缺席') ||
+                          statusText.includes('請假') || statusText.includes('Leave') || statusText.includes('⚠️') || statusText.includes('已請假')))) {
                         markedStudents++;
                     }
                 }
