@@ -8209,11 +8209,11 @@ async function loadTodayEvents() {
                                 0 8px 32px rgba(0, 0, 0, 0.2),
                                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
                         ">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.9rem;">
-                                <div style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> ${teacher}</div>
-                                <div style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> ${course}</div>
-                                <div style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> ${time}</div>
-                                <div style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">日期:</strong> ${new Date(start).toLocaleDateString('zh-TW')}</div>
+                            <div class="course-info-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.9rem;">
+                                <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> ${teacher}</div>
+                                <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> ${course}</div>
+                                <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> ${time}</div>
+                                <div data-field="date" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">日期:</strong> ${new Date(start).toLocaleDateString('zh-TW')}</div>
                             </div>
                         </div>
                         
@@ -9169,22 +9169,54 @@ async function loadTodayEvents() {
 
         // 獲取當前課程信息
         function getCurrentEventInfo() {
-            // 從模態框標題或其他地方獲取課程信息
-            const modalTitle = document.querySelector('.attendance-modal .attendance-title');
+            console.log('🔍 嘗試獲取當前課程信息...');
+            
+            // 從模態框內容中獲取課程信息
+            const modalContent = document.querySelector('.attendance-modal');
+            if (!modalContent) {
+                console.log('❌ 找不到簽到模態框');
+                return null;
+            }
+            
+            // 嘗試從課程信息面板獲取
+            const courseInfoPanel = modalContent.querySelector('.course-info-panel');
+            if (courseInfoPanel) {
+                const teacherElement = courseInfoPanel.querySelector('[data-field="teacher"]');
+                const courseElement = courseInfoPanel.querySelector('[data-field="course"]');
+                const timeElement = courseInfoPanel.querySelector('[data-field="time"]');
+                
+                if (teacherElement && courseElement && timeElement) {
+                    const teacher = teacherElement.textContent.replace('講師:', '').trim();
+                    const course = courseElement.textContent.replace('課程:', '').trim();
+                    const time = timeElement.textContent.replace('時間:', '').trim();
+                    
+                    console.log('✅ 從課程信息面板獲取:', { teacher, course, time });
+                    return { teacher, course, time };
+                }
+            }
+            
+            // 備用方案：從模態框標題解析
+            const modalTitle = modalContent.querySelector('h2');
             if (modalTitle) {
                 const titleText = modalTitle.textContent;
+                console.log('🔍 從標題解析:', titleText);
+                
                 // 解析標題獲取講師和課程信息
-                // 假設格式為 "講師: XXX 課程: XXX 時間: XXX"
                 const teacherMatch = titleText.match(/講師[：:]\s*([^課程]+)/);
                 const courseMatch = titleText.match(/課程[：:]\s*([^時間]+)/);
                 const timeMatch = titleText.match(/時間[：:]\s*([^日期]+)/);
                 
-                return {
+                const result = {
                     teacher: teacherMatch ? teacherMatch[1].trim() : '未知講師',
                     course: courseMatch ? courseMatch[1].trim() : '未知課程',
                     time: timeMatch ? timeMatch[1].trim() : '未知時間'
                 };
+                
+                console.log('✅ 從標題解析結果:', result);
+                return result;
             }
+            
+            console.log('❌ 無法獲取課程信息');
             return null;
         }
 
