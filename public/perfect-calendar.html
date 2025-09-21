@@ -7836,6 +7836,10 @@ async function loadTodayEvents() {
                 hideStudentLoadingState();
                 // 直接恢復學生簽到內容，不重新載入
                 restoreStudentAttendanceContent();
+                
+                // 立即更新課程資訊
+                console.log('🔄 在showStudentAttendance中立即調用updateCourseInfoDisplay');
+                updateCourseInfoDisplay();
             }
             
             // 確保課程資訊正確顯示 - 強制更新
@@ -8259,6 +8263,10 @@ async function loadTodayEvents() {
                         setupStudentCardDoubleClickListeners();
                         setupAttendanceEventListeners();
                         updateStats();
+                        
+                        // 立即更新課程資訊
+                        console.log('🔄 恢復學生簽到內容後立即更新課程資訊');
+                        updateCourseInfoDisplay();
                         
                         console.log('✅ 原先的學生簽到畫面已恢復');
                     } else {
