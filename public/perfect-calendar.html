@@ -2028,25 +2028,27 @@
         }
         
         .present-btn:hover {
-            transform: scale(1.08) !important;
-            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.6) !important;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4) !important;
+            transition: all 0.3s ease !important;
         }
         
         .absent-btn:hover {
-            transform: scale(1.08) !important;
-            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.6) !important;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4) !important;
+            transition: all 0.3s ease !important;
         }
         
         .present-btn:active {
-            transform: scale(0.95) !important;
-            transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            transform: translateY(0px) !important;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3) !important;
+            transition: all 0.1s ease !important;
         }
         
         .absent-btn:active {
-            transform: scale(0.95) !important;
-            transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            transform: translateY(0px) !important;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3) !important;
+            transition: all 0.1s ease !important;
         }
         
         .refresh-students-btn:hover {
@@ -2588,7 +2590,7 @@
         /* 懸浮導航器樣式 */
         .floating-navigator {
             position: fixed;
-            top: 20px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 10001;
@@ -2604,12 +2606,23 @@
             box-shadow: 
                 0 8px 32px rgba(0, 0, 0, 0.1),
                 inset 0 1px 0 rgba(255, 255, 255, 0.2);
-            animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         @keyframes slideDown {
             0% {
                 transform: translateX(-50%) translateY(-20px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            0% {
+                transform: translateX(-50%) translateY(20px);
                 opacity: 0;
             }
             100% {
@@ -8236,6 +8249,12 @@ async function loadTodayEvents() {
                     console.log('🔄 二次確認課程資訊顯示');
                     updateCourseInfoDisplay();
                 }, 200);
+                
+                // 第三次確認，確保元素已完全載入
+                setTimeout(() => {
+                    console.log('🔄 三次確認課程資訊顯示');
+                    updateCourseInfoDisplay();
+                }, 500);
             }, 300);
         }
 
@@ -8925,16 +8944,32 @@ async function loadTodayEvents() {
                 </div>
                 
                 <!-- 今日報表 -->
-                <div class="today-report-section">
+                <div class="today-report-section" style="
+                    background: linear-gradient(135deg, 
+                        rgba(255, 255, 255, 0.1) 0%, 
+                        rgba(255, 255, 255, 0.05) 50%,
+                        rgba(255, 255, 255, 0.1) 100%);
+                    backdrop-filter: blur(20px);
+                    -webkit-backdrop-filter: blur(20px);
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    border-radius: 20px;
+                    padding: 25px;
+                    margin: 20px 0;
+                    box-shadow: 
+                        0 8px 32px rgba(0, 0, 0, 0.1),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+                ">
                     <h3 style="
-                        color: #555;
-                        margin: 20px 0 15px 0;
-                        font-size: 1.2rem;
+                        color: #333;
+                        margin: 0 0 20px 0;
+                        font-size: 1.3rem;
+                        font-weight: 600;
                         display: flex;
                         align-items: center;
-                        gap: 8px;
+                        gap: 10px;
+                        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
                     ">
-                        <i class="fas fa-calendar-day"></i>
+                        <i class="fas fa-calendar-day" style="color: #ffd700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);"></i>
                         今日報表
                     </h3>
                     
@@ -8942,9 +8977,11 @@ async function loadTodayEvents() {
                         <div class="form-group">
                             <label for="course-content" style="
                                 display: block;
-                                margin-bottom: 8px;
+                                margin-bottom: 12px;
                                 font-weight: 600;
                                 color: #333;
+                                font-size: 1.1rem;
+                                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
                             ">課程內容：</label>
                             <textarea 
                                 id="course-content" 
@@ -8953,13 +8990,20 @@ async function loadTodayEvents() {
                                 maxlength="500"
                                 style="
                                     width: 100%;
-                                    padding: 12px;
-                                    border: 2px solid #e9ecef;
-                                    border-radius: 8px;
+                                    padding: 16px;
+                                    background: rgba(255, 255, 255, 0.1);
+                                    backdrop-filter: blur(10px);
+                                    -webkit-backdrop-filter: blur(10px);
+                                    border: 1px solid rgba(255, 255, 255, 0.2);
+                                    border-radius: 15px;
                                     font-size: 1rem;
                                     font-family: inherit;
                                     resize: vertical;
-                                    transition: border-color 0.3s ease;
+                                    transition: all 0.3s ease;
+                                    color: #333;
+                                    box-shadow: 
+                                        inset 0 1px 3px rgba(0, 0, 0, 0.1),
+                                        0 1px 0 rgba(255, 255, 255, 0.2);
                                 "
                             ></textarea>
                             <div class="char-count" style="
@@ -8975,10 +9019,18 @@ async function loadTodayEvents() {
                         <!-- 身份選擇 -->
                         <div class="assistant-toggle" style="
                             margin: 20px 0;
-                            padding: 20px;
-                            background: #f8f9fa;
-                            border-radius: 12px;
-                            border: 1px solid #e9ecef;
+                            padding: 25px;
+                            background: linear-gradient(135deg, 
+                                rgba(255, 255, 255, 0.1) 0%, 
+                                rgba(255, 255, 255, 0.05) 50%,
+                                rgba(255, 255, 255, 0.1) 100%);
+                            backdrop-filter: blur(20px);
+                            -webkit-backdrop-filter: blur(20px);
+                            border: 1px solid rgba(255, 255, 255, 0.2);
+                            border-radius: 20px;
+                            box-shadow: 
+                                0 8px 32px rgba(0, 0, 0, 0.1),
+                                inset 0 1px 0 rgba(255, 255, 255, 0.2);
                         ">
                             <div class="mode-header">
                                 <h4 style="
@@ -9005,30 +9057,46 @@ async function loadTodayEvents() {
                                 margin-bottom: 15px;
                             ">
                                 <button class="mode-btn teacher-mode active" id="teacher-mode-btn" style="
-                                    background: linear-gradient(135deg, #ffd700, #ffed4e);
+                                    background: linear-gradient(135deg, 
+                                        rgba(255, 215, 0, 0.2) 0%, 
+                                        rgba(255, 215, 0, 0.1) 50%,
+                                        rgba(255, 215, 0, 0.2) 100%);
+                                    backdrop-filter: blur(15px);
+                                    -webkit-backdrop-filter: blur(15px);
                                     color: #333;
-                                    border: 2px solid #ffd700;
-                                    padding: 15px;
-                                    border-radius: 12px;
+                                    border: 1px solid rgba(255, 215, 0, 0.3);
+                                    padding: 20px;
+                                    border-radius: 18px;
                                     cursor: pointer;
                                     transition: all 0.3s ease;
                                     text-align: center;
+                                    box-shadow: 
+                                        0 4px 15px rgba(255, 215, 0, 0.2),
+                                        inset 0 1px 0 rgba(255, 255, 255, 0.3);
                                 ">
-                                    <i class="fas fa-chalkboard-teacher" style="font-size: 1.5rem; margin-bottom: 8px; display: block;"></i>
+                                    <i class="fas fa-chalkboard-teacher" style="font-size: 1.5rem; margin-bottom: 8px; display: block; color: #ffd700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);"></i>
                                     <div class="mode-title" style="font-weight: 600; margin-bottom: 4px;">講師模式</div>
                                     <div class="mode-desc" style="font-size: 0.8rem; opacity: 0.8;">人數根據學生數量計算</div>
                                 </button>
                                 <button class="mode-btn assistant-mode" id="assistant-mode-btn" style="
-                                    background: #f8f9fa;
+                                    background: linear-gradient(135deg, 
+                                        rgba(255, 255, 255, 0.1) 0%, 
+                                        rgba(255, 255, 255, 0.05) 50%,
+                                        rgba(255, 255, 255, 0.1) 100%);
+                                    backdrop-filter: blur(15px);
+                                    -webkit-backdrop-filter: blur(15px);
                                     color: #666;
-                                    border: 2px solid #e9ecef;
-                                    padding: 15px;
-                                    border-radius: 12px;
+                                    border: 1px solid rgba(255, 255, 255, 0.2);
+                                    padding: 20px;
+                                    border-radius: 18px;
                                     cursor: pointer;
                                     transition: all 0.3s ease;
                                     text-align: center;
+                                    box-shadow: 
+                                        0 4px 15px rgba(0, 0, 0, 0.1),
+                                        inset 0 1px 0 rgba(255, 255, 255, 0.2);
                                 ">
-                                    <i class="fas fa-user-graduate" style="font-size: 1.5rem; margin-bottom: 8px; display: block;"></i>
+                                    <i class="fas fa-user-graduate" style="font-size: 1.5rem; margin-bottom: 8px; display: block; color: #6c757d;"></i>
                                     <div class="mode-title" style="font-weight: 600; margin-bottom: 4px;">助教模式</div>
                                     <div class="mode-desc" style="font-size: 0.8rem; opacity: 0.8;">人數自動設為 0</div>
                                 </button>
@@ -9131,18 +9199,25 @@ async function loadTodayEvents() {
                             text-align: center;
                         ">
                             <button class="btn-primary" id="submitTeacherReport" style="
-                                background: linear-gradient(135deg, #28a745, #20c997);
+                                background: linear-gradient(135deg, 
+                                    rgba(40, 167, 69, 0.8) 0%, 
+                                    rgba(32, 201, 151, 0.8) 100%);
+                                backdrop-filter: blur(20px);
+                                -webkit-backdrop-filter: blur(20px);
                                 color: white;
-                                border: none;
-                                padding: 15px 40px;
-                                border-radius: 25px;
+                                border: 1px solid rgba(255, 255, 255, 0.2);
+                                padding: 18px 45px;
+                                border-radius: 30px;
                                 font-size: 1.1rem;
                                 font-weight: 600;
                                 cursor: pointer;
                                 transition: all 0.3s ease;
-                                box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+                                box-shadow: 
+                                    0 8px 25px rgba(40, 167, 69, 0.3),
+                                    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+                                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
                             ">
-                                <i class="fas fa-paper-plane" style="margin-right: 8px;"></i>
+                                <i class="fas fa-paper-plane" style="margin-right: 8px; text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);"></i>
                                 提交講師報表
                             </button>
                         </div>
