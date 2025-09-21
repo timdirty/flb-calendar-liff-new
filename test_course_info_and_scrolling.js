@@ -34,11 +34,27 @@ async function testCourseInfoAndScrolling() {
         console.log('🔍 尋找課程卡片...');
         await page.waitForSelector('.event-card', { timeout: 10000 });
         
-        // 長按第一個課程卡片
-        console.log('👆 長按第一個課程卡片...');
+        // 尋找包含「客製化」或「到府」的課程卡片（這些通常會導致載入失敗）
+        console.log('🔍 尋找可能導致載入失敗的課程卡片...');
         const courseCards = await page.$$('.event-card');
-        const firstCard = courseCards[0];
+        let specialCard = null;
         
+        for (const card of courseCards) {
+            const title = await card.evaluate(el => el.textContent);
+            if (title.includes('客製化') || title.includes('到府') || title.includes('特殊')) {
+                console.log(`✅ 找到特殊課程: ${title.substring(0, 100)}...`);
+                specialCard = card;
+                break;
+            }
+        }
+        
+        if (!specialCard) {
+            console.log('⚠️ 沒有找到特殊課程卡片，使用第一個課程卡片');
+            specialCard = courseCards[0];
+        }
+        
+        // 長按課程卡片
+        console.log('👆 長按課程卡片...');
         await page.mouse.move(100, 200);
         await page.mouse.down();
         await new Promise(resolve => setTimeout(resolve, 1000)); // 長按1秒
@@ -46,6 +62,22 @@ async function testCourseInfoAndScrolling() {
         
         console.log('⏳ 等待簽到模態框出現...');
         await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        // 檢查是否直接跳轉到講師模式
+        console.log('🔍 檢查是否直接跳轉到講師模式...');
+        const teacherAttendanceContent = await page.$('.teacher-attendance-content');
+        if (teacherAttendanceContent) {
+            console.log('✅ 已直接跳轉到講師模式');
+        } else {
+            console.log('⚠️ 沒有直接跳轉到講師模式，嘗試手動切換');
+            
+            // 嘗試手動切換到講師簽到標籤
+            const teacherTab = await page.$('[data-tab="teacher-attendance"]');
+            if (teacherTab) {
+                await teacherTab.click();
+                console.log('✅ 手動切換到講師簽到標籤');
+            }
+        }
         
         // 檢查課程資訊是否正確載入
         console.log('🔍 檢查課程資訊載入...');
@@ -65,24 +97,48 @@ async function testCourseInfoAndScrolling() {
         
         console.log('📊 課程資訊:', courseInfo);
         
-        // 切換到講師簽到標籤
-        console.log('🔄 切換到講師簽到標籤...');
-        const teacherTab = await page.$('[data-tab="teacher-attendance"]');
-        if (teacherTab) {
-            await teacherTab.click();
-            console.log('✅ 已切換到講師簽到標籤');
-        }
-        
         // 等待講師報表載入
         console.log('⏳ 等待講師報表載入...');
         await new Promise(resolve => setTimeout(resolve, 3000));
         
+        // 手動清除學生資料來測試人數選擇功能
+        console.log('🔄 手動清除學生資料來測試人數選擇功能...');
+        await page.evaluate(() => {
+            window.loadedStudentsData = { students: [] };
+            if (typeof initializeTeacherReport === 'function') {
+                initializeTeacherReport();
+            }
+        });
+        
+        // 等待一下讓UI更新
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
         // 檢查三個區塊的順序
         console.log('🔍 檢查三個區塊的順序...');
         const blocks = await page.evaluate(() => {
-            const identityBlock = document.querySelector('.glass-card:has(h4:contains("身份選擇"))');
+            // 尋找身份選擇區塊
+            const identityBlocks = document.querySelectorAll('.glass-card');
+            let identityBlock = null;
+            for (const block of identityBlocks) {
+                const h4 = block.querySelector('h4');
+                if (h4 && h4.textContent.includes('身份選擇')) {
+                    identityBlock = block;
+                    break;
+                }
+            }
+            
+            // 尋找課程內容區塊
+            const contentBlocks = document.querySelectorAll('.glass-card');
+            let contentBlock = null;
+            for (const block of contentBlocks) {
+                const label = block.querySelector('label[for="course-content"]');
+                if (label) {
+                    contentBlock = block;
+                    break;
+                }
+            }
+            
             const countBlock = document.getElementById('student-count-selection');
-            const contentBlock = document.querySelector('.glass-card:has(label[for="course-content"])');
             
             return {
                 identityExists: !!identityBlock,
