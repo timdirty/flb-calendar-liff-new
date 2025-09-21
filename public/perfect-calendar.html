@@ -9225,10 +9225,19 @@ async function loadTodayEvents() {
                     courseTime = currentData.time || '未知時間';
                 }
                 
-                // 獲取學生人數（從已載入的學生資料）
+                // 獲取實際簽到的學生人數
                 let studentCount = 0;
                 if (window.loadedStudentsData && window.loadedStudentsData.students) {
-                    studentCount = window.loadedStudentsData.students.length;
+                    // 計算實際出席的學生數量
+                    const presentStudents = window.loadedStudentsData.students.filter(student => 
+                        student.status === 'present' || student.status === 'attended'
+                    );
+                    studentCount = presentStudents.length;
+                    console.log('📊 學生簽到統計:', {
+                        totalStudents: window.loadedStudentsData.students.length,
+                        presentStudents: presentStudents.length,
+                        presentStudentNames: presentStudents.map(s => s.name)
+                    });
                 }
                 
                 console.log('📊 講師報表資料:', {
@@ -9268,9 +9277,26 @@ async function loadTodayEvents() {
                 const result = await response.json();
                 
                 if (response.ok && result.success) {
-                    // 顯示成功訊息
+                    // 顯示成功訊息，包含API回應的詳細信息
                     const mode = currentModeDisplay ? currentModeDisplay.textContent : '講師模式';
-                    showToast(`講師報表提交成功！(${mode})`, 'success');
+                    let successMessage = `講師報表提交成功！(${mode})`;
+                    
+                    // 添加API回應的詳細信息
+                    if (result.data) {
+                        if (result.data.message) {
+                            successMessage += `\n${result.data.message}`;
+                        }
+                        if (result.data.rowNumber) {
+                            successMessage += `\n行號: ${result.data.rowNumber}`;
+                        }
+                        if (result.data.action) {
+                            const actionText = result.data.action === 'insert' ? '新增' : '更新';
+                            successMessage += `\n操作: ${actionText}`;
+                        }
+                    }
+                    
+                    showToast(successMessage, 'success');
+                    console.log('✅ 講師報表提交成功:', result.data);
                 } else {
                     throw new Error(result.message || 'API調用失敗');
                 }
@@ -9296,7 +9322,18 @@ async function loadTodayEvents() {
                 
             } catch (error) {
                 console.error('❌ 講師報表提交失敗:', error);
-                showToast(`講師報表提交失敗: ${error.message}`, 'error');
+                
+                // 顯示詳細的錯誤信息
+                let errorMessage = `講師報表提交失敗: ${error.message}`;
+                if (error.message.includes('找不到講師')) {
+                    errorMessage += '\n請確認講師名稱是否正確';
+                } else if (error.message.includes('沒有配置Web API')) {
+                    errorMessage += '\n該講師尚未配置報表API';
+                } else if (error.message.includes('API調用失敗')) {
+                    errorMessage += '\n請檢查網路連接或稍後重試';
+                }
+                
+                showToast(errorMessage, 'error');
                 
                 // 重置按鈕
                 const submitBtn = document.getElementById('submitTeacherReport');
