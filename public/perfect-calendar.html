@@ -8823,14 +8823,83 @@ async function loadTodayEvents() {
                 </div>
             `;
             
-            // 清空原有內容並添加講師報表內容
-            modalContent.innerHTML = '';
-            modalContent.appendChild(teacherAttendanceContent);
+            // 替換整個模態框內容，保持導航器
+            modalContent.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div style="flex: 1;">
+                        <h2 style="margin: 0; color: #333333; font-size: 1.5rem; text-shadow: none;">
+                            <i class="fas fa-calendar-check" style="color: #b8860b; margin-right: 10px; text-shadow: 0 0 10px rgba(184, 134, 11, 0.5);"></i>
+                            課程簽到系統
+                        </h2>
+                    </div>
+                    <button id="closeAttendanceModal" class="close-attendance-modal" style="
+                        background: rgba(255, 255, 255, 0.2);
+                        border: 1px solid rgba(255, 215, 0, 0.4);
+                        font-size: 1.5rem;
+                        color: #333333;
+                        cursor: pointer;
+                        padding: 5px;
+                        border-radius: 50%;
+                        width: 40px;
+                        height: 40px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        transition: all 0.3s ease;
+                        backdrop-filter: blur(10px);
+                        -webkit-backdrop-filter: blur(10px);
+                    ">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="course-info" style="
+                    margin-bottom: 20px; 
+                    padding: 20px; 
+                    background: 
+                        radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.05) 0%, transparent 70%),
+                        linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+                    border-radius: 15px; 
+                    border: 1px solid rgba(255, 215, 0, 0.3);
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                    box-shadow: 
+                        0 8px 32px rgba(0, 0, 0, 0.2),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                ">
+                    <div class="course-info-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.9rem;">
+                        <div data-field="teacher" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">講師:</strong> <span id="currentTeacher">載入中...</span></div>
+                        <div data-field="course" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">課程:</strong> <span id="currentCourse">載入中...</span></div>
+                        <div data-field="time" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">時間:</strong> <span id="currentTime">載入中...</span></div>
+                        <div data-field="date" style="color: #333333;"><strong style="color: #b8860b; font-weight: 600;">日期:</strong> <span id="currentDate">載入中...</span></div>
+                    </div>
+                </div>
+                
+                <div id="attendanceContent">
+                    ${teacherAttendanceContent.innerHTML}
+                </div>
+            `;
+            
+            // 重新設置關閉按鈕事件監聽器
+            const closeBtn = document.getElementById('closeAttendanceModal');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    closeAttendanceModal();
+                });
+            }
+            
+            // 填充課程資訊
+            setTimeout(() => {
+                updateCourseInfoDisplay();
+            }, 100);
             
             // 觸發講師報表動畫
             setTimeout(() => {
-                teacherAttendanceContent.style.opacity = '1';
-                teacherAttendanceContent.style.transform = 'translateX(0)';
+                const contentElement = document.querySelector('.teacher-attendance-content');
+                if (contentElement) {
+                    contentElement.style.opacity = '1';
+                    contentElement.style.transform = 'translateX(0)';
+                }
             }, 100);
             
             // 初始化講師報表功能
