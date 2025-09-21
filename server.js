@@ -375,6 +375,53 @@ function getTeacherMatchHistory(userId) {
     });
 }
 
+// 根據講師名稱獲取user ID
+function getUserIdByTeacherName(teacherName) {
+    return new Promise((resolve, reject) => {
+        db.get(
+            'SELECT user_id FROM teacher_matches WHERE teacher_name = ? ORDER BY confidence DESC, created_at DESC LIMIT 1',
+            [teacherName],
+            (err, row) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(row ? row.user_id : null);
+                }
+            }
+        );
+    });
+}
+
+// 獲取所有講師與user ID的對應關係
+function getAllTeacherUserMapping() {
+    return new Promise((resolve, reject) => {
+        db.all(
+            `SELECT DISTINCT teacher_name, user_id, MAX(confidence) as max_confidence, MAX(created_at) as latest_match
+             FROM teacher_matches 
+             GROUP BY teacher_name, user_id 
+             ORDER BY teacher_name, max_confidence DESC`,
+            (err, rows) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    // 為每個講師選擇最佳匹配的user ID
+                    const mapping = {};
+                    rows.forEach(row => {
+                        if (!mapping[row.teacher_name] || row.max_confidence > mapping[row.teacher_name].confidence) {
+                            mapping[row.teacher_name] = {
+                                userId: row.user_id,
+                                confidence: row.max_confidence,
+                                latestMatch: row.latest_match
+                            };
+                        }
+                    });
+                    resolve(mapping);
+                }
+            }
+        );
+    });
+}
+
 // 模擬行事曆事件數據（實際部署時應該連接到真實的CalDAV服務器）
 let mockEvents = [
     {
@@ -455,13 +502,25 @@ app.post('/api/student-attendance-notification', async (req, res) => {
         
         notificationMessage += `⏰ 簽到時間：${new Date().toLocaleString('zh-TW')}`;
         
+        // 嘗試獲取講師的user ID
+        let teacherUserId = null;
+        if (teacherName) {
+            try {
+                teacherUserId = await getUserIdByTeacherName(teacherName);
+                console.log(`🔍 講師 "${teacherName}" 的user ID:`, teacherUserId);
+            } catch (error) {
+                console.log('❌ 獲取講師user ID失敗:', error.message);
+            }
+        }
+        
         // 發送通知
-        const result = await sendLineMessage(notificationMessage);
+        const result = await sendLineMessage(notificationMessage, teacherUserId);
         
         res.json({
             success: result.success,
             message: result.success ? '學生簽到通知發送成功' : '學生簽到通知發送失敗',
-            error: result.message
+            error: result.message,
+            teacherUserId: teacherUserId
         });
         
     } catch (error) {
@@ -791,6 +850,61 @@ app.get('/api/match-history/:userId', async (req, res) => {
         res.status(500).json({
             success: false,
             error: '獲取匹配歷史失敗'
+        });
+    }
+});
+
+// 根據講師名稱獲取user ID
+app.get('/api/teacher-user-id/:teacherName', async (req, res) => {
+    try {
+        const { teacherName } = req.params;
+        
+        if (!teacherName) {
+            return res.status(400).json({
+                success: false,
+                error: '請提供講師名稱'
+            });
+        }
+
+        // 查詢資料庫獲取最匹配的user ID
+        const userId = await getUserIdByTeacherName(teacherName);
+        
+        if (userId) {
+            res.json({
+                success: true,
+                teacherName: teacherName,
+                userId: userId
+            });
+        } else {
+            res.json({
+                success: false,
+                message: `找不到講師 "${teacherName}" 對應的user ID`,
+                teacherName: teacherName
+            });
+        }
+    } catch (error) {
+        console.error('獲取講師user ID失敗:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// 獲取所有講師與user ID的對應關係
+app.get('/api/teacher-user-mapping', async (req, res) => {
+    try {
+        const mapping = await getAllTeacherUserMapping();
+        
+        res.json({
+            success: true,
+            mapping: mapping
+        });
+    } catch (error) {
+        console.error('獲取講師user ID對應關係失敗:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
         });
     }
 });
