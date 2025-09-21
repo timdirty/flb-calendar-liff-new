@@ -9227,17 +9227,25 @@ async function loadTodayEvents() {
                 
                 // 獲取實際簽到的學生人數
                 let studentCount = 0;
-                if (window.loadedStudentsData && window.loadedStudentsData.students) {
-                    // 計算實際出席的學生數量
-                    const presentStudents = window.loadedStudentsData.students.filter(student => 
-                        student.status === 'present' || student.status === 'attended'
-                    );
-                    studentCount = presentStudents.length;
-                    console.log('📊 學生簽到統計:', {
-                        totalStudents: window.loadedStudentsData.students.length,
-                        presentStudents: presentStudents.length,
-                        presentStudentNames: presentStudents.map(s => s.name)
-                    });
+                const currentMode = currentModeDisplay ? currentModeDisplay.textContent : '講師模式';
+                
+                if (currentMode === '助教模式') {
+                    // 助教模式：人數設為 0
+                    studentCount = 0;
+                    console.log('📊 助教模式：人數設為 0');
+                } else {
+                    // 講師模式：計算實際出席的學生數量
+                    if (window.loadedStudentsData && window.loadedStudentsData.students) {
+                        const presentStudents = window.loadedStudentsData.students.filter(student => 
+                            student.status === 'present' || student.status === 'attended'
+                        );
+                        studentCount = presentStudents.length;
+                        console.log('📊 講師模式學生簽到統計:', {
+                            totalStudents: window.loadedStudentsData.students.length,
+                            presentStudents: presentStudents.length,
+                            presentStudentNames: presentStudents.map(s => s.name)
+                        });
+                    }
                 }
                 
                 console.log('📊 講師報表資料:', {
