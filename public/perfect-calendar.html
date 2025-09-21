@@ -8952,7 +8952,13 @@ async function loadTodayEvents() {
             const markedStudents = Object.keys(studentAttendanceStatus).length;
             
             console.log(`🔍 簽到完成檢測: ${markedStudents}/${totalStudents} 學生已標記`);
-            return markedStudents === totalStudents;
+            console.log('📋 已標記學生:', Object.keys(studentAttendanceStatus));
+            console.log('📋 學生卡片數量:', studentCards.length);
+            
+            const isComplete = markedStudents === totalStudents;
+            console.log(`✅ 簽到完成狀態: ${isComplete ? '完成' : '未完成'}`);
+            
+            return isComplete;
         }
 
         // 啟動簽到檢查定時器
@@ -9109,19 +9115,26 @@ async function loadTodayEvents() {
             const markedStudents = Object.keys(studentAttendanceStatus).length;
             const progress = totalStudents > 0 ? (markedStudents / totalStudents) * 100 : 0;
             
+            console.log(`📊 更新進度顯示: ${markedStudents}/${totalStudents} (${progress}%)`);
+            
             // 更新modal標題中的進度
             const progressElement = document.querySelector('.attendance-progress');
+            console.log('🔍 進度元素:', progressElement);
+            
             if (progressElement) {
                 progressElement.innerHTML = `
                     <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
                         <div style="flex: 1; background: rgba(255,255,255,0.2); border-radius: 10px; height: 8px; overflow: hidden;">
                             <div style="width: ${progress}%; height: 100%; background: linear-gradient(90deg, #28a745, #20c997); transition: width 0.3s ease; border-radius: 10px;"></div>
                         </div>
-                        <span style="font-size: 0.9rem; font-weight: 600; color: #fff;">
+                        <span style="font-size: 0.9rem; font-weight: 600; color: #333;">
                             ${markedStudents}/${totalStudents}
                         </span>
                     </div>
                 `;
+                console.log('✅ 進度條已更新');
+            } else {
+                console.log('❌ 找不到進度元素 .attendance-progress');
             }
             
             // 如果所有學生都已簽到，顯示完成狀態

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能簽到完成檢測測試</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: #f9f9f9;
+        }
+        .test-section h3 {
+            color: #555;
+            margin-top: 0;
+        }
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f0f0f0;
+            border-left: 4px solid #667eea;
+        }
+        .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        .student-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        .student-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+        .student-name {
+            font-weight: 600;
+            color: #333;
+        }
+        .student-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .present-btn, .absent-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .present-btn {
+            background: #28a745;
+            color: white;
+        }
+        .present-btn:hover {
+            background: #218838;
+            transform: scale(1.05);
+        }
+        .absent-btn {
+            background: #dc3545;
+            color: white;
+        }
+        .absent-btn:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+        .present-btn.marked {
+            background: #155724;
+            transform: scale(0.95);
+        }
+        .absent-btn.marked {
+            background: #721c24;
+            transform: scale(0.95);
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+        .completion-message {
+            text-align: center;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(40, 167, 69, 0.1);
+            border: 2px solid #28a745;
+            border-radius: 10px;
+            color: #28a745;
+            font-weight: 600;
+            display: none;
+        }
+        .completion-message.show {
+            display: block;
+            animation: bounceIn 0.6s ease;
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 智能簽到完成檢測測試</h1>
+        
+        <div class="test-section">
+            <h3>📊 簽到進度</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            <div id="progressText">0/0 學生已標記</div>
+            <div class="completion-message" id="completionMessage">
+                🎉 簽到完成！所有學生已標記
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>👥 學生名單</h3>
+            <div id="studentList">
+                <!-- 學生卡片將在這裡動態生成 -->
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔧 測試控制</h3>
+            <button onclick="resetTest()">🔄 重置測試</button>
+            <button onclick="markAllPresent()">✅ 全部標記為出席</button>
+            <button onclick="markAllAbsent()">❌ 全部標記為缺席</button>
+            <button onclick="markRandom()">🎲 隨機標記</button>
+            <div id="testResult" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // 模擬學生資料
+        const students = [
+            { id: 'student1', name: '陳小明' },
+            { id: 'student2', name: '李小華' },
+            { id: 'student3', name: '王大雄' },
+            { id: 'student4', name: '張小美' },
+            { id: 'student5', name: '劉小強' }
+        ];
+        
+        // 簽到狀態追蹤
+        let studentAttendanceStatus = {};
+        let attendanceCheckTimer = null;
+        let attendanceNotificationSent = false;
+        
+        // 初始化測試
+        function initTest() {
+            studentAttendanceStatus = {};
+            attendanceNotificationSent = false;
+            renderStudents();
+            updateProgress();
+        }
+        
+        // 渲染學生列表
+        function renderStudents() {
+            const studentList = document.getElementById('studentList');
+            studentList.innerHTML = students.map(student => `
+                <div class="student-card" data-student-id="${student.id}">
+                    <div class="student-name">${student.name}</div>
+                    <div class="student-buttons">
+                        <button class="present-btn" onclick="markStudent('${student.id}', 'present')">✅ 出席</button>
+                        <button class="absent-btn" onclick="markStudent('${student.id}', 'absent')">❌ 缺席</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 標記學生
+        function markStudent(studentId, status) {
+            console.log(`標記學生 ${studentId} 為 ${status}`);
+            
+            // 更新狀態
+            studentAttendanceStatus[studentId] = status;
+            
+            // 更新UI
+            updateStudentUI(studentId, status);
+            updateProgress();
+            
+            // 啟動智能檢測
+            startAttendanceCheckTimer();
+        }
+        
+        // 更新學生UI
+        function updateStudentUI(studentId, status) {
+            const card = document.querySelector(`[data-student-id="${studentId}"]`);
+            if (!card) return;
+            
+            const presentBtn = card.querySelector('.present-btn');
+            const absentBtn = card.querySelector('.absent-btn');
+            
+            // 重置按鈕狀態
+            presentBtn.classList.remove('marked');
+            absentBtn.classList.remove('marked');
+            
+            // 標記對應按鈕
+            if (status === 'present') {
+                presentBtn.classList.add('marked');
+            } else if (status === 'absent') {
+                absentBtn.classList.add('marked');
+            }
+        }
+        
+        // 更新進度
+        function updateProgress() {
+            const totalStudents = students.length;
+            const markedStudents = Object.keys(studentAttendanceStatus).length;
+            const progress = totalStudents > 0 ? (markedStudents / totalStudents) * 100 : 0;
+            
+            // 更新進度條
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = `${progress}%`;
+            
+            // 更新文字
+            const progressText = document.getElementById('progressText');
+            progressText.textContent = `${markedStudents}/${totalStudents} 學生已標記`;
+            
+            // 檢查是否完成
+            const completionMessage = document.getElementById('completionMessage');
+            if (markedStudents === totalStudents && totalStudents > 0) {
+                completionMessage.classList.add('show');
+            } else {
+                completionMessage.classList.remove('show');
+            }
+        }
+        
+        // 檢測是否所有學生都已簽到
+        function checkAllStudentsMarked() {
+            const totalStudents = students.length;
+            const markedStudents = Object.keys(studentAttendanceStatus).length;
+            
+            console.log(`🔍 簽到完成檢測: ${markedStudents}/${totalStudents} 學生已標記`);
+            return markedStudents === totalStudents;
+        }
+        
+        // 啟動簽到檢查定時器
+        function startAttendanceCheckTimer() {
+            // 清除舊的定時器
+            if (attendanceCheckTimer) {
+                clearTimeout(attendanceCheckTimer);
+            }
+            
+            // 如果所有學生都已簽到，立即發送通知
+            if (checkAllStudentsMarked()) {
+                console.log('✅ 所有學生已簽到完成，立即發送通知');
+                sendNotification();
+                return;
+            }
+            
+            // 否則等待3秒後檢查並發送通知
+            console.log('⏰ 等待3秒後發送通知...');
+            attendanceCheckTimer = setTimeout(() => {
+                sendNotification();
+            }, 3000);
+        }
+        
+        // 發送通知
+        function sendNotification() {
+            if (attendanceNotificationSent) {
+                console.log('⚠️ 通知已發送過，跳過');
+                return;
+            }
+            
+            const totalStudents = students.length;
+            const markedStudents = Object.keys(studentAttendanceStatus).length;
+            const allStudentsMarked = checkAllStudentsMarked();
+            
+            let message = `📚 學生簽到通知\n\n`;
+            message += `👨‍🏫 講師：測試講師\n`;
+            message += `📖 課程：測試課程\n`;
+            message += `📅 日期：${new Date().toLocaleDateString('zh-TW')}\n\n`;
+            
+            if (allStudentsMarked) {
+                message += `🎉 簽到完成！所有學生已標記\n\n`;
+            } else {
+                message += `⏳ 簽到進行中 (${markedStudents}/${totalStudents} 已標記)\n\n`;
+            }
+            
+            // 分類學生
+            const presentStudents = [];
+            const absentStudents = [];
+            const unmarkedStudents = [];
+            
+            students.forEach(student => {
+                const status = studentAttendanceStatus[student.id];
+                if (status === 'present') {
+                    presentStudents.push(student.name);
+                } else if (status === 'absent') {
+                    absentStudents.push(student.name);
+                } else {
+                    unmarkedStudents.push(student.name);
+                }
+            });
+            
+            if (presentStudents.length > 0) {
+                message += `✅ 出席 (${presentStudents.length}人)：\n${presentStudents.join('、')}\n\n`;
+            }
+            
+            if (absentStudents.length > 0) {
+                message += `❌ 缺席 (${absentStudents.length}人)：\n${absentStudents.join('、')}\n\n`;
+            }
+            
+            if (unmarkedStudents.length > 0) {
+                message += `⏳ 未選擇 (${unmarkedStudents.length}人)：\n${unmarkedStudents.join('、')}\n\n`;
+            }
+            
+            message += `⏰ 簽到時間：${new Date().toLocaleString('zh-TW')}`;
+            
+            console.log('📤 發送通知:', message);
+            
+            // 顯示結果
+            const result = document.getElementById('testResult');
+            result.style.display = 'block';
+            result.className = 'result success';
+            result.innerHTML = `<strong>✅ 通知已發送！</strong><br><pre>${message}</pre>`;
+            
+            attendanceNotificationSent = true;
+        }
+        
+        // 測試控制函數
+        function resetTest() {
+            studentAttendanceStatus = {};
+            attendanceNotificationSent = false;
+            if (attendanceCheckTimer) {
+                clearTimeout(attendanceCheckTimer);
+                attendanceCheckTimer = null;
+            }
+            renderStudents();
+            updateProgress();
+            document.getElementById('testResult').style.display = 'none';
+            console.log('🔄 測試已重置');
+        }
+        
+        function markAllPresent() {
+            students.forEach(student => {
+                markStudent(student.id, 'present');
+            });
+        }
+        
+        function markAllAbsent() {
+            students.forEach(student => {
+                markStudent(student.id, 'absent');
+            });
+        }
+        
+        function markRandom() {
+            students.forEach(student => {
+                const status = Math.random() > 0.5 ? 'present' : 'absent';
+                markStudent(student.id, status);
+            });
+        }
+        
+        // 頁面載入時初始化
+        initTest();
+    </script>
+</body>
+</html>

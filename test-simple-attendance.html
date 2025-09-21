@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>簡單簽到測試</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .student { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        button { margin: 5px; padding: 5px 10px; }
+        .marked { background: #28a745; color: white; }
+    </style>
+</head>
+<body>
+    <h1>簡單簽到測試</h1>
+    <div id="progress">進度: 0/3</div>
+    <div id="students">
+        <div class="student">
+            <span>學生1</span>
+            <button onclick="mark('student1', 'present')">出席</button>
+            <button onclick="mark('student1', 'absent')">缺席</button>
+        </div>
+        <div class="student">
+            <span>學生2</span>
+            <button onclick="mark('student2', 'present')">出席</button>
+            <button onclick="mark('student2', 'absent')">缺席</button>
+        </div>
+        <div class="student">
+            <span>學生3</span>
+            <button onclick="mark('student3', 'present')">出席</button>
+            <button onclick="mark('student3', 'absent')">缺席</button>
+        </div>
+    </div>
+    <div id="result"></div>
+
+    <script>
+        let status = {};
+        
+        function mark(id, type) {
+            console.log('標記:', id, type);
+            status[id] = type;
+            updateProgress();
+            
+            // 檢查是否全部完成
+            if (Object.keys(status).length === 3) {
+                console.log('全部完成！立即發送通知');
+                sendNotification();
+            } else {
+                console.log('部分完成，3秒後發送通知');
+                setTimeout(() => {
+                    if (Object.keys(status).length > 0) {
+                        sendNotification();
+                    }
+                }, 3000);
+            }
+        }
+        
+        function updateProgress() {
+            const count = Object.keys(status).length;
+            document.getElementById('progress').textContent = `進度: ${count}/3`;
+        }
+        
+        function sendNotification() {
+            const result = document.getElementById('result');
+            result.innerHTML = `
+                <h3>通知已發送！</h3>
+                <p>時間: ${new Date().toLocaleString()}</p>
+                <p>狀態: ${JSON.stringify(status)}</p>
+            `;
+        }
+    </script>
+</body>
+</html>
