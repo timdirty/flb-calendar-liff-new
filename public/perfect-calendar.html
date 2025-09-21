@@ -7430,7 +7430,10 @@ async function loadTodayEvents() {
                         opacity: 0;
                         transition: opacity 0.3s ease;
                     ">
-                        <i class="fas fa-hand-pointer"></i> 長按1秒進行簽到<br>
+                        <i class="fas fa-hand-pointer"></i> 長按1.5秒進行簽到<br>
+                        <small style="font-size: 0.6rem; color: rgba(51, 51, 51, 0.4);">
+                            0.5秒集氣 → 1秒預載 → 1.5秒開啟
+                        </small>
                         <small style="font-size: 0.65rem; color: rgba(51, 51, 51, 0.5);">
                             <i class="fas fa-hand-paper"></i> 移動手指可取消
                         </small>
@@ -7647,7 +7650,7 @@ async function loadTodayEvents() {
         let touchStartTime = 0;
         let touchDuration = 0;
         let isTouchActive = false;
-        let touchCancelThreshold = 15; // 觸控取消閾值（像素）
+        let touchCancelThreshold = 25; // 觸控取消閾值（像素）- 提高難度
         let isTouchCancelled = false;
         
         // 模態框狀態追蹤
@@ -7784,25 +7787,7 @@ async function loadTodayEvents() {
                             // 震動回饋：開始集氣
                             triggerHapticFeedback('start');
                             
-                            // 1秒後開始載入學生資料
-                            setTimeout(() => {
-                                if (isCharging) {
-                                    console.log('📚 開始載入學生資料...');
-                                    // 震動回饋：載入中
-                                    triggerHapticFeedback('loading');
-                                }
-                            }, 1000);
-                            
-                            // 1.5秒後跳出載入畫面
-                            setTimeout(() => {
-                                if (isCharging) {
-                                    console.log('🚀 跳出載入畫面');
-                                    eventCard.classList.remove('charging');
-                                    // 震動回饋：完成
-                                    triggerHapticFeedback('complete');
-                                    handleDirectAttendance(title, instructor, start, end);
-                                }
-                            }, 1500);
+                            // 載入邏輯已移至觸控事件中處理
                         }
                     }, 300);
                 }
@@ -7936,7 +7921,7 @@ async function loadTodayEvents() {
                     // 震動回饋：開始按壓
                     triggerHapticFeedback('start');
                     
-                    // 1秒後開始集氣充能效果（與最小長按時間匹配）
+                    // 0.5秒後開始集氣充能效果
                     longPressTimer = setTimeout(() => {
                         if (isCharging && !isScrolling) {
                             console.log('🔋 觸控設備觸發充電動畫，移除 pressing 類別，添加 charging 類別');
@@ -7948,14 +7933,16 @@ async function loadTodayEvents() {
                             // 震動回饋：開始集氣
                             triggerHapticFeedback('start');
                             
+                            // 1秒後開始後端預載入（0.5秒後）
                             setTimeout(() => {
                                 if (isCharging && !isScrolling) {
-                                    console.log('📚 開始載入學生資料...');
+                                    console.log('📚 開始後端預載入學生資料...');
                                     // 震動回饋：載入中
                                     triggerHapticFeedback('loading');
                                 }
                             }, 500);
                             
+                            // 1.5秒後跳出載入動畫（1秒後）
                             setTimeout(() => {
                                 if (isCharging && !isScrolling) {
                                     console.log('🚀 跳出載入畫面');
@@ -7966,7 +7953,7 @@ async function loadTodayEvents() {
                                 }
                             }, 1000);
                         }
-                    }, 1000);
+                    }, 500);
                 }
             }
         });
@@ -8100,9 +8087,9 @@ async function loadTodayEvents() {
                 touchDuration = Date.now() - touchStartTime;
                 console.log('📱 觸控結束，持續時間:', touchDuration + 'ms');
                 
-                // 檢查最小長按時間（1秒）
-                if (touchDuration < 1000) {
-                    console.log('📱 觸控時間太短（< 1秒），不觸發長按功能');
+                // 檢查最小長按時間（1.5秒）
+                if (touchDuration < 1500) {
+                    console.log('📱 觸控時間太短（< 1.5秒），不觸發長按功能');
                     eventCard.classList.remove('pressing', 'charging');
                     isCharging = false;
                     isScrolling = false;
@@ -8400,6 +8387,12 @@ async function loadTodayEvents() {
         async function handleDirectAttendance(title, instructor, start, end) {
             try {
                 console.log('🎯 處理直接簽到:', { title, instructor, start, end });
+                
+                // 檢查是否已經有模態框在顯示
+                if (currentAttendanceModal) {
+                    console.log('⚠️ 已有模態框在顯示，取消新的簽到請求');
+                    return;
+                }
                 
                 // 檢查課程時間限制
                 const courseStartTime = new Date(start);
