@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 
-async function testLoadingFix() {
-    console.log('🚀 開始測試載入中問題修復...');
+async function testFinalFix() {
+    console.log('🚀 開始測試最終修復...');
     
     const browser = await puppeteer.launch({
         headless: false,
@@ -106,6 +106,14 @@ async function testLoadingFix() {
                 return window.storedCourseInfo || '未找到';
             });
             console.log('🔍 storedCourseInfo:', storedInfo);
+            
+            // 檢查是否有 JavaScript 錯誤
+            const errors = await page.evaluate(() => {
+                return window.consoleErrors || [];
+            });
+            if (errors.length > 0) {
+                console.log('🔍 JavaScript 錯誤:', errors);
+            }
         } else {
             console.log('✅ 載入中問題已修復');
             console.log('✅ 時間:', courseInfo.time);
@@ -162,7 +170,7 @@ async function testLoadingFix() {
         console.log('⏳ 等待 3 秒讓用戶查看結果...');
         await page.waitForTimeout(3000);
         
-        console.log('✅ 載入中問題修復測試完成');
+        console.log('✅ 最終修復測試完成');
         
     } catch (error) {
         console.error('❌ 測試失敗:', error);
@@ -173,4 +181,4 @@ async function testLoadingFix() {
 }
 
 // 運行測試
-testLoadingFix().catch(console.error);
+testFinalFix().catch(console.error);

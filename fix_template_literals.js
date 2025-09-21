@@ -3,7 +3,9 @@ const fs = require('fs');
 // 讀取文件
 let content = fs.readFileSync('public/perfect-calendar.html', 'utf8');
 
-// 找到 recreateStudentAttendanceContent 函數
+console.log('🔍 開始修復模板字面量問題...');
+
+// 找到 recreateStudentAttendanceContent 函數中的 innerHTML 部分
 const functionStart = content.indexOf('function recreateStudentAttendanceContent()');
 if (functionStart === -1) {
     console.log('❌ 找不到 recreateStudentAttendanceContent 函數');
@@ -31,7 +33,7 @@ for (let i = functionStart; i < content.length; i++) {
 // 提取函數內容
 const functionContent = content.substring(functionStart, functionEnd + 1);
 
-// 創建新的函數，使用 storedCourseInfo 而不是硬編碼的"載入中..."
+// 創建新的函數，使用正確的模板字面量語法
 const newRecreateFunction = `function recreateStudentAttendanceContent() {
             console.log('🔄 重新創建學生簽到內容');
             
@@ -100,7 +102,7 @@ const newRecreateFunction = `function recreateStudentAttendanceContent() {
             }
             
             // 重新綁定事件
-            setupStudentCardEventListeners();
+            setupStudentCardDoubleClickListeners();
             setupAttendanceEventListeners();
             updateAttendanceStatistics();
             
@@ -115,7 +117,7 @@ fs.writeFileSync('public/perfect-calendar.html', newContent, 'utf8');
 
 console.log('✅ recreateStudentAttendanceContent 函數已修復');
 console.log('📊 修正內容:');
-console.log('- 使用 storedCourseInfo 而不是硬編碼的"載入中..."');
-console.log('- 動態生成課程資訊顯示');
-console.log('- 保持原有的學生列表和統計功能');
+console.log('- 使用正確的模板字面量語法');
+console.log('- 動態變數現在會正確解析');
+console.log('- 修復 JavaScript 錯誤');
 console.log('- 確保課程資訊正確顯示');
