@@ -8278,6 +8278,14 @@ async function loadTodayEvents() {
                 console.log('📊 學生資料回應:', data);
                 
                 if (data.success && data.students) {
+                    console.log('🔍 學生數據結構檢查:', data.students.map(s => ({
+                        name: s.name,
+                        id: s.id,
+                        studentId: s.studentId,
+                        student_id: s.student_id,
+                        key: s.key,
+                        allKeys: Object.keys(s)
+                    })));
                     displayStudents(data.students, teacher, course, time, start, end, minutesUntilStart);
                 } else {
                     // 顯示錯誤訊息，不使用模擬資料
@@ -8395,7 +8403,18 @@ async function loadTodayEvents() {
                 `;
             }
             
-            const studentsHtml = students.map(student => {
+            const studentsHtml = students.map((student, index) => {
+                // 確保學生有ID，如果沒有則使用索引或姓名
+                const studentId = student.id || student.studentId || student.student_id || student.key || student.name || `student_${index}`;
+                console.log(`🔍 學生 ${index + 1} ID 處理:`, {
+                    originalId: student.id,
+                    studentId: student.studentId,
+                    student_id: student.student_id,
+                    key: student.key,
+                    name: student.name,
+                    finalId: studentId
+                });
+                
                 // 檢查今天的簽到狀態
                 const todayAttendance = student.attendance.find(record => record.date === today);
                 let currentStatus = null;
@@ -8526,7 +8545,7 @@ async function loadTodayEvents() {
                             </div>
                         </div>
                         <div style="display: flex; gap: 8px;">
-                            <button class="attendance-btn present-btn liquid-button" data-student-id="${student.id}" 
+                            <button class="attendance-btn present-btn liquid-button" data-student-id="${studentId}" 
                                 ${minutesUntilStart !== null && minutesUntilStart > 10 ? 'disabled' : ''}
                                 data-minutes-until-start="${minutesUntilStart}"
                                 data-disabled="${minutesUntilStart !== null && minutesUntilStart > 10}"
@@ -8556,7 +8575,7 @@ async function loadTodayEvents() {
                             ">
                                 <span style="margin-right: 6px; font-size: 0.9rem;">✅</span> 出席
                             </button>
-                            <button class="attendance-btn absent-btn liquid-button" data-student-id="${student.id}" 
+                            <button class="attendance-btn absent-btn liquid-button" data-student-id="${studentId}" 
                                 ${minutesUntilStart !== null && minutesUntilStart > 10 ? 'disabled' : ''}
                                 data-minutes-until-start="${minutesUntilStart}"
                                 data-disabled="${minutesUntilStart !== null && minutesUntilStart > 10}"
