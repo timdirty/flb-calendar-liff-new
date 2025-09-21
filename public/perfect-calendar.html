@@ -8546,9 +8546,9 @@ async function loadTodayEvents() {
                         </div>
                         <div style="display: flex; gap: 8px;">
                             <button class="attendance-btn present-btn liquid-button" data-student-id="${studentId}" 
-                                ${minutesUntilStart !== null && minutesUntilStart > 10 ? 'disabled' : ''}
                                 data-minutes-until-start="${minutesUntilStart}"
                                 data-disabled="${minutesUntilStart !== null && minutesUntilStart > 10}"
+                                data-is-disabled="${minutesUntilStart !== null && minutesUntilStart > 10}"
                                 style="
                                 background: ${currentStatus === 'present' 
                                     ? 'linear-gradient(135deg, rgba(40, 167, 69, 1), rgba(32, 201, 151, 0.9))' 
@@ -8576,9 +8576,9 @@ async function loadTodayEvents() {
                                 <span style="margin-right: 6px; font-size: 0.9rem;">✅</span> 出席
                             </button>
                             <button class="attendance-btn absent-btn liquid-button" data-student-id="${studentId}" 
-                                ${minutesUntilStart !== null && minutesUntilStart > 10 ? 'disabled' : ''}
                                 data-minutes-until-start="${minutesUntilStart}"
                                 data-disabled="${minutesUntilStart !== null && minutesUntilStart > 10}"
+                                data-is-disabled="${minutesUntilStart !== null && minutesUntilStart > 10}"
                                 style="
                                 background: ${currentStatus === 'absent' 
                                     ? 'linear-gradient(135deg, rgba(220, 53, 69, 1), rgba(231, 76, 60, 0.9))' 
@@ -8683,9 +8683,11 @@ async function loadTodayEvents() {
                     studentId: btn.dataset.studentId,
                     disabled: btn.disabled,
                     dataDisabled: btn.dataset.disabled,
+                    dataIsDisabled: btn.dataset.isDisabled,
                     pointerEvents: btn.style.pointerEvents,
                     className: btn.className,
                     minutesUntilStart: btn.dataset.minutesUntilStart,
+                    hasDisabledAttribute: btn.hasAttribute('disabled'),
                     innerHTML: btn.innerHTML.substring(0, 50) + '...'
                 });
             });
@@ -8705,6 +8707,25 @@ async function loadTodayEvents() {
             console.log('🔄 重新查詢按鈕:', {
                 presentBtns: presentBtns.length,
                 absentBtns: absentBtns.length
+            });
+            
+            // 動態設置按鈕的 disabled 屬性
+            [...presentBtns, ...absentBtns].forEach(btn => {
+                const minutesUntilStart = parseInt(btn.dataset.minutesUntilStart);
+                const shouldDisable = minutesUntilStart !== null && minutesUntilStart > 10;
+                
+                console.log(`🔧 設置按鈕 disabled 屬性:`, {
+                    studentId: btn.dataset.studentId,
+                    minutesUntilStart: minutesUntilStart,
+                    shouldDisable: shouldDisable,
+                    currentDisabled: btn.disabled
+                });
+                
+                if (shouldDisable) {
+                    btn.disabled = true;
+                } else {
+                    btn.disabled = false;
+                }
             });
             
             // 出席按鈕
