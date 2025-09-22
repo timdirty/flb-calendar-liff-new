@@ -478,6 +478,93 @@
                 });
             };
             
+            // 測試出缺勤資料顯示
+            window.testAttendanceDisplay = function() {
+                console.log('🧪 測試出缺勤資料顯示');
+                
+                if (!window.loadedStudentsData || !window.loadedStudentsData.students) {
+                    console.log('❌ 沒有載入的學生資料');
+                    showToast('❌ 沒有載入的學生資料，請先載入課程學生', 'error', 3000);
+                    return;
+                }
+                
+                // 為每個學生添加測試出缺勤資料
+                window.loadedStudentsData.students.forEach(student => {
+                    const studentId = student.id || student.student_id || student.name;
+                    
+                    // 添加隨機出缺勤資料
+                    const present = Math.floor(Math.random() * 5) + 1; // 1-5次
+                    const absent = Math.floor(Math.random() * 3); // 0-2次
+                    const late = Math.floor(Math.random() * 2); // 0-1次
+                    const unmarked = Math.floor(Math.random() * 2); // 0-1次
+                    
+                    student.present = present;
+                    student.absent = absent;
+                    student.late = late;
+                    student.unmarked = unmarked;
+                    
+                    // 更新attendanceRecords
+                    if (window.loadedStudentsData.attendanceRecords[studentId]) {
+                        window.loadedStudentsData.attendanceRecords[studentId].present = present;
+                        window.loadedStudentsData.attendanceRecords[studentId].absent = absent;
+                        window.loadedStudentsData.attendanceRecords[studentId].late = late;
+                        window.loadedStudentsData.attendanceRecords[studentId].unmarked = unmarked;
+                    }
+                    
+                    console.log(`📊 ${student.name}: 出席${present}次, 缺席${absent}次, 遲到${late}次, 未標記${unmarked}次`);
+                });
+                
+                console.log('✅ 測試出缺勤資料已添加');
+                showToast('✅ 測試出缺勤資料已添加，請查看學生卡片', 'success', 3000);
+                
+                // 重新渲染學生列表
+                if (window.loadedStudentsData && window.loadedStudentsData.students) {
+                    displayStudents(window.loadedStudentsData.students, 
+                        window.loadedStudentsData.teacher, 
+                        window.loadedStudentsData.course, 
+                        window.loadedStudentsData.time, 
+                        window.loadedStudentsData.start, 
+                        window.loadedStudentsData.end, 
+                        window.loadedStudentsData.minutesUntilStart);
+                }
+            };
+            
+            // 測試手機端佈局
+            window.testMobileLayout = function() {
+                console.log('📱 測試手機端佈局');
+                
+                // 檢查當前視窗寬度
+                const width = window.innerWidth;
+                console.log(`📏 當前視窗寬度: ${width}px`);
+                
+                // 檢查出缺勤統計元素的顯示狀態
+                const desktopStats = document.querySelectorAll('.attendance-stats-desktop');
+                const mobileStats = document.querySelectorAll('.attendance-stats-mobile');
+                
+                console.log(`🖥️ 桌面端統計元素數量: ${desktopStats.length}`);
+                console.log(`📱 手機端統計元素數量: ${mobileStats.length}`);
+                
+                // 檢查每個元素的顯示狀態
+                desktopStats.forEach((element, index) => {
+                    const computedStyle = window.getComputedStyle(element);
+                    console.log(`🖥️ 桌面端元素 ${index + 1} 顯示狀態: ${computedStyle.display}`);
+                });
+                
+                mobileStats.forEach((element, index) => {
+                    const computedStyle = window.getComputedStyle(element);
+                    console.log(`📱 手機端元素 ${index + 1} 顯示狀態: ${computedStyle.display}`);
+                });
+                
+                // 根據視窗寬度給出建議
+                if (width <= 768) {
+                    console.log('✅ 當前為手機端佈局，應該顯示手機端統計元素');
+                    showToast('📱 當前為手機端佈局，請檢查出缺勤統計是否正確顯示', 'info', 3000);
+                } else {
+                    console.log('✅ 當前為桌面端佈局，應該顯示桌面端統計元素');
+                    showToast('🖥️ 當前為桌面端佈局，請檢查出缺勤統計是否正確顯示', 'info', 3000);
+                }
+            };
+            
             // 添加測試出缺勤資料功能
             window.addTestAttendanceData = function() {
                 if (!window.loadedStudentsData || !window.loadedStudentsData.students) {
@@ -3948,6 +4035,85 @@
                 padding: 12px !important;
                 font-size: 0.9rem !important;
             }
+            
+            /* 手機端出缺勤次數佈局優化 */
+            .student-card .attendance-stats-mobile {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 4px !important;
+                margin-bottom: 8px !important;
+                width: 100% !important;
+            }
+            
+            .student-card .attendance-stats-row {
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                gap: 8px !important;
+                flex-wrap: wrap !important;
+            }
+            
+            .student-card .attendance-stat-item {
+                display: flex !important;
+                align-items: center !important;
+                gap: 4px !important;
+                font-size: 0.6rem !important;
+                font-weight: 600 !important;
+                padding: 2px 6px !important;
+                border-radius: 8px !important;
+                background: rgba(255, 255, 255, 0.8) !important;
+                backdrop-filter: blur(10px) !important;
+                -webkit-backdrop-filter: blur(10px) !important;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+                min-width: 0 !important;
+                flex: 1 !important;
+                max-width: calc(50% - 4px) !important;
+            }
+            
+            .student-card .attendance-stat-item i {
+                font-size: 0.7rem !important;
+                flex-shrink: 0 !important;
+            }
+            
+            .student-card .attendance-stat-item.present {
+                color: #28a745 !important;
+                border: 1px solid rgba(40, 167, 69, 0.3) !important;
+            }
+            
+            .student-card .attendance-stat-item.absent {
+                color: #dc3545 !important;
+                border: 1px solid rgba(220, 53, 69, 0.3) !important;
+            }
+            
+            .student-card .attendance-stat-item.late {
+                color: #ffc107 !important;
+                border: 1px solid rgba(255, 193, 7, 0.3) !important;
+            }
+            
+            .student-card .attendance-stat-item.unmarked {
+                color: #6c757d !important;
+                border: 1px solid rgba(108, 117, 125, 0.3) !important;
+            }
+            
+            /* 手機端顯示切換 */
+            .attendance-stats-desktop {
+                display: none !important;
+            }
+            
+            .attendance-stats-mobile {
+                display: block !important;
+            }
+        }
+        
+        /* 桌面端顯示切換 */
+        @media (min-width: 769px) {
+            .attendance-stats-desktop {
+                display: flex !important;
+            }
+            
+            .attendance-stats-mobile {
+                display: none !important;
+            }
         }
 
         @media (max-width: 480px) {
@@ -4006,6 +4172,34 @@
             .attendance-stats .stats-grid {
                 grid-template-columns: 1fr !important;
                 gap: 6px !important;
+            }
+            
+            /* 480px以下手機出缺勤次數進一步優化 */
+            .student-card .attendance-stats-mobile {
+                margin-bottom: 6px !important;
+            }
+            
+            .student-card .attendance-stats-row {
+                gap: 4px !important;
+                margin-bottom: 2px !important;
+            }
+            
+            .student-card .attendance-stat-item {
+                font-size: 0.55rem !important;
+                padding: 1px 4px !important;
+                border-radius: 6px !important;
+                max-width: calc(50% - 2px) !important;
+            }
+            
+            .student-card .attendance-stat-item i {
+                font-size: 0.6rem !important;
+            }
+            
+            .student-card .attendance-stat-item span {
+                font-size: 0.55rem !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
             }
         }
 
@@ -10440,6 +10634,9 @@ async function loadTodayEvents() {
                         const studentId = student.student_id || student.studentId || student.key || student.name;
                         const studentName = student.name || '未知學生';
                         
+                        // 獲取學生出缺勤資料
+                        const attendanceData = getStudentAttendanceData(student);
+                        
                         return `
                             <div class="student-card" data-student-id="${studentId}" style="
                                 background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
@@ -10456,8 +10653,47 @@ async function loadTodayEvents() {
                                         <div style="font-weight: 600; color: #333; margin-bottom: 8px; font-size: 1.1rem;">
                                             ${studentName}
                                         </div>
-                                        <div style="font-size: 0.9rem; color: #666;">
+                                        <div style="font-size: 0.9rem; color: #666; margin-bottom: 8px;">
                                             ID: ${studentId}
+                                        </div>
+                                        <!-- 桌面端出缺勤次數顯示 -->
+                                        <div class="attendance-stats-desktop" style="display: flex; gap: 12px; font-size: 0.8rem;">
+                                            <span style="color: #28a745; font-weight: 600;">
+                                                <i class="fas fa-check-circle"></i> 出席 ${attendanceData.present}次
+                                            </span>
+                                            <span style="color: #dc3545; font-weight: 600;">
+                                                <i class="fas fa-times-circle"></i> 缺席 ${attendanceData.absent}次
+                                            </span>
+                                            <span style="color: #ffc107; font-weight: 600;">
+                                                <i class="fas fa-clock"></i> 遲到 ${attendanceData.late}次
+                                            </span>
+                                            <span style="color: #6c757d; font-weight: 600;">
+                                                <i class="fas fa-question-circle"></i> 未標記 ${attendanceData.unmarked}次
+                                            </span>
+                                        </div>
+                                        
+                                        <!-- 手機端出缺勤次數顯示 -->
+                                        <div class="attendance-stats-mobile" style="display: none;">
+                                            <div class="attendance-stats-row">
+                                                <div class="attendance-stat-item present">
+                                                    <i class="fas fa-check-circle"></i>
+                                                    <span>出席 ${attendanceData.present}次</span>
+                                                </div>
+                                                <div class="attendance-stat-item absent">
+                                                    <i class="fas fa-times-circle"></i>
+                                                    <span>缺席 ${attendanceData.absent}次</span>
+                                                </div>
+                                            </div>
+                                            <div class="attendance-stats-row">
+                                                <div class="attendance-stat-item late">
+                                                    <i class="fas fa-clock"></i>
+                                                    <span>遲到 ${attendanceData.late}次</span>
+                                                </div>
+                                                <div class="attendance-stat-item unmarked">
+                                                    <i class="fas fa-question-circle"></i>
+                                                    <span>未標記 ${attendanceData.unmarked}次</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     <div style="display: flex; gap: 8px;">
@@ -14332,7 +14568,24 @@ async function loadTodayEvents() {
                         studentId: s.studentId,
                         student_id: s.student_id,
                         key: s.key,
+                        present: s.present,
+                        absent: s.absent,
+                        late: s.late,
+                        unmarked: s.unmarked,
+                        attendance: s.attendance,
+                        attendance_history: s.attendance_history,
                         allKeys: Object.keys(s)
+                    })));
+                    
+                    // 檢查出缺勤資料
+                    console.log('📊 出缺勤資料檢查:', data.students.map(s => ({
+                        name: s.name,
+                        present: s.present || s.attendance?.present || 0,
+                        absent: s.absent || s.attendance?.absent || 0,
+                        late: s.late || s.attendance?.late || 0,
+                        unmarked: s.unmarked || s.attendance?.unmarked || 0,
+                        hasHistory: !!(s.attendance_history && s.attendance_history.length > 0),
+                        historyCount: s.attendance_history ? s.attendance_history.length : 0
                     })));
                     
                     // 載入完成，更新狀態
@@ -14764,6 +15017,51 @@ async function loadTodayEvents() {
                             </div>
                             <div style="flex: 1;">
                                 <div class="student-name" style="font-weight: 600; color: rgba(0, 0, 0, 0.9); font-size: 0.85rem; margin-bottom: 4px;">${student.name}</div>
+                                <!-- 出缺勤次數統計 -->
+                                ${(() => {
+                                    const attendanceData = getStudentAttendanceData(student);
+                                    return `
+                                        <!-- 桌面端出缺勤次數顯示 -->
+                                        <div class="attendance-stats-desktop" style="display: flex; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;">
+                                            <span style="color: #28a745; font-size: 0.65rem; font-weight: 600;">
+                                                <i class="fas fa-check-circle"></i> ${attendanceData.present}次
+                                            </span>
+                                            <span style="color: #dc3545; font-size: 0.65rem; font-weight: 600;">
+                                                <i class="fas fa-times-circle"></i> ${attendanceData.absent}次
+                                            </span>
+                                            <span style="color: #ffc107; font-size: 0.65rem; font-weight: 600;">
+                                                <i class="fas fa-clock"></i> ${attendanceData.late}次
+                                            </span>
+                                            <span style="color: #6c757d; font-size: 0.65rem; font-weight: 600;">
+                                                <i class="fas fa-question-circle"></i> ${attendanceData.unmarked}次
+                                            </span>
+                                        </div>
+                                        
+                                        <!-- 手機端出缺勤次數顯示 -->
+                                        <div class="attendance-stats-mobile" style="display: none;">
+                                            <div class="attendance-stats-row">
+                                                <div class="attendance-stat-item present">
+                                                    <i class="fas fa-check-circle"></i>
+                                                    <span>出席 ${attendanceData.present}次</span>
+                                                </div>
+                                                <div class="attendance-stat-item absent">
+                                                    <i class="fas fa-times-circle"></i>
+                                                    <span>缺席 ${attendanceData.absent}次</span>
+                                                </div>
+                                            </div>
+                                            <div class="attendance-stats-row">
+                                                <div class="attendance-stat-item late">
+                                                    <i class="fas fa-clock"></i>
+                                                    <span>遲到 ${attendanceData.late}次</span>
+                                                </div>
+                                                <div class="attendance-stat-item unmarked">
+                                                    <i class="fas fa-question-circle"></i>
+                                                    <span>未標記 ${attendanceData.unmarked}次</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                })()}
                                 <!-- 狀態標籤 - 名字下方 -->
                                 <div class="status-tag" style="
                                     background: ${statusStyles.statusColor};
