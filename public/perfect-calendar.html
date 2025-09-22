@@ -16,6 +16,85 @@
     <script>
         // 性能優化工具
         const PerformanceOptimizer = {
+            // 性能監控數據
+            metrics: {
+                api: {
+                    requests: 0,
+                    successes: 0,
+                    failures: 0,
+                    averageResponseTime: 0,
+                    totalResponseTime: 0
+                },
+                attendance: {
+                    loadAttempts: 0,
+                    successfulLoads: 0,
+                    failedLoads: 0,
+                    averageLoadTime: 0,
+                    totalLoadTime: 0
+                },
+                memory: {
+                    start: performance.memory ? performance.memory.usedJSHeapSize : 0,
+                    peak: 0,
+                    current: 0
+                }
+            },
+            
+            // 記錄API請求
+            recordApiRequest(success, responseTime) {
+                this.metrics.api.requests++;
+                this.metrics.api.totalResponseTime += responseTime;
+                this.metrics.api.averageResponseTime = this.metrics.api.totalResponseTime / this.metrics.api.requests;
+                
+                if (success) {
+                    this.metrics.api.successes++;
+                } else {
+                    this.metrics.api.failures++;
+                }
+            },
+            
+            // 記錄學生資料載入
+            recordAttendanceLoad(success, loadTime) {
+                this.metrics.attendance.loadAttempts++;
+                this.metrics.attendance.totalLoadTime += loadTime;
+                this.metrics.attendance.averageLoadTime = this.metrics.attendance.totalLoadTime / this.metrics.attendance.loadAttempts;
+                
+                if (success) {
+                    this.metrics.attendance.successfulLoads++;
+                } else {
+                    this.metrics.attendance.failedLoads++;
+                }
+            },
+            
+            // 更新記憶體使用情況
+            updateMemoryUsage() {
+                if (performance.memory) {
+                    this.metrics.memory.current = performance.memory.usedJSHeapSize;
+                    this.metrics.memory.peak = Math.max(this.metrics.memory.peak, this.metrics.memory.current);
+                }
+            },
+            
+            // 獲取性能報告
+            getPerformanceReport() {
+                this.updateMemoryUsage();
+                return {
+                    api: {
+                        ...this.metrics.api,
+                        successRate: this.metrics.api.requests > 0 ? 
+                            (this.metrics.api.successes / this.metrics.api.requests * 100).toFixed(2) + '%' : '0%'
+                    },
+                    attendance: {
+                        ...this.metrics.attendance,
+                        successRate: this.metrics.attendance.loadAttempts > 0 ? 
+                            (this.metrics.attendance.successfulLoads / this.metrics.attendance.loadAttempts * 100).toFixed(2) + '%' : '0%'
+                    },
+                    memory: {
+                        ...this.metrics.memory,
+                        usageIncrease: this.metrics.memory.current - this.metrics.memory.start,
+                        peakIncrease: this.metrics.memory.peak - this.metrics.memory.start
+                    }
+                };
+            },
+            
             // 延遲載入LIFF SDK
             loadLIFFSDK() {
                 return new Promise((resolve, reject) => {
@@ -353,10 +432,248 @@
             }
         };
         
-        // 暴露到全局
-        window.PerformanceOptimizer = PerformanceOptimizer;
-        window.MemoryManager = MemoryManager;
-        window.ModuleManager = ModuleManager;
+            // 暴露到全局
+            window.PerformanceOptimizer = PerformanceOptimizer;
+            window.MemoryManager = MemoryManager;
+            window.ModuleManager = ModuleManager;
+            
+            // 添加測試Google Sheets API功能
+            window.testGoogleSheetsAPI = function() {
+                console.log('🧪 測試Google Sheets API...');
+                
+                const testPayload = {
+                    action: "update",
+                    name: "測試學生",
+                    date: "2025-09-22",
+                    present: true,
+                    teacher: "測試講師",
+                    course: "測試課程",
+                    period: "測試時段"
+                };
+                
+                const proxyUrl = '/api/proxy/google-sheets';
+                
+                fetch(proxyUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'updateAttendance',
+                        googleSheetsUrl: "https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/dev",
+                        payload: testPayload
+                    })
+                })
+                .then(response => {
+                    console.log('📥 API回應狀態:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('📥 API回應內容:', data);
+                    showToast('🧪 Google Sheets API測試完成，請查看控制台', 'info', 3000);
+                })
+                .catch(error => {
+                    console.error('❌ API測試失敗:', error);
+                    showToast('❌ Google Sheets API測試失敗', 'error', 3000);
+                });
+            };
+            
+            // 添加測試出缺勤資料功能
+            window.addTestAttendanceData = function() {
+                if (!window.loadedStudentsData || !window.loadedStudentsData.students) {
+                    console.log('⚠️ 沒有載入的學生資料');
+                    return;
+                }
+                
+                console.log('🧪 添加測試出缺勤資料...');
+                
+                // 為每個學生添加測試出缺勤資料
+                window.loadedStudentsData.students.forEach((student, index) => {
+                    const studentId = student.id || student.student_id || student.name;
+                    
+                    // 添加隨機出缺勤資料
+                    const present = Math.floor(Math.random() * 5) + 1; // 1-5次
+                    const absent = Math.floor(Math.random() * 3); // 0-2次
+                    const late = Math.floor(Math.random() * 2); // 0-1次
+                    const unmarked = Math.floor(Math.random() * 2); // 0-1次
+                    
+                    student.present = present;
+                    student.absent = absent;
+                    student.late = late;
+                    student.unmarked = unmarked;
+                    
+                    // 更新出缺勤記錄
+                    if (window.loadedStudentsData.attendanceRecords[studentId]) {
+                        window.loadedStudentsData.attendanceRecords[studentId].present = present;
+                        window.loadedStudentsData.attendanceRecords[studentId].absent = absent;
+                        window.loadedStudentsData.attendanceRecords[studentId].late = late;
+                        window.loadedStudentsData.attendanceRecords[studentId].unmarked = unmarked;
+                    }
+                    
+                    console.log(`📊 ${student.name}: 出席${present}次, 缺席${absent}次, 遲到${late}次, 未標記${unmarked}次`);
+                });
+                
+                console.log('✅ 測試出缺勤資料已添加');
+                showToast('🧪 測試出缺勤資料已添加', 'success', 2000);
+            };
+            
+            // 添加性能報告顯示功能
+            window.showPerformanceReport = function() {
+                const report = PerformanceOptimizer.getPerformanceReport();
+                console.log('📊 系統性能報告:', report);
+                
+                // 創建性能報告模態框
+                const modal = document.createElement('div');
+                modal.className = 'performance-modal';
+                modal.innerHTML = `
+                    <div class="performance-content">
+                        <div class="performance-header">
+                            <h3>📊 系統性能報告</h3>
+                            <button class="close-btn">&times;</button>
+                        </div>
+                        <div class="performance-body">
+                            <div class="metric-section">
+                                <h4>🌐 API 請求統計</h4>
+                                <div class="metric-grid">
+                                    <div class="metric-item">
+                                        <span class="metric-label">總請求數:</span>
+                                        <span class="metric-value">${report.api.requests}</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-label">成功率:</span>
+                                        <span class="metric-value">${report.api.successRate}</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-label">平均響應時間:</span>
+                                        <span class="metric-value">${report.api.averageResponseTime.toFixed(2)}ms</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="metric-section">
+                                <h4>📚 學生資料載入統計</h4>
+                                <div class="metric-grid">
+                                    <div class="metric-item">
+                                        <span class="metric-label">載入嘗試:</span>
+                                        <span class="metric-value">${report.attendance.loadAttempts}</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-label">成功率:</span>
+                                        <span class="metric-value">${report.attendance.successRate}</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-label">平均載入時間:</span>
+                                        <span class="metric-value">${report.attendance.averageLoadTime.toFixed(2)}ms</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="metric-section">
+                                <h4>💾 記憶體使用情況</h4>
+                                <div class="metric-grid">
+                                    <div class="metric-item">
+                                        <span class="metric-label">當前使用:</span>
+                                        <span class="metric-value">${(report.memory.current / 1024 / 1024).toFixed(2)}MB</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-label">峰值使用:</span>
+                                        <span class="metric-value">${(report.memory.peak / 1024 / 1024).toFixed(2)}MB</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-label">使用增長:</span>
+                                        <span class="metric-value">${(report.memory.usageIncrease / 1024 / 1024).toFixed(2)}MB</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // 添加樣式
+                const style = document.createElement('style');
+                style.textContent = `
+                    .performance-modal {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0, 0, 0, 0.8);
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        z-index: 10000;
+                    }
+                    .performance-content {
+                        background: white;
+                        border-radius: 12px;
+                        padding: 20px;
+                        max-width: 600px;
+                        max-height: 80vh;
+                        overflow-y: auto;
+                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                    }
+                    .performance-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 20px;
+                        border-bottom: 2px solid #f0f0f0;
+                        padding-bottom: 10px;
+                    }
+                    .close-btn {
+                        background: none;
+                        border: none;
+                        font-size: 24px;
+                        cursor: pointer;
+                        color: #666;
+                    }
+                    .metric-section {
+                        margin-bottom: 20px;
+                        padding: 15px;
+                        background: #f8f9fa;
+                        border-radius: 8px;
+                    }
+                    .metric-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                        gap: 10px;
+                        margin-top: 10px;
+                    }
+                    .metric-item {
+                        display: flex;
+                        justify-content: space-between;
+                        padding: 8px 12px;
+                        background: white;
+                        border-radius: 6px;
+                        border: 1px solid #e0e0e0;
+                    }
+                    .metric-label {
+                        font-weight: 500;
+                        color: #666;
+                    }
+                    .metric-value {
+                        font-weight: bold;
+                        color: #333;
+                    }
+                `;
+                document.head.appendChild(style);
+                document.body.appendChild(modal);
+                
+                // 關閉按鈕事件
+                modal.querySelector('.close-btn').onclick = () => {
+                    document.body.removeChild(modal);
+                    document.head.removeChild(style);
+                };
+                
+                // 點擊背景關閉
+                modal.onclick = (e) => {
+                    if (e.target === modal) {
+                        document.body.removeChild(modal);
+                        document.head.removeChild(style);
+                    }
+                };
+            };
     </script>
     <style>
         * {
@@ -13880,9 +14197,15 @@ async function loadTodayEvents() {
             // 定義重試和超時變數
             const maxRetries = 3;
             let loadingTimeout = null;
+            const loadStartTime = performance.now();
             
             try {
                 console.log('📚 載入課程學生 (優化版):', { teacher, course, time, start, end, retryCount });
+                
+                // 記錄載入嘗試
+                if (window.PerformanceOptimizer) {
+                    window.PerformanceOptimizer.recordAttendanceLoad(false, 0); // 先記錄嘗試
+                }
                 
                 // 設置學生名單載入狀態
                 isStudentListLoading = true;
@@ -13918,12 +14241,44 @@ async function loadTodayEvents() {
                         course: course,
                         period: time
                     })
-                }, 2); // 最多重試2次
+                }, 3); // 增加重試次數到3次
                 
                 const data = result.data;
                 const fromCache = result.fromCache;
                 
                 console.log('📊 學生資料回應:', { data, fromCache });
+                
+                // 檢查API回應是否成功
+                if (!data.success) {
+                    console.log('❌ API回應失敗:', data.message || '未知錯誤');
+                    
+                    // 如果是請求被中斷，嘗試重試
+                    if (data.error === 'REQUEST_ABORTED') {
+                        console.log('🔄 請求被中斷，嘗試重試...');
+                        throw new Error('請求被中斷，需要重試');
+                    }
+                    
+                    // 其他錯誤，直接跳到講師簽到
+                    console.log('📚 API失敗，直接跳到講師簽到頁面');
+                    
+                    // 載入完成，更新狀態
+                    isStudentListLoading = false;
+                    studentListLoadPromise = null;
+                    
+                    // 隱藏載入動畫
+                    hideOptimizedLoadingAnimation();
+                    
+                    // 直接切換到講師簽到頁面
+                    const teacherTab = document.querySelector('[data-tab="teacher-attendance"]');
+                    if (teacherTab) {
+                        teacherTab.click();
+                    }
+                    
+                    // 設置為沒有學生資料的狀態
+                    window.loadedStudentsData = null;
+                    
+                    return;
+                }
                 
                 // 如果 API 返回空學生列表，直接跳到講師簽到
                 if (data.success && (!data.students || data.students.length === 0)) {
@@ -13951,6 +14306,22 @@ async function loadTodayEvents() {
                 // 再次檢查模態框是否仍然存在
                 if (!currentAttendanceModal) {
                     console.log('❌ 模態框已被關閉，取消處理學生資料');
+                    // 清理狀態
+                    isStudentListLoading = false;
+                    studentListLoadPromise = null;
+                    hideOptimizedLoadingAnimation();
+                    return;
+                }
+                
+                // 檢查是否已經切換到講師簽到模式
+                const floatingNavigatorCheck = document.querySelector('.floating-navigator');
+                const activeTabCheck = floatingNavigatorCheck ? floatingNavigatorCheck.querySelector('.nav-item.active') : null;
+                if (activeTabCheck && activeTabCheck.dataset.tab === 'teacher-attendance') {
+                    console.log('🔄 已切換到講師簽到模式，取消學生資料處理');
+                    // 清理狀態
+                    isStudentListLoading = false;
+                    studentListLoadPromise = null;
+                    hideOptimizedLoadingAnimation();
                     return;
                 }
                 
@@ -13974,6 +14345,13 @@ async function loadTodayEvents() {
                     console.log('🎯 準備調用 displayStudents 函數');
                     displayStudents(data.students, teacher, course, time, start, end, minutesUntilStart);
                     console.log('✅ displayStudents 函數調用完成');
+                    
+                    // 記錄成功的載入
+                    const loadEndTime = performance.now();
+                    const loadTime = loadEndTime - loadStartTime;
+                    if (window.PerformanceOptimizer) {
+                        window.PerformanceOptimizer.recordAttendanceLoad(true, loadTime);
+                    }
                 } else {
                     // 載入失敗，更新狀態
                     isStudentListLoading = false;
@@ -14053,9 +14431,9 @@ async function loadTodayEvents() {
                 console.error('❌ 載入學生失敗:', error);
                 
                 // 檢查是否已經切換到講師簽到模式
-                const floatingNavigator = document.querySelector('.floating-navigator');
-                const activeTab = floatingNavigator ? floatingNavigator.querySelector('.nav-item.active') : null;
-                if (activeTab && activeTab.dataset.tab === 'teacher-attendance') {
+                const floatingNavigatorError = document.querySelector('.floating-navigator');
+                const activeTabError = floatingNavigatorError ? floatingNavigatorError.querySelector('.nav-item.active') : null;
+                if (activeTabError && activeTabError.dataset.tab === 'teacher-attendance') {
                     console.log('🔄 已切換到講師簽到模式，不顯示學生載入錯誤');
                     isStudentListLoading = false;
                     studentListLoadPromise = null;
@@ -14063,8 +14441,13 @@ async function loadTodayEvents() {
                     return;
                 }
                 
+                // 檢查錯誤類型決定是否重試
+                const shouldRetry = error.message.includes('請求被中斷') || 
+                                 error.message.includes('網路連接錯誤') ||
+                                 error.name === 'AbortError';
+                
                 // 檢查是否還有重試次數
-                if (retryCount < maxRetries) {
+                if (shouldRetry && retryCount < maxRetries) {
                     console.log(`🔄 自動重試載入學生資料 (${retryCount + 1}/${maxRetries})`);
                     
                     // 更新狀態
@@ -14072,10 +14455,11 @@ async function loadTodayEvents() {
                     studentListLoadPromise = null;
                     clearTimeout(loadingTimeout);
                     
-                    // 延遲後重試
+                    // 延遲後重試，使用指數退避
+                    const delay = Math.min(1000 * Math.pow(2, retryCount), 10000); // 最多10秒
                     setTimeout(() => {
                         loadCourseStudents(teacher, course, time, start, end, minutesUntilStart, retryCount + 1);
-                    }, 2000 * (retryCount + 1)); // 遞增延遲：2秒、4秒、6秒
+                    }, delay);
                     
                     return;
                 }
@@ -14176,6 +14560,22 @@ async function loadTodayEvents() {
             }
             console.log('✅ 找到 attendanceContent 元素');
             
+            // 處理出缺勤記錄
+            const attendanceRecords = {};
+            students.forEach(student => {
+                const studentId = student.id || student.student_id || student.name;
+                if (studentId) {
+                    attendanceRecords[studentId] = {
+                        present: student.present || student.attendance?.present || 0,
+                        absent: student.absent || student.attendance?.absent || 0,
+                        late: student.late || student.attendance?.late || 0,
+                        unmarked: student.unmarked || student.attendance?.unmarked || 0,
+                        history: student.attendance_history || student.records || [],
+                        stats: student.stats || {}
+                    };
+                }
+            });
+            
             // 保存學生資料到全域變數，供後續使用
             window.loadedStudentsData = {
                 students: students,
@@ -14184,8 +14584,12 @@ async function loadTodayEvents() {
                 time: time,
                 start: start,
                 end: end,
-                minutesUntilStart: minutesUntilStart
+                minutesUntilStart: minutesUntilStart,
+                attendanceRecords: attendanceRecords,
+                date: new Date().toISOString().split('T')[0]
             };
+            
+            console.log('💾 已保存出缺勤記錄:', attendanceRecords);
             
             // 檢查是否有學生，如果沒有學生直接顯示講師簽到
             if (!students || students.length === 0) {
@@ -14733,7 +15137,7 @@ async function loadTodayEvents() {
         let studentAttendanceStatus = {};
         let attendanceCheckTimer = null;
 
-        // 儲存單筆簽到記錄
+        // 儲存單筆簽到記錄 - 使用新的Google Sheets API
         async function saveSingleAttendanceRecord(teacher, course, time, start, end, studentId, studentName, status) {
             try {
                 console.log('💾 立即儲存單筆簽到記錄:', { teacher, course, time, start, end, studentId, studentName, status });
@@ -14741,83 +15145,75 @@ async function loadTodayEvents() {
                 // 獲取今天的日期
                 const today = new Date().toISOString().split('T')[0];
                 
-                // 構建單筆簽到記錄
-                const attendanceRecord = {
-                    studentName: studentName,
-                    studentId: studentId,
+                // 使用後端代理來調用Google Sheets API（避免CORS問題）
+                const proxyUrl = '/api/proxy/google-sheets';
+                
+                // 構建符合新API格式的payload
+                const payload = {
+                    action: "update",
+                    name: studentName,  // 使用學生姓名作為name
                     date: today,
                     present: status === 'present' ? true : false,
+                    // 添加額外資訊
                     teacher: teacher,
                     course: course,
-                    period: time  // 使用 period 而不是 time
+                    period: time
                 };
                 
-                console.log('📤 準備儲存的單筆記錄:', attendanceRecord);
-                
-                // 使用後端代理 API
-                const proxyUrl = '/api/proxy/google-sheets';
-                const payload = {
-                    action: 'updateAttendance',
-                    records: [attendanceRecord] // 包裝成陣列
-                };
-                
-                console.log('📤 發送代理請求:', { proxyUrl, payload });
+                console.log('📤 準備發送到Google Sheets API (通過代理):', payload);
                 
                 const response = await fetch(proxyUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({
+                        action: 'updateAttendance',
+                        googleSheetsUrl: "https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/dev",
+                        payload: payload
+                    })
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`代理 API 請求失敗: ${response.status} ${response.statusText}`);
+                    throw new Error(`Google Sheets API 請求失敗: ${response.status} ${response.statusText}`);
                 }
                 
-                const data = await response.json();
-                console.log('📥 代理 API 回應:', data);
+                const responseText = await response.text();
+                console.log('📥 Google Sheets API 回應:', responseText);
                 
-                // 檢查是否有成功的記錄
-                if (data.results && data.results.length > 0) {
-                    const successResults = data.results.filter(r => r.success === true);
-                    const failedResults = data.results.filter(r => r.success === false);
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.log('⚠️ 回應不是JSON格式，使用原始文字:', responseText);
+                    data = { success: true, message: responseText };
+                }
+                
+                // 檢查API回應是否成功
+                if (data.success !== false) {
+                    console.log('✅ Google Sheets API 調用成功');
                     
-                    if (successResults.length > 0) {
-                        // 有成功的記錄，更新UI
-                        updateStudentStatus(studentId, status);
-                        updateAttendanceStats();
-                        
-                        // 更新學生簽到狀態並觸發通知檢查
-                        studentAttendanceStatus[studentId] = status;
-                        updateAttendanceProgress(); // 更新進度顯示
-                        startAttendanceCheckTimer();
-                        return;
-                    } else if (failedResults.length > 0) {
-                        // 所有記錄都失敗，顯示錯誤
-                        console.error('❌ API 返回失敗:', data);
-                        const errorMessage = failedResults[0].error || '未知錯誤';
-                        alert(`儲存失敗: ${errorMessage}\n\n請重試。`);
-                        return;
-                    }
-                }
-                
-                // 如果沒有 results 或 success 為 false
-                if (!data.success) {
-                    console.error('❌ API 返回失敗:', data);
-                    const errorMessage = data.error || data.message || '未知錯誤';
-                    alert(`儲存失敗: ${errorMessage}\n\n請重試。`);
+                    // 更新UI狀態
+                    updateStudentStatus(studentId, status);
+                    updateAttendanceStats();
+                    
+                    // 更新學生簽到狀態並觸發通知檢查
+                    studentAttendanceStatus[studentId] = status;
+                    updateAttendanceProgress(); // 更新進度顯示
+                    startAttendanceCheckTimer();
+                    
+                    // 顯示成功訊息
+                    const statusText = status === 'present' ? '出席' : '缺席';
+                    showToast(`✅ ${studentName} ${statusText}記錄已儲存`, 'success', 2000);
+                    
+                    return;
+                } else {
+                    // API返回失敗
+                    console.error('❌ Google Sheets API 返回失敗:', data);
+                    const errorMessage = data.message || data.error || '未知錯誤';
+                    showToast(`❌ 儲存失敗: ${errorMessage}`, 'error', 3000);
                     return;
                 }
-                
-                // 更新學生狀態顯示
-                updateStudentStatus(studentId, status);
-                updateAttendanceStats();
-                
-                // 更新學生簽到狀態並觸發通知檢查
-                studentAttendanceStatus[studentId] = status;
-                updateAttendanceProgress(); // 更新進度顯示
-                startAttendanceCheckTimer();
                 
             } catch (error) {
                 console.error('❌ 儲存單筆簽到記錄失敗:', error);
@@ -15921,10 +16317,82 @@ async function loadTodayEvents() {
             return Math.round((present / total) * 100);
         }
         
+        // 獲取學生出缺勤資料
+        function getStudentAttendanceData(student) {
+            console.log('🔍 處理學生出缺勤資料:', student);
+            
+            // 支援多種資料結構
+            const attendanceData = {
+                present: student.present || student.attendance?.present || 0,
+                absent: student.absent || student.attendance?.absent || 0,
+                late: student.late || student.attendance?.late || 0,
+                unmarked: student.unmarked || student.attendance?.unmarked || 0
+            };
+            
+            console.log('📊 初始出缺勤資料:', attendanceData);
+            
+            // 如果沒有出缺勤資料，嘗試從其他欄位計算
+            if (attendanceData.present === 0 && attendanceData.absent === 0 && 
+                attendanceData.late === 0 && attendanceData.unmarked === 0) {
+                
+                console.log('🔍 沒有直接出缺勤資料，檢查其他欄位...');
+                
+                // 檢查是否有歷史記錄
+                if (student.attendance_history && Array.isArray(student.attendance_history)) {
+                    console.log('📚 找到歷史記錄:', student.attendance_history);
+                    student.attendance_history.forEach(record => {
+                        if (record.status === 'present') attendanceData.present++;
+                        else if (record.status === 'absent') attendanceData.absent++;
+                        else if (record.status === 'late') attendanceData.late++;
+                        else attendanceData.unmarked++;
+                    });
+                }
+                
+                // 檢查是否有其他可能的欄位
+                if (student.records && Array.isArray(student.records)) {
+                    console.log('📋 找到記錄資料:', student.records);
+                    student.records.forEach(record => {
+                        if (record.type === 'present' || record.attendance === 'present') attendanceData.present++;
+                        else if (record.type === 'absent' || record.attendance === 'absent') attendanceData.absent++;
+                        else if (record.type === 'late' || record.attendance === 'late') attendanceData.late++;
+                        else attendanceData.unmarked++;
+                    });
+                }
+                
+                // 檢查是否有統計資料
+                if (student.stats) {
+                    console.log('📈 找到統計資料:', student.stats);
+                    attendanceData.present = student.stats.present || attendanceData.present;
+                    attendanceData.absent = student.stats.absent || attendanceData.absent;
+                    attendanceData.late = student.stats.late || attendanceData.late;
+                    attendanceData.unmarked = student.stats.unmarked || attendanceData.unmarked;
+                }
+                
+                // 如果仍然沒有資料，檢查是否有課程相關的出席記錄
+                if (window.loadedStudentsData && window.loadedStudentsData.attendanceRecords) {
+                    console.log('🎓 檢查課程出席記錄...');
+                    const courseRecords = window.loadedStudentsData.attendanceRecords[student.id || student.student_id];
+                    if (courseRecords) {
+                        console.log('📝 找到課程記錄:', courseRecords);
+                        courseRecords.forEach(record => {
+                            if (record.status === 'present') attendanceData.present++;
+                            else if (record.status === 'absent') attendanceData.absent++;
+                            else if (record.status === 'late') attendanceData.late++;
+                            else attendanceData.unmarked++;
+                        });
+                    }
+                }
+            }
+            
+            console.log('✅ 最終出缺勤資料:', attendanceData);
+            return attendanceData;
+        }
+        
         // 查詢學生缺勤紀錄 - 使用現有資料版本
         function queryStudentAttendanceRecord(studentName) {
             try {
                 console.log('🔍 查詢學生缺勤紀錄:', studentName);
+                console.log('📊 當前載入的學生資料:', window.loadedStudentsData);
                 
                 // 檢查是否有載入的學生資料
                 if (!window.loadedStudentsData || !window.loadedStudentsData.students) {
@@ -15940,9 +16408,12 @@ async function loadTodayEvents() {
                 
                 if (!student) {
                     console.log('⚠️ 找不到學生資料:', studentName);
+                    console.log('📋 可用的學生列表:', window.loadedStudentsData.students.map(s => s.name));
                     showToast(`⚠️ 找不到學生 "${studentName}" 的資料`, 'warning', 3000);
                     return;
                 }
+                
+                console.log('✅ 找到學生資料:', student);
                 
                 // 創建模態框
                 const modal = document.createElement('div');
@@ -15984,26 +16455,31 @@ async function loadTodayEvents() {
                             <div class="attendance-status">
                                 <h4>出缺勤狀態</h4>
                                 <div class="status-grid">
-                                    <div class="status-item present">
-                                        <i class="fas fa-check-circle"></i>
-                                        <span>出席</span>
-                                        <span class="status-count">${student.present || student.attendance?.present || 0} 次</span>
-                                    </div>
-                                    <div class="status-item absent">
-                                        <i class="fas fa-times-circle"></i>
-                                        <span>缺席</span>
-                                        <span class="status-count">${student.absent || student.attendance?.absent || 0} 次</span>
-                                    </div>
-                                    <div class="status-item late">
-                                        <i class="fas fa-clock"></i>
-                                        <span>遲到</span>
-                                        <span class="status-count">${student.late || student.attendance?.late || 0} 次</span>
-                                    </div>
-                                    <div class="status-item unmarked">
-                                        <i class="fas fa-question-circle"></i>
-                                        <span>未標記</span>
-                                        <span class="status-count">${student.unmarked || student.attendance?.unmarked || 0} 次</span>
-                                    </div>
+                                    ${(() => {
+                                        const attendanceData = getStudentAttendanceData(student);
+                                        return `
+                                            <div class="status-item present">
+                                                <i class="fas fa-check-circle"></i>
+                                                <span>出席</span>
+                                                <span class="status-count">${attendanceData.present} 次</span>
+                                            </div>
+                                            <div class="status-item absent">
+                                                <i class="fas fa-times-circle"></i>
+                                                <span>缺席</span>
+                                                <span class="status-count">${attendanceData.absent} 次</span>
+                                            </div>
+                                            <div class="status-item late">
+                                                <i class="fas fa-clock"></i>
+                                                <span>遲到</span>
+                                                <span class="status-count">${attendanceData.late} 次</span>
+                                            </div>
+                                            <div class="status-item unmarked">
+                                                <i class="fas fa-question-circle"></i>
+                                                <span>未標記</span>
+                                                <span class="status-count">${attendanceData.unmarked} 次</span>
+                                            </div>
+                                        `;
+                                    })()}
                                 </div>
                             </div>
                             
@@ -16721,9 +17197,20 @@ async function loadTodayEvents() {
                 
                 try {
                     const controller = new AbortController();
-                    // CALDAV請求使用更長的超時時間
-                    const timeout = url.includes('/api/events') ? 15000 : 10000;
-                    const timeoutId = setTimeout(() => controller.abort(), timeout);
+                    // 根據請求類型設置不同的超時時間
+                    let timeout;
+                    if (url.includes('/api/events')) {
+                        timeout = 20000; // CALDAV請求：20秒
+                    } else if (url.includes('/api/proxy/google-sheets')) {
+                        timeout = 30000; // Google Sheets API：30秒
+                    } else {
+                        timeout = 15000; // 其他API：15秒
+                    }
+                    
+                    const timeoutId = setTimeout(() => {
+                        console.log(`⏰ API請求超時: ${url}`);
+                        controller.abort();
+                    }, timeout);
                     
                     // 優化請求選項
                     const optimizedOptions = {
@@ -16738,15 +17225,27 @@ async function loadTodayEvents() {
                         }
                     };
                     
+                    const startTime = performance.now();
                     const response = await fetch(url, optimizedOptions);
+                    const endTime = performance.now();
+                    const responseTime = endTime - startTime;
                     
                     clearTimeout(timeoutId);
                     
                     if (!response.ok) {
+                        // 記錄失敗的API請求
+                        if (window.PerformanceOptimizer) {
+                            window.PerformanceOptimizer.recordApiRequest(false, responseTime);
+                        }
                         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                     }
                     
                     const data = await response.json();
+                    
+                    // 記錄成功的API請求
+                    if (window.PerformanceOptimizer) {
+                        window.PerformanceOptimizer.recordApiRequest(data.success, responseTime);
+                    }
                     
                     // 緩存成功的響應
                     if (data.success) {
@@ -16757,7 +17256,40 @@ async function loadTodayEvents() {
                     
                 } catch (error) {
                     console.error('❌ API請求失敗:', error);
-                    throw error;
+                    
+                    // 詳細的錯誤處理
+                    if (error.name === 'AbortError') {
+                        console.log('⏰ 請求被中斷，可能是超時或用戶取消');
+                        // 對於AbortError，不拋出錯誤，而是返回一個特殊的響應
+                        return {
+                            data: {
+                                success: false,
+                                error: 'REQUEST_ABORTED',
+                                message: '請求被中斷'
+                            },
+                            fromCache: false
+                        };
+                    } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                        console.log('🌐 網路連接錯誤');
+                        return {
+                            data: {
+                                success: false,
+                                error: 'NETWORK_ERROR',
+                                message: '網路連接錯誤'
+                            },
+                            fromCache: false
+                        };
+                    } else {
+                        console.log('❌ 其他錯誤:', error.message);
+                        return {
+                            data: {
+                                success: false,
+                                error: 'UNKNOWN_ERROR',
+                                message: error.message
+                            },
+                            fromCache: false
+                        };
+                    }
                 } finally {
                     this.activeRequests--;
                 }

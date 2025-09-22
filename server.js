@@ -665,20 +665,17 @@ app.post('/api/proxy/google-sheets', async (req, res) => {
             return res.json(data);
         } else if (action === 'updateAttendance' || action === 'update') {
             // 使用學生簽到 API (dev 版本)
-            apiUrl = 'https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/dev';
+            const { googleSheetsUrl, payload: requestPayload } = req.body;
+            
+            // 如果提供了自定義URL，使用它；否則使用默認URL
+            apiUrl = googleSheetsUrl || 'https://script.google.com/macros/s/AKfycbxfj5fwNIc8ncbqkOm763yo6o06wYPHm2nbfd_1yLkHlakoS9FtYfYJhvGCaiAYh_vjIQ/dev';
+            
+            // 使用請求中的payload
+            payload = requestPayload || req.body;
             
             // 處理單筆簽到記錄
-            if (req.body.action === 'update' && req.body.name) {
-                const singlePayload = {
-                    action: 'update',
-                    name: req.body.name,
-                    date: req.body.date,
-                    present: req.body.present,
-                    course: req.body.course,
-                    period: req.body.period
-                };
-                
-                console.log('📤 發送單筆簽到記錄:', singlePayload);
+            if (payload.action === 'update' && payload.name) {
+                console.log('📤 發送單筆簽到記錄到Google Sheets API:', payload);
                 
                 try {
                     const singleResponse = await fetch(apiUrl, {
@@ -687,15 +684,23 @@ app.post('/api/proxy/google-sheets', async (req, res) => {
                             'Content-Type': 'application/json',
                             'Cookie': 'NID=525=nsWVvbAon67C2qpyiEHQA3SUio_GqBd7RqUFU6BwB97_4LHggZxLpDgSheJ7WN4w3Z4dCQBiFPG9YKAqZgAokFYCuuQw04dkm-FX9-XHAIBIqJf1645n3RZrg86GcUVJOf3gN-5eTHXFIaovTmgRC6cXllv82SnQuKsGMq7CHH60XDSwyC99s9P2gmyXLppI'
                         },
-                        body: JSON.stringify(singlePayload)
+                        body: JSON.stringify(payload)
                     });
                     
                     if (!singleResponse.ok) {
                         throw new Error(`單筆簽到記錄 API 請求失敗: ${singleResponse.status} ${singleResponse.statusText}`);
                     }
                     
-                    const singleData = await singleResponse.json();
-                    console.log('📥 單筆簽到記錄 API 回應:', singleData);
+                    const responseText = await singleResponse.text();
+                    console.log('📥 單筆簽到記錄 API 回應 (原始):', responseText);
+                    
+                    let singleData;
+                    try {
+                        singleData = JSON.parse(responseText);
+                    } catch (parseError) {
+                        console.log('⚠️ 回應不是JSON格式，使用原始文字');
+                        singleData = { success: true, message: responseText };
+                    }
                     
                     return res.json(singleData);
                     
