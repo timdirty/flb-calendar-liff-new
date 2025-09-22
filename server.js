@@ -555,25 +555,37 @@ app.post('/api/student-attendance-notification', async (req, res) => {
             return res.json({ success: false, message: '請提供通知訊息' });
         }
 
-        // 構建通知訊息
-        let notificationMessage = `📚 學生簽到通知\n\n`;
-        notificationMessage += `👨‍🏫 講師：${teacherName || '未知講師'}\n`;
-        notificationMessage += `📖 課程：${courseName || '未知課程'}\n`;
-        notificationMessage += `📅 日期：${new Date().toLocaleDateString('zh-TW')}\n\n`;
+        // 檢查是否為講師報表通知（通過檢查訊息格式）
+        const isTeacherReport = message.includes('講師報表提交成功') || message.includes('👨‍🏫 講師報表');
         
-        if (presentStudents && presentStudents.length > 0) {
-            notificationMessage += `✅ 出席 (${presentStudents.length}人)：\n${presentStudents.join('、')}\n\n`;
+        let notificationMessage;
+        
+        if (isTeacherReport) {
+            // 講師報表通知：直接使用前端傳來的訊息
+            notificationMessage = message;
+            console.log('📱 處理講師報表通知');
+        } else {
+            // 學生簽到通知：構建標準格式
+            notificationMessage = `📚 學生簽到通知\n\n`;
+            notificationMessage += `👨‍🏫 講師：${teacherName || '未知講師'}\n`;
+            notificationMessage += `📖 課程：${courseName || '未知課程'}\n`;
+            notificationMessage += `📅 日期：${new Date().toLocaleDateString('zh-TW')}\n\n`;
+            
+            if (presentStudents && presentStudents.length > 0) {
+                notificationMessage += `✅ 出席 (${presentStudents.length}人)：\n${presentStudents.join('、')}\n\n`;
+            }
+            
+            if (absentStudents && absentStudents.length > 0) {
+                notificationMessage += `❌ 缺席 (${absentStudents.length}人)：\n${absentStudents.join('、')}\n\n`;
+            }
+            
+            if (unmarkedStudents && unmarkedStudents.length > 0) {
+                notificationMessage += `⏳ 未選擇 (${unmarkedStudents.length}人)：\n${unmarkedStudents.join('、')}\n\n`;
+            }
+            
+            notificationMessage += `⏰ 簽到時間：${new Date().toLocaleString('zh-TW')}`;
+            console.log('📱 處理學生簽到通知');
         }
-        
-        if (absentStudents && absentStudents.length > 0) {
-            notificationMessage += `❌ 缺席 (${absentStudents.length}人)：\n${absentStudents.join('、')}\n\n`;
-        }
-        
-        if (unmarkedStudents && unmarkedStudents.length > 0) {
-            notificationMessage += `⏳ 未選擇 (${unmarkedStudents.length}人)：\n${unmarkedStudents.join('、')}\n\n`;
-        }
-        
-        notificationMessage += `⏰ 簽到時間：${new Date().toLocaleString('zh-TW')}`;
         
         // 嘗試獲取講師的user ID
         let teacherUserId = null;
@@ -591,13 +603,15 @@ app.post('/api/student-attendance-notification', async (req, res) => {
         
         res.json({
             success: result.success,
-            message: result.success ? '學生簽到通知發送成功' : '學生簽到通知發送失敗',
+            message: result.success ? 
+                (isTeacherReport ? '講師報表通知發送成功' : '學生簽到通知發送成功') : 
+                (isTeacherReport ? '講師報表通知發送失敗' : '學生簽到通知發送失敗'),
             error: result.message,
             teacherUserId: teacherUserId
         });
         
     } catch (error) {
-        console.error('學生簽到通知發送錯誤:', error);
+        console.error('通知發送錯誤:', error);
         res.json({ success: false, message: '通知發送失敗', error: error.message });
     }
 });

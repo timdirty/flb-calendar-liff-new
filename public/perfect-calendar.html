@@ -16569,9 +16569,17 @@ async function loadTodayEvents() {
                 });
 
                 if (response.ok) {
-                    console.log('✅ LINE通知發送成功');
+                    const result = await response.json();
+                    if (result.success) {
+                        console.log('✅ LINE通知發送成功:', result.message);
+                        showToast('📱 LINE通知已發送', 'success', 2000);
+                    } else {
+                        console.log('⚠️ LINE通知發送失敗:', result.message);
+                        showToast('⚠️ LINE通知發送失敗，但不影響報表提交', 'warning', 3000);
+                    }
                 } else {
-                    console.log('⚠️ LINE通知發送失敗，但不影響報表提交');
+                    console.log('⚠️ LINE通知API調用失敗，但不影響報表提交');
+                    showToast('⚠️ LINE通知發送失敗，但不影響報表提交', 'warning', 3000);
                 }
                 
             } catch (error) {
