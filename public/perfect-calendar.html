@@ -12,6 +12,48 @@
             padding: 0;
             box-sizing: border-box;
         }
+        
+        /* 動畫效能優化 */
+        :root {
+            --animation-duration: 0.3s;
+            --transition-duration: 0.2s;
+            --animation-timing: cubic-bezier(0.4, 0, 0.2, 1);
+            --reduced-motion: 0.1s;
+        }
+        
+        /* 響應用戶的動畫偏好 */
+        @media (prefers-reduced-motion: reduce) {
+            :root {
+                --animation-duration: var(--reduced-motion);
+                --transition-duration: var(--reduced-motion);
+            }
+            
+            *,
+            *::before,
+            *::after {
+                animation-duration: var(--reduced-motion) !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: var(--reduced-motion) !important;
+            }
+        }
+        
+        /* 啟用硬體加速和效能優化 */
+        .event-card,
+        .btn,
+        .floating-filter-btn,
+        .glass-card,
+        .attendance-modal-content,
+        .teacher-attendance-content,
+        .floating-navigator,
+        .toast,
+        .countdown-toast,
+        .liquid-button {
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            perspective: 1000px;
+            will-change: transform, opacity, box-shadow;
+            contain: layout style paint;
+        }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -54,6 +96,19 @@
             50% { 
                 background-position: 0% 0%, 0% 0%, 0% 0%, 100% 50%;
             }
+        }
+        
+        /* 優化動畫持續時間 */
+        .event-card {
+            transition: all var(--transition-duration) var(--animation-timing);
+        }
+        
+        .btn {
+            transition: all var(--transition-duration) var(--animation-timing);
+        }
+        
+        .floating-filter-btn {
+            transition: all var(--transition-duration) var(--animation-timing);
         }
 
         @keyframes shimmer {
@@ -14469,6 +14524,11 @@ async function loadTodayEvents() {
                 this.animations = new Map();
                 this.isPageVisible = true;
                 this.rafId = null;
+                this.performanceMode = false;
+                this.frameCount = 0;
+                this.lastFpsTime = 0;
+                this.fps = 60;
+                this.throttleMap = new Map();
                 this.init();
             }
             
@@ -14493,16 +14553,95 @@ async function loadTodayEvents() {
                 const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
                 const isLowEnd = !gl || navigator.hardwareConcurrency <= 2;
                 
-                if (isLowEnd) {
-                    console.log('🔋 檢測到低端設備，啟用性能優化模式');
+                // 檢測記憶體使用情況
+                const memoryInfo = performance.memory;
+                const isMemoryConstrained = memoryInfo && memoryInfo.usedJSHeapSize > memoryInfo.totalJSHeapSize * 0.8;
+                
+                if (isLowEnd || isMemoryConstrained) {
+                    console.log('🔋 檢測到低端設備或記憶體不足，啟用性能優化模式');
                     this.enablePerformanceMode();
                 }
+                
+                // 開始FPS監控
+                this.startFpsMonitoring();
+            }
+            
+            startFpsMonitoring() {
+                const checkFps = () => {
+                    this.frameCount++;
+                    const now = performance.now();
+                    
+                    if (now - this.lastFpsTime >= 1000) {
+                        this.fps = this.frameCount;
+                        this.frameCount = 0;
+                        this.lastFpsTime = now;
+                        
+                        // 如果FPS過低，啟用性能模式
+                        if (this.fps < 30 && !this.performanceMode) {
+                            console.log(`🔋 FPS過低 (${this.fps})，啟用性能優化模式`);
+                            this.enablePerformanceMode();
+                        }
+                    }
+                    
+                    requestAnimationFrame(checkFps);
+                };
+                
+                requestAnimationFrame(checkFps);
             }
             
             enablePerformanceMode() {
+                this.performanceMode = true;
                 // 減少動畫複雜度
                 document.documentElement.style.setProperty('--animation-duration', '0.2s');
                 document.documentElement.style.setProperty('--transition-duration', '0.15s');
+                
+                // 減少動畫數量
+                this.animations.forEach((animation, id) => {
+                    if (animation.interval < 32) { // 低於30fps的動畫
+                        animation.interval = 32; // 限制到30fps
+                    }
+                });
+            }
+            
+            // 節流函數
+            throttle(func, delay) {
+                const key = func.toString();
+                if (!this.throttleMap.has(key)) {
+                    this.throttleMap.set(key, { lastCall: 0, timeout: null });
+                }
+                
+                const throttleInfo = this.throttleMap.get(key);
+                const now = performance.now();
+                
+                if (now - throttleInfo.lastCall >= delay) {
+                    throttleInfo.lastCall = now;
+                    return func();
+                } else if (!throttleInfo.timeout) {
+                    throttleInfo.timeout = setTimeout(() => {
+                        throttleInfo.lastCall = performance.now();
+                        throttleInfo.timeout = null;
+                        func();
+                    }, delay - (now - throttleInfo.lastCall));
+                }
+            }
+            
+            // 防抖函數
+            debounce(func, delay) {
+                const key = func.toString();
+                if (!this.throttleMap.has(key)) {
+                    this.throttleMap.set(key, { timeout: null });
+                }
+                
+                const debounceInfo = this.throttleMap.get(key);
+                
+                if (debounceInfo.timeout) {
+                    clearTimeout(debounceInfo.timeout);
+                }
+                
+                debounceInfo.timeout = setTimeout(() => {
+                    debounceInfo.timeout = null;
+                    func();
+                }, delay);
             }
             
             addAnimation(id, animationFn, interval = 16) {
@@ -14537,8 +14676,16 @@ async function loadTodayEvents() {
                         return;
                     }
                     
+                    // 性能模式下的優化
+                    const skipFrame = this.performanceMode && this.fps < 45;
+                    
                     this.animations.forEach((animation, id) => {
                         if (animation.active && currentTime - animation.lastTime >= animation.interval) {
+                            // 性能模式下跳過某些動畫
+                            if (skipFrame && Math.random() > 0.5) {
+                                return;
+                            }
+                            
                             try {
                                 animation.fn(currentTime);
                                 animation.lastTime = currentTime;
@@ -14609,6 +14756,7 @@ async function loadTodayEvents() {
         
         // 創建全局動畫管理器
         const animationManager = new AnimationManager();
+        window.animationManager = animationManager;
         
         // 優化的動畫工具函數
         function optimizedAnimate(element, keyframes, options = {}) {
@@ -14633,6 +14781,45 @@ async function loadTodayEvents() {
             
             return animation;
         }
+        
+        // 高性能的滾動動畫
+        function smoothScrollTo(element, targetY, duration = 500) {
+            if (!element) return;
+            
+            const startY = element.scrollTop;
+            const distance = targetY - startY;
+            const startTime = performance.now();
+            
+            function animateScroll(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // 使用easeOutCubic緩動函數
+                const easeProgress = 1 - Math.pow(1 - progress, 3);
+                const currentY = startY + (distance * easeProgress);
+                
+                element.scrollTop = currentY;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animateScroll);
+                }
+            }
+            
+            requestAnimationFrame(animateScroll);
+        }
+        
+        // 節流的動畫函數
+        function throttledAnimate(element, keyframes, options = {}) {
+            const throttleKey = `animate_${element.id || Math.random()}`;
+            return animationManager.throttle(() => {
+                return optimizedAnimate(element, keyframes, options);
+            }, options.throttle || 16);
+        }
+        
+        // 暴露動畫函數到全局
+        window.optimizedAnimate = optimizedAnimate;
+        window.smoothScrollTo = smoothScrollTo;
+        window.throttledAnimate = throttledAnimate;
         
         // 優化的CSS動畫類
         function addOptimizedAnimationClass(element, className, duration = 300) {
