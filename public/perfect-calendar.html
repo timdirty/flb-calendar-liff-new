@@ -5858,11 +5858,61 @@
             }
         }
         
+        // 針對特定講師的智慧篩選
+        function smartFilterForInstructor(instructorName) {
+            console.log(`🧠 執行講師 "${instructorName}" 的智慧篩選...`);
+            
+            if (!instructorName) {
+                console.log('⚠️ 沒有指定講師名稱');
+                return;
+            }
+            
+            // 過濾出該講師的事件
+            const instructorEvents = allEvents.filter(event => 
+                event && event.instructor === instructorName
+            );
+            
+            console.log(`🔍 講師 "${instructorName}" 的課程數量:`, instructorEvents.length);
+            
+            if (instructorEvents.length === 0) {
+                console.log('⚠️ 該講師沒有課程，使用全局智慧篩選');
+                const smartResult = advancedSmartViewSelection(allEvents, '全部講師');
+                currentView = smartResult.view;
+                window.currentView = smartResult.view;
+                
+                updateViewButtonStates();
+                updateTimeFilterOptions();
+                updateStats();
+                renderEvents();
+                
+                showAdvancedSmartFilterNotification(smartResult);
+                return;
+            }
+            
+            // 執行針對該講師的智慧篩選
+            const smartResult = advancedSmartViewSelection(instructorEvents, instructorName);
+            currentView = smartResult.view;
+            window.currentView = smartResult.view;
+            
+            console.log(`🧠 講師 "${instructorName}" 智慧篩選結果: ${smartResult.view} (${smartResult.reason})`);
+            
+            // 更新UI
+            updateViewButtonStates();
+            updateTimeFilterOptions();
+            updateStats();
+            renderEvents();
+            autoScrollToViewButtons();
+            
+            // 顯示詳細的智能篩選提示
+            showAdvancedSmartFilterNotification(smartResult);
+        }
+        
         // 將智能篩選函數暴露到全局，方便調試
         window.triggerSmartFilter = triggerSmartFilter;
         window.advancedSmartViewSelection = advancedSmartViewSelection;
         window.debugSmartFilter = debugSmartFilter;
         window.forceSmartFilter = forceSmartFilter;
+        window.smartFilterForInstructor = smartFilterForInstructor;
 
         // 進階智能篩選：根據課程分布選擇最佳視圖
         function advancedSmartViewSelection(events, instructor = null) {
@@ -6041,6 +6091,15 @@
                         await autoMatchTeacher(currentUser.userId, currentUser.displayName);
                         console.log('講師比對完成');
                         addLoadingLog('✅ 講師身份比對完成', 'success');
+                        
+                        // 講師比對完成後，重新執行智慧篩選
+                        console.log('🔄 講師比對完成後重新執行智慧篩選...');
+                        const instructorSelect = document.getElementById('instructorSelect');
+                        if (instructorSelect && instructorSelect.value) {
+                            // 觸發講師選擇變更事件，執行針對該講師的智慧篩選
+                            const changeEvent = new Event('change', { bubbles: true });
+                            instructorSelect.dispatchEvent(changeEvent);
+                        }
                     } catch (error) {
                         console.error('自動比對講師失敗:', error);
                         addLoadingLog('⚠️ 講師身份比對失敗: ' + error.message, 'warning');
@@ -6068,12 +6127,10 @@
                         bindRefreshButton();
                         bindAttendanceMenu();
                         
-                        // 立即執行智慧篩選，確保用戶看到有課程的視圖
-                        console.log('🔄 執行初始智慧篩選...');
-                        const initialSmartResult = advancedSmartViewSelection(allEvents, '全部講師');
-                        currentView = initialSmartResult.view;
-                        window.currentView = initialSmartResult.view;
-                        console.log(`🧠 初始智慧篩選結果: ${initialSmartResult.view} (${initialSmartResult.reason})`);
+                        // 設置預設視圖，智慧篩選將在講師比對完成後執行
+                        console.log('🔄 設置預設視圖，等待講師比對完成後執行智慧篩選...');
+                        currentView = '今日';
+                        window.currentView = '今日';
                         
                         // 設置預設狀態
                         updateViewButtonStates();
@@ -6332,6 +6389,15 @@
                         await autoMatchTeacher(currentUser.userId, currentUser.displayName);
                         console.log('講師比對完成');
                         addLoadingLog('✅ 講師身份比對完成', 'success');
+                        
+                        // 講師比對完成後，重新執行智慧篩選
+                        console.log('🔄 講師比對完成後重新執行智慧篩選...');
+                        const instructorSelect = document.getElementById('instructorSelect');
+                        if (instructorSelect && instructorSelect.value) {
+                            // 觸發講師選擇變更事件，執行針對該講師的智慧篩選
+                            const changeEvent = new Event('change', { bubbles: true });
+                            instructorSelect.dispatchEvent(changeEvent);
+                        }
                     } catch (error) {
                         console.error('自動比對講師失敗:', error);
                         addLoadingLog('⚠️ 講師身份比對失敗: ' + error.message, 'warning');
