@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 
-async function testStudentLoadingFix() {
-    console.log('🧪 開始測試學生載入修復...');
+async function testAutoCloseModal() {
+    console.log('🧪 開始測試講師報表提交後自動關閉模態框...');
     
     const browser = await puppeteer.launch({ 
         headless: false,
@@ -66,51 +66,71 @@ async function testStudentLoadingFix() {
         }, firstCard);
         
         // 等待長按觸發
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 2000));
         
-        console.log('🔄 等待學生資料載入...');
+        console.log('🔄 等待模態框載入...');
+        // 等待模態框載入
+        await page.waitForSelector('#attendanceModal', { timeout: 15000 });
         
-        // 等待學生資料載入完成
+        console.log('🔄 切換到講師簽到標籤...');
+        // 點擊講師簽到標籤
+        await page.click('[data-tab="teacher-attendance"]');
+        
+        // 等待講師簽到內容載入
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        // 等待導航器載入
+        await page.waitForSelector('.floating-navigator', { timeout: 5000 });
+        
+        console.log('📝 填寫課程內容...');
+        // 填寫課程內容
+        await page.type('#course-content', '這是一個測試課程內容，用來驗證講師報表提交後自動關閉模態框的功能。');
+        
+        // 選擇講師模式
+        await page.click('#teacher-mode-btn');
+        
+        // 等待學生人數選擇按鈕載入
+        await page.waitForSelector('#count2Btn', { timeout: 5000 });
+        
+        // 選擇學生人數（2人以下）
+        await page.click('#count2Btn');
+        
+        // 等待自動提交倒數開始
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        console.log('⏰ 等待自動提交執行...');
+        // 等待自動提交執行（3秒倒數 + 1.5秒延遲關閉）
         await new Promise(resolve => setTimeout(resolve, 5000));
         
-        // 檢查是否成功載入學生資料
-        const studentLoadingCheck = await page.evaluate(() => {
-            // 檢查是否有學生卡片
-            const studentCards = document.querySelectorAll('.student-card');
-            const loadingState = document.querySelector('.loading-text');
+        // 檢查模態框是否已關閉
+        const modalCheck = await page.evaluate(() => {
+            const modal = document.querySelector('#attendanceModal');
             const attendanceContent = document.getElementById('attendanceContent');
+            const successToast = document.querySelector('.toast.success');
             
             return {
-                studentCardsCount: studentCards.length,
-                hasLoadingState: !!loadingState,
-                attendanceContentHTML: attendanceContent ? attendanceContent.innerHTML.substring(0, 200) : '',
-                hasStudentList: attendanceContent ? attendanceContent.innerHTML.includes('student-card') : false,
-                hasLoadingText: attendanceContent ? attendanceContent.innerHTML.includes('正在發牌中') : false
+                modalExists: !!modal,
+                attendanceContentExists: !!attendanceContent,
+                successToastExists: !!successToast,
+                modalDisplay: modal ? window.getComputedStyle(modal).display : 'none'
             };
         });
         
-        console.log('📊 學生載入檢查結果:', studentLoadingCheck);
+        console.log('📊 模態框關閉檢查結果:', modalCheck);
         
-        if (studentLoadingCheck.studentCardsCount > 0) {
-            console.log('✅ 學生卡片載入成功！');
-        } else if (studentLoadingCheck.hasLoadingState || studentLoadingCheck.hasLoadingText) {
-            console.log('❌ 學生載入卡在載入狀態');
+        if (!modalCheck.modalExists || modalCheck.modalDisplay === 'none') {
+            console.log('✅ 模態框已成功自動關閉！');
         } else {
-            console.log('⚠️ 沒有找到學生卡片，但也不是載入狀態');
+            console.log('❌ 模態框沒有自動關閉');
         }
         
-        // 檢查控制台是否有錯誤訊息
-        const consoleErrors = await page.evaluate(() => {
-            return window.consoleErrors || [];
-        });
-        
-        if (consoleErrors.length > 0) {
-            console.log('❌ 發現控制台錯誤:', consoleErrors);
+        if (modalCheck.successToastExists) {
+            console.log('✅ 成功訊息已顯示');
         } else {
-            console.log('✅ 沒有發現控制台錯誤');
+            console.log('⚠️ 沒有看到成功訊息');
         }
         
-        console.log('🎉 學生載入修復測試完成！');
+        console.log('🎉 自動關閉模態框測試完成！');
         return true;
         
     } catch (error) {
@@ -122,7 +142,7 @@ async function testStudentLoadingFix() {
 }
 
 // 執行測試
-testStudentLoadingFix().then(success => {
+testAutoCloseModal().then(success => {
     if (success) {
         console.log('✅ 測試完成！');
         process.exit(0);

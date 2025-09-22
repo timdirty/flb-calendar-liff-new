@@ -10289,6 +10289,7 @@ async function loadTodayEvents() {
         async function submitTeacherReport() {
             try {
                 console.log('📤 提交講師報表');
+                console.log('🔍 檢查必要元素...');
                 
                 // 停止自動提交計時器
                 stopAutoSubmitCountdown();
@@ -10297,7 +10298,14 @@ async function loadTodayEvents() {
                 const currentModeDisplay = document.getElementById('current-mode-display');
                 const submitBtn = document.getElementById('submitTeacherReport');
                 
+                console.log('🔍 元素檢查:');
+                console.log('  - courseContent:', !!courseContent);
+                console.log('  - currentModeDisplay:', !!currentModeDisplay);
+                console.log('  - submitBtn:', !!submitBtn);
+                console.log('  - courseContentValue:', courseContent ? courseContent.value : 'N/A');
+                
                 if (!courseContent || !courseContent.value.trim()) {
+                    console.log('❌ 課程內容為空，停止提交');
                     showToast('請填寫課程內容', 'error');
                     return;
                 }
@@ -10312,10 +10320,13 @@ async function loadTodayEvents() {
                 }
                 
                 // 檢查是否有課程資料
+                console.log('🔍 檢查課程資料:', !!window.currentAttendanceData);
                 if (!window.currentAttendanceData) {
+                    console.log('❌ 沒有課程資料，停止提交');
                     showToast('無法獲取課程資料，請重新開啟簽到系統', 'error');
                     return;
                 }
+                console.log('✅ 課程資料存在，繼續處理');
                 
                 // 準備API請求資料
                 const currentData = window.currentAttendanceData;
@@ -10498,6 +10509,15 @@ async function loadTodayEvents() {
                 }
                 
                 console.log('✅ 講師報表提交完成');
+                
+                // 顯示成功訊息
+                showToast('講師報表提交成功！', 'success');
+                
+                // 延遲關閉模態框，讓用戶看到成功訊息
+                setTimeout(() => {
+                    console.log('🔄 自動關閉簽到模態框');
+                    closeAttendanceModal();
+                }, 1500);
                 
             } catch (error) {
                 console.error('❌ 講師報表提交失敗:', error);
