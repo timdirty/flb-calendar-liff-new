@@ -10055,8 +10055,8 @@ async function loadTodayEvents() {
                         position: relative;
                         overflow: hidden;
                         display: none;
-                        max-height: 60vh;
-                        overflow-y: auto;
+                        max-height: none;
+                        overflow-y: visible;
                     ">
                         <!-- 背景光效 -->
                         <div style="
@@ -10313,14 +10313,8 @@ async function loadTodayEvents() {
             // 初始化講師報表功能
             initializeTeacherReport();
             
-            // 如果沒有人數選擇區域，自動滾動到底部
-            setTimeout(() => {
-                const studentCountSelection = document.getElementById('student-count-selection');
-                if (studentCountSelection && studentCountSelection.style.display !== 'none') {
-                    console.log('📜 自動滾動到人數選擇區域...');
-                    scrollToStudentCountSelection();
-                }
-            }, 1000);
+            // 人數選擇區域不再自動滾動
+            console.log('📜 人數選擇區域顯示，無需自動滾動');
             
             // 檢查是否為特殊課程並顯示提示
             setTimeout(() => {
@@ -10468,11 +10462,8 @@ async function loadTodayEvents() {
                     console.log('📝 沒有學生資料，顯示人數選擇');
                     studentCountSelection.style.display = 'block';
                     
-                    // 顯示人數選擇後，自動滾動到該區域
-                    setTimeout(() => {
-                        console.log('📜 人數選擇區域已顯示，開始滾動...');
-                        scrollToStudentCountSelection();
-                    }, 100);
+                    // 人數選擇區域不再自動滾動
+                    console.log('📜 人數選擇區域已顯示，無需滾動');
                 } else {
                     console.log('📝 有學生資料，隱藏人數選擇');
                     studentCountSelection.style.display = 'none';
@@ -13480,9 +13471,9 @@ async function loadTodayEvents() {
                         box-sizing: border-box;
                     ">
                         ${studentsHtml}
-                        <!-- 透明的虛擬學生卡片，用於增加滾動高度 -->
+                        <!-- 透明的虛擬學生卡片，用於增加滾動高度（縮小版） -->
                         <div class="virtual-student-card" style="
-                            height: 275px !important;
+                            height: 100px !important;
                             background: transparent;
                             border: none;
                             margin: 0;
@@ -13493,8 +13484,8 @@ async function loadTodayEvents() {
                             width: 100%;
                             overflow: hidden;
                             position: relative;
-                            min-height: 275px;
-                            max-height: 275px;
+                            min-height: 100px;
+                            max-height: 100px;
                         "></div>
                     </div>
                     
