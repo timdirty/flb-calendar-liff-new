@@ -9564,7 +9564,7 @@ async function loadTodayEvents() {
                     console.log('📜 自動滾動到人數選擇區域...');
                     scrollToStudentCountSelection();
                 }
-            }, 500);
+            }, 1000);
             
             // 檢查是否為特殊課程並顯示提示
             setTimeout(() => {
@@ -9648,15 +9648,18 @@ async function loadTodayEvents() {
         
         // 設定學生人數
         function setStudentCount(count) {
+            // 停止當前的自動提交計時器
+            stopAutoSubmitCountdown();
+            
             selectedStudentCount = count;
             updateStudentCountDisplay();
             showToast(`已選擇 ${count} 人（含）${count === 2 ? '以下' : '以上'}`, 'info');
             
-            // 選擇人數後檢查自動提交條件
+            // 選擇人數後檢查自動提交條件（延遲更長時間確保重置完成）
             animationManager.setTimeout(() => {
                 console.log('🔄 人數選擇完成，檢查自動提交條件');
                 checkAutoSubmit();
-            }, 100);
+            }, 500);
         }
         
         // 更新學生人數顯示
@@ -10033,7 +10036,7 @@ async function loadTodayEvents() {
                 const containerRect = scrollContainer.getBoundingClientRect();
                 
                 // 計算需要滾動的距離（讓人數選擇區域到容器頂部）
-                const scrollTop = scrollContainer.scrollTop + (selectionRect.top - containerRect.top) - 20; // 20px 的額外間距
+                const scrollTop = scrollContainer.scrollTop + (selectionRect.top - containerRect.top) - 100; // 100px 的額外間距，確保按鈕完全可見
                 
                 console.log('📊 滾動計算:', {
                     selectionTop: selectionRect.top,
@@ -10948,6 +10951,14 @@ async function loadTodayEvents() {
                 }
                 
                 showCenterToast(errorMessage, 'error');
+                
+                // 確保錯誤通知會自動消失
+                setTimeout(() => {
+                    const errorToast = document.querySelector('.toast.error');
+                    if (errorToast) {
+                        errorToast.remove();
+                    }
+                }, 5000);
                 
                 // 重置按鈕
                 const submitBtn = document.getElementById('submitTeacherReport');
