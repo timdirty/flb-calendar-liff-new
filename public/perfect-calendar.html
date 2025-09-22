@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>講師行事曆檢視</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -2735,6 +2735,30 @@
         /* 文字輸入框焦點效果 */
         #course-content:focus {
             transform: scale(1.02);
+        }
+        
+        /* 防止輸入框聚焦時頁面縮放 */
+        input, textarea, select {
+            font-size: 16px !important;
+            -webkit-text-size-adjust: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            border-radius: 0;
+        }
+        
+        /* 特別針對課程內容輸入框 */
+        #course-content {
+            font-size: 16px !important;
+            -webkit-text-size-adjust: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        /* 防止iOS Safari縮放 */
+        @media screen and (-webkit-min-device-pixel-ratio: 0) {
+            input, textarea, select {
+                font-size: 16px !important;
+            }
         }
         
         /* 倒數計時提示樣式 */
@@ -9415,7 +9439,6 @@ async function loadTodayEvents() {
                 </div>
                 
                 <div id="attendanceContent" style="
-                    overflow-y: auto;
                     padding-right: 8px;
                     min-height: 0;
                 ">
