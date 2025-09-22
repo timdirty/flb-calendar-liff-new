@@ -8976,8 +8976,7 @@ async function loadTodayEvents() {
                 <div style="
                     display: flex;
                     flex-direction: column;
-                    max-height: 75vh;
-                    min-height: 350px;
+                    height: 70vh;
                     gap: 12px;
                     overflow-y: auto;
                     overflow-x: hidden;
@@ -9289,7 +9288,7 @@ async function loadTodayEvents() {
                         -webkit-backdrop-filter: blur(25px);
                         border: 1px solid rgba(255, 255, 255, 0.3);
                         border-radius: 20px;
-                        padding: 16px;
+                        padding: 24px;
                         box-shadow: 
                             0 8px 32px rgba(0, 0, 0, 0.1),
                             0 2px 8px rgba(0, 0, 0, 0.05),
@@ -9313,7 +9312,7 @@ async function loadTodayEvents() {
                         
                         <div style="position: relative; z-index: 1;">
                         <h4 style="
-                            margin: 0 0 3px 0;
+                            margin: 0 0 8px 0;
                             color: #333;
                             font-size: 0.9rem;
                             display: flex;
@@ -9324,7 +9323,7 @@ async function loadTodayEvents() {
                             人數設定
                         </h4>
                         <p style="
-                            margin: 0 0 3px 0;
+                            margin: 0 0 16px 0;
                             color: #666;
                             font-size: 0.8rem;
                         ">此課程沒有學生資料，請選擇實際出席人數</p>
@@ -9332,21 +9331,22 @@ async function loadTodayEvents() {
                         <div style="
                             display: grid;
                             grid-template-columns: 1fr 1fr;
-                            gap: 10px;
-                            margin-bottom: 3px;
+                            gap: 15px;
+                            margin-bottom: 12px;
                         ">
                             <button class="count-btn" id="count-2-btn" style="
                                 background: white;
                                 border: 2px solid #e9ecef;
                                 border-radius: 10px;
-                                padding: 10px;
+                                padding: 16px 12px;
                                 cursor: pointer;
                                 transition: all 0.3s ease;
                                 text-align: center;
                                 display: flex;
                                 flex-direction: column;
                                 align-items: center;
-                                gap: 4px;
+                                gap: 6px;
+                                min-height: 80px;
                             ">
                                 <i class="fas fa-users" style="font-size: 1.5rem; color: #666;"></i>
                                 <span style="font-weight: 600; font-size: 0.8rem; color: #333;">2人（含）以下</span>
@@ -9356,14 +9356,15 @@ async function loadTodayEvents() {
                                 background: white;
                                 border: 2px solid #e9ecef;
                                 border-radius: 10px;
-                                padding: 10px;
+                                padding: 16px 12px;
                                 cursor: pointer;
                                 transition: all 0.3s ease;
                                 text-align: center;
                                 display: flex;
                                 flex-direction: column;
                                 align-items: center;
-                                gap: 4px;
+                                gap: 6px;
+                                min-height: 80px;
                             ">
                                 <i class="fas fa-users" style="font-size: 1.5rem; color: #666;"></i>
                                 <span style="font-weight: 600; font-size: 0.8rem; color: #333;">3人（含）以上</span>
@@ -9490,7 +9491,8 @@ async function loadTodayEvents() {
                 
                 <div id="attendanceContent" style="
                     padding-right: 8px;
-                    height: 100%;
+                    max-height: 100%;
+                    overflow-y: auto;
                     display: flex;
                     flex-direction: column;
                 ">
@@ -11624,7 +11626,7 @@ async function loadTodayEvents() {
                         border-radius: 25px;
                         padding: 30px;
                         max-width: 90%;
-                        max-height: 95%;
+                        max-height: 95vh;
                         width: 800px;
                         overflow-y: auto;
                         overflow-x: hidden;
