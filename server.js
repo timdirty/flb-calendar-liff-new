@@ -179,7 +179,10 @@ async function fetchTeachersFromGoogle() {
                 'Content-Type': 'application/json',
                 'Cookie': process.env.GOOGLE_SCRIPT_COOKIE || 'NID=525=nsWVvbAon67C2qpyiEHQA3SUio_GqBd7RqUFU6BwB97_4LHggZxLpDgSheJ7WN4w3Z4dCQBiFPG9YKAqZgAokFYCuuQw04dkm-FX9-XHAIBIqJf1645n3RZrg86GcUVJOf3gN-5eTHXFIaovTmgRC6cXllv82SnQuKsGMq7CHH60XDSwyC99s9P2gmyXLppI'
             },
-            timeout: 10000
+            timeout: 15000,
+            validateStatus: function (status) {
+                return status >= 200 && status < 300;
+            }
         });
 
         if (response.data && response.data.teachers) {
@@ -190,6 +193,7 @@ async function fetchTeachersFromGoogle() {
         }
     } catch (error) {
         console.error('從Google Apps Script獲取講師列表失敗:', error.message);
+        console.error('錯誤詳情:', error.response?.data || error.message);
         throw error;
     }
 }
@@ -248,6 +252,7 @@ async function getTeachers() {
 
     try {
         // 嘗試從Google Apps Script獲取最新資料
+        console.log('🔄 嘗試從 Google Apps Script 獲取講師列表...');
         const teachers = await fetchTeachersFromGoogle();
         teacherCache.data = teachers;
         teacherCache.timestamp = now;
@@ -255,22 +260,45 @@ async function getTeachers() {
         // 更新資料庫
         await updateTeachersInDB(teachers);
         
+        console.log('✅ 成功從 Google Apps Script 獲取講師列表');
         return teachers;
     } catch (error) {
-        console.log('從Google獲取失敗，嘗試從資料庫獲取...');
+        console.log('⚠️ 從Google獲取失敗，嘗試從資料庫獲取...');
+        console.error('Google API 錯誤:', error.message);
         
         try {
             const teachers = await getTeachersFromDB();
             if (teachers.length > 0) {
+                console.log('✅ 成功從資料庫獲取講師列表');
                 teacherCache.data = teachers;
                 teacherCache.timestamp = now;
                 return teachers;
             }
         } catch (dbError) {
-            console.error('從資料庫獲取講師列表失敗:', dbError);
+            console.error('❌ 從資料庫獲取講師列表失敗:', dbError);
         }
         
-        throw new Error('無法獲取講師列表');
+        // 如果都失敗了，返回預設講師列表
+        console.log('🔄 使用預設講師列表');
+        const defaultTeachers = [
+            { name: 'YOKI', display_name: 'YOKI' },
+            { name: 'XIAN', display_name: 'XIAN' },
+            { name: 'TED', display_name: 'TED' },
+            { name: 'BELLA', display_name: 'BELLA' },
+            { name: 'JAMES', display_name: 'JAMES' },
+            { name: 'HANSEN', display_name: 'HANSEN' },
+            { name: 'TIM', display_name: 'TIM' },
+            { name: 'DANIEL', display_name: 'DANIEL' },
+            { name: 'EASON', display_name: 'EASON' },
+            { name: 'AGNES', display_name: 'AGNES' },
+            { name: 'IVAN', display_name: 'IVAN' },
+            { name: 'Dirty', display_name: 'Dirty' }
+        ];
+        
+        teacherCache.data = defaultTeachers;
+        teacherCache.timestamp = now;
+        console.log('✅ 使用預設講師列表完成');
+        return defaultTeachers;
     }
 }
 
@@ -806,6 +834,17 @@ app.post('/api/proxy/google-sheets', async (req, res) => {
         
     } catch (error) {
         console.error('❌ 代理 Google Sheets API 請求失敗:', error);
+        
+        // 如果是 getRosterAttendance 請求失敗，返回空學生列表
+        if (req.body.action === 'getRosterAttendance') {
+            console.log('🔄 返回空學生列表作為備用方案');
+            return res.json({
+                success: true,
+                students: [],
+                message: 'Google Sheets API 暫時無法使用，返回空學生列表'
+            });
+        }
+        
         res.status(500).json({
             success: false,
             error: '代理請求失敗: ' + error.message
