@@ -9944,12 +9944,19 @@ async function loadTodayEvents() {
                 const courseContent = document.getElementById('course-content');
                 const currentModeDisplay = document.getElementById('current-mode-display');
                 
-                const hasContent = courseContent && courseContent.value.trim().length > 0;
+                const hasContent = courseContent && courseContent.value.trim().length >= 10;
                 const hasMode = currentModeDisplay && 
                                (currentModeDisplay.textContent === '講師模式' || 
                                 currentModeDisplay.textContent === '助教模式');
                 
-                if (!hasContent || !hasMode) {
+                // 檢查課程內容是否有效（不能只是空白或重複字符）
+                const contentValue = courseContent ? courseContent.value.trim() : '';
+                const isValidContent = contentValue.length >= 10 && 
+                                     !/^(.)\1+$/.test(contentValue) && // 不能全是相同字符
+                                     contentValue !== '請描述今天的課程內容...' && // 不能是預設文字
+                                     contentValue !== '[特殊模式] 請描述今天的課程內容...'; // 不能是特殊模式預設文字
+                
+                if (!hasContent || !hasMode || !isValidContent) {
                     // 條件不滿足，停止倒數
                     console.log('⏹️ 條件不滿足，停止倒數');
                     stopAutoSubmitCountdown();
