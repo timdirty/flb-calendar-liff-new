@@ -85,6 +85,18 @@
                     case 'time-filters':
                         this.loadTimeFilters();
                         break;
+                    case 'event-cards':
+                        this.loadEventCards();
+                        break;
+                    case 'floating-menu':
+                        this.loadFloatingMenu();
+                        break;
+                    case 'notifications':
+                        this.loadNotifications();
+                        break;
+                    case 'charts':
+                        this.loadCharts();
+                        break;
                 }
             },
             
@@ -104,6 +116,71 @@
             loadTimeFilters() {
                 console.log('懶載入時間篩選...');
                 // 這裡可以載入時間篩選的額外功能
+            },
+            
+            // 載入事件卡片
+            loadEventCards() {
+                console.log('懶載入事件卡片...');
+                // 載入事件卡片的額外功能
+                this.optimizeEventCards();
+            },
+            
+            // 載入懸浮選單
+            loadFloatingMenu() {
+                console.log('懶載入懸浮選單...');
+                // 載入懸浮選單的額外功能
+                this.optimizeFloatingMenu();
+            },
+            
+            // 載入通知系統
+            loadNotifications() {
+                console.log('懶載入通知系統...');
+                // 載入通知系統的額外功能
+                this.optimizeNotifications();
+            },
+            
+            // 載入圖表
+            loadCharts() {
+                console.log('懶載入圖表...');
+                // 載入圖表的額外功能
+                this.optimizeCharts();
+            },
+            
+            // 優化事件卡片
+            optimizeEventCards() {
+                const eventCards = document.querySelectorAll('.event-card');
+                eventCards.forEach(card => {
+                    // 添加視覺優化
+                    card.style.willChange = 'transform, opacity';
+                    card.style.contain = 'layout style paint';
+                });
+            },
+            
+            // 優化懸浮選單
+            optimizeFloatingMenu() {
+                const floatingMenu = document.getElementById('floatingStatsMenu');
+                if (floatingMenu) {
+                    floatingMenu.style.willChange = 'transform, opacity';
+                    floatingMenu.style.contain = 'layout style paint';
+                }
+            },
+            
+            // 優化通知系統
+            optimizeNotifications() {
+                const notifications = document.querySelectorAll('.toast, .countdown-toast');
+                notifications.forEach(notification => {
+                    notification.style.willChange = 'transform, opacity';
+                    notification.style.contain = 'layout style paint';
+                });
+            },
+            
+            // 優化圖表
+            optimizeCharts() {
+                const charts = document.querySelectorAll('[class*="chart"], [class*="graph"]');
+                charts.forEach(chart => {
+                    chart.style.willChange = 'transform, opacity';
+                    chart.style.contain = 'layout style paint';
+                });
             },
             
             // 優化DOM操作
@@ -152,84 +229,22 @@
         }
         
         /* 動畫效能優化 */
-        :root {
-            --animation-duration: 0.3s;
-            --transition-duration: 0.2s;
-            --animation-timing: cubic-bezier(0.4, 0, 0.2, 1);
-            --reduced-motion: 0.1s;
-        }
-        
-        /* 響應用戶的動畫偏好 */
-        @media (prefers-reduced-motion: reduce) {
-            :root {
-                --animation-duration: var(--reduced-motion);
-                --transition-duration: var(--reduced-motion);
-            }
-            
-            *,
-            *::before,
-            *::after {
-                animation-duration: var(--reduced-motion) !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: var(--reduced-motion) !important;
-            }
+        :root{--animation-duration:0.3s;--transition-duration:0.2s;--animation-timing:cubic-bezier(0.4,0,0.2,1);--reduced-motion:0.1s}
+        @media (prefers-reduced-motion:reduce){
+            :root{--animation-duration:var(--reduced-motion);--transition-duration:var(--reduced-motion)}
+            *,*::before,*::after{animation-duration:var(--reduced-motion)!important;animation-iteration-count:1!important;transition-duration:var(--reduced-motion)!important}
         }
         
         /* 啟用硬體加速和效能優化 */
-        .event-card,
-        .btn,
-        .floating-filter-btn,
-        .glass-card,
-        .attendance-modal-content,
-        .teacher-attendance-content,
-        .floating-navigator,
-        .toast,
-        .countdown-toast,
-        .liquid-button,
-        .student-loading-overlay,
-        #optimized-loading-overlay,
-        [class*="liquid"],
-        [class*="glass"] {
-            transform: translateZ(0);
-            backface-visibility: hidden;
-            perspective: 1000px;
-            will-change: transform, opacity, box-shadow;
-            contain: layout style paint;
+        .event-card,.btn,.floating-filter-btn,.glass-card,.attendance-modal-content,.teacher-attendance-content,.floating-navigator,.toast,.countdown-toast,.liquid-button,.student-loading-overlay,#optimized-loading-overlay,[class*="liquid"],[class*="glass"]{transform:translateZ(0);backface-visibility:hidden;perspective:1000px;will-change:transform,opacity,box-shadow;contain:layout style paint}
+        .liquid-loader,.liquid-ring,.liquid-ball{transform:translateZ(0);will-change:transform;contain:layout style paint}
+        @media (prefers-reduced-motion:reduce){
+            .liquid-loader *,.liquid-ring,.liquid-ball{animation-duration:0.1s!important;animation-iteration-count:1!important}
         }
-        
-        /* 動畫效能優化 - 減少重繪 */
-        .liquid-loader,
-        .liquid-ring,
-        .liquid-ball {
-            transform: translateZ(0);
-            will-change: transform;
-            contain: layout style paint;
-        }
-        
-        /* 優化載入動畫效能 */
-        @media (prefers-reduced-motion: reduce) {
-            .liquid-loader *,
-            .liquid-ring,
-            .liquid-ball {
-                animation-duration: 0.1s !important;
-                animation-iteration-count: 1 !important;
-            }
-        }
-        
-        /* 低效能設備優化 */
-        @media (max-width: 768px) {
-            .liquid-loader {
-                transform: scale(0.8);
-            }
-            
-            .liquid-ring {
-                border-width: 2px;
-            }
-            
-            .liquid-ball {
-                width: 12px;
-                height: 12px;
-            }
+        @media (max-width:768px){
+            .liquid-loader{transform:scale(0.8)}
+            .liquid-ring{border-width:2px}
+            .liquid-ball{width:12px;height:12px}
         }
 
         body {
@@ -5115,7 +5130,7 @@
     </div>
 
     <!-- 懸浮固定選單 -->
-    <div class="floating-stats-menu" id="floatingStatsMenu">
+    <div class="floating-stats-menu" id="floatingStatsMenu" data-lazy-load="floating-menu">
         <div class="floating-stats-content">
             <div class="floating-filter-buttons">
                 <button class="floating-filter-btn" data-filter="today">今日</button>
@@ -15673,10 +15688,16 @@ async function loadTodayEvents() {
         window.showStudentLoadingState = showStudentLoadingState;
         window.hideStudentLoadingState = hideStudentLoadingState;
         
-        // 液態玻璃質感載入動畫
+        // 液態玻璃質感載入動畫（修復版本）
         function showOptimizedLoadingAnimation() {
-            const modalContent = document.querySelector('.attendance-modal-content');
-            if (!modalContent) return;
+            // 檢查是否已經存在載入動畫
+            if (document.getElementById('optimized-loading-overlay')) {
+                return;
+            }
+            
+            // 優先使用模態框內容，如果沒有則使用body
+            const container = document.querySelector('.attendance-modal-content') || document.body;
+            if (!container) return;
             
             // 創建液態玻璃載入遮罩
             const loadingOverlay = document.createElement('div');
@@ -15953,7 +15974,7 @@ async function loadTodayEvents() {
             loadingContainer.appendChild(progressContainer);
             
             loadingOverlay.appendChild(loadingContainer);
-            modalContent.appendChild(loadingOverlay);
+            container.appendChild(loadingOverlay);
             
             // 顯示動畫
             requestAnimationFrame(() => {
