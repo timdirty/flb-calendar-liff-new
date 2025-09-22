@@ -8977,7 +8977,7 @@ async function loadTodayEvents() {
                 <div style="
                     display: flex;
                     flex-direction: column;
-                    height: 70vh;
+                    height: 80vh;
                     gap: 12px;
                     overflow-y: auto;
                     overflow-x: hidden;
@@ -9557,6 +9557,15 @@ async function loadTodayEvents() {
             // 初始化講師報表功能
             initializeTeacherReport();
             
+            // 如果沒有人數選擇區域，自動滾動到底部
+            setTimeout(() => {
+                const studentCountSelection = document.getElementById('student-count-selection');
+                if (studentCountSelection && studentCountSelection.style.display !== 'none') {
+                    console.log('📜 自動滾動到人數選擇區域...');
+                    scrollToStudentCountSelection();
+                }
+            }, 500);
+            
             // 檢查是否為特殊課程並顯示提示
             setTimeout(() => {
                 const originalTitle = window.currentAttendanceData?.originalTitle || '';
@@ -9984,6 +9993,89 @@ async function loadTodayEvents() {
                 
             } catch (error) {
                 console.error('❌ 滾動到文字輸入框失敗:', error);
+            }
+        }
+
+        // 滾動到人數選擇區域
+        function scrollToStudentCountSelection() {
+            try {
+                console.log('📜 開始滾動到人數選擇區域...');
+                
+                // 找到滾動容器
+                const modalContent = document.querySelector('.attendance-modal-content');
+                const teacherContent = document.querySelector('.teacher-attendance-content');
+                let scrollContainer = null;
+                
+                // 優先使用講師內容的滾動容器
+                if (teacherContent) {
+                    scrollContainer = teacherContent.querySelector('div[style*="overflow-y: auto"]');
+                }
+                
+                // 如果沒有找到，使用模態框內容
+                if (!scrollContainer) {
+                    scrollContainer = modalContent;
+                }
+                
+                if (!scrollContainer) {
+                    console.warn('⚠️ 找不到滾動容器');
+                    return;
+                }
+                
+                // 找到人數選擇區域
+                const studentCountSelection = document.getElementById('student-count-selection');
+                if (!studentCountSelection) {
+                    console.warn('⚠️ 找不到人數選擇區域');
+                    return;
+                }
+                
+                // 計算人數選擇區域相對於滾動容器的位置
+                const selectionRect = studentCountSelection.getBoundingClientRect();
+                const containerRect = scrollContainer.getBoundingClientRect();
+                
+                // 計算需要滾動的距離（讓人數選擇區域到容器頂部）
+                const scrollTop = scrollContainer.scrollTop + (selectionRect.top - containerRect.top) - 20; // 20px 的額外間距
+                
+                console.log('📊 滾動計算:', {
+                    selectionTop: selectionRect.top,
+                    containerTop: containerRect.top,
+                    currentScrollTop: scrollContainer.scrollTop,
+                    targetScrollTop: scrollTop,
+                    containerHeight: containerRect.height
+                });
+                
+                // 使用平滑滾動
+                const targetScrollTop = Math.max(0, scrollTop);
+                const startScrollTop = scrollContainer.scrollTop;
+                const distance = targetScrollTop - startScrollTop;
+                const duration = Math.min(800, Math.abs(distance) * 0.8); // 動態調整動畫時長
+                
+                if (duration > 0) {
+                    const startTime = performance.now();
+                    
+                    function animateScroll(currentTime) {
+                        const elapsed = currentTime - startTime;
+                        const progress = Math.min(elapsed / duration, 1);
+                        
+                        // 使用 easeOutCubic 緩動函數
+                        const easeProgress = 1 - Math.pow(1 - progress, 3);
+                        const currentScrollTop = startScrollTop + (distance * easeProgress);
+                        
+                        scrollContainer.scrollTop = currentScrollTop;
+                        
+                        if (progress < 1) {
+                            requestAnimationFrame(animateScroll);
+                        }
+                    }
+                    
+                    requestAnimationFrame(animateScroll);
+                } else {
+                    scrollContainer.scrollTop = targetScrollTop;
+                }
+                
+                console.log('✅ 滾動到人數選擇區域完成');
+                
+            } catch (error) {
+                console.error('❌ 滾動到人數選擇區域失敗:', error);
             }
         }
 
