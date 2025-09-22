@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 
-async function testAnimationOptimization() {
-    console.log('🧪 開始測試動畫優化和人數選擇修復...');
+async function testAutoSubmitTrigger() {
+    console.log('🧪 開始測試自動提交觸發條件修改...');
     
     const browser = await puppeteer.launch({ 
         headless: false,
@@ -79,42 +79,9 @@ async function testAnimationOptimization() {
         // 等待講師簽到內容載入
         await new Promise(resolve => setTimeout(resolve, 3000));
         
-        // 檢查人數選擇是否隱藏
-        const studentCountCheck = await page.evaluate(() => {
-            const studentCountSelection = document.querySelector('.student-count-selection');
-            const hasStudents = window.loadedStudentsData && 
-                              window.loadedStudentsData.students && 
-                              window.loadedStudentsData.students.length > 0;
-            const selectedCount = window.selectedStudentCount;
-            
-            return {
-                hasStudentCountSelection: !!studentCountSelection,
-                isDisplayed: studentCountSelection ? studentCountSelection.style.display !== 'none' : false,
-                hasStudents: hasStudents,
-                studentCount: hasStudents ? window.loadedStudentsData.students.length : 0,
-                selectedStudentCount: selectedCount
-            };
-        });
-        
-        console.log('📊 人數選擇檢查結果:', studentCountCheck);
-        
-        if (studentCountCheck.hasStudents) {
-            if (!studentCountCheck.isDisplayed && studentCountCheck.selectedStudentCount > 0) {
-                console.log('✅ 有學生資料時正確隱藏人數選擇並自動設置人數');
-            } else {
-                console.log('❌ 有學生資料時人數選擇處理不正確');
-            }
-        } else {
-            if (studentCountCheck.isDisplayed) {
-                console.log('✅ 沒有學生資料時正確顯示人數選擇');
-            } else {
-                console.log('❌ 沒有學生資料時人數選擇顯示不正確');
-            }
-        }
-        
-        console.log('📝 測試自動提交...');
-        // 填寫課程內容
-        await page.type('#course-content', '這是一個測試課程內容，用來驗證動畫優化和人數選擇修復功能。');
+        console.log('📝 測試1個字符觸發自動提交...');
+        // 填寫1個字符
+        await page.type('#course-content', 'A');
         
         // 選擇講師模式
         await page.click('#teacher-mode-btn');
@@ -123,9 +90,9 @@ async function testAnimationOptimization() {
         await new Promise(resolve => setTimeout(resolve, 2000));
         
         // 檢查是否開始倒數
-        const autoSubmitCheck = await page.evaluate(() => {
+        const singleCharCheck = await page.evaluate(() => {
             const isCounting = window.isAutoSubmitEnabled || false;
-            const countdownElement = document.querySelector('.auto-submit-countdown');
+            const countdownElement = document.querySelector('.toast');
             
             return {
                 isCounting: isCounting,
@@ -134,15 +101,89 @@ async function testAnimationOptimization() {
             };
         });
         
-        console.log('📊 自動提交檢查結果:', autoSubmitCheck);
+        console.log('📊 1個字符檢查結果:', singleCharCheck);
         
-        if (autoSubmitCheck.isCounting) {
-            console.log('✅ 自動提交正確啟動');
+        if (singleCharCheck.isCounting) {
+            console.log('✅ 1個字符正確觸發了自動提交');
         } else {
-            console.log('❌ 自動提交沒有啟動');
+            console.log('❌ 1個字符沒有觸發自動提交');
         }
         
-        console.log('🎉 動畫優化和人數選擇修復測試完成！');
+        console.log('📝 測試按Enter鍵觸發...');
+        // 清空並重新填寫
+        await page.evaluate(() => {
+            const courseContent = document.getElementById('course-content');
+            if (courseContent) {
+                courseContent.value = '';
+            }
+        });
+        
+        await page.type('#course-content', '測試內容');
+        
+        // 按Enter鍵
+        await page.keyboard.press('Enter');
+        
+        // 等待檢查
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // 檢查是否開始倒數
+        const enterKeyCheck = await page.evaluate(() => {
+            const isCounting = window.isAutoSubmitEnabled || false;
+            const countdownElement = document.querySelector('.toast');
+            
+            return {
+                isCounting: isCounting,
+                hasCountdownElement: !!countdownElement,
+                countdownText: countdownElement ? countdownElement.textContent : ''
+            };
+        });
+        
+        console.log('📊 Enter鍵檢查結果:', enterKeyCheck);
+        
+        if (enterKeyCheck.isCounting) {
+            console.log('✅ Enter鍵正確觸發了自動提交');
+        } else {
+            console.log('❌ Enter鍵沒有觸發自動提交');
+        }
+        
+        console.log('📝 測試失去焦點觸發...');
+        // 清空並重新填寫
+        await page.evaluate(() => {
+            const courseContent = document.getElementById('course-content');
+            if (courseContent) {
+                courseContent.value = '';
+            }
+        });
+        
+        await page.type('#course-content', '失去焦點測試');
+        
+        // 點擊其他地方失去焦點
+        await page.click('body');
+        
+        // 等待檢查
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // 檢查是否開始倒數
+        const blurCheck = await page.evaluate(() => {
+            const isCounting = window.isAutoSubmitEnabled || false;
+            const countdownElement = document.querySelector('.toast');
+            
+            return {
+                isCounting: isCounting,
+                hasCountdownElement: !!countdownElement,
+                countdownText: countdownElement ? countdownElement.textContent : ''
+            };
+        });
+        
+        console.log('📊 失去焦點檢查結果:', blurCheck);
+        
+        if (blurCheck.isCounting) {
+            console.log('✅ 失去焦點正確觸發了自動提交');
+        } else {
+            console.log('❌ 失去焦點沒有觸發自動提交');
+        }
+        
+        console.log('🎉 自動提交觸發條件測試完成！');
         return true;
         
     } catch (error) {
@@ -154,7 +195,7 @@ async function testAnimationOptimization() {
 }
 
 // 執行測試
-testAnimationOptimization().then(success => {
+testAutoSubmitTrigger().then(success => {
     if (success) {
         console.log('✅ 測試完成！');
         process.exit(0);

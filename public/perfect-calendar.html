@@ -9708,6 +9708,18 @@ async function loadTodayEvents() {
                         checkAutoSubmit();
                     }, 100);
                 });
+                
+                // 監聽Enter鍵事件 - 按Enter時觸發自動提交檢查
+                courseContent.addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                        // 阻止換行
+                        event.preventDefault();
+                        // 觸發自動提交檢查
+                        setTimeout(() => {
+                            checkAutoSubmit();
+                        }, 100);
+                    }
+                });
             }
             
             // 設置身份選擇按鈕
@@ -9916,8 +9928,8 @@ async function loadTodayEvents() {
             const courseContent = document.getElementById('course-content');
             const currentModeDisplay = document.getElementById('current-mode-display');
             
-            // 檢查是否有文字內容（至少10個字符）
-            const hasContent = courseContent && courseContent.value.trim().length >= 10;
+            // 檢查是否有文字內容（至少1個字符）
+            const hasContent = courseContent && courseContent.value.trim().length >= 1;
             
             // 檢查是否選擇了身份
             const hasMode = currentModeDisplay && 
@@ -9926,7 +9938,7 @@ async function loadTodayEvents() {
             
             // 檢查課程內容是否有效（不能只是空白或重複字符）
             const contentValue = courseContent ? courseContent.value.trim() : '';
-            const isValidContent = contentValue.length >= 10 && 
+            const isValidContent = contentValue.length >= 1 && 
                                  !/^(.)\1+$/.test(contentValue) && // 不能全是相同字符
                                  contentValue !== '請描述今天的課程內容...' && // 不能是預設文字
                                  contentValue !== '[特殊模式] 請描述今天的課程內容...'; // 不能是特殊模式預設文字
@@ -9983,14 +9995,14 @@ async function loadTodayEvents() {
                 const courseContent = document.getElementById('course-content');
                 const currentModeDisplay = document.getElementById('current-mode-display');
                 
-                const hasContent = courseContent && courseContent.value.trim().length >= 10;
+                const hasContent = courseContent && courseContent.value.trim().length >= 1;
                 const hasMode = currentModeDisplay && 
                                (currentModeDisplay.textContent === '講師模式' || 
                                 currentModeDisplay.textContent === '助教模式');
                 
                 // 檢查課程內容是否有效（不能只是空白或重複字符）
                 const contentValue = courseContent ? courseContent.value.trim() : '';
-                const isValidContent = contentValue.length >= 10 && 
+                const isValidContent = contentValue.length >= 1 && 
                                      !/^(.)\1+$/.test(contentValue) && // 不能全是相同字符
                                      contentValue !== '請描述今天的課程內容...' && // 不能是預設文字
                                      contentValue !== '[特殊模式] 請描述今天的課程內容...'; // 不能是特殊模式預設文字
@@ -10098,10 +10110,29 @@ async function loadTodayEvents() {
                         color: #ff6b35;
                         filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
                     "></i>
-                    <span style="
-                        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-                        color: #2c3e50;
-                    ">${autoSubmitCountdown} 秒後自動提交</span>
+                    <div style="text-align: center; line-height: 1.4;">
+                        <div style="
+                            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                            color: #2c3e50;
+                            font-size: 16px;
+                            font-weight: bold;
+                            margin-bottom: 4px;
+                        ">${autoSubmitCountdown} 秒後自動提交</div>
+                        <div style="
+                            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+                            color: #7f8c8d;
+                            font-size: 12px;
+                        ">模式：${currentModeDisplay ? currentModeDisplay.textContent : '未知'}</div>
+                        <div style="
+                            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+                            color: #7f8c8d;
+                            font-size: 12px;
+                            max-width: 200px;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                        ">內容：${courseContent ? courseContent.value.substring(0, 20) + (courseContent.value.length > 20 ? '...' : '') : '無'}</div>
+                    </div>
                 </div>
             `;
             
