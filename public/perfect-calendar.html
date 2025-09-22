@@ -7657,13 +7657,24 @@
             // 講師篩選課程監聽器（優化版本）
             const instructorSelect = document.getElementById('instructorSelect');
             if (instructorSelect) {
-                instructorSelect.addEventListener('change', PerformanceOptimizer.debounce(function() {
-                    const selectedInstructor = this.value;
+                // 添加標記以防止重複事件觸發
+                let isHandlingInstructorChange = false;
+                
+                instructorSelect.addEventListener('change', PerformanceOptimizer.debounce(function(event) {
+                    if (isHandlingInstructorChange) {
+                        console.log('⏭️ 跳過重複的講師選擇變更事件');
+                        return;
+                    }
+                    
+                    isHandlingInstructorChange = true;
+                    
+                    const target = event.target || this;
+                    const selectedInstructor = target.value;
                     console.log('📱 講師選擇變更:', selectedInstructor);
                     console.log('🔍 講師選擇器詳細狀態:', {
                         value: selectedInstructor,
-                        selectedIndex: this.selectedIndex,
-                        options: this.options ? Array.from(this.options).map(opt => ({ value: opt.value, text: opt.text })) : 'options 不可用'
+                        selectedIndex: target.selectedIndex,
+                        options: target.options ? Array.from(target.options).map(opt => ({ value: opt.value, text: opt.text })) : 'options 不可用'
                     });
                     
                     if (selectedInstructor && selectedInstructor !== '') {
@@ -7706,6 +7717,11 @@
                     
                     console.log('📱 講師選擇後智慧切換視圖:', currentView);
                     console.log('🎯 智能篩選完成，當前視圖:', currentView);
+                    
+                    // 重置標記
+                    setTimeout(() => {
+                        isHandlingInstructorChange = false;
+                    }, 100);
                 }, 200)); // 防抖延遲
             }
             
