@@ -10877,6 +10877,9 @@ async function loadTodayEvents() {
                         
                         if (progress < 1) {
                             requestAnimationFrame(animateScroll);
+                        } else {
+                            // 動畫完成，清理資源
+                            console.log('✅ 滾動動畫完成');
                         }
                     }
                     
@@ -10972,6 +10975,9 @@ async function loadTodayEvents() {
                         
                         if (progress < 1) {
                             requestAnimationFrame(animateScroll);
+                        } else {
+                            // 動畫完成，清理資源
+                            console.log('✅ 滾動動畫完成');
                         }
                     }
                     
@@ -11217,9 +11223,11 @@ async function loadTodayEvents() {
                     clearInterval(autoSubmitTimer);
                     autoSubmitTimer = null;
                     isAutoSubmitEnabled = false;
+                    window.isAutoSubmitEnabled = false; // 同步到全域變數
                     
                     console.log('🚀 自動提交執行');
                     submitTeacherReport();
+                    return; // 確保不會繼續執行
                 } else {
                     // 更新倒數提示
                     showCountdownToast();
@@ -11595,7 +11603,14 @@ async function loadTodayEvents() {
 
         // 提交講師報表
         async function submitTeacherReport() {
+            // 防止重複提交
+            if (window.isSubmittingReport) {
+                console.log('⏳ 正在提交中，跳過重複提交');
+                return;
+            }
+            
             try {
+                window.isSubmittingReport = true;
                 console.log('📤 提交講師報表');
                 console.log('🔍 檢查必要元素...');
                 
@@ -11835,6 +11850,9 @@ async function loadTodayEvents() {
                 
                 console.log('✅ 講師報表提交完成');
                 
+                // 重置提交狀態
+                window.isSubmittingReport = false;
+                
                 // 顯示成功訊息
                 showToast('講師報表提交成功！', 'success');
                 
@@ -11846,6 +11864,9 @@ async function loadTodayEvents() {
                 
             } catch (error) {
                 console.error('❌ 講師報表提交失敗:', error);
+                
+                // 重置提交狀態
+                window.isSubmittingReport = false;
                 
                 // 停止自動提交計時器
                 stopAutoSubmitCountdown();
@@ -16350,15 +16371,13 @@ async function loadTodayEvents() {
                     message: message,
                     teacherName: reportData.teacherName,
                     courseName: reportData.courseName,
-                    date: reportData.date,
-                    time: reportData.courseTime,
-                    studentCount: reportData.studentCount,
-                    mode: reportData.mode,
-                    isCustomizedCourse: reportData.isCustomizedCourse
+                    presentStudents: [], // 講師報表沒有學生名單
+                    absentStudents: [],
+                    unmarkedStudents: []
                 };
 
                 // 調用後端API發送LINE通知
-                const response = await fetch('/api/send-line-notification', {
+                const response = await fetch('/api/student-attendance-notification', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
