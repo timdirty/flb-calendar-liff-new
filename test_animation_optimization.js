@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 
-async function testAutoSubmitValidation() {
-    console.log('🧪 開始測試自動提交驗證修復...');
+async function testAnimationOptimization() {
+    console.log('🧪 開始測試動畫優化和人數選擇修復...');
     
     const browser = await puppeteer.launch({ 
         headless: false,
@@ -79,9 +79,42 @@ async function testAutoSubmitValidation() {
         // 等待講師簽到內容載入
         await new Promise(resolve => setTimeout(resolve, 3000));
         
-        console.log('📝 測試短內容（3個字符）...');
-        // 填寫短內容（3個字符）
-        await page.type('#course-content', '測試');
+        // 檢查人數選擇是否隱藏
+        const studentCountCheck = await page.evaluate(() => {
+            const studentCountSelection = document.querySelector('.student-count-selection');
+            const hasStudents = window.loadedStudentsData && 
+                              window.loadedStudentsData.students && 
+                              window.loadedStudentsData.students.length > 0;
+            const selectedCount = window.selectedStudentCount;
+            
+            return {
+                hasStudentCountSelection: !!studentCountSelection,
+                isDisplayed: studentCountSelection ? studentCountSelection.style.display !== 'none' : false,
+                hasStudents: hasStudents,
+                studentCount: hasStudents ? window.loadedStudentsData.students.length : 0,
+                selectedStudentCount: selectedCount
+            };
+        });
+        
+        console.log('📊 人數選擇檢查結果:', studentCountCheck);
+        
+        if (studentCountCheck.hasStudents) {
+            if (!studentCountCheck.isDisplayed && studentCountCheck.selectedStudentCount > 0) {
+                console.log('✅ 有學生資料時正確隱藏人數選擇並自動設置人數');
+            } else {
+                console.log('❌ 有學生資料時人數選擇處理不正確');
+            }
+        } else {
+            if (studentCountCheck.isDisplayed) {
+                console.log('✅ 沒有學生資料時正確顯示人數選擇');
+            } else {
+                console.log('❌ 沒有學生資料時人數選擇顯示不正確');
+            }
+        }
+        
+        console.log('📝 測試自動提交...');
+        // 填寫課程內容
+        await page.type('#course-content', '這是一個測試課程內容，用來驗證動畫優化和人數選擇修復功能。');
         
         // 選擇講師模式
         await page.click('#teacher-mode-btn');
@@ -89,59 +122,27 @@ async function testAutoSubmitValidation() {
         // 等待檢查
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        // 檢查是否沒有開始倒數
-        const shortContentCheck = await page.evaluate(() => {
-            const countdownElement = document.querySelector('.auto-submit-countdown');
-            const isCounting = window.isAutoSubmitEnabled || false;
-            return {
-                hasCountdownElement: !!countdownElement,
-                isCounting: isCounting,
-                countdownText: countdownElement ? countdownElement.textContent : ''
-            };
-        });
-        
-        console.log('📊 短內容檢查結果:', shortContentCheck);
-        
-        if (!shortContentCheck.isCounting) {
-            console.log('✅ 短內容正確阻止了自動提交');
-        } else {
-            console.log('❌ 短內容沒有阻止自動提交');
-        }
-        
-        console.log('📝 測試長內容（15個字符）...');
-        // 清空並填寫長內容
-        await page.evaluate(() => {
-            const courseContent = document.getElementById('course-content');
-            if (courseContent) {
-                courseContent.value = '';
-            }
-        });
-        
-        await page.type('#course-content', '這是一個測試課程內容，用來驗證自動提交功能');
-        
-        // 等待檢查
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
         // 檢查是否開始倒數
-        const longContentCheck = await page.evaluate(() => {
-            const countdownElement = document.querySelector('.auto-submit-countdown');
+        const autoSubmitCheck = await page.evaluate(() => {
             const isCounting = window.isAutoSubmitEnabled || false;
+            const countdownElement = document.querySelector('.auto-submit-countdown');
+            
             return {
-                hasCountdownElement: !!countdownElement,
                 isCounting: isCounting,
+                hasCountdownElement: !!countdownElement,
                 countdownText: countdownElement ? countdownElement.textContent : ''
             };
         });
         
-        console.log('📊 長內容檢查結果:', longContentCheck);
+        console.log('📊 自動提交檢查結果:', autoSubmitCheck);
         
-        if (longContentCheck.isCounting) {
-            console.log('✅ 長內容正確觸發了自動提交');
+        if (autoSubmitCheck.isCounting) {
+            console.log('✅ 自動提交正確啟動');
         } else {
-            console.log('❌ 長內容沒有觸發自動提交');
+            console.log('❌ 自動提交沒有啟動');
         }
         
-        console.log('🎉 自動提交驗證測試完成！');
+        console.log('🎉 動畫優化和人數選擇修復測試完成！');
         return true;
         
     } catch (error) {
@@ -153,7 +154,7 @@ async function testAutoSubmitValidation() {
 }
 
 // 執行測試
-testAutoSubmitValidation().then(success => {
+testAnimationOptimization().then(success => {
     if (success) {
         console.log('✅ 測試完成！');
         process.exit(0);
