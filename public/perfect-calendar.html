@@ -11557,7 +11557,16 @@ async function loadTodayEvents() {
                 
                 // 使用解析後的課程名稱和時間資訊
                 const finalCourseName = courseName;
-                const finalTimeString = timeInfo || `${new Date(start).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${new Date(end).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
+                let finalTimeString = timeInfo || `${new Date(start).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${new Date(end).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
+                
+                // 修復時間格式：移除星期和時間之間的空格，但保留時間和地點之間的空格
+                if (finalTimeString && finalTimeString.includes(' ')) {
+                    // 匹配格式：星期 + 空格 + 時間 + 空格 + 地點
+                    // 例如："一 1930-2030 到府" -> "一1930-2030 到府"
+                    finalTimeString = finalTimeString.replace(/^([一二三四五六日])\s+(\d{4}-\d{4})\s+(.+)$/, '$1$2 $3');
+                }
+                
+                console.log('🔧 時間格式修復:', { original: timeInfo, fixed: finalTimeString });
                 
                 // 開啟原生簽到系統（傳入時間限制資訊和原始標題）
                 await openNativeAttendanceSystem(matchedInstructor, finalCourseName, finalTimeString, start, end, minutesUntilStart, title);
