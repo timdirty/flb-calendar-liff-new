@@ -9440,7 +9440,9 @@ async function loadTodayEvents() {
                 
                 <div id="attendanceContent" style="
                     padding-right: 8px;
-                    min-height: 0;
+                    height: 100%;
+                    display: flex;
+                    flex-direction: column;
                 ">
                     <!-- 講師報表內容將動態插入這裡，不覆蓋原始學生簽到內容 -->
                 </div>
@@ -9459,6 +9461,12 @@ async function loadTodayEvents() {
             if (newAttendanceContent) {
                 console.log('🔄 插入講師報表內容到 attendanceContent');
                 newAttendanceContent.innerHTML = teacherAttendanceContent.innerHTML;
+                
+                // 確保插入的內容有正確的類別
+                const insertedContent = newAttendanceContent.querySelector('div[style*="overflow-y: auto"]');
+                if (insertedContent) {
+                    insertedContent.classList.add('teacher-attendance-content');
+                }
             }
             
             // 填充課程資訊 - 立即更新並添加多次重試
@@ -11381,7 +11389,6 @@ async function loadTodayEvents() {
                         animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
                         border: 1px solid rgba(255, 215, 0, 0.3);
                         position: relative;
-                        overflow: hidden;
                     ">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                             <div style="flex: 1;">
@@ -11570,6 +11577,11 @@ async function loadTodayEvents() {
                         
                         if (tab === 'teacher-attendance') {
                             // 顯示講師簽到內容
+                            console.log('🔄 切換到講師簽到，停止學生資料載入');
+                            isStudentListLoading = false;
+                            if (studentListLoadPromise) {
+                                studentListLoadPromise = null;
+                            }
                             showTeacherAttendance();
                         } else {
                             // 顯示學生簽到內容
@@ -11595,8 +11607,10 @@ async function loadTodayEvents() {
                     }
                 });
                 
-                // 載入學生名單
-                await loadCourseStudents(teacher, course, time, start, end, minutesUntilStart);
+                // 載入學生名單（在後台執行，不阻塞UI）
+                loadCourseStudents(teacher, course, time, start, end, minutesUntilStart).catch(error => {
+                    console.log('📚 學生資料載入失敗（後台）:', error);
+                });
                 
                 // 載入完成，更新狀態
                 isModalLoading = false;
@@ -11619,6 +11633,15 @@ async function loadTodayEvents() {
                 // 檢查模態框是否仍然存在
                 if (!currentAttendanceModal || !isModalLoading) {
                     console.log('❌ 模態框已被關閉，取消載入');
+                    isStudentListLoading = false;
+                    return;
+                }
+                
+                // 檢查是否已經切換到講師簽到模式
+                const floatingNavigator = document.querySelector('.floating-navigator');
+                const activeTab = floatingNavigator ? floatingNavigator.querySelector('.nav-item.active') : null;
+                if (activeTab && activeTab.dataset.tab === 'teacher-attendance') {
+                    console.log('🔄 已切換到講師簽到模式，取消學生資料載入');
                     isStudentListLoading = false;
                     return;
                 }
@@ -11672,6 +11695,14 @@ async function loadTodayEvents() {
                     // 載入失敗，更新狀態
                     isStudentListLoading = false;
                     studentListLoadPromise = null;
+                    
+                    // 檢查是否已經切換到講師簽到模式
+                    const floatingNavigator = document.querySelector('.floating-navigator');
+                    const activeTab = floatingNavigator ? floatingNavigator.querySelector('.nav-item.active') : null;
+                    if (activeTab && activeTab.dataset.tab === 'teacher-attendance') {
+                        console.log('🔄 已切換到講師簽到模式，不顯示學生載入錯誤');
+                        return;
+                    }
                     
                     // 顯示錯誤訊息，提供更多選項
                     console.error('❌ 無法載入學生資料:', data);
@@ -11734,6 +11765,17 @@ async function loadTodayEvents() {
                 
             } catch (error) {
                 console.error('❌ 載入學生失敗:', error);
+                
+                // 檢查是否已經切換到講師簽到模式
+                const floatingNavigator = document.querySelector('.floating-navigator');
+                const activeTab = floatingNavigator ? floatingNavigator.querySelector('.nav-item.active') : null;
+                if (activeTab && activeTab.dataset.tab === 'teacher-attendance') {
+                    console.log('🔄 已切換到講師簽到模式，不顯示學生載入錯誤');
+                    isStudentListLoading = false;
+                    studentListLoadPromise = null;
+                    clearTimeout(loadingTimeout);
+                    return;
+                }
                 
                 // 使用錯誤處理器顯示錯誤
                 errorHandler.showError('載入學生名單失敗: ' + error.message, error);
