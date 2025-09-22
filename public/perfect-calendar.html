@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>講師行事曆檢視</title>
     <!-- 預載入關鍵資源 -->
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <link rel="preload" href="https://static.line-scdn.net/liff/edge/2/sdk.js" as="script">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style">
+    <!-- LIFF SDK 改為預取而非預載入，避免未使用警告 -->
+    <link rel="prefetch" href="https://static.line-scdn.net/liff/edge/2/sdk.js" as="script">
     
     <!-- 關鍵CSS優先載入 -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -19,6 +20,7 @@
             loadLIFFSDK() {
                 return new Promise((resolve, reject) => {
                     if (typeof liff !== 'undefined') {
+                        console.log('✅ LIFF SDK已存在');
                         resolve();
                         return;
                     }
@@ -26,8 +28,16 @@
                     const script = document.createElement('script');
                     script.charset = 'utf-8';
                     script.src = 'https://static.line-scdn.net/liff/edge/2/sdk.js';
-                    script.onload = resolve;
-                    script.onerror = reject;
+                    script.async = true;
+                    script.defer = true;
+                    script.onload = () => {
+                        console.log('✅ LIFF SDK載入成功');
+                        resolve();
+                    };
+                    script.onerror = () => {
+                        console.error('❌ LIFF SDK載入失敗');
+                        reject(new Error('LIFF SDK載入失敗'));
+                    };
                     document.head.appendChild(script);
                 });
             },
@@ -7539,7 +7549,8 @@ async function loadTodayEvents() {
                 button.removeEventListener('touchend', handleViewButtonClick);
                 button.removeEventListener('mousedown', handleViewButtonClick);
                 button.removeEventListener('touchend', handleViewButtonClick);
-                button.onclick = null;
+                // 移除內聯事件處理器以避免CSP錯誤
+                // button.onclick = null;
                 
                 // iOS Safari 特殊樣式設置
                 button.style.pointerEvents = 'auto';
@@ -7588,8 +7599,8 @@ async function loadTodayEvents() {
                 button.addEventListener('touchstart', buttonClickHandler, { passive: false });
                 button.addEventListener('touchend', buttonClickHandler, { passive: false });
                 
-                // 強制 onclick 作為備用方案
-                button.onclick = buttonClickHandler;
+                // 移除內聯事件處理器以避免CSP錯誤
+                // button.onclick = buttonClickHandler;
                 
                 console.log(`✅ 按鈕 ${index + 1} 綁定完成: ${button.getAttribute('data-view')}`);
             });
@@ -12853,6 +12864,10 @@ async function loadTodayEvents() {
 
         // 載入課程學生 - 優化版本
         async function loadCourseStudents(teacher, course, time, start, end, minutesUntilStart = null, retryCount = 0) {
+            // 定義重試和超時變數
+            const maxRetries = 3;
+            let loadingTimeout = null;
+            
             try {
                 console.log('📚 載入課程學生 (優化版):', { teacher, course, time, start, end, retryCount });
                 
