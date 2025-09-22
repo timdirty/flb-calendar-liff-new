@@ -7164,7 +7164,7 @@ async function loadTodayEvents() {
             
             // 延遲載入LIFF SDK
             try {
-                await loadLIFFSDK();
+                await PerformanceOptimizer.loadLIFFSDK();
                 console.log('LIFF SDK 載入完成');
             } catch (error) {
                 console.error('LIFF SDK 載入失敗:', error);
