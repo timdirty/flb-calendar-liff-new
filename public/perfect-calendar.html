@@ -5404,6 +5404,126 @@
             initializeSystemOptimized();
         });
         
+        // 智能篩選：自動選擇有行事曆的模式
+        function smartViewSelection() {
+            console.log('🧠 開始智能篩選視圖模式...');
+            
+            if (!allEvents || allEvents.length === 0) {
+                console.log('⚠️ 沒有事件資料，保持今日視圖');
+                return '今日';
+            }
+            
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            // 檢查今日是否有課程
+            const todayEvents = allEvents.filter(event => {
+                if (!event || !event.start) return false;
+                const eventDate = new Date(event.start);
+                const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+                return eventDay.getTime() === today.getTime();
+            });
+            
+            if (todayEvents.length > 0) {
+                console.log('✅ 今日有課程，選擇今日視圖');
+                return '今日';
+            }
+            
+            // 檢查本週是否有課程
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - today.getDay());
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            
+            const weekEvents = allEvents.filter(event => {
+                if (!event || !event.start) return false;
+                const eventDate = new Date(event.start);
+                return eventDate >= weekStart && eventDate <= weekEnd;
+            });
+            
+            if (weekEvents.length > 0) {
+                console.log('✅ 本週有課程，選擇本週視圖');
+                return '本週';
+            }
+            
+            // 檢查本月是否有課程
+            const monthEvents = allEvents.filter(event => {
+                if (!event || !event.start) return false;
+                const eventDate = new Date(event.start);
+                return eventDate.getFullYear() === now.getFullYear() &&
+                       eventDate.getMonth() === now.getMonth();
+            });
+            
+            if (monthEvents.length > 0) {
+                console.log('✅ 本月有課程，選擇本月視圖');
+                return '本月';
+            }
+            
+            // 如果都沒有，選擇全部視圖
+            console.log('✅ 只有其他時間的課程，選擇全部視圖');
+            return '全部';
+        }
+
+        // 講師智能篩選：針對特定講師的課程進行智能視圖選擇
+        function smartInstructorViewSelection(instructorEvents) {
+            console.log('🧠 開始講師智能篩選視圖模式...');
+            
+            if (!instructorEvents || instructorEvents.length === 0) {
+                console.log('⚠️ 該講師沒有課程，使用全局智能篩選');
+                return smartViewSelection();
+            }
+            
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            // 檢查講師今日是否有課程
+            const todayEvents = instructorEvents.filter(event => {
+                if (!event || !event.start) return false;
+                const eventDate = new Date(event.start);
+                const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+                return eventDay.getTime() === today.getTime();
+            });
+            
+            if (todayEvents.length > 0) {
+                console.log('✅ 講師今日有課程，選擇今日視圖');
+                return '今日';
+            }
+            
+            // 檢查講師本週是否有課程
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - today.getDay());
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            
+            const weekEvents = instructorEvents.filter(event => {
+                if (!event || !event.start) return false;
+                const eventDate = new Date(event.start);
+                return eventDate >= weekStart && eventDate <= weekEnd;
+            });
+            
+            if (weekEvents.length > 0) {
+                console.log('✅ 講師本週有課程，選擇本週視圖');
+                return '本週';
+            }
+            
+            // 檢查講師本月是否有課程
+            const monthEvents = instructorEvents.filter(event => {
+                if (!event || !event.start) return false;
+                const eventDate = new Date(event.start);
+                return eventDate.getFullYear() === now.getFullYear() &&
+                       eventDate.getMonth() === now.getMonth();
+            });
+            
+            if (monthEvents.length > 0) {
+                console.log('✅ 講師本月有課程，選擇本月視圖');
+                return '本月';
+            }
+            
+            // 如果都沒有，選擇全部視圖
+            console.log('✅ 講師只有其他時間的課程，選擇全部視圖');
+            return '全部';
+        }
+
         // 優化的系統初始化（分階段載入）
         async function initializeSystemOptimized() {
             try {
@@ -5509,6 +5629,12 @@
                         bindViewButtons();
                         bindRefreshButton();
                         bindAttendanceMenu();
+                        
+                        // 智能篩選：自動選擇有行事曆的模式
+                        const smartView = smartViewSelection();
+                        currentView = smartView;
+                        window.currentView = smartView;
+                        console.log('🧠 智能篩選結果:', smartView);
                         
                         // 設置預設狀態
                         updateViewButtonStates();
@@ -10654,20 +10780,29 @@ async function loadTodayEvents() {
                 // 找到滾動容器 - 使用更穩定的選擇方式
                 let scrollContainer = null;
                 
-                // 首先嘗試找到講師內容的滾動容器
-                const teacherContent = document.querySelector('.teacher-attendance-content');
-                if (teacherContent) {
-                    const scrollDiv = teacherContent.querySelector('div[style*="overflow-y: auto"]');
-                    if (scrollDiv && scrollDiv.scrollHeight > scrollDiv.clientHeight) {
-                        scrollContainer = scrollDiv;
+                // 首先嘗試找到模態框內容（最常見的滾動容器）
+                const modalContent = document.querySelector('.attendance-modal-content');
+                if (modalContent) {
+                    // 檢查模態框內容本身是否可滾動
+                    if (modalContent.scrollHeight > modalContent.clientHeight) {
+                        scrollContainer = modalContent;
+                    } else {
+                        // 如果模態框內容不可滾動，查找其內部的滾動容器
+                        const innerScrollDiv = modalContent.querySelector('div[style*="overflow-y: auto"]');
+                        if (innerScrollDiv && innerScrollDiv.scrollHeight > innerScrollDiv.clientHeight) {
+                            scrollContainer = innerScrollDiv;
+                        }
                     }
                 }
                 
-                // 如果沒有找到，使用模態框內容
+                // 如果沒有找到，嘗試找到講師內容的滾動容器
                 if (!scrollContainer) {
-                    const modalContent = document.querySelector('.attendance-modal-content');
-                    if (modalContent && modalContent.scrollHeight > modalContent.clientHeight) {
-                        scrollContainer = modalContent;
+                    const teacherContent = document.querySelector('.teacher-attendance-content');
+                    if (teacherContent) {
+                        const scrollDiv = teacherContent.querySelector('div[style*="overflow-y: auto"]');
+                        if (scrollDiv && scrollDiv.scrollHeight > scrollDiv.clientHeight) {
+                            scrollContainer = scrollDiv;
+                        }
                     }
                 }
                 
@@ -10680,6 +10815,11 @@ async function loadTodayEvents() {
                             break;
                         }
                     }
+                }
+                
+                // 最後嘗試使用模態框內容，即使它不可滾動
+                if (!scrollContainer && modalContent) {
+                    scrollContainer = modalContent;
                 }
                 
                 if (!scrollContainer) {
@@ -11522,7 +11662,12 @@ async function loadTodayEvents() {
                 }
                 
                 // 檢查是否為特殊課程（客製化、到府等）
-                // originalTitle 和 isCustomizedCourse 已在上面宣告
+                const originalTitle = window.currentAttendanceData?.originalTitle || '';
+                const isCustomizedCourse = originalTitle.includes('客製化') || 
+                                        originalTitle.includes('到府') || 
+                                        originalTitle.includes('客制化') || 
+                                        originalTitle.includes('客製') || 
+                                        originalTitle.includes('客制');
                 
                 // 準備課程內容，如果是特殊課程則添加特殊標記
                 let finalCourseContent = courseContent.value.trim();
@@ -15366,6 +15511,7 @@ async function loadTodayEvents() {
                     
                     // 性能模式下的優化
                     const skipFrame = this.performanceMode && this.fps < 45;
+                    const criticalFps = this.fps < 30; // 極低FPS時更嚴格的限制
                     
                     this.animations.forEach((animation, id) => {
                         if (animation.active && currentTime - animation.lastTime >= animation.interval) {
@@ -15374,9 +15520,19 @@ async function loadTodayEvents() {
                                 return;
                             }
                             
+                            // 極低FPS時跳過更多動畫
+                            if (criticalFps && Math.random() > 0.3) {
+                                return;
+                            }
+                            
                             try {
                                 animation.fn(currentTime);
                                 animation.lastTime = currentTime;
+                                
+                                // 檢查動畫是否應該結束
+                                if (animation.duration && currentTime - animation.startTime > animation.duration) {
+                                    this.removeAnimation(id);
+                                }
                             } catch (error) {
                                 console.warn(`動畫 ${id} 執行錯誤:`, error);
                                 this.removeAnimation(id);
