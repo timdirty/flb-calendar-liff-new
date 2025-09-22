@@ -11559,11 +11559,15 @@ async function loadTodayEvents() {
                 const finalCourseName = courseName;
                 let finalTimeString = timeInfo || `${new Date(start).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} - ${new Date(end).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`;
                 
-                // 修復時間格式：移除星期和時間之間的空格，但保留時間和地點之間的空格
+                // 修復時間格式：確保星期和時間之間有空格，時間和地點之間也有空格
                 if (finalTimeString && finalTimeString.includes(' ')) {
-                    // 匹配格式：星期 + 空格 + 時間 + 空格 + 地點
-                    // 例如："一 1930-2030 到府" -> "一1930-2030 到府"
-                    finalTimeString = finalTimeString.replace(/^([一二三四五六日])\s+(\d{4}-\d{4})\s+(.+)$/, '$1$2 $3');
+                    // 匹配格式：星期 + 時間 + 空格 + 地點（沒有星期和時間之間的空格）
+                    // 例如："一1930-2030 到府" -> "一 1930-2030 到府"
+                    finalTimeString = finalTimeString.replace(/^([一二三四五六日])(\d{4}-\d{4})\s+(.+)$/, '$1 $2 $3');
+                } else if (finalTimeString && !finalTimeString.includes(' ')) {
+                    // 匹配格式：星期 + 時間（完全沒有空格）
+                    // 例如："一1930-2030" -> "一 1930-2030"
+                    finalTimeString = finalTimeString.replace(/^([一二三四五六日])(\d{4}-\d{4})$/, '$1 $2');
                 }
                 
                 console.log('🔧 時間格式修復:', { original: timeInfo, fixed: finalTimeString });
