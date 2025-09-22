@@ -42,20 +42,39 @@
                 });
             },
             
-            // 預載入關鍵資源
+            // 預載入關鍵資源 - 優化版本
             preloadCriticalResources() {
                 const criticalResources = [
-                    { href: '/api/events', as: 'fetch', type: 'application/json' },
-                    { href: '/api/teachers', as: 'fetch', type: 'application/json' }
+                    { href: '/api/events', as: 'fetch', type: 'application/json', priority: 'high' },
+                    { href: '/api/teachers', as: 'fetch', type: 'application/json', priority: 'high' },
+                    { href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css', as: 'style', priority: 'low' }
                 ];
                 
                 criticalResources.forEach(resource => {
                     const link = document.createElement('link');
-                    link.rel = 'prefetch';
+                    link.rel = resource.priority === 'high' ? 'preload' : 'prefetch';
                     link.href = resource.href;
                     link.as = resource.as;
                     if (resource.type) link.type = resource.type;
+                    if (resource.priority === 'high') {
+                        link.crossOrigin = 'anonymous';
+                    }
                     document.head.appendChild(link);
+                });
+                
+                // 預載入關鍵圖片
+                this.preloadCriticalImages();
+            },
+            
+            // 預載入關鍵圖片
+            preloadCriticalImages() {
+                const criticalImages = [
+                    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSIjRkZGRkZGIi8+Cjwvc3ZnPgo='
+                ];
+                
+                criticalImages.forEach(src => {
+                    const img = new Image();
+                    img.src = src;
                 });
             },
             
@@ -200,20 +219,22 @@
                 });
             },
             
-            // 防抖函數
-            debounce(func, wait) {
+            // 防抖函數 - 優化版本
+            debounce(func, wait, immediate = false) {
                 let timeout;
                 return function executedFunction(...args) {
                     const later = () => {
-                        clearTimeout(timeout);
-                        func(...args);
+                        timeout = null;
+                        if (!immediate) func(...args);
                     };
+                    const callNow = immediate && !timeout;
                     clearTimeout(timeout);
                     timeout = setTimeout(later, wait);
+                    if (callNow) func(...args);
                 };
             },
             
-            // 節流函數
+            // 節流函數 - 優化版本
             throttle(func, limit) {
                 let inThrottle;
                 return function() {
@@ -225,11 +246,117 @@
                         setTimeout(() => inThrottle = false, limit);
                     }
                 };
+            },
+            
+            // 新增：批量處理函數
+            batchProcess(items, processor, batchSize = 10) {
+                const results = [];
+                for (let i = 0; i < items.length; i += batchSize) {
+                    const batch = items.slice(i, i + batchSize);
+                    results.push(...batch.map(processor));
+                }
+                return results;
+            },
+            
+            // 新增：性能監控
+            performanceMonitor: {
+                metrics: new Map(),
+                start(name) {
+                    this.metrics.set(name, performance.now());
+                },
+                end(name) {
+                    const startTime = this.metrics.get(name);
+                    if (startTime) {
+                        const duration = performance.now() - startTime;
+                        console.log(`⏱️ ${name}: ${duration.toFixed(2)}ms`);
+                        this.metrics.delete(name);
+                        return duration;
+                    }
+                }
+            }
+        };
+        
+        // 記憶體管理器
+        const MemoryManager = {
+            cache: new Map(),
+            maxCacheSize: 100,
+            cleanup() {
+                if (this.cache.size > this.maxCacheSize) {
+                    const keys = Array.from(this.cache.keys());
+                    const toDelete = keys.slice(0, keys.length - this.maxCacheSize);
+                    toDelete.forEach(key => this.cache.delete(key));
+                }
+            },
+            get(key) {
+                return this.cache.get(key);
+            },
+            set(key, value) {
+                this.cache.set(key, value);
+                this.cleanup();
+            },
+            clear() {
+                this.cache.clear();
+            },
+            // 清理過期的快取
+            cleanupExpired() {
+                const now = Date.now();
+                for (const [key, value] of this.cache.entries()) {
+                    if (value.expiry && now > value.expiry) {
+                        this.cache.delete(key);
+                    }
+                }
+            }
+        };
+        
+        // 模組管理器
+        const ModuleManager = {
+            modules: new Map(),
+            loaded: new Set(),
+            
+            // 註冊模組
+            register(name, module) {
+                this.modules.set(name, module);
+            },
+            
+            // 載入模組
+            async load(name) {
+                if (this.loaded.has(name)) {
+                    return this.modules.get(name);
+                }
+                
+                const module = this.modules.get(name);
+                if (!module) {
+                    throw new Error(`模組 ${name} 未找到`);
+                }
+                
+                if (module.init) {
+                    await module.init();
+                }
+                
+                this.loaded.add(name);
+                return module;
+            },
+            
+            // 載入多個模組
+            async loadMultiple(names) {
+                const promises = names.map(name => this.load(name));
+                return Promise.all(promises);
+            },
+            
+            // 清理模組
+            cleanup(name) {
+                const module = this.modules.get(name);
+                if (module && module.cleanup) {
+                    module.cleanup();
+                }
+                this.loaded.delete(name);
             }
         };
         
         // 暴露到全局
         window.PerformanceOptimizer = PerformanceOptimizer;
+        window.MemoryManager = MemoryManager;
+        window.ModuleManager = ModuleManager;
     </script>
     <style>
         * {
@@ -238,11 +365,66 @@
             box-sizing: border-box;
         }
         
-        /* 動畫效能優化 */
-        :root{--animation-duration:0.3s;--transition-duration:0.2s;--animation-timing:cubic-bezier(0.4,0,0.2,1);--reduced-motion:0.1s}
-        @media (prefers-reduced-motion:reduce){
-            :root{--animation-duration:var(--reduced-motion);--transition-duration:var(--reduced-motion)}
-            *,*::before,*::after{animation-duration:var(--reduced-motion)!important;animation-iteration-count:1!important;transition-duration:var(--reduced-motion)!important}
+        /* 動畫效能優化 - 全盤優化版本 */
+        :root {
+            --animation-duration: 0.3s;
+            --transition-duration: 0.2s;
+            --animation-timing: cubic-bezier(0.4, 0, 0.2, 1);
+            --reduced-motion: 0.1s;
+            --primary-color: #4f46e5;
+            --secondary-color: #06b6d4;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            :root {
+                --animation-duration: var(--reduced-motion);
+                --transition-duration: var(--reduced-motion);
+            }
+            *, *::before, *::after {
+                animation-duration: var(--reduced-motion) !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: var(--reduced-motion) !important;
+            }
+        }
+        
+        /* 響應式設計優化 */
+        @media (max-width: 768px) {
+            :root {
+                --animation-duration: 0.2s;
+                --transition-duration: 0.15s;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            :root {
+                --animation-duration: 0.15s;
+                --transition-duration: 0.1s;
+            }
+        }
+        
+        /* 性能優化 */
+        .performance-optimized {
+            will-change: transform;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            perspective: 1000px;
+        }
+        
+        /* 玻璃質感優化 */
+        .glass-effect {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-lg);
         }
         
         /* 啟用硬體加速和效能優化 */
@@ -15817,19 +15999,22 @@ async function loadTodayEvents() {
         const animationManager = new AnimationManager();
         window.animationManager = animationManager;
         
-        // API載入優化管理器（CALDAV速度優化版）
+        // API載入優化管理器（全盤優化版）
         class APILoadingOptimizer {
             constructor() {
                 this.cache = new Map();
                 this.cacheTimeout = 5 * 60 * 1000; // 5分鐘緩存
                 this.requestQueue = new Map();
-                this.concurrentLimit = 5; // 增加並行請求限制
+                this.concurrentLimit = 8; // 增加並行請求限制
                 this.activeRequests = 0;
-                this.retryDelays = [500, 1000, 2000]; // 減少重試延遲
+                this.retryDelays = [300, 600, 1200]; // 優化重試延遲
                 this.caldavCache = new Map(); // CALDAV專用快取
                 this.caldavCacheTimeout = 10 * 60 * 1000; // 10分鐘CALDAV快取
                 this.preloadQueue = []; // 預載入隊列
                 this.connectionPool = new Map(); // 連接池
+                this.errorCount = new Map(); // 錯誤計數
+                this.circuitBreaker = new Map(); // 熔斷器
+                this.performanceMetrics = new Map(); // 性能指標
             }
             
             // 生成緩存鍵
@@ -15877,6 +16062,65 @@ async function loadTodayEvents() {
                     data: data,
                     timestamp: Date.now()
                 });
+            }
+            
+            // 熔斷器檢查
+            isCircuitOpen(endpoint) {
+                const breaker = this.circuitBreaker.get(endpoint);
+                if (!breaker) return false;
+                
+                const now = Date.now();
+                if (now - breaker.lastFailureTime > breaker.timeout) {
+                    // 熔斷器超時，重置
+                    this.circuitBreaker.delete(endpoint);
+                    return false;
+                }
+                
+                return breaker.failureCount >= breaker.threshold;
+            }
+            
+            // 記錄錯誤
+            recordError(endpoint) {
+                const errorCount = this.errorCount.get(endpoint) || 0;
+                this.errorCount.set(endpoint, errorCount + 1);
+                
+                if (errorCount >= 3) {
+                    this.circuitBreaker.set(endpoint, {
+                        failureCount: errorCount,
+                        lastFailureTime: Date.now(),
+                        timeout: 30000, // 30秒熔斷
+                        threshold: 3
+                    });
+                }
+            }
+            
+            // 記錄成功
+            recordSuccess(endpoint) {
+                this.errorCount.delete(endpoint);
+                this.circuitBreaker.delete(endpoint);
+            }
+            
+            // 性能監控
+            recordPerformance(endpoint, duration) {
+                if (!this.performanceMetrics.has(endpoint)) {
+                    this.performanceMetrics.set(endpoint, []);
+                }
+                
+                const metrics = this.performanceMetrics.get(endpoint);
+                metrics.push(duration);
+                
+                // 只保留最近100次記錄
+                if (metrics.length > 100) {
+                    metrics.shift();
+                }
+            }
+            
+            // 獲取平均響應時間
+            getAverageResponseTime(endpoint) {
+                const metrics = this.performanceMetrics.get(endpoint);
+                if (!metrics || metrics.length === 0) return 0;
+                
+                return metrics.reduce((sum, time) => sum + time, 0) / metrics.length;
             }
             
             // 優化的fetch請求（CALDAV速度優化版）
@@ -16180,7 +16424,7 @@ async function loadTodayEvents() {
         window.showStudentLoadingState = showStudentLoadingState;
         window.hideStudentLoadingState = hideStudentLoadingState;
         
-        // 液態玻璃質感載入動畫（修復版本）
+        // 液態玻璃質感載入動畫（全盤優化版本）
         function showOptimizedLoadingAnimation() {
             // 檢查是否已經存在載入動畫
             if (document.getElementById('optimized-loading-overlay')) {
@@ -16201,7 +16445,7 @@ async function loadTodayEvents() {
                 right: 0;
                 bottom: 0;
                 background: linear-gradient(135deg, 
-                    rgba(255, 255, 255, 0.1) 0%, 
+                    rgba(255, 255, 255, 0.15) 0%, 
                     rgba(255, 255, 255, 0.05) 50%,
                     rgba(255, 255, 255, 0.1) 100%);
                 backdrop-filter: blur(25px);
