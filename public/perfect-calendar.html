@@ -9292,7 +9292,7 @@ async function loadTodayEvents() {
                         -webkit-backdrop-filter: blur(25px);
                         border: 1px solid rgba(255, 255, 255, 0.3);
                         border-radius: 20px;
-                        padding: 32px;
+                        padding: 24px;
                         box-shadow: 
                             0 8px 32px rgba(0, 0, 0, 0.1),
                             0 2px 8px rgba(0, 0, 0, 0.05),
@@ -9301,6 +9301,8 @@ async function loadTodayEvents() {
                         position: relative;
                         overflow: hidden;
                         display: none;
+                        max-height: 60vh;
+                        overflow-y: auto;
                     ">
                         <!-- 背景光效 -->
                         <div style="
@@ -9342,15 +9344,15 @@ async function loadTodayEvents() {
                                 background: white;
                                 border: 2px solid #e9ecef;
                                 border-radius: 10px;
-                                padding: 20px 16px;
+                                padding: 16px 12px;
                                 cursor: pointer;
                                 transition: all 0.3s ease;
                                 text-align: center;
                                 display: flex;
                                 flex-direction: column;
                                 align-items: center;
-                                gap: 8px;
-                                min-height: 100px;
+                                gap: 6px;
+                                min-height: 80px;
                             ">
                                 <i class="fas fa-users" style="font-size: 1.5rem; color: #666;"></i>
                                 <span style="font-weight: 600; font-size: 0.8rem; color: #333;">2人（含）以下</span>
@@ -9360,15 +9362,15 @@ async function loadTodayEvents() {
                                 background: white;
                                 border: 2px solid #e9ecef;
                                 border-radius: 10px;
-                                padding: 20px 16px;
+                                padding: 16px 12px;
                                 cursor: pointer;
                                 transition: all 0.3s ease;
                                 text-align: center;
                                 display: flex;
                                 flex-direction: column;
                                 align-items: center;
-                                gap: 8px;
-                                min-height: 100px;
+                                gap: 6px;
+                                min-height: 80px;
                             ">
                                 <i class="fas fa-users" style="font-size: 1.5rem; color: #666;"></i>
                                 <span style="font-weight: 600; font-size: 0.8rem; color: #333;">3人（含）以上</span>
@@ -9711,6 +9713,12 @@ async function loadTodayEvents() {
                 if (!hasStudents) {
                     console.log('📝 沒有學生資料，顯示人數選擇');
                     studentCountSelection.style.display = 'block';
+                    
+                    // 顯示人數選擇後，自動滾動到該區域
+                    setTimeout(() => {
+                        console.log('📜 人數選擇區域已顯示，開始滾動...');
+                        scrollToStudentCountSelection();
+                    }, 100);
                 } else {
                     console.log('📝 有學生資料，隱藏人數選擇');
                     studentCountSelection.style.display = 'none';
@@ -10003,26 +10011,36 @@ async function loadTodayEvents() {
         function scrollToStudentCountSelection() {
             try {
                 console.log('📜 開始滾動到人數選擇區域...');
+                window.scrollToStudentCountSelectionCalled = true; // 用於測試
                 
                 // 找到滾動容器
                 const modalContent = document.querySelector('.attendance-modal-content');
                 const teacherContent = document.querySelector('.teacher-attendance-content');
                 let scrollContainer = null;
                 
-                // 優先使用講師內容的滾動容器
-                if (teacherContent) {
-                    scrollContainer = teacherContent.querySelector('div[style*="overflow-y: auto"]');
+                // 優先使用模態框內容（真正的滾動容器）
+                if (modalContent) {
+                    scrollContainer = modalContent;
+                    console.log('✅ 使用模態框內容作為滾動容器');
                 }
                 
-                // 如果沒有找到，使用模態框內容
-                if (!scrollContainer) {
-                    scrollContainer = modalContent;
+                // 如果沒有找到，嘗試講師內容的滾動容器
+                if (!scrollContainer && teacherContent) {
+                    scrollContainer = teacherContent.querySelector('div[style*="overflow-y: auto"]');
+                    console.log('✅ 使用講師內容的滾動容器');
                 }
                 
                 if (!scrollContainer) {
                     console.warn('⚠️ 找不到滾動容器');
                     return;
                 }
+                
+                console.log('📊 滾動容器資訊:', {
+                    className: scrollContainer.className,
+                    scrollTop: scrollContainer.scrollTop,
+                    scrollHeight: scrollContainer.scrollHeight,
+                    clientHeight: scrollContainer.clientHeight
+                });
                 
                 // 找到人數選擇區域
                 const studentCountSelection = document.getElementById('student-count-selection');
@@ -10036,7 +10054,9 @@ async function loadTodayEvents() {
                 const containerRect = scrollContainer.getBoundingClientRect();
                 
                 // 計算需要滾動的距離（讓人數選擇區域到容器頂部）
-                const scrollTop = scrollContainer.scrollTop + (selectionRect.top - containerRect.top) - 100; // 100px 的額外間距，確保按鈕完全可見
+                // 增加更多間距，確保按鈕完全可見（按鈕高度約136px）
+                // 根據測試結果，按鈕bottom位置是851，視窗高度是812，需要滾動更多
+                const scrollTop = scrollContainer.scrollTop + (selectionRect.top - containerRect.top) - 200; // 200px 的額外間距，確保按鈕完全可見
                 
                 console.log('📊 滾動計算:', {
                     selectionTop: selectionRect.top,
