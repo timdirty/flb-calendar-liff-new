@@ -9877,22 +9877,31 @@ async function loadTodayEvents() {
             const courseContent = document.getElementById('course-content');
             const currentModeDisplay = document.getElementById('current-mode-display');
             
-            // 檢查是否有文字內容
-            const hasContent = courseContent && courseContent.value.trim().length > 0;
+            // 檢查是否有文字內容（至少10個字符）
+            const hasContent = courseContent && courseContent.value.trim().length >= 10;
             
             // 檢查是否選擇了身份
             const hasMode = currentModeDisplay && 
                            (currentModeDisplay.textContent === '講師模式' || 
                             currentModeDisplay.textContent === '助教模式');
             
+            // 檢查課程內容是否有效（不能只是空白或重複字符）
+            const contentValue = courseContent ? courseContent.value.trim() : '';
+            const isValidContent = contentValue.length >= 10 && 
+                                 !/^(.)\1+$/.test(contentValue) && // 不能全是相同字符
+                                 contentValue !== '請描述今天的課程內容...' && // 不能是預設文字
+                                 contentValue !== '[特殊模式] 請描述今天的課程內容...'; // 不能是特殊模式預設文字
+            
             // 檢查是否滿足自動提交條件
-            const shouldAutoSubmit = hasContent && hasMode;
+            const shouldAutoSubmit = hasContent && hasMode && isValidContent;
             
             console.log('🔍 自動提交檢查:', {
                 hasContent,
                 hasMode,
+                isValidContent,
                 shouldAutoSubmit,
-                content: courseContent ? courseContent.value.trim() : '',
+                content: contentValue,
+                contentLength: contentValue.length,
                 mode: currentModeDisplay ? currentModeDisplay.textContent : '',
                 isCurrentlyCounting: isAutoSubmitEnabled
             });
@@ -9900,11 +9909,15 @@ async function loadTodayEvents() {
             if (shouldAutoSubmit) {
                 // 如果條件滿足且當前沒有在倒數，才開始倒數
                 if (!isAutoSubmitEnabled) {
+                    console.log('✅ 所有條件滿足，開始自動提交倒數');
                     startAutoSubmitCountdown();
                 }
             } else {
                 // 如果條件不滿足，停止倒數
-                stopAutoSubmitCountdown();
+                if (isAutoSubmitEnabled) {
+                    console.log('❌ 條件不滿足，停止自動提交倒數');
+                    stopAutoSubmitCountdown();
+                }
             }
         }
         
@@ -9918,6 +9931,7 @@ async function loadTodayEvents() {
             // 重置倒數
             autoSubmitCountdown = 3;
             isAutoSubmitEnabled = true;
+            window.isAutoSubmitEnabled = true; // 同步到全域變數
             
             console.log('⏰ 開始自動提交倒數:', autoSubmitCountdown);
             
@@ -9967,6 +9981,7 @@ async function loadTodayEvents() {
                 autoSubmitTimer = null;
             }
             isAutoSubmitEnabled = false;
+            window.isAutoSubmitEnabled = false; // 同步到全域變數
             autoSubmitCountdown = 0;
             
             console.log('⏹️ 停止自動提交倒數');
@@ -11596,9 +11611,16 @@ async function loadTodayEvents() {
                     });
                 }
                 
-                // 點擊背景關閉
+                // 點擊背景關閉（但不在自動提交時關閉）
                 modal.addEventListener('click', function(e) {
-                    if (e.target === modal) {
+                    // 檢查是否點擊的是背景（不是模態框內容）
+                    if (e.target === modal || e.target.classList.contains('attendance-modal-content')) {
+                        // 檢查是否正在自動提交倒數
+                        if (isAutoSubmitEnabled || window.isAutoSubmitEnabled) {
+                            console.log('⏰ 正在自動提交倒數中，停止倒數但不關閉模態框');
+                            stopAutoSubmitCountdown();
+                            return;
+                        }
                         console.log('❌ 用戶點擊背景，取消載入');
                         closeAttendanceModal();
                     }
@@ -11646,23 +11668,38 @@ async function loadTodayEvents() {
                 // 設置載入超時保護
                 const loadingTimeout = setTimeout(() => {
                     if (isModalLoading) {
-                        console.log('⏰ 載入超時，自動關閉模態框');
-                        errorHandler.showWarning('載入超時，請重試');
-                        closeAttendanceModal();
+                        console.log('⏰ 載入超時，停止載入並顯示錯誤');
+                        isStudentListLoading = false;
+                        studentListLoadPromise = null;
+                        
+                        // 檢查是否已經切換到講師簽到模式
+                        const floatingNavigator = document.querySelector('.floating-navigator');
+                        const activeTab = floatingNavigator ? floatingNavigator.querySelector('.nav-item.active') : null;
+                        if (activeTab && activeTab.dataset.tab === 'teacher-attendance') {
+                            console.log('🔄 已切換到講師簽到模式，不顯示載入超時錯誤');
+                            return;
+                        }
+                        
+                        errorHandler.showWarning('載入學生資料超時，請重試');
                     }
-                }, 15000); // 15秒超時
+                }, 8000); // 8秒超時
                 
-                const response = await fetch('/api/proxy/google-sheets', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'getRosterAttendance',
-                        course: course,
-                        period: time
-                    })
-                });
+                const response = await Promise.race([
+                    fetch('/api/proxy/google-sheets', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            action: 'getRosterAttendance',
+                            course: course,
+                            period: time
+                        })
+                    }),
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('API請求超時')), 6000)
+                    )
+                ]);
                 
                 const data = await response.json();
                 console.log('📊 學生資料回應:', data);
