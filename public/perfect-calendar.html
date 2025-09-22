@@ -2734,6 +2734,7 @@
         /* 文字輸入框焦點效果 */
         #course-content:focus {
             transform: scale(1.02);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         /* 防止輸入框聚焦時頁面縮放 */
@@ -8984,6 +8985,9 @@ async function loadTodayEvents() {
                     scroll-behavior: smooth;
                     padding: 8px;
                     position: relative;
+                    /* 優化滾動性能 */
+                    will-change: scroll-position;
+                    contain: layout style paint;
                 ">
                     
                     <!-- 身份選擇區域 -->
@@ -9856,12 +9860,130 @@ async function loadTodayEvents() {
                 courseContent.addEventListener('focus', function() {
                     this.style.borderColor = 'rgba(52, 152, 219, 0.5)';
                     this.style.boxShadow = 'inset 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 0 3px rgba(52, 152, 219, 0.1)';
+                    
+                    // 自動滾動到文字輸入框位置
+                    scrollToTextInput(this);
                 });
                 
                 courseContent.addEventListener('blur', function() {
                     this.style.borderColor = 'rgba(255, 255, 255, 0.3)';
                     this.style.boxShadow = 'inset 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 8px rgba(0, 0, 0, 0.05)';
                 });
+                
+                // 添加點擊事件（用於觸控設備）
+                courseContent.addEventListener('click', function() {
+                    // 延遲一點時間確保焦點事件先觸發
+                    setTimeout(() => {
+                        scrollToTextInput(this);
+                    }, 50);
+                });
+            }
+        }
+
+        // 滾動到文字輸入框位置
+        function scrollToTextInput(textInput) {
+            try {
+                console.log('📜 開始滾動到文字輸入框...');
+                window.scrollToTextInputCalled = true;
+                
+                // 找到滾動容器 - 使用更穩定的選擇方式
+                let scrollContainer = null;
+                
+                // 首先嘗試找到講師內容的滾動容器
+                const teacherContent = document.querySelector('.teacher-attendance-content');
+                if (teacherContent) {
+                    const scrollDiv = teacherContent.querySelector('div[style*="overflow-y: auto"]');
+                    if (scrollDiv && scrollDiv.scrollHeight > scrollDiv.clientHeight) {
+                        scrollContainer = scrollDiv;
+                    }
+                }
+                
+                // 如果沒有找到，使用模態框內容
+                if (!scrollContainer) {
+                    const modalContent = document.querySelector('.attendance-modal-content');
+                    if (modalContent && modalContent.scrollHeight > modalContent.clientHeight) {
+                        scrollContainer = modalContent;
+                    }
+                }
+                
+                // 如果還是沒有找到，嘗試找到任何可滾動的容器
+                if (!scrollContainer) {
+                    const allScrollDivs = document.querySelectorAll('div[style*="overflow-y: auto"]');
+                    for (const div of allScrollDivs) {
+                        if (div.scrollHeight > div.clientHeight) {
+                            scrollContainer = div;
+                            break;
+                        }
+                    }
+                }
+                
+                if (!scrollContainer) {
+                    console.warn('⚠️ 找不到滾動容器');
+                    console.log('🔍 調試信息:', {
+                        modalContent: !!document.querySelector('.attendance-modal-content'),
+                        teacherContent: !!teacherContent,
+                        teacherScrollDiv: teacherContent ? !!teacherContent.querySelector('div[style*="overflow-y: auto"]') : false,
+                        anyScrollDiv: !!document.querySelector('div[style*="overflow-y: auto"]')
+                    });
+                    return;
+                }
+                
+                console.log('✅ 找到滾動容器:', {
+                    tagName: scrollContainer.tagName,
+                    className: scrollContainer.className,
+                    scrollHeight: scrollContainer.scrollHeight,
+                    clientHeight: scrollContainer.clientHeight,
+                    scrollTop: scrollContainer.scrollTop
+                });
+                
+                // 計算文字輸入框相對於滾動容器的位置
+                const textInputRect = textInput.getBoundingClientRect();
+                const containerRect = scrollContainer.getBoundingClientRect();
+                
+                // 計算需要滾動的距離（讓文字輸入框到容器頂部）
+                const scrollTop = scrollContainer.scrollTop + (textInputRect.top - containerRect.top) - 20; // 20px 的額外間距
+                
+                console.log('📊 滾動計算:', {
+                    textInputTop: textInputRect.top,
+                    containerTop: containerRect.top,
+                    currentScrollTop: scrollContainer.scrollTop,
+                    targetScrollTop: scrollTop,
+                    containerHeight: containerRect.height
+                });
+                
+                // 使用平滑滾動，優化動畫
+                const targetScrollTop = Math.max(0, scrollTop);
+                const startScrollTop = scrollContainer.scrollTop;
+                const distance = targetScrollTop - startScrollTop;
+                const duration = Math.min(500, Math.abs(distance) * 0.5); // 動態調整動畫時長
+                
+                if (duration > 0) {
+                    const startTime = performance.now();
+                    
+                    function animateScroll(currentTime) {
+                        const elapsed = currentTime - startTime;
+                        const progress = Math.min(elapsed / duration, 1);
+                        
+                        // 使用 easeOutCubic 緩動函數
+                        const easeProgress = 1 - Math.pow(1 - progress, 3);
+                        const currentScrollTop = startScrollTop + (distance * easeProgress);
+                        
+                        scrollContainer.scrollTop = currentScrollTop;
+                        
+                        if (progress < 1) {
+                            requestAnimationFrame(animateScroll);
+                        }
+                    }
+                    
+                    requestAnimationFrame(animateScroll);
+                } else {
+                    scrollContainer.scrollTop = targetScrollTop;
+                }
+                
+                console.log('✅ 滾動到文字輸入框完成');
+                
+            } catch (error) {
+                console.error('❌ 滾動到文字輸入框失敗:', error);
             }
         }
 
@@ -11630,6 +11752,11 @@ async function loadTodayEvents() {
                         width: 800px;
                         overflow-y: auto;
                         overflow-x: hidden;
+                        /* 優化滾動性能 */
+                        -webkit-overflow-scrolling: touch;
+                        scroll-behavior: smooth;
+                        will-change: scroll-position;
+                        contain: layout style paint;
                         box-shadow: 
                             0 20px 60px rgba(0, 0, 0, 0.4),
                             0 0 0 1px rgba(255, 215, 0, 0.2),
