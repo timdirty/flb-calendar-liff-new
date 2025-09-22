@@ -47,12 +47,51 @@
         .floating-navigator,
         .toast,
         .countdown-toast,
-        .liquid-button {
+        .liquid-button,
+        .student-loading-overlay,
+        #optimized-loading-overlay,
+        [class*="liquid"],
+        [class*="glass"] {
             transform: translateZ(0);
             backface-visibility: hidden;
             perspective: 1000px;
             will-change: transform, opacity, box-shadow;
             contain: layout style paint;
+        }
+        
+        /* 動畫效能優化 - 減少重繪 */
+        .liquid-loader,
+        .liquid-ring,
+        .liquid-ball {
+            transform: translateZ(0);
+            will-change: transform;
+            contain: layout style paint;
+        }
+        
+        /* 優化載入動畫效能 */
+        @media (prefers-reduced-motion: reduce) {
+            .liquid-loader *,
+            .liquid-ring,
+            .liquid-ball {
+                animation-duration: 0.1s !important;
+                animation-iteration-count: 1 !important;
+            }
+        }
+        
+        /* 低效能設備優化 */
+        @media (max-width: 768px) {
+            .liquid-loader {
+                transform: scale(0.8);
+            }
+            
+            .liquid-ring {
+                border-width: 2px;
+            }
+            
+            .liquid-ball {
+                width: 12px;
+                height: 12px;
+            }
         }
 
         body {
@@ -5331,11 +5370,11 @@
             });
         }
 
-        // 初始化系統
+        // 優化的系統初始化（並行載入）
         async function initializeSystem() {
             try {
-                console.log('開始初始化系統...');
-                addLoadingLog('🚀 開始初始化系統...', 'info');
+                console.log('開始優化初始化系統...');
+                addLoadingLog('🚀 開始優化初始化系統...', 'info');
                 updateLoadingProgress(10);
                 
                 // 初始化全局變量
@@ -5344,29 +5383,44 @@
                 // 載入設定
                 addLoadingLog('⚙️ 載入系統設定...', 'info');
                 loadSettings();
-                updateLoadingProgress(20);
+                updateLoadingProgress(15);
                 
-                // 更新日期時間（移除背景監聽）
+                // 更新日期時間
                 addLoadingLog('🕐 初始化時間系統...', 'info');
                 updateDateTime();
-                updateLoadingProgress(30);
+                updateLoadingProgress(20);
                 
-                // 先載入行事曆資料，再初始化LIFF
-                addLoadingLog('📅 正在載入行事曆資料...', 'info');
-                await loadEvents().catch(error => {
-                    console.error('載入行事曆資料失敗:', error);
-                    addLoadingLog('❌ 載入行事曆資料失敗: ' + error.message, 'error');
-                });
-                addLoadingLog('✅ 行事曆資料載入完成', 'success');
-                updateLoadingProgress(60);
+                // 並行載入行事曆和LINE用戶資料
+                addLoadingLog('🔄 並行載入行事曆和LINE資料...', 'info');
+                updateLoadingProgress(25);
                 
-                addLoadingLog('🔐 正在初始化 LINE 登入...', 'info');
-                await initLineUser().catch(error => {
-                    console.error('LIFF 初始化失敗:', error);
-                    addLoadingLog('❌ LINE 登入初始化失敗: ' + error.message, 'error');
-                });
-                addLoadingLog('✅ LINE 登入初始化完成', 'success');
-                updateLoadingProgress(80);
+                const [calendarResult, lineResult] = await Promise.allSettled([
+                    loadEvents().catch(error => {
+                        console.error('載入行事曆資料失敗:', error);
+                        addLoadingLog('❌ 載入行事曆資料失敗: ' + error.message, 'error');
+                        return null;
+                    }),
+                    initLineUser().catch(error => {
+                        console.error('LIFF 初始化失敗:', error);
+                        addLoadingLog('❌ LINE 登入初始化失敗: ' + error.message, 'error');
+                        return null;
+                    })
+                ]);
+                
+                // 處理結果
+                if (calendarResult.status === 'fulfilled' && calendarResult.value !== null) {
+                    addLoadingLog('✅ 行事曆資料載入完成', 'success');
+                    updateLoadingProgress(60);
+                } else {
+                    addLoadingLog('⚠️ 行事曆資料載入有問題', 'warning');
+                }
+                
+                if (lineResult.status === 'fulfilled' && lineResult.value !== null) {
+                    addLoadingLog('✅ LINE 登入初始化完成', 'success');
+                    updateLoadingProgress(80);
+                } else {
+                    addLoadingLog('⚠️ LINE 登入初始化有問題', 'warning');
+                }
                 
                 console.log('所有初始化任務完成，開始講師比對...');
                 addLoadingLog('👨‍🏫 開始講師身份比對...', 'info');
@@ -5685,10 +5739,26 @@
             }
         }
 
-        // 自動比對講師
+        // 優化的自動比對講師（含快取機制）
         async function autoMatchTeacher(userId, displayName) {
-            console.log('開始自動比對講師...', { userId, displayName });
-            console.log('函數被調用，參數:', { userId, displayName });
+            console.log('開始優化自動比對講師...', { userId, displayName });
+            
+            // 檢查快取
+            const cacheKey = `teacher_match_${userId}_${displayName}`;
+            const cachedResult = localStorage.getItem(cacheKey);
+            const cacheTime = localStorage.getItem(`${cacheKey}_time`);
+            const cacheExpiry = 10 * 60 * 1000; // 10分鐘快取
+            
+            if (cachedResult && cacheTime && (Date.now() - parseInt(cacheTime)) < cacheExpiry) {
+                console.log('📦 使用快取的講師比對結果');
+                addLoadingLog('📦 使用快取的講師比對結果', 'info');
+                
+                const result = JSON.parse(cachedResult);
+                if (result.matchedTeacher) {
+                    selectMatchedTeacher(result.matchedTeacher);
+                }
+                return;
+            }
             
             // 在頁面上顯示比對過程
             showMatchingProcess('開始比對講師...', 'info');
@@ -5700,25 +5770,18 @@
             return new Promise(async (resolve) => {
             
             try {
-                console.log('準備調用講師 API...');
+                console.log('準備調用優化的講師 API...');
                 showMatchingProcess('正在調用講師 API...', 'info');
                 addLoadingLog('🌐 正在連接講師資料庫...', 'info');
                 
-                // 設置 API 調用超時（10秒）
-                const apiTimeout = new Promise((_, reject) => {
-                    setTimeout(() => reject(new Error('API 調用超時')), 10000);
-                });
-                
-                // 暫時使用現有的講師 API（避免 404 問題）
-                const apiCall = fetch('/api/teachers', {
+                // 使用優化的API請求
+                const response = await apiOptimizer.fetchWithRetry('/api/teachers', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     redirect: 'follow'  // 自動跟隨重定向
                 });
-                
-                const response = await Promise.race([apiCall, apiTimeout]);
                 
                 console.log('API回應狀態:', response.status);
                 console.log('API回應OK:', response.ok);
@@ -5729,7 +5792,7 @@
                     throw new Error(`API請求失敗: ${response.status}`);
                 }
                 
-                const data = await response.json();
+                const data = response.data || await response.json();
                 console.log('API回應:', data);
                 showMatchingProcess('API回應成功，開始比對講師...', 'success');
                 addLoadingLog('✅ 講師資料載入成功', 'success');
@@ -5791,32 +5854,22 @@
                         console.log('找到匹配的講師:', matchedTeacher);
                         showMatchingProcess(`🎉 找到匹配講師: ${matchedTeacher.name}`, 'success');
                         
-                        // 自動選擇講師
-                        if (instructorSelect) {
-                            // 模糊比對講師選項
-                            const matchedOption = findBestMatchingOption(instructorSelect, matchedTeacher.name);
-                            
-                            if (matchedOption) {
-                                instructorSelect.value = matchedOption.value;
-                                console.log('自動選擇講師:', matchedOption.value);
-                                
-                                // 立即更新統計和渲染課程（在跳轉前）
-                                updateStats();
-                                renderEvents();
-                                
-                                // 跳轉到第二步驟
-                                showStep(2);
-                                
-                                showMatchingProcess(`✅ 自動選擇講師成功: ${matchedOption.value}`, 'success');
-                                addLoadingLog(`🎯 自動選擇講師: ${matchedOption.value}`, 'success');
-                                
-                                // 比對成功，顯示個人行事曆
-                                console.log('比對成功，將顯示個人行事曆');
-                                resolve();
-                                return;
-                            }
-                        }
+                        // 快取比對結果
+                        const result = {
+                            matchedTeacher: matchedTeacher,
+                            timestamp: Date.now()
+                        };
+                        localStorage.setItem(cacheKey, JSON.stringify(result));
+                        localStorage.setItem(`${cacheKey}_time`, Date.now().toString());
                         
+                        // 選擇匹配的講師
+                        selectMatchedTeacher(matchedTeacher);
+                        
+                        // 比對成功，顯示個人行事曆
+                        console.log('比對成功，將顯示個人行事曆');
+                        resolve();
+                        return;
+                    } else {
                         console.log('未找到對應的講師選項');
                         showMatchingProcess(`⚠️ 找到匹配講師但未在列表中: ${matchedTeacher.name}`, 'warning');
                         addLoadingLog(`⚠️ 找到匹配講師但未在列表中: ${matchedTeacher.name}`, 'warning');
@@ -5824,20 +5877,7 @@
                         // 比對失敗，顯示全部講師
                         console.log('比對失敗，將顯示全部講師');
                         if (instructorSelect) {
-                        instructorSelect.value = ''; // 選擇全部講師
-                            // 立即更新統計和渲染課程
-                            updateStats();
-                            renderEvents();
-                        }
-                    } else {
-                        console.log('未找到匹配的講師');
-                        showMatchingProcess('❌ 未找到匹配的講師，請手動選擇', 'error');
-                        addLoadingLog('❌ 未找到匹配的講師，請手動選擇', 'error');
-                        
-                        // 比對失敗，顯示全部講師
-                        console.log('比對失敗，將顯示全部講師');
-                        if (instructorSelect) {
-                        instructorSelect.value = ''; // 選擇全部講師
+                            instructorSelect.value = ''; // 選擇全部講師
                             // 立即更新統計和渲染課程
                             updateStats();
                             renderEvents();
@@ -6607,70 +6647,130 @@
             return '#000000';
         }
 
-// 載入當日課程（直接載入完整數據）
+// 優化的載入當日課程（含快取機制）
 async function loadTodayEvents() {
-            try {
-        console.log('🚀 開始載入完整課程數據...');
+    try {
+        console.log('🚀 開始優化載入完整課程數據...');
+        
+        // 檢查快取
+        const cacheKey = 'calendar_events_cache';
+        const cacheTime = 'calendar_events_cache_time';
+        const cacheExpiry = 5 * 60 * 1000; // 5分鐘快取
+        
+        const cachedData = localStorage.getItem(cacheKey);
+        const cacheTimestamp = localStorage.getItem(cacheTime);
+        const now = Date.now();
+        
+        if (cachedData && cacheTimestamp && (now - parseInt(cacheTimestamp)) < cacheExpiry) {
+            console.log('📦 使用快取的課程數據');
+            addLoadingLog('📦 使用快取的課程數據', 'info');
+            
+            const data = JSON.parse(cachedData);
+            if (data.success) {
+                processEventsData(data);
+                return;
+            }
+        }
+        
         addLoadingLog('🌐 正在連接 CalDAV 伺服器...', 'info');
         
-                const response = await fetch('/api/events');
+        // 使用優化的API請求
+        const response = await apiOptimizer.fetchWithRetry('/api/events', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache'
+            }
+        });
+        
         addLoadingLog('📡 正在獲取行事曆資料...', 'info');
         
-                const data = await response.json();
-                
-                if (data.success) {
-            addLoadingLog(`📊 成功獲取 ${data.data.length} 個課程`, 'success');
+        const data = response.data || response;
+        
+        if (data.success) {
+            // 快取數據
+            localStorage.setItem(cacheKey, JSON.stringify(data));
+            localStorage.setItem(cacheTime, now.toString());
             
-                    // 過濾掉 null 值和無效課程
-                    allEvents = data.data.filter(event => {
-                        if (!event) {
-                            console.warn('⚠️ loadTodayEvents: 發現 null 課程，已過濾');
-                            return false;
-                        }
-                        if (!event.start || !event.end || !event.title || !event.instructor) {
-                            console.warn('⚠️ loadTodayEvents: 課程缺少必要屬性，已過濾', event);
-                            return false;
-                        }
-                        return true;
-                    });
-                    
-                    console.log('🔍 loadTodayEvents: allEvents 過濾完成，數量:', allEvents.length);
-                    console.log('🔍 loadTodayEvents: allEvents 前5個課程:', allEvents.slice(0, 5));
-                    
-                    // 調試 allEvents 的狀態
-                    console.log('🔍 loadTodayEvents: 開始填充 allInstructors');
-                    console.log('🔍 loadTodayEvents: allEvents 長度:', allEvents.length);
-                    console.log('🔍 loadTodayEvents: allEvents 前3個課程的講師:', allEvents.slice(0, 3).map(event => event.instructor));
-                    
-                    allInstructors = [...new Set(allEvents.map(event => event.instructor).filter(Boolean))];
-            
-            console.log('🔍 loadTodayEvents: allInstructors 填充完成:', allInstructors);
-            addLoadingLog(`👥 發現 ${allInstructors.length} 位講師`, 'info');
-                    
-                    // 為新講師生成隨機馬卡龍顏色（如果沒有保存的設置）
-                    if (Object.keys(instructorColors).length === 0) {
-                addLoadingLog('🎨 正在生成講師顏色配置...', 'info');
-                        generateRandomInstructorColors();
-                    }
-                    
-                    addLoadingLog('🔄 正在渲染課程列表...', 'info');
-                    await populateInstructorDropdown();
-                    renderEvents();
-                    updateStats();
-                    
-            
-            console.log(`✅ 完整課程載入完成: ${allEvents.length} 個課程`);
-            addLoadingLog(`✅ 載入完成！共 ${allEvents.length} 個課程`, 'success');
-            hideLoadingMessage();
-                } else {
-                    showError('載入課程失敗: ' + data.message);
-                }
+            processEventsData(data);
+        } else {
+            showError('載入課程失敗: ' + data.message);
+        }
             } catch (error) {
                 console.error('載入課程錯誤:', error);
                 showError('無法連接到服務器');
     }
 }
 
+
+        // 處理事件數據（優化版本）
+        function processEventsData(data) {
+            addLoadingLog(`📊 成功獲取 ${data.data.length} 個課程`, 'success');
+            
+            // 過濾掉 null 值和無效課程
+            allEvents = data.data.filter(event => {
+                if (!event) {
+                    console.warn('⚠️ processEventsData: 發現 null 課程，已過濾');
+                    return false;
+                }
+                if (!event.start || !event.end || !event.title || !event.instructor) {
+                    console.warn('⚠️ processEventsData: 課程缺少必要屬性，已過濾', event);
+                    return false;
+                }
+                return true;
+            });
+            
+            console.log('🔍 processEventsData: allEvents 過濾完成，數量:', allEvents.length);
+            
+            // 填充講師列表
+            allInstructors = [...new Set(allEvents.map(event => event.instructor).filter(Boolean))];
+            console.log('🔍 processEventsData: allInstructors 填充完成:', allInstructors);
+            addLoadingLog(`👥 發現 ${allInstructors.length} 位講師`, 'info');
+            
+            // 為新講師生成隨機馬卡龍顏色（如果沒有保存的設置）
+            if (Object.keys(instructorColors).length === 0) {
+                addLoadingLog('🎨 正在生成講師顏色配置...', 'info');
+                generateRandomInstructorColors();
+            }
+            
+            addLoadingLog('🔄 正在渲染課程列表...', 'info');
+            populateInstructorDropdown();
+            renderEvents();
+            updateStats();
+            
+            console.log(`✅ 課程數據處理完成: ${allEvents.length} 個課程`);
+            addLoadingLog(`✅ 載入完成！共 ${allEvents.length} 個課程`, 'success');
+            hideLoadingMessage();
+        }
+
+        // 選擇匹配的講師（優化版本）
+        function selectMatchedTeacher(matchedTeacher) {
+            const instructorSelect = document.getElementById('instructorSelect');
+            
+            if (instructorSelect) {
+                // 模糊比對講師選項
+                const matchedOption = findBestMatchingOption(instructorSelect, matchedTeacher.name);
+                
+                if (matchedOption) {
+                    instructorSelect.value = matchedOption.value;
+                    console.log('自動選擇講師:', matchedOption.value);
+                    
+                    // 立即更新統計和渲染課程
+                    updateStats();
+                    renderEvents();
+                    
+                    // 跳轉到第二步驟
+                    showStep(2);
+                    
+                    showMatchingProcess(`✅ 自動選擇講師成功: ${matchedOption.value}`, 'success');
+                    addLoadingLog(`🎯 自動選擇講師: ${matchedOption.value}`, 'success');
+                } else {
+                    console.log('未找到匹配的講師選項');
+                    showMatchingProcess('⚠️ 未找到匹配的講師選項', 'warning');
+                    addLoadingLog('⚠️ 未找到匹配的講師選項', 'warning');
+                }
+            }
+        }
 
         // 載入課程資料（向後相容）
         async function loadEvents() {
@@ -8996,7 +9096,7 @@ async function loadTodayEvents() {
                     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
                 `;
                 
-                // 創建背景流動效果
+                // 創建背景流動效果（深金色系）
                 const liquidBackground = document.createElement('div');
                 liquidBackground.style.cssText = `
                     position: absolute;
@@ -9005,13 +9105,13 @@ async function loadTodayEvents() {
                     width: 200%;
                     height: 200%;
                     background: linear-gradient(45deg, 
-                        rgba(74, 144, 226, 0.1) 0%,
-                        rgba(80, 200, 120, 0.1) 25%,
-                        rgba(255, 193, 7, 0.1) 50%,
-                        rgba(255, 107, 107, 0.1) 75%,
-                        rgba(138, 43, 226, 0.1) 100%);
+                        rgba(184, 134, 11, 0.15) 0%,
+                        rgba(212, 175, 55, 0.15) 25%,
+                        rgba(255, 193, 7, 0.15) 50%,
+                        rgba(255, 215, 0, 0.15) 75%,
+                        rgba(255, 140, 0, 0.15) 100%);
                     animation: liquidFlow 8s ease-in-out infinite;
-                    opacity: 0.6;
+                    opacity: 0.7;
                 `;
                 
                 // 創建液態載入器
@@ -9024,14 +9124,14 @@ async function loadTodayEvents() {
                     transform: translateZ(0);
                 `;
                 
-                // 創建外層液態環
+                // 創建外層液態環（深金色）
                 const outerRing = document.createElement('div');
                 outerRing.style.cssText = `
                     width: 100%;
                     height: 100%;
                     border: 3px solid transparent;
-                    border-top: 3px solid rgba(74, 144, 226, 0.4);
-                    border-right: 3px solid rgba(80, 200, 120, 0.4);
+                    border-top: 3px solid rgba(184, 134, 11, 0.6);
+                    border-right: 3px solid rgba(212, 175, 55, 0.6);
                     border-radius: 50%;
                     animation: liquidSpin 2s linear infinite;
                     position: absolute;
@@ -9039,14 +9139,14 @@ async function loadTodayEvents() {
                     left: 0;
                 `;
                 
-                // 創建內層液態環
+                // 創建內層液態環（深金色）
                 const innerRing = document.createElement('div');
                 innerRing.style.cssText = `
                     width: 60%;
                     height: 60%;
                     border: 2px solid transparent;
-                    border-bottom: 2px solid rgba(255, 193, 7, 0.5);
-                    border-left: 2px solid rgba(255, 107, 107, 0.5);
+                    border-bottom: 2px solid rgba(255, 193, 7, 0.7);
+                    border-left: 2px solid rgba(255, 215, 0, 0.7);
                     border-radius: 50%;
                     animation: liquidSpin 1.5s linear infinite reverse;
                     position: absolute;
@@ -9054,15 +9154,15 @@ async function loadTodayEvents() {
                     left: 20%;
                 `;
                 
-                // 創建中心液態球
+                // 創建中心液態球（深金色）
                 const centerBall = document.createElement('div');
                 centerBall.style.cssText = `
                     width: 12px;
                     height: 12px;
                     background: linear-gradient(135deg, 
-                        rgba(74, 144, 226, 0.8) 0%,
-                        rgba(80, 200, 120, 0.8) 50%,
-                        rgba(255, 193, 7, 0.8) 100%);
+                        rgba(184, 134, 11, 0.9) 0%,
+                        rgba(255, 193, 7, 0.9) 50%,
+                        rgba(255, 215, 0, 0.9) 100%);
                     border-radius: 50%;
                     position: absolute;
                     top: 50%;
@@ -9070,8 +9170,8 @@ async function loadTodayEvents() {
                     transform: translate(-50%, -50%);
                     animation: liquidPulse 1.5s ease-in-out infinite;
                     box-shadow: 
-                        0 0 15px rgba(74, 144, 226, 0.4),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+                        0 0 15px rgba(184, 134, 11, 0.6),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.4);
                 `;
                 
                 // 創建載入文字
@@ -15205,7 +15305,7 @@ async function loadTodayEvents() {
                 transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             `;
             
-            // 創建背景流動效果
+            // 創建背景流動效果（深金色系）
             const liquidBackground = document.createElement('div');
             liquidBackground.style.cssText = `
                 position: absolute;
@@ -15214,88 +15314,106 @@ async function loadTodayEvents() {
                 width: 200%;
                 height: 200%;
                 background: linear-gradient(45deg, 
-                    rgba(74, 144, 226, 0.1) 0%,
-                    rgba(80, 200, 120, 0.1) 25%,
-                    rgba(255, 193, 7, 0.1) 50%,
-                    rgba(255, 107, 107, 0.1) 75%,
-                    rgba(138, 43, 226, 0.1) 100%);
+                    rgba(184, 134, 11, 0.15) 0%,
+                    rgba(212, 175, 55, 0.15) 25%,
+                    rgba(255, 193, 7, 0.15) 50%,
+                    rgba(255, 215, 0, 0.15) 75%,
+                    rgba(255, 140, 0, 0.15) 100%);
                 animation: liquidFlow 8s ease-in-out infinite;
-                opacity: 0.6;
+                opacity: 0.7;
             `;
             
-            // 創建液態玻璃載入器
+            // 創建液態玻璃載入器（效能優化）
             const liquidLoader = document.createElement('div');
+            liquidLoader.className = 'liquid-loader';
             liquidLoader.style.cssText = `
                 width: 80px;
                 height: 80px;
                 margin: 0 auto 24px;
                 position: relative;
                 transform: translateZ(0);
+                will-change: transform;
+                contain: layout style paint;
             `;
             
-            // 創建外層液態環
+            // 創建外層液態環（深金色，效能優化）
             const outerRing = document.createElement('div');
+            outerRing.className = 'liquid-ring';
             outerRing.style.cssText = `
                 width: 100%;
                 height: 100%;
                 border: 3px solid transparent;
-                border-top: 3px solid rgba(74, 144, 226, 0.3);
-                border-right: 3px solid rgba(80, 200, 120, 0.3);
+                border-top: 3px solid rgba(184, 134, 11, 0.6);
+                border-right: 3px solid rgba(212, 175, 55, 0.6);
                 border-radius: 50%;
                 animation: liquidSpin 2s linear infinite;
                 position: absolute;
                 top: 0;
                 left: 0;
+                transform: translateZ(0);
+                will-change: transform;
+                contain: layout style paint;
             `;
             
-            // 創建中層液態環
+            // 創建中層液態環（深金色，效能優化）
             const middleRing = document.createElement('div');
+            middleRing.className = 'liquid-ring';
             middleRing.style.cssText = `
                 width: 70%;
                 height: 70%;
                 border: 2px solid transparent;
-                border-bottom: 2px solid rgba(255, 193, 7, 0.4);
-                border-left: 2px solid rgba(255, 107, 107, 0.4);
+                border-bottom: 2px solid rgba(255, 193, 7, 0.7);
+                border-left: 2px solid rgba(255, 215, 0, 0.7);
                 border-radius: 50%;
                 animation: liquidSpin 1.5s linear infinite reverse;
                 position: absolute;
                 top: 15%;
                 left: 15%;
+                transform: translateZ(0);
+                will-change: transform;
+                contain: layout style paint;
             `;
             
-            // 創建內層液態環
+            // 創建內層液態環（深金色，效能優化）
             const innerRing = document.createElement('div');
+            innerRing.className = 'liquid-ring';
             innerRing.style.cssText = `
                 width: 40%;
                 height: 40%;
                 border: 2px solid transparent;
-                border-top: 2px solid rgba(138, 43, 226, 0.5);
-                border-right: 2px solid rgba(74, 144, 226, 0.5);
+                border-top: 2px solid rgba(255, 140, 0, 0.8);
+                border-right: 2px solid rgba(184, 134, 11, 0.8);
                 border-radius: 50%;
                 animation: liquidSpin 1s linear infinite;
                 position: absolute;
                 top: 30%;
                 left: 30%;
+                transform: translateZ(0);
+                will-change: transform;
+                contain: layout style paint;
             `;
             
-            // 創建中心液態球
+            // 創建中心液態球（深金色，效能優化）
             const centerBall = document.createElement('div');
+            centerBall.className = 'liquid-ball';
             centerBall.style.cssText = `
                 width: 16px;
                 height: 16px;
                 background: linear-gradient(135deg, 
-                    rgba(74, 144, 226, 0.8) 0%,
-                    rgba(80, 200, 120, 0.8) 50%,
-                    rgba(255, 193, 7, 0.8) 100%);
+                    rgba(184, 134, 11, 0.9) 0%,
+                    rgba(255, 193, 7, 0.9) 50%,
+                    rgba(255, 215, 0, 0.9) 100%);
                 border-radius: 50%;
                 position: absolute;
                 top: 50%;
                 left: 50%;
-                transform: translate(-50%, -50%);
+                transform: translate(-50%, -50%) translateZ(0);
                 animation: liquidPulse 1.5s ease-in-out infinite;
                 box-shadow: 
-                    0 0 20px rgba(74, 144, 226, 0.4),
-                    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+                    0 0 20px rgba(184, 134, 11, 0.6),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+                will-change: transform, opacity;
+                contain: layout style paint;
             `;
             
             // 創建載入文字
@@ -15335,15 +15453,15 @@ async function loadTodayEvents() {
             progressFill.style.cssText = `
                 height: 100%;
                 background: linear-gradient(90deg, 
-                    rgba(74, 144, 226, 0.8) 0%,
-                    rgba(80, 200, 120, 0.8) 50%,
-                    rgba(255, 193, 7, 0.8) 100%);
+                    rgba(184, 134, 11, 0.9) 0%,
+                    rgba(255, 193, 7, 0.9) 50%,
+                    rgba(255, 215, 0, 0.9) 100%);
                 border-radius: 3px;
                 width: 0%;
                 transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
                 position: relative;
                 overflow: hidden;
-                box-shadow: 0 0 10px rgba(74, 144, 226, 0.3);
+                box-shadow: 0 0 10px rgba(184, 134, 11, 0.5);
             `;
             
             // 創建進度條光效
