@@ -1,7 +1,13 @@
-FROM node:18-alpine
+# 使用更穩定的基礎映像檔
+FROM node:18-slim
 
 # 設定工作目錄
 WORKDIR /app
+
+# 更新系統並安裝必要的工具
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
 # 設定 npm 鏡像源以提高下載速度
 RUN npm config set registry https://registry.npmmirror.com
@@ -9,8 +15,8 @@ RUN npm config set registry https://registry.npmmirror.com
 # 複製 package.json 和 package-lock.json
 COPY package*.json ./
 
-# 安裝依賴，添加重試機制
-RUN npm ci --only=production --timeout=300000 --retry=3
+# 安裝依賴，添加重試機制和更長的超時時間
+RUN npm ci --only=production --timeout=600000 --retry=5
 
 # 複製所有檔案
 COPY . .
