@@ -11627,12 +11627,15 @@ async function loadTodayEvents() {
                 });
                 
                 // 載入學生名單（在後台執行，不阻塞UI）
-                loadCourseStudents(teacher, course, time, start, end, minutesUntilStart).catch(error => {
+                loadCourseStudents(teacher, course, time, start, end, minutesUntilStart).then(() => {
+                    console.log('✅ 學生資料載入完成');
+                    // 載入完成，更新狀態
+                    isModalLoading = false;
+                }).catch(error => {
                     console.log('📚 學生資料載入失敗（後台）:', error);
+                    // 載入失敗，也要更新狀態
+                    isModalLoading = false;
                 });
-                
-                // 載入完成，更新狀態
-                isModalLoading = false;
                 
             } catch (error) {
                 console.error('❌ 開啟簽到系統失敗:', error);
@@ -11667,7 +11670,7 @@ async function loadTodayEvents() {
                 
                 // 設置載入超時保護
                 const loadingTimeout = setTimeout(() => {
-                    if (isModalLoading) {
+                    if (currentAttendanceModal) {
                         console.log('⏰ 載入超時，停止載入並顯示錯誤');
                         isStudentListLoading = false;
                         studentListLoadPromise = null;
@@ -11705,7 +11708,7 @@ async function loadTodayEvents() {
                 console.log('📊 學生資料回應:', data);
                 
                 // 再次檢查模態框是否仍然存在
-                if (!currentAttendanceModal || !isModalLoading) {
+                if (!currentAttendanceModal) {
                     console.log('❌ 模態框已被關閉，取消處理學生資料');
                     return;
                 }
@@ -11724,7 +11727,9 @@ async function loadTodayEvents() {
                     isStudentListLoading = false;
                     studentListLoadPromise = null;
                     
+                    console.log('🎯 準備調用 displayStudents 函數');
                     displayStudents(data.students, teacher, course, time, start, end, minutesUntilStart);
+                    console.log('✅ displayStudents 函數調用完成');
                 } else {
                     // 載入失敗，更新狀態
                     isStudentListLoading = false;
@@ -11878,8 +11883,13 @@ async function loadTodayEvents() {
 
         // 顯示學生列表
         function displayStudents(students, teacher, course, time, start, end, minutesUntilStart = null) {
+            console.log('🎯 displayStudents 函數開始執行');
             const attendanceContent = document.getElementById('attendanceContent');
-            if (!attendanceContent) return;
+            if (!attendanceContent) {
+                console.log('❌ 找不到 attendanceContent 元素');
+                return;
+            }
+            console.log('✅ 找到 attendanceContent 元素');
             
             // 保存學生資料到全域變數，供後續使用
             window.loadedStudentsData = {
