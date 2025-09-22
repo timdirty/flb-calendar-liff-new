@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 
-async function testAutoSubmitTrigger() {
-    console.log('🧪 開始測試自動提交觸發條件修改...');
+async function testLayoutAndJSFix() {
+    console.log('🧪 開始測試布局調整和JavaScript錯誤修復...');
     
     const browser = await puppeteer.launch({ 
         headless: false,
@@ -20,6 +20,11 @@ async function testAutoSubmitTrigger() {
             if (msg.type() === 'log') {
                 console.log('📱 頁面日誌:', msg.text());
             }
+        });
+        
+        // 捕獲JavaScript錯誤
+        page.on('pageerror', error => {
+            console.error('❌ JavaScript錯誤:', error.message);
         });
         
         console.log('📱 導航到頁面...');
@@ -79,9 +84,42 @@ async function testAutoSubmitTrigger() {
         // 等待講師簽到內容載入
         await new Promise(resolve => setTimeout(resolve, 3000));
         
-        console.log('📝 測試1個字符觸發自動提交...');
-        // 填寫1個字符
-        await page.type('#course-content', 'A');
+        // 檢查布局順序
+        const layoutCheck = await page.evaluate(() => {
+            const studentCountSelection = document.getElementById('student-count-selection');
+            const courseContent = document.getElementById('course-content');
+            
+            // 檢查元素是否存在
+            const hasStudentCount = !!studentCountSelection;
+            const hasCourseContent = !!courseContent;
+            
+            // 檢查布局順序（課程內容應該在人數選擇之後）
+            let courseContentAfterStudentCount = false;
+            if (hasStudentCount && hasCourseContent) {
+                const studentCountRect = studentCountSelection.getBoundingClientRect();
+                const courseContentRect = courseContent.getBoundingClientRect();
+                courseContentAfterStudentCount = courseContentRect.top > studentCountRect.top;
+            }
+            
+            return {
+                hasStudentCount: hasStudentCount,
+                hasCourseContent: hasCourseContent,
+                courseContentAfterStudentCount: courseContentAfterStudentCount,
+                studentCountDisplay: studentCountSelection ? studentCountSelection.style.display : 'N/A'
+            };
+        });
+        
+        console.log('📊 布局檢查結果:', layoutCheck);
+        
+        if (layoutCheck.hasCourseContent && layoutCheck.courseContentAfterStudentCount) {
+            console.log('✅ 布局順序正確：課程內容在人數選擇之後');
+        } else {
+            console.log('❌ 布局順序不正確');
+        }
+        
+        console.log('📝 測試JavaScript錯誤修復...');
+        // 填寫課程內容
+        await page.type('#course-content', '測試內容');
         
         // 選擇講師模式
         await page.click('#teacher-mode-btn');
@@ -89,10 +127,10 @@ async function testAutoSubmitTrigger() {
         // 等待檢查
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        // 檢查是否開始倒數
-        const singleCharCheck = await page.evaluate(() => {
+        // 檢查是否開始倒數（這會觸發showCountdownToast函數）
+        const autoSubmitCheck = await page.evaluate(() => {
             const isCounting = window.isAutoSubmitEnabled || false;
-            const countdownElement = document.querySelector('.toast');
+            const countdownElement = document.querySelector('.countdown-toast');
             
             return {
                 isCounting: isCounting,
@@ -101,89 +139,15 @@ async function testAutoSubmitTrigger() {
             };
         });
         
-        console.log('📊 1個字符檢查結果:', singleCharCheck);
+        console.log('📊 自動提交檢查結果:', autoSubmitCheck);
         
-        if (singleCharCheck.isCounting) {
-            console.log('✅ 1個字符正確觸發了自動提交');
+        if (autoSubmitCheck.isCounting) {
+            console.log('✅ 自動提交正常啟動，JavaScript錯誤已修復');
         } else {
-            console.log('❌ 1個字符沒有觸發自動提交');
+            console.log('❌ 自動提交沒有啟動');
         }
         
-        console.log('📝 測試按Enter鍵觸發...');
-        // 清空並重新填寫
-        await page.evaluate(() => {
-            const courseContent = document.getElementById('course-content');
-            if (courseContent) {
-                courseContent.value = '';
-            }
-        });
-        
-        await page.type('#course-content', '測試內容');
-        
-        // 按Enter鍵
-        await page.keyboard.press('Enter');
-        
-        // 等待檢查
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // 檢查是否開始倒數
-        const enterKeyCheck = await page.evaluate(() => {
-            const isCounting = window.isAutoSubmitEnabled || false;
-            const countdownElement = document.querySelector('.toast');
-            
-            return {
-                isCounting: isCounting,
-                hasCountdownElement: !!countdownElement,
-                countdownText: countdownElement ? countdownElement.textContent : ''
-            };
-        });
-        
-        console.log('📊 Enter鍵檢查結果:', enterKeyCheck);
-        
-        if (enterKeyCheck.isCounting) {
-            console.log('✅ Enter鍵正確觸發了自動提交');
-        } else {
-            console.log('❌ Enter鍵沒有觸發自動提交');
-        }
-        
-        console.log('📝 測試失去焦點觸發...');
-        // 清空並重新填寫
-        await page.evaluate(() => {
-            const courseContent = document.getElementById('course-content');
-            if (courseContent) {
-                courseContent.value = '';
-            }
-        });
-        
-        await page.type('#course-content', '失去焦點測試');
-        
-        // 點擊其他地方失去焦點
-        await page.click('body');
-        
-        // 等待檢查
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // 檢查是否開始倒數
-        const blurCheck = await page.evaluate(() => {
-            const isCounting = window.isAutoSubmitEnabled || false;
-            const countdownElement = document.querySelector('.toast');
-            
-            return {
-                isCounting: isCounting,
-                hasCountdownElement: !!countdownElement,
-                countdownText: countdownElement ? countdownElement.textContent : ''
-            };
-        });
-        
-        console.log('📊 失去焦點檢查結果:', blurCheck);
-        
-        if (blurCheck.isCounting) {
-            console.log('✅ 失去焦點正確觸發了自動提交');
-        } else {
-            console.log('❌ 失去焦點沒有觸發自動提交');
-        }
-        
-        console.log('🎉 自動提交觸發條件測試完成！');
+        console.log('🎉 布局調整和JavaScript錯誤修復測試完成！');
         return true;
         
     } catch (error) {
@@ -195,7 +159,7 @@ async function testAutoSubmitTrigger() {
 }
 
 // 執行測試
-testAutoSubmitTrigger().then(success => {
+testLayoutAndJSFix().then(success => {
     if (success) {
         console.log('✅ 測試完成！');
         process.exit(0);

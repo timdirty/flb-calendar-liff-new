@@ -9210,54 +9210,6 @@ async function loadTodayEvents() {
                                 今日報表
                             </h3>
                         
-                        <div style="margin-bottom: 8px;">
-                            <label for="course-content" style="
-                                display: block;
-                                margin-bottom: 6px;
-                                font-weight: 600;
-                                color: #2c3e50;
-                                font-size: 0.9rem;
-                                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-                            ">課程內容：</label>
-                            <textarea 
-                                id="course-content" 
-                                placeholder="請描述今天的課程內容..."
-                                rows="3"
-                                maxlength="500"
-                                style="
-                                    width: 100%;
-                                    padding: 10px 12px;
-                                    background: linear-gradient(135deg, 
-                                        rgba(255, 255, 255, 0.2) 0%, 
-                                        rgba(255, 255, 255, 0.1) 100%);
-                                    backdrop-filter: blur(15px);
-                                    -webkit-backdrop-filter: blur(15px);
-                                    border: 2px solid rgba(255, 255, 255, 0.3);
-                                    border-radius: 10px;
-                                    font-size: 0.85rem;
-                                    font-family: inherit;
-                                    resize: vertical;
-                                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-                                    color: #2c3e50;
-                                    box-shadow: 
-                                        inset 0 2px 4px rgba(0, 0, 0, 0.1),
-                                        inset 0 1px 0 rgba(255, 255, 255, 0.4),
-                                        0 2px 8px rgba(0, 0, 0, 0.05);
-                                    outline: none;
-                                "
-                                onfocus="this.style.borderColor='rgba(52, 152, 219, 0.5)'; this.style.boxShadow='inset 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 0 3px rgba(52, 152, 219, 0.1)'"
-                                onblur="this.style.borderColor='rgba(255, 255, 255, 0.3)'; this.style.boxShadow='inset 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 8px rgba(0, 0, 0, 0.05)'"
-                            ></textarea>
-                            <div class="char-count" style="
-                                text-align: right;
-                                margin-top: 6px;
-                                font-size: 0.75rem;
-                                color: #5a6c7d;
-                                font-weight: 500;
-                            ">
-                                <span id="char-count">0</span>/500
-                            </div>
-                        </div>
                         </div>
                     </div>
                     
@@ -9406,6 +9358,105 @@ async function loadTodayEvents() {
                             <i class="fas fa-paper-plane" style="margin-right: 8px;"></i>
                             提交講師報表
                         </button>
+                    </div>
+                    
+                    <!-- 課程內容輸入區域 -->
+                    <div class="glass-card" style="
+                        background: linear-gradient(135deg, 
+                            rgba(255, 255, 255, 0.25) 0%, 
+                            rgba(255, 255, 255, 0.1) 50%,
+                            rgba(255, 255, 255, 0.2) 100%);
+                        backdrop-filter: blur(25px);
+                        -webkit-backdrop-filter: blur(25px);
+                        border: 1px solid rgba(255, 255, 255, 0.3);
+                        border-radius: 20px;
+                        padding: 16px;
+                        box-shadow: 
+                            0 8px 32px rgba(0, 0, 0, 0.1),
+                            0 2px 8px rgba(0, 0, 0, 0.05),
+                            inset 0 1px 0 rgba(255, 255, 255, 0.4),
+                            inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+                        position: relative;
+                        overflow: hidden;
+                    ">
+                        <!-- 背景光效 -->
+                        <div style="
+                            position: absolute;
+                            top: -50%;
+                            left: -50%;
+                            width: 200%;
+                            height: 200%;
+                            background: radial-gradient(circle, rgba(52, 152, 219, 0.1) 0%, transparent 70%);
+                            animation: shimmer 3s ease-in-out infinite;
+                            pointer-events: none;
+                        "></div>
+                        
+                        <div style="position: relative; z-index: 1;">
+                            <h4 style="
+                                margin: 0 0 8px 0;
+                                color: #2c3e50;
+                                font-size: 1rem;
+                                font-weight: 700;
+                                display: flex;
+                                align-items: center;
+                                gap: 10px;
+                                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+                            ">
+                                <i class="fas fa-edit" style="
+                                    color: #3498db;
+                                    font-size: 1.1rem;
+                                    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+                                "></i>
+                                課程內容
+                            </h4>
+                            <p style="
+                                margin: 0 0 12px 0;
+                                color: #5a6c7d;
+                                font-size: 0.85rem;
+                                line-height: 1.4;
+                            ">請描述今天的課程內容（至少1個字符）</p>
+                            
+                            <div style="margin-bottom: 8px;">
+                                <textarea 
+                                    id="course-content" 
+                                    placeholder="請描述今天的課程內容..."
+                                    rows="3"
+                                    maxlength="500"
+                                    style="
+                                        width: 100%;
+                                        padding: 10px 12px;
+                                        background: linear-gradient(135deg, 
+                                            rgba(255, 255, 255, 0.2) 0%, 
+                                            rgba(255, 255, 255, 0.1) 100%);
+                                        backdrop-filter: blur(15px);
+                                        -webkit-backdrop-filter: blur(15px);
+                                        border: 2px solid rgba(255, 255, 255, 0.3);
+                                        border-radius: 10px;
+                                        font-size: 0.85rem;
+                                        font-family: inherit;
+                                        resize: vertical;
+                                        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                                        color: #2c3e50;
+                                        box-shadow: 
+                                            inset 0 2px 4px rgba(0, 0, 0, 0.1),
+                                            inset 0 1px 0 rgba(255, 255, 255, 0.4),
+                                            0 2px 8px rgba(0, 0, 0, 0.05);
+                                        outline: none;
+                                    "
+                                    onfocus="this.style.borderColor='rgba(52, 152, 219, 0.5)'; this.style.boxShadow='inset 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 0 3px rgba(52, 152, 219, 0.1)'"
+                                    onblur="this.style.borderColor='rgba(255, 255, 255, 0.3)'; this.style.boxShadow='inset 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 8px rgba(0, 0, 0, 0.05)'"
+                                ></textarea>
+                                <div class="char-count" style="
+                                    text-align: right;
+                                    margin-top: 6px;
+                                    font-size: 0.75rem;
+                                    color: #5a6c7d;
+                                    font-weight: 500;
+                                ">
+                                    <span id="char-count">0</span>/500
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- 透明空白元件確保滾動觸發 -->
@@ -10056,6 +10107,14 @@ async function loadTodayEvents() {
                 existingToast.remove();
             }
             
+            // 獲取當前模式和課程內容
+            const currentModeDisplay = document.getElementById('current-mode-display');
+            const courseContent = document.getElementById('course-content');
+            
+            // 獲取當前模式和課程內容的文本
+            const modeText = currentModeDisplay ? currentModeDisplay.textContent : '未知';
+            const contentText = courseContent ? courseContent.value.substring(0, 20) + (courseContent.value.length > 20 ? '...' : '') : '無';
+            
             // 創建倒數提示
             const toast = document.createElement('div');
             toast.className = 'countdown-toast';
@@ -10122,7 +10181,7 @@ async function loadTodayEvents() {
                             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
                             color: #7f8c8d;
                             font-size: 12px;
-                        ">模式：${currentModeDisplay ? currentModeDisplay.textContent : '未知'}</div>
+                        ">模式：${modeText}</div>
                         <div style="
                             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
                             color: #7f8c8d;
@@ -10131,7 +10190,7 @@ async function loadTodayEvents() {
                             overflow: hidden;
                             text-overflow: ellipsis;
                             white-space: nowrap;
-                        ">內容：${courseContent ? courseContent.value.substring(0, 20) + (courseContent.value.length > 20 ? '...' : '') : '無'}</div>
+                        ">內容：${contentText}</div>
                     </div>
                 </div>
             `;
@@ -11741,9 +11800,11 @@ async function loadTodayEvents() {
         }
 
         // 載入課程學生
-        async function loadCourseStudents(teacher, course, time, start, end, minutesUntilStart = null) {
+        async function loadCourseStudents(teacher, course, time, start, end, minutesUntilStart = null, retryCount = 0) {
+            const maxRetries = 3; // 最大重試次數
+            
             try {
-                console.log('📚 載入課程學生:', { teacher, course, time, start, end });
+                console.log('📚 載入課程學生:', { teacher, course, time, start, end, retryCount });
                 
                 // 設置學生名單載入狀態
                 isStudentListLoading = true;
@@ -11910,6 +11971,23 @@ async function loadTodayEvents() {
                     isStudentListLoading = false;
                     studentListLoadPromise = null;
                     clearTimeout(loadingTimeout);
+                    return;
+                }
+                
+                // 檢查是否還有重試次數
+                if (retryCount < maxRetries) {
+                    console.log(`🔄 自動重試載入學生資料 (${retryCount + 1}/${maxRetries})`);
+                    
+                    // 更新狀態
+                    isStudentListLoading = false;
+                    studentListLoadPromise = null;
+                    clearTimeout(loadingTimeout);
+                    
+                    // 延遲後重試
+                    setTimeout(() => {
+                        loadCourseStudents(teacher, course, time, start, end, minutesUntilStart, retryCount + 1);
+                    }, 2000 * (retryCount + 1)); // 遞增延遲：2秒、4秒、6秒
+                    
                     return;
                 }
                 
