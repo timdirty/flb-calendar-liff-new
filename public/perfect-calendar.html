@@ -5425,7 +5425,7 @@
             });
             
             if (todayEvents.length > 0) {
-                console.log('✅ 今日有課程，選擇今日視圖');
+                console.log(`✅ 今日有 ${todayEvents.length} 個課程，選擇今日視圖`);
                 return '今日';
             }
             
@@ -5442,7 +5442,7 @@
             });
             
             if (weekEvents.length > 0) {
-                console.log('✅ 本週有課程，選擇本週視圖');
+                console.log(`✅ 本週有 ${weekEvents.length} 個課程，選擇本週視圖`);
                 return '本週';
             }
             
@@ -5455,12 +5455,12 @@
             });
             
             if (monthEvents.length > 0) {
-                console.log('✅ 本月有課程，選擇本月視圖');
+                console.log(`✅ 本月有 ${monthEvents.length} 個課程，選擇本月視圖`);
                 return '本月';
             }
             
             // 如果都沒有，選擇全部視圖
-            console.log('✅ 只有其他時間的課程，選擇全部視圖');
+            console.log(`✅ 只有其他時間的 ${allEvents.length} 個課程，選擇全部視圖`);
             return '全部';
         }
 
@@ -5485,7 +5485,7 @@
             });
             
             if (todayEvents.length > 0) {
-                console.log('✅ 講師今日有課程，選擇今日視圖');
+                console.log(`✅ 講師今日有 ${todayEvents.length} 個課程，選擇今日視圖`);
                 return '今日';
             }
             
@@ -5502,7 +5502,7 @@
             });
             
             if (weekEvents.length > 0) {
-                console.log('✅ 講師本週有課程，選擇本週視圖');
+                console.log(`✅ 講師本週有 ${weekEvents.length} 個課程，選擇本週視圖`);
                 return '本週';
             }
             
@@ -5515,13 +5515,205 @@
             });
             
             if (monthEvents.length > 0) {
-                console.log('✅ 講師本月有課程，選擇本月視圖');
+                console.log(`✅ 講師本月有 ${monthEvents.length} 個課程，選擇本月視圖`);
                 return '本月';
             }
             
             // 如果都沒有，選擇全部視圖
-            console.log('✅ 講師只有其他時間的課程，選擇全部視圖');
+            console.log(`✅ 講師只有其他時間的 ${instructorEvents.length} 個課程，選擇全部視圖`);
             return '全部';
+        }
+
+        // 顯示智能篩選通知
+        function showSmartFilterNotification(instructor, view, courseCount) {
+            const viewNames = {
+                '今日': '今日',
+                '本週': '本週', 
+                '本月': '本月',
+                '全部': '全部'
+            };
+            
+            const viewName = viewNames[view] || view;
+            const message = `🧠 智能篩選：${instructor} 在 ${viewName} 有 ${courseCount} 個課程`;
+            
+            // 顯示短暫的通知
+            showToast(message, 'info', 3000);
+            
+            // 在控制台顯示詳細信息
+            console.log(`📊 智能篩選統計:`, {
+                instructor: instructor,
+                view: viewName,
+                courseCount: courseCount,
+                timestamp: new Date().toLocaleString()
+            });
+        }
+
+        // 顯示進階智能篩選通知
+        function showAdvancedSmartFilterNotification(result) {
+            const { view, reason, stats, instructor } = result;
+            
+            const viewNames = {
+                '今日': '今日',
+                '本週': '本週', 
+                '本月': '本月',
+                '全部': '全部'
+            };
+            
+            const viewName = viewNames[view] || view;
+            
+            // 創建詳細的統計信息
+            const statsText = `今日:${stats.today} 本週:${stats.week} 本月:${stats.month} 總計:${stats.total}`;
+            const message = `🧠 智能篩選：${instructor} → ${viewName} (${reason})`;
+            
+            // 顯示詳細的通知
+            showToast(message, 'info', 4000);
+            
+            // 在控制台顯示詳細信息
+            console.log(`📊 進階智能篩選統計:`, {
+                instructor: instructor,
+                selectedView: viewName,
+                reason: reason,
+                stats: statsText,
+                timestamp: new Date().toLocaleString()
+            });
+            
+            // 顯示課程分布圖表（在控制台）
+            console.log(`📈 課程分布圖表:`, {
+                '今日': '█'.repeat(Math.min(stats.today, 10)) + ` (${stats.today})`,
+                '本週': '█'.repeat(Math.min(stats.week, 10)) + ` (${stats.week})`,
+                '本月': '█'.repeat(Math.min(stats.month, 10)) + ` (${stats.month})`,
+                '總計': '█'.repeat(Math.min(stats.total, 10)) + ` (${stats.total})`
+            });
+        }
+
+        // 手動觸發智能篩選
+        function triggerSmartFilter() {
+            console.log('🔄 手動觸發智能篩選...');
+            
+            const instructorSelect = document.getElementById('instructorSelect');
+            const selectedInstructor = instructorSelect ? instructorSelect.value : null;
+            
+            if (selectedInstructor) {
+                // 針對特定講師進行智能篩選
+                const instructorEvents = allEvents.filter(event => 
+                    event && event.instructor === selectedInstructor
+                );
+                
+                const smartResult = advancedSmartViewSelection(instructorEvents, selectedInstructor);
+                currentView = smartResult.view;
+                window.currentView = smartResult.view;
+                
+                console.log(`🧠 手動智能篩選結果: ${smartResult.view} (${smartResult.reason})`);
+                showAdvancedSmartFilterNotification(smartResult);
+                
+            } else {
+                // 全局智能篩選
+                const smartResult = advancedSmartViewSelection(allEvents, '全部講師');
+                currentView = smartResult.view;
+                window.currentView = smartResult.view;
+                
+                console.log(`🧠 手動全局智能篩選結果: ${smartResult.view} (${smartResult.reason})`);
+                showAdvancedSmartFilterNotification(smartResult);
+            }
+            
+            // 更新UI
+            updateViewButtonStates();
+            updateTimeFilterOptions();
+            updateStats();
+            renderEvents();
+            
+            // 顯示成功提示
+            showToast('🧠 智能篩選已重新執行', 'success', 2000);
+        }
+
+        // 將智能篩選函數暴露到全局，方便調試
+        window.triggerSmartFilter = triggerSmartFilter;
+        window.advancedSmartViewSelection = advancedSmartViewSelection;
+
+        // 進階智能篩選：根據課程分布選擇最佳視圖
+        function advancedSmartViewSelection(events, instructor = null) {
+            console.log('🚀 開始進階智能篩選...');
+            
+            if (!events || events.length === 0) {
+                console.log('⚠️ 沒有事件資料');
+                return { view: '今日', reason: '無課程資料' };
+            }
+            
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            // 計算各時間範圍的課程數量
+            const stats = {
+                today: 0,
+                week: 0,
+                month: 0,
+                total: events.length
+            };
+            
+            // 今日課程
+            const todayEvents = events.filter(event => {
+                if (!event || !event.start) return false;
+                const eventDate = new Date(event.start);
+                const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+                return eventDay.getTime() === today.getTime();
+            });
+            stats.today = todayEvents.length;
+            
+            // 本週課程
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - today.getDay());
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            
+            const weekEvents = events.filter(event => {
+                if (!event || !event.start) return false;
+                const eventDate = new Date(event.start);
+                return eventDate >= weekStart && eventDate <= weekEnd;
+            });
+            stats.week = weekEvents.length;
+            
+            // 本月課程
+            const monthEvents = events.filter(event => {
+                if (!event || !event.start) return false;
+                const eventDate = new Date(event.start);
+                return eventDate.getFullYear() === now.getFullYear() &&
+                       eventDate.getMonth() === now.getMonth();
+            });
+            stats.month = monthEvents.length;
+            
+            console.log('📊 課程分布統計:', stats);
+            
+            // 智能選擇邏輯
+            let selectedView = '今日';
+            let reason = '';
+            
+            if (stats.today > 0) {
+                selectedView = '今日';
+                reason = `今日有 ${stats.today} 個課程`;
+            } else if (stats.week > 0) {
+                selectedView = '本週';
+                reason = `本週有 ${stats.week} 個課程`;
+            } else if (stats.month > 0) {
+                selectedView = '本月';
+                reason = `本月有 ${stats.month} 個課程`;
+            } else {
+                selectedView = '全部';
+                reason = `總共有 ${stats.total} 個課程`;
+            }
+            
+            // 特殊情況處理
+            if (stats.today === 0 && stats.week === 0 && stats.month === 0) {
+                reason = '所有課程都在其他時間';
+            }
+            
+            console.log(`🎯 進階智能篩選結果: ${selectedView} (${reason})`);
+            
+            return {
+                view: selectedView,
+                reason: reason,
+                stats: stats,
+                instructor: instructor
+            };
         }
 
         // 優化的系統初始化（分階段載入）
@@ -5630,11 +5822,14 @@
                         bindRefreshButton();
                         bindAttendanceMenu();
                         
-                        // 智能篩選：自動選擇有行事曆的模式
-                        const smartView = smartViewSelection();
-                        currentView = smartView;
-                        window.currentView = smartView;
-                        console.log('🧠 智能篩選結果:', smartView);
+                        // 進階智能篩選：自動選擇有行事曆的模式
+                        const smartResult = advancedSmartViewSelection(allEvents, '全部講師');
+                        currentView = smartResult.view;
+                        window.currentView = smartResult.view;
+                        console.log('🧠 進階智能篩選結果:', smartResult.view, `(${smartResult.reason})`);
+                        
+                        // 顯示智能篩選統計
+                        console.log('📊 課程分布統計:', smartResult.stats);
                         
                         // 設置預設狀態
                         updateViewButtonStates();
@@ -6818,73 +7013,34 @@
                     console.log('📱 講師選擇變更:', selectedInstructor);
                     
                     if (selectedInstructor) {
-                        // 智慧判斷：檢查講師在不同視圖下的課程數量
+                        // 使用進階講師智能篩選功能
                         const instructorEvents = allEvents.filter(event => 
                             event && event.instructor === selectedInstructor
                         );
                         
-                        if (instructorEvents.length === 0) {
-                            console.log('⚠️ 該講師沒有任何課程');
-                            currentView = '全部';
-                            window.currentView = '全部';
-                        } else {
-                            // 檢查今日是否有課程
-                            const now = new Date();
-                            const todayEvents = instructorEvents.filter(event => {
-                                const eventDate = new Date(event.start);
-                                return eventDate.getFullYear() === now.getFullYear() &&
-                                       eventDate.getMonth() === now.getMonth() &&
-                                       eventDate.getDate() === now.getDate();
-                            });
-                            
-                            if (todayEvents.length > 0) {
-                                console.log('✅ 講師今日有課程，保持今日視圖');
-                                currentView = '今日';
-                                window.currentView = '今日';
-                            } else {
-                                // 檢查本週是否有課程
-                                const weekStart = new Date(now);
-                                const dayOfWeek = now.getDay();
-                                const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-                                weekStart.setDate(now.getDate() + daysToMonday);
-                                weekStart.setHours(0, 0, 0, 0);
-                                const weekEnd = new Date(weekStart);
-                                weekEnd.setDate(weekStart.getDate() + 6);
-                                weekEnd.setHours(23, 59, 59, 999);
-                                
-                                const weekEvents = instructorEvents.filter(event => {
-                                    const eventDate = new Date(event.start);
-                                    return eventDate >= weekStart && eventDate <= weekEnd;
-                                });
-                                
-                                if (weekEvents.length > 0) {
-                                    console.log('✅ 講師本週有課程，切換到本週視圖');
-                                    currentView = '本週';
-                                    window.currentView = '本週';
-                                } else {
-                                    // 檢查本月是否有課程
-                                    const monthEvents = instructorEvents.filter(event => {
-                                        const eventDate = new Date(event.start);
-                                        return eventDate.getFullYear() === now.getFullYear() &&
-                                               eventDate.getMonth() === now.getMonth();
-                                    });
-                                    
-                                    if (monthEvents.length > 0) {
-                                        console.log('✅ 講師本月有課程，切換到本月視圖');
-                                        currentView = '本月';
-                                        window.currentView = '本月';
-                                    } else {
-                                        console.log('✅ 講師只有其他月份的課程，切換到全部視圖');
-                                        currentView = '全部';
-                                        window.currentView = '全部';
-                                    }
-                                }
-                            }
-                        }
+                        console.log(`🔍 講師 "${selectedInstructor}" 的課程數量:`, instructorEvents.length);
+                        
+                        // 使用進階智能篩選
+                        const smartResult = advancedSmartViewSelection(instructorEvents, selectedInstructor);
+                        currentView = smartResult.view;
+                        window.currentView = smartResult.view;
+                        
+                        console.log(`🧠 講師進階智能篩選結果: ${smartResult.view} (${smartResult.reason})`);
+                        
+                        // 顯示詳細的智能篩選提示
+                        showAdvancedSmartFilterNotification(smartResult);
+                        
                     } else {
-                        // 選擇全部講師時重置為今日視圖
-                        currentView = '今日';
-                        window.currentView = '今日';
+                        // 選擇全部講師時使用進階全局智能篩選
+                        console.log('🔄 選擇全部講師，使用進階全局智能篩選');
+                        const smartResult = advancedSmartViewSelection(allEvents, '全部講師');
+                        currentView = smartResult.view;
+                        window.currentView = smartResult.view;
+                        
+                        console.log(`🧠 全局進階智能篩選結果: ${smartResult.view} (${smartResult.reason})`);
+                        
+                        // 顯示詳細的智能篩選提示
+                        showAdvancedSmartFilterNotification(smartResult);
                     }
                     
                     updateViewButtonStates();
