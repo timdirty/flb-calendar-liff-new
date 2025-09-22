@@ -427,6 +427,237 @@
             box-shadow: var(--shadow-lg);
         }
         
+        /* 出缺勤紀錄模態框樣式 */
+        .attendance-record-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .attendance-record-content {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideInUp 0.3s ease-out;
+        }
+        
+        .attendance-record-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 25px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+            color: white;
+            border-radius: 20px 20px 0 0;
+        }
+        
+        .attendance-record-title {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .close-attendance-record-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .close-attendance-record-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .attendance-record-body {
+            padding: 25px;
+        }
+        
+        .student-info {
+            background: rgba(79, 70, 229, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .info-value {
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        .attendance-status {
+            margin-bottom: 25px;
+        }
+        
+        .attendance-status h4 {
+            margin: 0 0 15px 0;
+            color: #374151;
+            font-size: 1.1rem;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+        }
+        
+        .status-item {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease;
+        }
+        
+        .status-item:hover {
+            transform: translateY(-2px);
+        }
+        
+        .status-item.present {
+            border-left: 4px solid #10b981;
+        }
+        
+        .status-item.absent {
+            border-left: 4px solid #ef4444;
+        }
+        
+        .status-item.late {
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .status-item.unmarked {
+            border-left: 4px solid #6b7280;
+        }
+        
+        .status-item i {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .status-item.present i {
+            color: #10b981;
+        }
+        
+        .status-item.absent i {
+            color: #ef4444;
+        }
+        
+        .status-item.late i {
+            color: #f59e0b;
+        }
+        
+        .status-item.unmarked i {
+            color: #6b7280;
+        }
+        
+        .status-item span {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .status-count {
+            font-size: 1.2rem;
+            margin-top: 5px;
+        }
+        
+        .attendance-details h4 {
+            margin: 0 0 15px 0;
+            color: #374151;
+            font-size: 1.1rem;
+        }
+        
+        .details-list {
+            background: rgba(6, 182, 212, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .detail-value {
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
         /* 啟用硬體加速和效能優化 */
         .event-card,.btn,.floating-filter-btn,.glass-card,.attendance-modal-content,.teacher-attendance-content,.floating-navigator,.toast,.countdown-toast,.liquid-button,.student-loading-overlay,#optimized-loading-overlay,[class*="liquid"],[class*="glass"]{transform:translateZ(0);backface-visibility:hidden;perspective:1000px;will-change:transform,opacity,box-shadow;contain:layout style paint}
         .liquid-loader,.liquid-ring,.liquid-ball{transform:translateZ(0);will-change:transform;contain:layout style paint}
@@ -15558,9 +15789,42 @@ async function loadTodayEvents() {
             });
         }
 
-        // 查詢學生缺勤紀錄
-        async function queryStudentAttendanceRecord(studentName) {
+        // 計算出席率
+        function calculateAttendanceRate(student) {
+            const present = student.present || 0;
+            const absent = student.absent || 0;
+            const late = student.late || 0;
+            const unmarked = student.unmarked || 0;
+            
+            const total = present + absent + late + unmarked;
+            if (total === 0) return 0;
+            
+            return Math.round((present / total) * 100);
+        }
+        
+        // 查詢學生缺勤紀錄 - 使用現有資料版本
+        function queryStudentAttendanceRecord(studentName) {
             try {
+                console.log('🔍 查詢學生缺勤紀錄:', studentName);
+                
+                // 檢查是否有載入的學生資料
+                if (!window.loadedStudentsData || !window.loadedStudentsData.students) {
+                    console.log('⚠️ 沒有載入的學生資料');
+                    showToast('⚠️ 沒有載入的學生資料，請先載入課程學生', 'warning', 3000);
+                    return;
+                }
+                
+                // 從現有資料中查找學生
+                const student = window.loadedStudentsData.students.find(s => 
+                    s.name === studentName || s.student_name === studentName
+                );
+                
+                if (!student) {
+                    console.log('⚠️ 找不到學生資料:', studentName);
+                    showToast(`⚠️ 找不到學生 "${studentName}" 的資料`, 'warning', 3000);
+                    return;
+                }
+                
                 // 創建模態框
                 const modal = document.createElement('div');
                 modal.className = 'attendance-record-modal';
@@ -15568,23 +15832,79 @@ async function loadTodayEvents() {
                     <div class="attendance-record-content">
                         <div class="attendance-record-header">
                             <h3 class="attendance-record-title">
-                                <i class="fas fa-user-graduate"></i> ${studentName} 的缺勤紀錄
+                                <i class="fas fa-user-graduate"></i> ${studentName} 的出缺勤紀錄
                             </h3>
                             <button class="close-attendance-record-btn" id="closeAttendanceRecordBtn">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
-                        <div class="attendance-record-loading">
-                            <div style="
-                                width: 40px;
-                                height: 40px;
-                                border: 4px solid rgba(255, 215, 0, 0.2);
-                                border-top: 4px solid #b8860b;
-                                border-radius: 50%;
-                                animation: spin 1s linear infinite;
-                                margin: 0 auto 20px;
-                            "></div>
-                            <p>正在查詢缺勤紀錄...</p>
+                        <div class="attendance-record-body">
+                            <div class="student-info">
+                                <div class="info-item">
+                                    <span class="info-label">學生姓名：</span>
+                                    <span class="info-value">${student.name || student.student_name || '未知'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">學生ID：</span>
+                                    <span class="info-value">${student.id || student.student_id || '未知'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">課程：</span>
+                                    <span class="info-value">${window.loadedStudentsData.course || '未知'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">時段：</span>
+                                    <span class="info-value">${window.loadedStudentsData.time || '未知'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">日期：</span>
+                                    <span class="info-value">${window.loadedStudentsData.date || '未知'}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="attendance-status">
+                                <h4>出缺勤狀態</h4>
+                                <div class="status-grid">
+                                    <div class="status-item present">
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>出席</span>
+                                        <span class="status-count">${student.present || 0} 次</span>
+                                    </div>
+                                    <div class="status-item absent">
+                                        <i class="fas fa-times-circle"></i>
+                                        <span>缺席</span>
+                                        <span class="status-count">${student.absent || 0} 次</span>
+                                    </div>
+                                    <div class="status-item late">
+                                        <i class="fas fa-clock"></i>
+                                        <span>遲到</span>
+                                        <span class="status-count">${student.late || 0} 次</span>
+                                    </div>
+                                    <div class="status-item unmarked">
+                                        <i class="fas fa-question-circle"></i>
+                                        <span>未標記</span>
+                                        <span class="status-count">${student.unmarked || 0} 次</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="attendance-details">
+                                <h4>詳細資訊</h4>
+                                <div class="details-list">
+                                    <div class="detail-item">
+                                        <span class="detail-label">總出席率：</span>
+                                        <span class="detail-value">${calculateAttendanceRate(student)}%</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">最後更新：</span>
+                                        <span class="detail-value">${new Date().toLocaleString('zh-TW')}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">資料來源：</span>
+                                        <span class="detail-value">已載入的課程資料</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -15604,36 +15924,7 @@ async function loadTodayEvents() {
                     }
                 });
                 
-                // 查詢缺勤紀錄
-                console.log('🔍 查詢學生缺勤紀錄:', studentName);
-                
-                const response = await fetch('/api/proxy/google-sheets', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        action: 'query',
-                        name: studentName
-                    })
-                });
-                
-                console.log('📡 查詢回應狀態:', response.status, response.statusText);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
-                const data = await response.json();
-                console.log('📥 查詢回應數據:', data);
-                
-                if (data.success && data.attendance) {
-                    // 顯示缺勤紀錄
-                    displayAttendanceRecords(modal, studentName, data.attendance);
-                } else {
-                    // 顯示錯誤訊息
-                    displayAttendanceRecordError(modal, data.error || '查詢失敗');
-                }
+                console.log('✅ 學生缺勤紀錄顯示完成');
                 
             } catch (error) {
                 console.error('查詢缺勤紀錄錯誤:', error);
