@@ -7382,6 +7382,9 @@ async function loadTodayEvents() {
             
             container.innerHTML = filteredEvents.map(event => createEventCard(event)).join('');
             
+            // 添加預載入功能到課程卡片
+            addPreloadToEventCards();
+            
             // 觸發課程卡片動畫（移除延遲）
                 animateEventCards();
                 // 更新倒數計時
@@ -9482,7 +9485,7 @@ async function loadTodayEvents() {
                     
                     <!-- 透明空白元件確保滾動觸發 -->
                     <div style="
-                        height: 300px;
+                        height: 100px;
                         background: transparent;
                         flex-shrink: 0;
                         pointer-events: none;
@@ -12176,12 +12179,10 @@ async function loadTodayEvents() {
             }
         }
 
-        // 載入課程學生
+        // 載入課程學生 - 優化版本
         async function loadCourseStudents(teacher, course, time, start, end, minutesUntilStart = null, retryCount = 0) {
-            const maxRetries = 3; // 最大重試次數
-            
             try {
-                console.log('📚 載入課程學生:', { teacher, course, time, start, end, retryCount });
+                console.log('📚 載入課程學生 (優化版):', { teacher, course, time, start, end, retryCount });
                 
                 // 設置學生名單載入狀態
                 isStudentListLoading = true;
@@ -12203,44 +12204,26 @@ async function loadTodayEvents() {
                     return;
                 }
                 
-                // 設置載入超時保護
-                const loadingTimeout = setTimeout(() => {
-                    if (currentAttendanceModal) {
-                        console.log('⏰ 載入超時，停止載入並顯示錯誤');
-                        isStudentListLoading = false;
-                        studentListLoadPromise = null;
-                        
-                        // 檢查是否已經切換到講師簽到模式
-                        const floatingNavigator = document.querySelector('.floating-navigator');
-                        const activeTab = floatingNavigator ? floatingNavigator.querySelector('.nav-item.active') : null;
-                        if (activeTab && activeTab.dataset.tab === 'teacher-attendance') {
-                            console.log('🔄 已切換到講師簽到模式，不顯示載入超時錯誤');
-                            return;
-                        }
-                        
-                        errorHandler.showWarning('載入學生資料超時，請重試');
-                    }
-                }, 8000); // 8秒超時
+                // 顯示優化的載入動畫
+                showOptimizedLoadingAnimation();
                 
-                const response = await Promise.race([
-                    fetch('/api/proxy/google-sheets', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            action: 'getRosterAttendance',
-                            course: course,
-                            period: time
-                        })
-                    }),
-                    new Promise((_, reject) => 
-                        setTimeout(() => reject(new Error('API請求超時')), 6000)
-                    )
-                ]);
+                // 使用優化的API請求
+                const result = await apiOptimizer.fetchWithRetry('/api/proxy/google-sheets', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'getRosterAttendance',
+                        course: course,
+                        period: time
+                    })
+                }, 2); // 最多重試2次
                 
-                const data = await response.json();
-                console.log('📊 學生資料回應:', data);
+                const data = result.data;
+                const fromCache = result.fromCache;
+                
+                console.log('📊 學生資料回應:', { data, fromCache });
                 
                 // 再次檢查模態框是否仍然存在
                 if (!currentAttendanceModal) {
@@ -12262,6 +12245,9 @@ async function loadTodayEvents() {
                     isStudentListLoading = false;
                     studentListLoadPromise = null;
                     
+                    // 隱藏載入動畫
+                    hideOptimizedLoadingAnimation();
+                    
                     console.log('🎯 準備調用 displayStudents 函數');
                     displayStudents(data.students, teacher, course, time, start, end, minutesUntilStart);
                     console.log('✅ displayStudents 函數調用完成');
@@ -12269,6 +12255,9 @@ async function loadTodayEvents() {
                     // 載入失敗，更新狀態
                     isStudentListLoading = false;
                     studentListLoadPromise = null;
+                    
+                    // 隱藏載入動畫
+                    hideOptimizedLoadingAnimation();
                     
                     // 檢查是否已經切換到講師簽到模式
                     const floatingNavigator = document.querySelector('.floating-navigator');
@@ -14758,6 +14747,208 @@ async function loadTodayEvents() {
         const animationManager = new AnimationManager();
         window.animationManager = animationManager;
         
+        // API載入優化管理器
+        class APILoadingOptimizer {
+            constructor() {
+                this.cache = new Map();
+                this.cacheTimeout = 5 * 60 * 1000; // 5分鐘緩存
+                this.requestQueue = new Map();
+                this.concurrentLimit = 3;
+                this.activeRequests = 0;
+                this.retryDelays = [1000, 2000, 4000]; // 遞增重試延遲
+            }
+            
+            // 生成緩存鍵
+            getCacheKey(endpoint, params) {
+                return `${endpoint}_${JSON.stringify(params)}`;
+            }
+            
+            // 檢查緩存
+            getFromCache(key) {
+                const cached = this.cache.get(key);
+                if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
+                    console.log('📦 從緩存載入:', key);
+                    return cached.data;
+                }
+                if (cached) {
+                    this.cache.delete(key);
+                }
+                return null;
+            }
+            
+            // 設置緩存
+            setCache(key, data) {
+                this.cache.set(key, {
+                    data: data,
+                    timestamp: Date.now()
+                });
+            }
+            
+            // 優化的fetch請求
+            async optimizedFetch(url, options = {}, useCache = true) {
+                const cacheKey = this.getCacheKey(url, options.body);
+                
+                // 檢查緩存
+                if (useCache) {
+                    const cached = this.getFromCache(cacheKey);
+                    if (cached) {
+                        return { data: cached, fromCache: true };
+                    }
+                }
+                
+                // 檢查是否有相同的請求正在進行
+                if (this.requestQueue.has(cacheKey)) {
+                    console.log('⏳ 等待相同請求完成:', cacheKey);
+                    return await this.requestQueue.get(cacheKey);
+                }
+                
+                // 創建新的請求Promise
+                const requestPromise = this.executeRequest(url, options, cacheKey);
+                this.requestQueue.set(cacheKey, requestPromise);
+                
+                try {
+                    const result = await requestPromise;
+                    return result;
+                } finally {
+                    this.requestQueue.delete(cacheKey);
+                }
+            }
+            
+            // 執行實際請求
+            async executeRequest(url, options, cacheKey) {
+                // 等待並行請求限制
+                while (this.activeRequests >= this.concurrentLimit) {
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                }
+                
+                this.activeRequests++;
+                
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超時
+                    
+                    const response = await fetch(url, {
+                        ...options,
+                        signal: controller.signal
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // 緩存成功的響應
+                    if (data.success) {
+                        this.setCache(cacheKey, data);
+                    }
+                    
+                    return { data, fromCache: false };
+                    
+                } catch (error) {
+                    console.error('❌ API請求失敗:', error);
+                    throw error;
+                } finally {
+                    this.activeRequests--;
+                }
+            }
+            
+            // 帶重試的請求
+            async fetchWithRetry(url, options = {}, maxRetries = 3) {
+                for (let attempt = 0; attempt <= maxRetries; attempt++) {
+                    try {
+                        const result = await this.optimizedFetch(url, options);
+                        return result;
+                    } catch (error) {
+                        if (attempt === maxRetries) {
+                            throw error;
+                        }
+                        
+                        const delay = this.retryDelays[attempt] || 2000;
+                        console.log(`🔄 請求失敗，${delay}ms後重試 (${attempt + 1}/${maxRetries})`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    }
+                }
+            }
+            
+            // 清理過期緩存
+            cleanExpiredCache() {
+                const now = Date.now();
+                for (const [key, value] of this.cache.entries()) {
+                    if (now - value.timestamp > this.cacheTimeout) {
+                        this.cache.delete(key);
+                    }
+                }
+            }
+            
+            // 預載入API
+            async preloadAPI(endpoint, params) {
+                try {
+                    const result = await this.optimizedFetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(params)
+                    });
+                    console.log('🚀 預載入完成:', endpoint);
+                    return result;
+                } catch (error) {
+                    console.log('⚠️ 預載入失敗:', endpoint, error.message);
+                }
+            }
+        }
+        
+        // 創建全局API優化器
+        const apiOptimizer = new APILoadingOptimizer();
+        window.apiOptimizer = apiOptimizer;
+        
+        // 預載入學生資料
+        function preloadStudentData(course, time) {
+            console.log('🚀 預載入學生資料:', { course, time });
+            
+            // 在背景預載入，不阻塞UI
+            setTimeout(() => {
+                apiOptimizer.preloadAPI('/api/proxy/google-sheets', {
+                    action: 'getRosterAttendance',
+                    course: course,
+                    period: time
+                });
+            }, 100);
+        }
+        
+        // 智能預載入：在用戶懸停時預載入
+        function addPreloadToEventCards() {
+            const eventCards = document.querySelectorAll('.event-card');
+            eventCards.forEach(card => {
+                // 移除舊的事件監聽器
+                card.removeEventListener('mouseenter', card._preloadHandler);
+                
+                // 添加新的預載入處理器
+                card._preloadHandler = function() {
+                    const title = this.dataset.eventTitle;
+                    const instructor = this.dataset.eventInstructor;
+                    const start = this.dataset.eventStart;
+                    const end = this.dataset.eventEnd;
+                    
+                    if (title && instructor && start && end) {
+                        // 解析課程標題獲取課程名稱和時間
+                        const parsed = parseCourseTitle(title);
+                        if (parsed.course && parsed.timeInfo) {
+                            preloadStudentData(parsed.course, parsed.timeInfo);
+                        }
+                    }
+                };
+                
+                card.addEventListener('mouseenter', card._preloadHandler);
+            });
+        }
+        
+        // 定期清理緩存
+        setInterval(() => {
+            apiOptimizer.cleanExpiredCache();
+        }, 60000); // 每分鐘清理一次
+        
         // 優化的動畫工具函數
         function optimizedAnimate(element, keyframes, options = {}) {
             if (!element) return;
@@ -14820,6 +15011,138 @@ async function loadTodayEvents() {
         window.optimizedAnimate = optimizedAnimate;
         window.smoothScrollTo = smoothScrollTo;
         window.throttledAnimate = throttledAnimate;
+        
+        // 優化的載入動畫
+        function showOptimizedLoadingAnimation() {
+            const modalContent = document.querySelector('.attendance-modal-content');
+            if (!modalContent) return;
+            
+            // 創建優化的載入動畫
+            const loadingOverlay = document.createElement('div');
+            loadingOverlay.id = 'optimized-loading-overlay';
+            loadingOverlay.style.cssText = `
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            `;
+            
+            // 創建載入動畫內容
+            const loadingContent = document.createElement('div');
+            loadingContent.style.cssText = `
+                text-align: center;
+                color: #333;
+            `;
+            
+            // 創建脈衝載入動畫
+            const pulseLoader = document.createElement('div');
+            pulseLoader.style.cssText = `
+                width: 60px;
+                height: 60px;
+                border: 3px solid #f3f3f3;
+                border-top: 3px solid #007bff;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 20px;
+            `;
+            
+            // 創建載入文字
+            const loadingText = document.createElement('div');
+            loadingText.textContent = '載入學生資料中...';
+            loadingText.style.cssText = `
+                font-size: 16px;
+                font-weight: 500;
+                color: #666;
+                margin-bottom: 10px;
+            `;
+            
+            // 創建進度條
+            const progressBar = document.createElement('div');
+            progressBar.style.cssText = `
+                width: 200px;
+                height: 4px;
+                background: #f0f0f0;
+                border-radius: 2px;
+                overflow: hidden;
+                margin: 0 auto;
+            `;
+            
+            const progressFill = document.createElement('div');
+            progressFill.style.cssText = `
+                height: 100%;
+                background: linear-gradient(90deg, #007bff, #0056b3);
+                border-radius: 2px;
+                width: 0%;
+                transition: width 0.3s ease;
+                animation: progressPulse 2s ease-in-out infinite;
+            `;
+            
+            progressBar.appendChild(progressFill);
+            
+            // 添加CSS動畫
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes progressPulse {
+                    0%, 100% { opacity: 0.6; }
+                    50% { opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // 組裝載入動畫
+            loadingContent.appendChild(pulseLoader);
+            loadingContent.appendChild(loadingText);
+            loadingContent.appendChild(progressBar);
+            loadingOverlay.appendChild(loadingContent);
+            
+            // 添加到模態框
+            modalContent.appendChild(loadingOverlay);
+            
+            // 顯示動畫
+            requestAnimationFrame(() => {
+                loadingOverlay.style.opacity = '1';
+            });
+            
+            // 模擬進度
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90;
+                progressFill.style.width = progress + '%';
+            }, 200);
+            
+            // 存儲清理函數
+            window.clearOptimizedLoading = () => {
+                clearInterval(progressInterval);
+                if (loadingOverlay && loadingOverlay.parentNode) {
+                    loadingOverlay.style.opacity = '0';
+                    setTimeout(() => {
+                        if (loadingOverlay.parentNode) {
+                            loadingOverlay.parentNode.removeChild(loadingOverlay);
+                        }
+                    }, 300);
+                }
+            };
+        }
+        
+        // 隱藏優化的載入動畫
+        function hideOptimizedLoadingAnimation() {
+            if (window.clearOptimizedLoading) {
+                window.clearOptimizedLoading();
+                window.clearOptimizedLoading = null;
+            }
+        }
         
         // 優化的CSS動畫類
         function addOptimizedAnimationClass(element, className, duration = 300) {
