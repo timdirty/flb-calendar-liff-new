@@ -6138,12 +6138,40 @@
             showAdvancedSmartFilterNotification(smartResult);
         }
         
+        // 檢查智慧篩選執行狀況
+        function checkSmartFilterStatus() {
+            console.log('🔍 檢查智慧篩選執行狀況:');
+            console.log('📊 全部事件數量:', allEvents.length);
+            console.log('👨‍🏫 當前選擇講師:', document.getElementById('instructorSelect')?.value || '未選擇');
+            console.log('📅 當前視圖:', currentView);
+            console.log('🎯 視圖按鈕狀態:', {
+                today: document.querySelector('[data-view="today"]')?.classList.contains('active'),
+                week: document.querySelector('[data-view="week"]')?.classList.contains('active'),
+                month: document.querySelector('[data-view="month"]')?.classList.contains('active'),
+                all: document.querySelector('[data-view="all"]')?.classList.contains('active')
+            });
+            
+            // 檢查講師事件
+            const instructorSelect = document.getElementById('instructorSelect');
+            if (instructorSelect && instructorSelect.value) {
+                const instructorEvents = allEvents.filter(event => 
+                    event && event.instructor === instructorSelect.value
+                );
+                console.log(`🔍 講師 "${instructorSelect.value}" 的課程數量:`, instructorEvents.length);
+                
+                if (instructorEvents.length > 0) {
+                    console.log('📋 講師課程範例:', instructorEvents[0]);
+                }
+            }
+        }
+        
         // 將智能篩選函數暴露到全局，方便調試
         window.triggerSmartFilter = triggerSmartFilter;
         window.advancedSmartViewSelection = advancedSmartViewSelection;
         window.debugSmartFilter = debugSmartFilter;
         window.forceSmartFilter = forceSmartFilter;
         window.smartFilterForInstructor = smartFilterForInstructor;
+        window.checkSmartFilterStatus = checkSmartFilterStatus;
 
         // 進階智能篩選：根據課程分布選擇最佳視圖
         function advancedSmartViewSelection(events, instructor = null) {
@@ -6327,9 +6355,12 @@
                         console.log('🔄 講師比對完成後重新執行智慧篩選...');
                         const instructorSelect = document.getElementById('instructorSelect');
                         if (instructorSelect && instructorSelect.value) {
+                            console.log('🎯 觸發講師選擇變更事件，執行智慧篩選');
                             // 觸發講師選擇變更事件，執行針對該講師的智慧篩選
                             const changeEvent = new Event('change', { bubbles: true });
                             instructorSelect.dispatchEvent(changeEvent);
+                        } else {
+                            console.log('⚠️ 沒有找到講師選擇器或沒有選中的講師');
                         }
                     } catch (error) {
                         console.error('自動比對講師失敗:', error);
@@ -6625,9 +6656,12 @@
                         console.log('🔄 講師比對完成後重新執行智慧篩選...');
                         const instructorSelect = document.getElementById('instructorSelect');
                         if (instructorSelect && instructorSelect.value) {
+                            console.log('🎯 觸發講師選擇變更事件，執行智慧篩選');
                             // 觸發講師選擇變更事件，執行針對該講師的智慧篩選
                             const changeEvent = new Event('change', { bubbles: true });
                             instructorSelect.dispatchEvent(changeEvent);
+                        } else {
+                            console.log('⚠️ 沒有找到講師選擇器或沒有選中的講師');
                         }
                     } catch (error) {
                         console.error('自動比對講師失敗:', error);
@@ -10318,11 +10352,11 @@ async function loadTodayEvents() {
                                 box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
                             "></div>
                         </div>
-                        <h3 style="margin: 0; color: rgba(255, 255, 255, 0.95); text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);">
+                        <h3 style="margin: 0; color: #000000; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);">
                             <i class="fas fa-spinner" style="color: #ffd700; margin-right: 8px; animation: spin 1s linear infinite;"></i>
                             載入學生名單中...
                         </h3>
-                        <p style="margin: 10px 0; color: rgba(255, 255, 255, 0.7);">
+                        <p style="margin: 10px 0; color: #000000;">
                             正在從資料庫載入學生資料，請稍候
                         </p>
                     </div>
@@ -15791,10 +15825,11 @@ async function loadTodayEvents() {
 
         // 計算出席率
         function calculateAttendanceRate(student) {
-            const present = student.present || 0;
-            const absent = student.absent || 0;
-            const late = student.late || 0;
-            const unmarked = student.unmarked || 0;
+            // 根據 API 回應的資料結構計算出席率
+            const present = student.present || student.attendance?.present || 0;
+            const absent = student.absent || student.attendance?.absent || 0;
+            const late = student.late || student.attendance?.late || 0;
+            const unmarked = student.unmarked || student.attendance?.unmarked || 0;
             
             const total = present + absent + late + unmarked;
             if (total === 0) return 0;
@@ -15868,22 +15903,22 @@ async function loadTodayEvents() {
                                     <div class="status-item present">
                                         <i class="fas fa-check-circle"></i>
                                         <span>出席</span>
-                                        <span class="status-count">${student.present || 0} 次</span>
+                                        <span class="status-count">${student.present || student.attendance?.present || 0} 次</span>
                                     </div>
                                     <div class="status-item absent">
                                         <i class="fas fa-times-circle"></i>
                                         <span>缺席</span>
-                                        <span class="status-count">${student.absent || 0} 次</span>
+                                        <span class="status-count">${student.absent || student.attendance?.absent || 0} 次</span>
                                     </div>
                                     <div class="status-item late">
                                         <i class="fas fa-clock"></i>
                                         <span>遲到</span>
-                                        <span class="status-count">${student.late || 0} 次</span>
+                                        <span class="status-count">${student.late || student.attendance?.late || 0} 次</span>
                                     </div>
                                     <div class="status-item unmarked">
                                         <i class="fas fa-question-circle"></i>
                                         <span>未標記</span>
-                                        <span class="status-count">${student.unmarked || 0} 次</span>
+                                        <span class="status-count">${student.unmarked || student.attendance?.unmarked || 0} 次</span>
                                     </div>
                                 </div>
                             </div>
