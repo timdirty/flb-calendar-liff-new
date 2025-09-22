@@ -6082,7 +6082,7 @@
                 addLoadingLog('🌐 正在連接講師資料庫...', 'info');
                 
                 // 使用優化的API請求
-                const response = await apiOptimizer.fetchWithRetry('/api/teachers', {
+                const result = await apiOptimizer.fetchWithRetry('/api/teachers', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
@@ -6090,16 +6090,15 @@
                     redirect: 'follow'  // 自動跟隨重定向
                 });
                 
-                console.log('API回應狀態:', response.status);
-                console.log('API回應OK:', response.ok);
-                showMatchingProcess(`API回應狀態: ${response.status}`, response.ok ? 'success' : 'error');
-                addLoadingLog(`📡 API 回應: ${response.status}`, response.ok ? 'success' : 'error');
+                console.log('API回應結果:', result);
+                showMatchingProcess(`API回應成功`, 'success');
+                addLoadingLog(`📡 API 回應成功`, 'success');
                 
-                if (!response.ok) {
-                    throw new Error(`API請求失敗: ${response.status}`);
+                if (!result || !result.data) {
+                    throw new Error(`API請求失敗: 無效的回應格式`);
                 }
                 
-                const data = response.data || await response.json();
+                const data = result.data;
                 console.log('API回應:', data);
                 showMatchingProcess('API回應成功，開始比對講師...', 'success');
                 addLoadingLog('✅ 講師資料載入成功', 'success');
