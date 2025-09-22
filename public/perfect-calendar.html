@@ -26,7 +26,7 @@
                     rgba(248, 250, 252, 0.95) 75%,
                     rgba(255, 255, 255, 0.98) 100%);
             background-size: 100% 100%, 100% 100%, 100% 100%, 400% 400%;
-            animation: gradientShift 30s ease infinite;
+            animation: gradientShift 60s ease infinite;
             min-height: 100vh;
             color: rgba(51, 51, 51, 0.95);
             position: relative;
@@ -42,7 +42,7 @@
             background: 
                 linear-gradient(45deg, transparent 30%, rgba(255, 215, 0, 0.03) 50%, transparent 70%),
                 linear-gradient(-45deg, transparent 30%, rgba(255, 215, 0, 0.02) 50%, transparent 70%);
-            animation: shimmer 20s linear infinite;
+            animation: shimmer 40s linear infinite;
             pointer-events: none;
             z-index: 1;
         }
@@ -176,7 +176,7 @@
                 0 0 0 1px rgba(255, 215, 0, 0.2);
             position: relative;
             overflow: hidden;
-            animation: headerFloat 10s ease-in-out infinite;
+            animation: headerFloat 20s ease-in-out infinite;
         }
 
         .header::before {
@@ -191,7 +191,7 @@
                 transparent 25%,
                 transparent 75%,
                 rgba(255, 215, 0, 0.1) 100%);
-            animation: shimmer 3s ease-in-out infinite;
+            animation: shimmer 6s ease-in-out infinite;
             z-index: 1;
         }
 
@@ -205,7 +205,7 @@
             background: radial-gradient(circle, 
                 rgba(255, 215, 0, 0.05) 0%, 
                 transparent 70%);
-            animation: rotate 20s linear infinite;
+            animation: rotate 40s linear infinite;
             z-index: 0;
         }
 
@@ -227,7 +227,7 @@
                 0 2px 10px rgba(0, 0, 0, 0.3), 
                 0 0 30px rgba(255, 215, 0, 0.4),
                 0 0 60px rgba(255, 215, 0, 0.2);
-            animation: titleGlow 4s ease-in-out infinite alternate;
+            animation: titleGlow 8s ease-in-out infinite alternate;
             position: relative;
             z-index: 2;
         }
@@ -516,7 +516,7 @@
                 0 0 0 1px rgba(255, 215, 0, 0.1);
             position: relative;
             overflow: hidden;
-            animation: controlsFloat 8s ease-in-out infinite;
+            animation: controlsFloat 16s ease-in-out infinite;
         }
 
         .controls::before {
@@ -531,7 +531,7 @@
                 transparent 30%,
                 transparent 70%,
                 rgba(255, 215, 0, 0.08) 100%);
-            animation: controlsShimmer 4s ease-in-out infinite;
+            animation: controlsShimmer 8s ease-in-out infinite;
             z-index: 1;
         }
 
@@ -545,7 +545,7 @@
             background: radial-gradient(circle, 
                 rgba(255, 215, 0, 0.03) 0%, 
                 transparent 70%);
-            animation: controlsRotate 25s linear infinite;
+            animation: controlsRotate 50s linear infinite;
             z-index: 0;
         }
 
@@ -886,7 +886,7 @@
                 0 0 0 1px rgba(255, 215, 0, 0.1);
             position: relative;
             overflow: hidden;
-            animation: statsFloat 7s ease-in-out infinite;
+            animation: statsFloat 14s ease-in-out infinite;
         }
 
         .stats::before {
@@ -901,7 +901,7 @@
                 transparent 30%,
                 transparent 70%,
                 rgba(255, 215, 0, 0.08) 100%);
-            animation: statsShimmer 5s ease-in-out infinite;
+            animation: statsShimmer 10s ease-in-out infinite;
             z-index: 1;
         }
 
@@ -915,7 +915,7 @@
             background: radial-gradient(circle, 
                 rgba(255, 215, 0, 0.03) 0%, 
                 transparent 70%);
-            animation: statsRotate 30s linear infinite;
+            animation: statsRotate 60s linear infinite;
             z-index: 0;
         }
 
@@ -4198,6 +4198,26 @@
             --spike-color: #fdcb6e;
             --ev3-color: #e17055;
             --minecraft-color: #00b894;
+            
+            /* 動畫性能優化變數 */
+            --animation-duration: 0.3s;
+            --transition-duration: 0.2s;
+            --animation-timing: cubic-bezier(0.4, 0, 0.2, 1);
+            --reduced-motion: false;
+        }
+        
+        /* 尊重用戶的動畫偏好設置 */
+        @media (prefers-reduced-motion: reduce) {
+            :root {
+                --animation-duration: 0.1s;
+                --transition-duration: 0.1s;
+                --reduced-motion: true;
+            }
+            
+            * {
+                animation-duration: 0.1s !important;
+                transition-duration: 0.1s !important;
+            }
         }
 
         /* 教案按鈕顏色 */
@@ -5148,7 +5168,7 @@
         // 為元素添加動畫效果
         function addAnimationToElement(element, animationClass, delay = 0) {
             if (element) {
-                setTimeout(() => {
+                animationManager.setTimeout(() => {
                     element.classList.add(animationClass);
                 }, delay);
             }
@@ -5329,7 +5349,7 @@
                 updateLoadingProgress(100);
                 
                 // 比對完成後隱藏載入動畫
-                setTimeout(() => {
+                animationManager.setTimeout(() => {
                     try {
                         hideLoadingAnimation();
                         console.log('系統初始化完成');
@@ -5358,7 +5378,7 @@
             } catch (error) {
                 console.error('系統初始化失敗:', error);
                 // 即使失敗也要隱藏載入動畫
-                setTimeout(() => {
+                animationManager.setTimeout(() => {
                     try {
                         hideLoadingAnimation();
                         console.log('系統初始化失敗，但已隱藏載入動畫');
@@ -8993,7 +9013,7 @@ async function loadTodayEvents() {
                             width: 200%;
                             height: 200%;
                             background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
-                            animation: shimmer 3s ease-in-out infinite;
+                            animation: shimmer 6s ease-in-out infinite;
                             pointer-events: none;
                         "></div>
                         
@@ -9080,7 +9100,7 @@ async function loadTodayEvents() {
                                     opacity: 0.9;
                                     color: #5a6c7d;
                                     line-height: 1.2;
-                                ">特殊課程自動設為99人</div>
+                                ">自動計算課程人數</div>
                             </button>
                             
                             <button class="mode-btn assistant-mode" id="assistant-mode-btn" style="
@@ -9187,7 +9207,7 @@ async function loadTodayEvents() {
                             width: 200%;
                             height: 200%;
                             background: radial-gradient(circle, rgba(52, 152, 219, 0.1) 0%, transparent 70%);
-                            animation: shimmer 3s ease-in-out infinite;
+                            animation: shimmer 6s ease-in-out infinite;
                             pointer-events: none;
                         "></div>
                         
@@ -9210,6 +9230,52 @@ async function loadTodayEvents() {
                                 今日報表
                             </h3>
                         
+                        <div style="margin-bottom: 8px;">
+                            <label for="course-content" style="
+                                display: block;
+                                margin-bottom: 6px;
+                                font-weight: 600;
+                                color: #2c3e50;
+                                font-size: 0.9rem;
+                                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+                            ">課程內容：</label>
+                            <textarea 
+                                id="course-content" 
+                                placeholder="請描述今天的課程內容..."
+                                rows="3"
+                                maxlength="500"
+                                style="
+                                    width: 100%;
+                                    padding: 10px 12px;
+                                    background: linear-gradient(135deg, 
+                                        rgba(255, 255, 255, 0.2) 0%, 
+                                        rgba(255, 255, 255, 0.1) 100%);
+                                    backdrop-filter: blur(15px);
+                                    -webkit-backdrop-filter: blur(15px);
+                                    border: 2px solid rgba(255, 255, 255, 0.3);
+                                    border-radius: 10px;
+                                    font-size: 0.85rem;
+                                    font-family: inherit;
+                                    resize: vertical;
+                                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                                    color: #2c3e50;
+                                    box-shadow: 
+                                        inset 0 2px 4px rgba(0, 0, 0, 0.1),
+                                        inset 0 1px 0 rgba(255, 255, 255, 0.4),
+                                        0 2px 8px rgba(0, 0, 0, 0.05);
+                                    outline: none;
+                                "
+                            ></textarea>
+                            <div class="char-count" style="
+                                text-align: right;
+                                margin-top: 6px;
+                                font-size: 0.75rem;
+                                color: #5a6c7d;
+                                font-weight: 500;
+                            ">
+                                <span id="char-count">0</span>/500
+                            </div>
+                        </div>
                         </div>
                     </div>
                     
@@ -9241,7 +9307,7 @@ async function loadTodayEvents() {
                             width: 200%;
                             height: 200%;
                             background: radial-gradient(circle, rgba(46, 204, 113, 0.1) 0%, transparent 70%);
-                            animation: shimmer 3s ease-in-out infinite;
+                            animation: shimmer 6s ease-in-out infinite;
                             pointer-events: none;
                         "></div>
                         
@@ -9269,7 +9335,7 @@ async function loadTodayEvents() {
                             gap: 10px;
                             margin-bottom: 3px;
                         ">
-                            <button class="count-btn" id="count-2-btn" onclick="setStudentCount(2)" style="
+                            <button class="count-btn" id="count-2-btn" style="
                                 background: white;
                                 border: 2px solid #e9ecef;
                                 border-radius: 10px;
@@ -9286,7 +9352,7 @@ async function loadTodayEvents() {
                                 <span style="font-weight: 600; font-size: 0.8rem; color: #333;">2人（含）以下</span>
                                 <span style="font-size: 0.7rem; color: #666;">小班教學</span>
                             </button>
-                            <button class="count-btn" id="count-30-btn" onclick="setStudentCount(30)" style="
+                            <button class="count-btn" id="count-30-btn" style="
                                 background: white;
                                 border: 2px solid #e9ecef;
                                 border-radius: 10px;
@@ -9358,105 +9424,6 @@ async function loadTodayEvents() {
                             <i class="fas fa-paper-plane" style="margin-right: 8px;"></i>
                             提交講師報表
                         </button>
-                    </div>
-                    
-                    <!-- 課程內容輸入區域 -->
-                    <div class="glass-card" style="
-                        background: linear-gradient(135deg, 
-                            rgba(255, 255, 255, 0.25) 0%, 
-                            rgba(255, 255, 255, 0.1) 50%,
-                            rgba(255, 255, 255, 0.2) 100%);
-                        backdrop-filter: blur(25px);
-                        -webkit-backdrop-filter: blur(25px);
-                        border: 1px solid rgba(255, 255, 255, 0.3);
-                        border-radius: 20px;
-                        padding: 16px;
-                        box-shadow: 
-                            0 8px 32px rgba(0, 0, 0, 0.1),
-                            0 2px 8px rgba(0, 0, 0, 0.05),
-                            inset 0 1px 0 rgba(255, 255, 255, 0.4),
-                            inset 0 -1px 0 rgba(0, 0, 0, 0.05);
-                        position: relative;
-                        overflow: hidden;
-                    ">
-                        <!-- 背景光效 -->
-                        <div style="
-                            position: absolute;
-                            top: -50%;
-                            left: -50%;
-                            width: 200%;
-                            height: 200%;
-                            background: radial-gradient(circle, rgba(52, 152, 219, 0.1) 0%, transparent 70%);
-                            animation: shimmer 3s ease-in-out infinite;
-                            pointer-events: none;
-                        "></div>
-                        
-                        <div style="position: relative; z-index: 1;">
-                            <h4 style="
-                                margin: 0 0 8px 0;
-                                color: #2c3e50;
-                                font-size: 1rem;
-                                font-weight: 700;
-                                display: flex;
-                                align-items: center;
-                                gap: 10px;
-                                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-                            ">
-                                <i class="fas fa-edit" style="
-                                    color: #3498db;
-                                    font-size: 1.1rem;
-                                    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
-                                "></i>
-                                課程內容
-                            </h4>
-                            <p style="
-                                margin: 0 0 12px 0;
-                                color: #5a6c7d;
-                                font-size: 0.85rem;
-                                line-height: 1.4;
-                            ">請描述今天的課程內容（至少1個字符）</p>
-                            
-                            <div style="margin-bottom: 8px;">
-                                <textarea 
-                                    id="course-content" 
-                                    placeholder="請描述今天的課程內容..."
-                                    rows="3"
-                                    maxlength="500"
-                                    style="
-                                        width: 100%;
-                                        padding: 10px 12px;
-                                        background: linear-gradient(135deg, 
-                                            rgba(255, 255, 255, 0.2) 0%, 
-                                            rgba(255, 255, 255, 0.1) 100%);
-                                        backdrop-filter: blur(15px);
-                                        -webkit-backdrop-filter: blur(15px);
-                                        border: 2px solid rgba(255, 255, 255, 0.3);
-                                        border-radius: 10px;
-                                        font-size: 0.85rem;
-                                        font-family: inherit;
-                                        resize: vertical;
-                                        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-                                        color: #2c3e50;
-                                        box-shadow: 
-                                            inset 0 2px 4px rgba(0, 0, 0, 0.1),
-                                            inset 0 1px 0 rgba(255, 255, 255, 0.4),
-                                            0 2px 8px rgba(0, 0, 0, 0.05);
-                                        outline: none;
-                                    "
-                                    onfocus="this.style.borderColor='rgba(52, 152, 219, 0.5)'; this.style.boxShadow='inset 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 0 3px rgba(52, 152, 219, 0.1)'"
-                                    onblur="this.style.borderColor='rgba(255, 255, 255, 0.3)'; this.style.boxShadow='inset 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 8px rgba(0, 0, 0, 0.05)'"
-                                ></textarea>
-                                <div class="char-count" style="
-                                    text-align: right;
-                                    margin-top: 6px;
-                                    font-size: 0.75rem;
-                                    color: #5a6c7d;
-                                    font-weight: 500;
-                                ">
-                                    <span id="char-count">0</span>/500
-                                </div>
-                            </div>
-                        </div>
                     </div>
                     
                     <!-- 透明空白元件確保滾動觸發 -->
@@ -9669,6 +9636,12 @@ async function loadTodayEvents() {
             selectedStudentCount = count;
             updateStudentCountDisplay();
             showToast(`已選擇 ${count} 人（含）${count === 2 ? '以下' : '以上'}`, 'info');
+            
+            // 選擇人數後檢查自動提交條件
+            animationManager.setTimeout(() => {
+                console.log('🔄 人數選擇完成，檢查自動提交條件');
+                checkAutoSubmit();
+            }, 100);
         }
         
         // 更新學生人數顯示
@@ -9706,6 +9679,9 @@ async function loadTodayEvents() {
         function initializeTeacherReport() {
             console.log('📝 初始化講師報表功能');
             
+            // 預設設置為講師模式
+            setTeacherMode();
+            
             // 檢查是否有學生資料，如果沒有則顯示人數選擇
             const studentCountSelection = document.getElementById('student-count-selection');
             if (studentCountSelection) {
@@ -9720,10 +9696,17 @@ async function loadTodayEvents() {
                 } else {
                     console.log('📝 有學生資料，隱藏人數選擇');
                     studentCountSelection.style.display = 'none';
-                    // 有學生資料時，自動設置人數為實際學生數量
-                    const studentCount = window.loadedStudentsData.students.length;
+                    // 有學生資料時，自動設置人數為實際出席的學生數量
+                    const presentStudents = window.loadedStudentsData.students.filter(student => 
+                        student.status === 'present' || student.status === 'attended'
+                    );
+                    const studentCount = presentStudents.length;
                     selectedStudentCount = studentCount;
-                    console.log('📊 自動設置學生人數:', studentCount);
+                    console.log('📊 自動設置學生人數（根據實際出席）:', {
+                        totalStudents: window.loadedStudentsData.students.length,
+                        presentStudents: presentStudents.length,
+                        presentStudentNames: presentStudents.map(s => s.name)
+                    });
                 }
             }
             
@@ -9755,7 +9738,7 @@ async function loadTodayEvents() {
                 // 監聽失去焦點事件 - 輸入完成時觸發自動提交檢查
                 courseContent.addEventListener('blur', function() {
                     // 延遲一點時間再檢查，確保用戶已經完成輸入
-                    setTimeout(() => {
+                    animationManager.setTimeout(() => {
                         checkAutoSubmit();
                     }, 100);
                 });
@@ -9766,7 +9749,7 @@ async function loadTodayEvents() {
                         // 阻止換行
                         event.preventDefault();
                         // 觸發自動提交檢查
-                        setTimeout(() => {
+                        animationManager.setTimeout(() => {
                             checkAutoSubmit();
                         }, 100);
                     }
@@ -9823,7 +9806,7 @@ async function loadTodayEvents() {
                     stopAutoSubmitCountdown();
                     setTeacherMode();
                     // 延遲一點時間再檢查，確保模式已設置完成
-                    setTimeout(() => {
+                    animationManager.setTimeout(() => {
                         console.log('🔄 講師模式設置完成，檢查自動提交條件');
                         checkAutoSubmit();
                     }, 100);
@@ -9841,7 +9824,7 @@ async function loadTodayEvents() {
                     stopAutoSubmitCountdown();
                     setAssistantMode();
                     // 延遲一點時間再檢查，確保模式已設置完成
-                    setTimeout(() => {
+                    animationManager.setTimeout(() => {
                         console.log('🔄 助教模式設置完成，檢查自動提交條件');
                         checkAutoSubmit();
                     }, 100);
@@ -9852,6 +9835,31 @@ async function loadTodayEvents() {
             const submitBtn = document.getElementById('submitTeacherReport');
             if (submitBtn) {
                 submitBtn.style.display = 'none';
+            }
+            
+            // 添加人數選擇按鈕事件監聽器
+            const count2Btn = document.getElementById('count-2-btn');
+            const count30Btn = document.getElementById('count-30-btn');
+            
+            if (count2Btn) {
+                count2Btn.addEventListener('click', () => setStudentCount(2));
+            }
+            
+            if (count30Btn) {
+                count30Btn.addEventListener('click', () => setStudentCount(30));
+            }
+            
+            // 添加課程內容輸入框的焦點事件
+            if (courseContent) {
+                courseContent.addEventListener('focus', function() {
+                    this.style.borderColor = 'rgba(52, 152, 219, 0.5)';
+                    this.style.boxShadow = 'inset 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 0 3px rgba(52, 152, 219, 0.1)';
+                });
+                
+                courseContent.addEventListener('blur', function() {
+                    this.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                    this.style.boxShadow = 'inset 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 8px rgba(0, 0, 0, 0.05)';
+                });
             }
         }
 
@@ -9987,20 +9995,33 @@ async function loadTodayEvents() {
                            (currentModeDisplay.textContent === '講師模式' || 
                             currentModeDisplay.textContent === '助教模式');
             
-            // 檢查課程內容是否有效（不能只是空白或重複字符）
+            // 檢查課程內容是否有效（不能只是空白或預設文字）
             const contentValue = courseContent ? courseContent.value.trim() : '';
             const isValidContent = contentValue.length >= 1 && 
-                                 !/^(.)\1+$/.test(contentValue) && // 不能全是相同字符
                                  contentValue !== '請描述今天的課程內容...' && // 不能是預設文字
                                  contentValue !== '[特殊模式] 請描述今天的課程內容...'; // 不能是特殊模式預設文字
             
+            // 檢查人數選擇（僅在沒有學生資料時需要）
+            let hasStudentCount = true; // 預設為true
+            const hasStudents = window.loadedStudentsData && 
+                              window.loadedStudentsData.students && 
+                              window.loadedStudentsData.students.length > 0;
+            
+            if (!hasStudents) {
+                // 沒有學生資料時，需要選擇人數
+                hasStudentCount = selectedStudentCount !== null;
+            }
+            
             // 檢查是否滿足自動提交條件
-            const shouldAutoSubmit = hasContent && hasMode && isValidContent;
+            const shouldAutoSubmit = hasContent && hasMode && isValidContent && hasStudentCount;
             
             console.log('🔍 自動提交檢查:', {
                 hasContent,
                 hasMode,
                 isValidContent,
+                hasStudentCount,
+                hasStudents,
+                selectedStudentCount,
                 shouldAutoSubmit,
                 content: contentValue,
                 contentLength: contentValue.length,
@@ -10041,7 +10062,7 @@ async function loadTodayEvents() {
             showCountdownToast();
             
             // 開始倒數計時
-            autoSubmitTimer = setInterval(() => {
+            autoSubmitTimer = animationManager.setInterval(() => {
                 // 檢查條件是否仍然滿足
                 const courseContent = document.getElementById('course-content');
                 const currentModeDisplay = document.getElementById('current-mode-display');
@@ -10051,10 +10072,9 @@ async function loadTodayEvents() {
                                (currentModeDisplay.textContent === '講師模式' || 
                                 currentModeDisplay.textContent === '助教模式');
                 
-                // 檢查課程內容是否有效（不能只是空白或重複字符）
+                // 檢查課程內容是否有效（不能只是空白或預設文字）
                 const contentValue = courseContent ? courseContent.value.trim() : '';
                 const isValidContent = contentValue.length >= 1 && 
-                                     !/^(.)\1+$/.test(contentValue) && // 不能全是相同字符
                                      contentValue !== '請描述今天的課程內容...' && // 不能是預設文字
                                      contentValue !== '[特殊模式] 請描述今天的課程內容...'; // 不能是特殊模式預設文字
                 
@@ -10086,7 +10106,7 @@ async function loadTodayEvents() {
         // 停止自動提交倒數
         function stopAutoSubmitCountdown() {
             if (autoSubmitTimer) {
-                clearInterval(autoSubmitTimer);
+                animationManager.clearInterval(autoSubmitTimer);
                 autoSubmitTimer = null;
             }
             isAutoSubmitEnabled = false;
@@ -10115,6 +10135,37 @@ async function loadTodayEvents() {
             const modeText = currentModeDisplay ? currentModeDisplay.textContent : '未知';
             const contentText = courseContent ? courseContent.value.substring(0, 20) + (courseContent.value.length > 20 ? '...' : '') : '無';
             
+            // 根據模式選擇顏色
+            const isTeacherMode = modeText === '講師模式';
+            const isAssistantMode = modeText === '助教模式';
+            
+            let backgroundColor, borderColor, iconColor;
+            if (isTeacherMode) {
+                // 講師模式 - 藍色
+                backgroundColor = `linear-gradient(135deg, 
+                    rgba(52, 152, 219, 0.9) 0%, 
+                    rgba(41, 128, 185, 0.8) 50%,
+                    rgba(52, 152, 219, 0.9) 100%)`;
+                borderColor = 'rgba(52, 152, 219, 0.6)';
+                iconColor = '#ffffff';
+            } else if (isAssistantMode) {
+                // 助教模式 - 綠色
+                backgroundColor = `linear-gradient(135deg, 
+                    rgba(46, 204, 113, 0.9) 0%, 
+                    rgba(39, 174, 96, 0.8) 50%,
+                    rgba(46, 204, 113, 0.9) 100%)`;
+                borderColor = 'rgba(46, 204, 113, 0.6)';
+                iconColor = '#ffffff';
+            } else {
+                // 預設 - 灰色
+                backgroundColor = `linear-gradient(135deg, 
+                    rgba(149, 165, 166, 0.9) 0%, 
+                    rgba(127, 140, 141, 0.8) 50%,
+                    rgba(149, 165, 166, 0.9) 100%)`;
+                borderColor = 'rgba(149, 165, 166, 0.6)';
+                iconColor = '#ffffff';
+            }
+            
             // 創建倒數提示
             const toast = document.createElement('div');
             toast.className = 'countdown-toast';
@@ -10123,24 +10174,21 @@ async function loadTodayEvents() {
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                background: linear-gradient(135deg, 
-                    rgba(255, 255, 255, 0.1) 0%, 
-                    rgba(255, 255, 255, 0.05) 50%,
-                    rgba(255, 255, 255, 0.1) 100%);
+                background: ${backgroundColor};
                 backdrop-filter: blur(20px);
                 -webkit-backdrop-filter: blur(20px);
-                color: #2c3e50;
+                color: #ffffff;
                 padding: 24px 36px;
                 border-radius: 25px;
                 font-size: 18px;
                 font-weight: 700;
                 z-index: 10000;
                 box-shadow: 
-                    0 8px 32px rgba(0, 0, 0, 0.1),
-                    0 4px 16px rgba(0, 0, 0, 0.05),
+                    0 8px 32px rgba(0, 0, 0, 0.2),
+                    0 4px 16px rgba(0, 0, 0, 0.1),
                     inset 0 1px 0 rgba(255, 255, 255, 0.3),
                     inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-                border: 1px solid rgba(255, 255, 255, 0.2);
+                border: 2px solid ${borderColor};
                 animation: countdownPulse 0.8s cubic-bezier(0.4, 0, 0.2, 1);
                 position: relative;
                 overflow: hidden;
@@ -10166,25 +10214,25 @@ async function loadTodayEvents() {
                     <i class="fas fa-clock" style="
                         margin-right: 12px; 
                         font-size: 1.3rem;
-                        color: #ff6b35;
-                        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+                        color: ${iconColor};
+                        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
                     "></i>
                     <div style="text-align: center; line-height: 1.4;">
                         <div style="
-                            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-                            color: #2c3e50;
+                            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                            color: #ffffff;
                             font-size: 16px;
                             font-weight: bold;
                             margin-bottom: 4px;
                         ">${autoSubmitCountdown} 秒後自動提交</div>
                         <div style="
-                            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-                            color: #7f8c8d;
+                            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+                            color: rgba(255, 255, 255, 0.9);
                             font-size: 12px;
                         ">模式：${modeText}</div>
                         <div style="
-                            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-                            color: #7f8c8d;
+                            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+                            color: rgba(255, 255, 255, 0.9);
                             font-size: 12px;
                             max-width: 200px;
                             overflow: hidden;
@@ -10605,6 +10653,18 @@ async function loadTodayEvents() {
                     
                     showCenterToast(successMessage, 'success');
                     console.log('✅ 講師報表提交成功:', result.data);
+                    
+                    // 發送LINE通知
+                    await sendLineNotification({
+                        teacherName: currentData.teacher,
+                        courseName: currentData.course,
+                        courseTime: courseTime,
+                        date: dateString,
+                        studentCount: studentCount,
+                        courseContent: finalCourseContent,
+                        mode: currentModeDisplay ? currentModeDisplay.textContent : '講師模式',
+                        isCustomizedCourse: isCustomizedCourse
+                    });
                 } else {
                     throw new Error(result.message || 'API調用失敗');
                 }
@@ -11243,8 +11303,12 @@ async function loadTodayEvents() {
             "體驗": ["體驗", "體驗課", "體驗班", "體課", "體"],
             "代課": ["代課", "代理", "支援", "代"],
             "補課": ["補課", "調課", "延後", "提前"],
-            "客製化": ["客製化", "客制化", "客製", "客制", "客製課程", "客制課程"]
+            "客製化": ["客製化", "客制化", "客製", "客制", "客製課程", "客制課程"],
+            "到府": ["到府", "到府服務", "到府教學", "到府課程", "到府上課"]
         };
+        
+        // 將特殊事件類型暴露到全域變數
+        window.SPECIAL_EVENT_TYPES = SPECIAL_EVENT_TYPES;
 
         // 模糊匹配講師名稱
         function findMatchingInstructor(targetInstructor, availableInstructors) {
@@ -11362,13 +11426,15 @@ async function loadTodayEvents() {
                 /^([A-Z]+(?:\s+[A-Z]+)*)\s+([一二三四五六日])\s+(\d{1,2}:\d{2})-(\d{1,2}:\d{2})(?:\s+(.+?))?(?:\s+第\d+週.*)?$/,
                 // 格式2: "ESM 六 9:30-10:30 到府 第4週請假"
                 /^([A-Z]+)\s+([一二三四五六日])\s+(\d{1,2}:\d{2})-(\d{1,2}:\d{2})\s+(.+?)(?:\s+第\d+週.*)?$/,
-                // 格式3: "BOOST 六 1530-1700 到府"
+                // 格式3: "SPM 三1630-1730 到府 第3週" - 處理星期後直接跟時間的格式
+                /^([A-Z]+)\s+([一二三四五六日])(\d{4})-(\d{4})\s+(.+?)(?:\s+第\d+週.*)?$/,
+                // 格式4: "BOOST 六 1530-1700 到府"
                 /^([A-Z]+)\s+([一二三四五六日])\s+(\d{4})-(\d{4})\s+(.+?)(?:\s+第\d+週.*)?$/,
-                // 格式4: "SPIKE 六 9:30-10:30"
+                // 格式5: "SPIKE 六 9:30-10:30"
                 /^([A-Z]+)\s+([一二三四五六日])\s+(\d{1,2}:\d{2})-(\d{1,2}:\d{2})(?:\s+(.+?))?(?:\s+第\d+週.*)?$/,
-                // 格式5: "ESM 六 1530-1700"
+                // 格式6: "ESM 六 1530-1700"
                 /^([A-Z]+)\s+([一二三四五六日])\s+(\d{4})-(\d{4})(?:\s+(.+?))?(?:\s+第\d+週.*)?$/,
-                // 格式6: "ESM 六 0930-1100 到府"
+                // 格式7: "ESM 六 0930-1100 到府"
                 /^([A-Z]+)\s+([一二三四五六日])\s+(\d{4})-(\d{4})\s+(.+?)(?:\s+第\d+週.*)?$/
             ];
 
@@ -11394,13 +11460,12 @@ async function loadTodayEvents() {
                     const formattedEndTime = formatTime(endTime);
 
                     // 構建時間資訊字串
-                    let timeInfo = `${weekday} ${formattedStartTime}-${formattedEndTime}`;
+                    let timeInfo = `${weekday}${formattedStartTime}-${formattedEndTime}`;
                     if (location) {
                         timeInfo += ` ${location}`;
                     }
 
-                    // 移除特殊課程類型
-                    timeInfo = removeSpecialEventTypes(timeInfo);
+                    // 不移除特殊課程類型，保留完整信息
 
                     console.log(`✅ 解析成功: 課程="${courseName}", 時間資訊="${timeInfo}"`);
                     return { courseName, timeInfo };
@@ -11925,7 +11990,7 @@ async function loadTodayEvents() {
                                     此課程可能沒有學生資料，或課程資訊不正確
                                 </p>
                                 <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
-                                    <button onclick="showTeacherAttendance()" style="
+                                    <button id="error-teacher-btn" style="
                                         background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(59, 130, 246, 0.6));
                                         color: white;
                                         border: 1px solid rgba(59, 130, 246, 0.5);
@@ -11938,7 +12003,7 @@ async function loadTodayEvents() {
                                     " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(59, 130, 246, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(59, 130, 246, 0.3)'">
                                         <i class="fas fa-chalkboard-teacher" style="margin-right: 8px;"></i> 講師簽到
                                     </button>
-                                    <button onclick="location.reload()" style="
+                                    <button id="error-reload-btn" style="
                                         background: linear-gradient(135deg, rgba(255, 215, 0, 0.8), rgba(255, 215, 0, 0.6));
                                         color: rgba(0, 0, 0, 0.8);
                                         border: 1px solid rgba(255, 215, 0, 0.5);
@@ -11991,6 +12056,27 @@ async function loadTodayEvents() {
                     return;
                 }
                 
+                // 檢查是否為「找不到課程」的錯誤
+                if (error.message.includes('找不到課程') || error.message.includes('找不到該堂課程')) {
+                    console.log('📚 找不到課程，直接跳到講師簽到頁面');
+                    
+                    // 載入失敗，更新狀態
+                    isStudentListLoading = false;
+                    studentListLoadPromise = null;
+                    clearTimeout(loadingTimeout);
+                    
+                    // 直接切換到講師簽到頁面
+                    const teacherTab = document.querySelector('[data-tab="teacher-attendance"]');
+                    if (teacherTab) {
+                        teacherTab.click();
+                    }
+                    
+                    // 設置為沒有學生資料的狀態，顯示人數選擇
+                    window.loadedStudentsData = null;
+                    
+                    return;
+                }
+                
                 // 使用錯誤處理器顯示錯誤
                 errorHandler.showError('載入學生名單失敗: ' + error.message, error);
                 
@@ -12023,7 +12109,7 @@ async function loadTodayEvents() {
                                 錯誤訊息: ${error.message}
                             </p>
                             <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
-                                <button onclick="showTeacherAttendance()" style="
+                                <button id="error-teacher-btn-2" style="
                                     background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(59, 130, 246, 0.6));
                                     color: white;
                                     border: 1px solid rgba(59, 130, 246, 0.5);
@@ -12036,7 +12122,7 @@ async function loadTodayEvents() {
                                 " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(59, 130, 246, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(59, 130, 246, 0.3)'">
                                     <i class="fas fa-chalkboard-teacher" style="margin-right: 8px;"></i> 講師簽到
                                 </button>
-                                <button onclick="location.reload()" style="
+                                <button id="error-reload-btn-2" style="
                                     background: linear-gradient(135deg, rgba(255, 215, 0, 0.8), rgba(255, 215, 0, 0.6));
                                     color: rgba(0, 0, 0, 0.8);
                                     border: 1px solid rgba(255, 215, 0, 0.5);
@@ -13040,7 +13126,7 @@ async function loadTodayEvents() {
                         </div>
                         <div style="font-size: 0.8rem; opacity: 0.8;">${markedStudents}/${totalStudents} 學生已標記</div>
                     </div>
-                    <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+                    <button class="notification-close">×</button>
                 </div>
             `;
             
@@ -13080,7 +13166,7 @@ async function loadTodayEvents() {
                         <div>簽到完成！</div>
                         <div style="font-size: 0.8rem; opacity: 0.8;">所有學生已標記</div>
                     </div>
-                    <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+                    <button class="notification-close">×</button>
                 </div>
             `;
             
@@ -14118,6 +14204,265 @@ async function loadTodayEvents() {
                     });
                 }
             }, 500);
+        }
+
+        // 動畫管理器 - 優化動畫性能
+        class AnimationManager {
+            constructor() {
+                this.animations = new Map();
+                this.isPageVisible = true;
+                this.rafId = null;
+                this.init();
+            }
+            
+            init() {
+                // 監聽頁面可見性變化
+                document.addEventListener('visibilitychange', () => {
+                    this.isPageVisible = !document.hidden;
+                    if (this.isPageVisible) {
+                        this.resumeAnimations();
+                    } else {
+                        this.pauseAnimations();
+                    }
+                });
+                
+                // 監聽設備性能
+                this.detectDevicePerformance();
+            }
+            
+            detectDevicePerformance() {
+                // 檢測設備性能
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                const isLowEnd = !gl || navigator.hardwareConcurrency <= 2;
+                
+                if (isLowEnd) {
+                    console.log('🔋 檢測到低端設備，啟用性能優化模式');
+                    this.enablePerformanceMode();
+                }
+            }
+            
+            enablePerformanceMode() {
+                // 減少動畫複雜度
+                document.documentElement.style.setProperty('--animation-duration', '0.2s');
+                document.documentElement.style.setProperty('--transition-duration', '0.15s');
+            }
+            
+            addAnimation(id, animationFn, interval = 16) {
+                if (this.animations.has(id)) {
+                    this.removeAnimation(id);
+                }
+                
+                this.animations.set(id, {
+                    fn: animationFn,
+                    interval: interval,
+                    lastTime: 0,
+                    active: true
+                });
+                
+                if (!this.rafId) {
+                    this.startAnimationLoop();
+                }
+            }
+            
+            removeAnimation(id) {
+                this.animations.delete(id);
+                if (this.animations.size === 0 && this.rafId) {
+                    cancelAnimationFrame(this.rafId);
+                    this.rafId = null;
+                }
+            }
+            
+            startAnimationLoop() {
+                const animate = (currentTime) => {
+                    if (!this.isPageVisible) {
+                        this.rafId = requestAnimationFrame(animate);
+                        return;
+                    }
+                    
+                    this.animations.forEach((animation, id) => {
+                        if (animation.active && currentTime - animation.lastTime >= animation.interval) {
+                            try {
+                                animation.fn(currentTime);
+                                animation.lastTime = currentTime;
+                            } catch (error) {
+                                console.warn(`動畫 ${id} 執行錯誤:`, error);
+                                this.removeAnimation(id);
+                            }
+                        }
+                    });
+                    
+                    this.rafId = requestAnimationFrame(animate);
+                };
+                
+                this.rafId = requestAnimationFrame(animate);
+            }
+            
+            pauseAnimations() {
+                this.animations.forEach(animation => {
+                    animation.active = false;
+                });
+            }
+            
+            resumeAnimations() {
+                this.animations.forEach(animation => {
+                    animation.active = true;
+                    animation.lastTime = performance.now();
+                });
+            }
+            
+            // 優化的setTimeout替代
+            setTimeout(callback, delay) {
+                const startTime = performance.now();
+                const id = `timeout_${Date.now()}_${Math.random()}`;
+                
+                this.addAnimation(id, (currentTime) => {
+                    if (currentTime - startTime >= delay) {
+                        callback();
+                        this.removeAnimation(id);
+                    }
+                }, 16);
+                
+                return id;
+            }
+            
+            // 優化的setInterval替代
+            setInterval(callback, interval) {
+                const id = `interval_${Date.now()}_${Math.random()}`;
+                let lastTime = performance.now();
+                
+                this.addAnimation(id, (currentTime) => {
+                    if (currentTime - lastTime >= interval) {
+                        callback();
+                        lastTime = currentTime;
+                    }
+                }, 16);
+                
+                return id;
+            }
+            
+            clearTimeout(id) {
+                this.removeAnimation(id);
+            }
+            
+            clearInterval(id) {
+                this.removeAnimation(id);
+            }
+        }
+        
+        // 創建全局動畫管理器
+        const animationManager = new AnimationManager();
+        
+        // 優化的動畫工具函數
+        function optimizedAnimate(element, keyframes, options = {}) {
+            if (!element) return;
+            
+            // 啟用硬體加速
+            element.style.willChange = 'transform, opacity';
+            element.style.transform = 'translateZ(0)';
+            
+            // 使用原生Web Animations API
+            const animation = element.animate(keyframes, {
+                duration: options.duration || 300,
+                easing: options.easing || 'cubic-bezier(0.4, 0, 0.2, 1)',
+                fill: options.fill || 'forwards',
+                ...options
+            });
+            
+            // 動畫完成後清理
+            animation.addEventListener('finish', () => {
+                element.style.willChange = 'auto';
+            });
+            
+            return animation;
+        }
+        
+        // 優化的CSS動畫類
+        function addOptimizedAnimationClass(element, className, duration = 300) {
+            if (!element) return;
+            
+            element.classList.add(className);
+            
+            animationManager.setTimeout(() => {
+                element.classList.remove(className);
+            }, duration);
+        }
+
+        // 添加錯誤頁面按鈕事件監聽器
+        function addErrorPageEventListeners() {
+            // 使用事件委託來處理動態創建的按鈕
+            document.addEventListener('click', function(event) {
+                if (event.target.id === 'error-teacher-btn' || event.target.id === 'error-teacher-btn-2') {
+                    showTeacherAttendance();
+                } else if (event.target.id === 'error-reload-btn' || event.target.id === 'error-reload-btn-2') {
+                    location.reload();
+                } else if (event.target.classList.contains('notification-close')) {
+                    event.target.parentElement.parentElement.remove();
+                }
+            });
+        }
+        
+        // 頁面載入完成後添加事件監聽器
+        document.addEventListener('DOMContentLoaded', addErrorPageEventListeners);
+        
+        // 如果頁面已經載入完成，立即添加事件監聽器
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', addErrorPageEventListeners);
+        } else {
+            addErrorPageEventListeners();
+        }
+
+        // 發送LINE通知
+        async function sendLineNotification(reportData) {
+            try {
+                console.log('📱 發送LINE通知:', reportData);
+                
+                // 構建通知訊息
+                const modeEmoji = reportData.mode === '講師模式' ? '👨‍🏫' : '👨‍🎓';
+                const specialMark = reportData.isCustomizedCourse ? '🏷️ [特殊模式] ' : '';
+                
+                const message = `${modeEmoji} 講師報表提交成功！
+
+📅 日期：${reportData.date}
+⏰ 時間：${reportData.courseTime}
+👨‍🏫 講師：${reportData.teacherName}
+📚 課程：${reportData.courseName}
+👥 人數：${reportData.studentCount}人
+📝 內容：${specialMark}${reportData.courseContent}
+
+✅ 報表已成功提交到系統`;
+
+                // 發送通知給管理員和講師
+                const notificationData = {
+                    message: message,
+                    teacherName: reportData.teacherName,
+                    courseName: reportData.courseName,
+                    date: reportData.date,
+                    time: reportData.courseTime,
+                    studentCount: reportData.studentCount,
+                    mode: reportData.mode,
+                    isCustomizedCourse: reportData.isCustomizedCourse
+                };
+
+                // 調用後端API發送LINE通知
+                const response = await fetch('/api/send-line-notification', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(notificationData)
+                });
+
+                if (response.ok) {
+                    console.log('✅ LINE通知發送成功');
+                } else {
+                    console.log('⚠️ LINE通知發送失敗，但不影響報表提交');
+                }
+                
+            } catch (error) {
+                console.error('❌ LINE通知發送錯誤:', error);
+                // 不影響主要功能，只記錄錯誤
+            }
         }
 
     </script>
