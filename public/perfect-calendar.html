@@ -5470,7 +5470,7 @@
             
             if (!instructorEvents || instructorEvents.length === 0) {
                 console.log('⚠️ 該講師沒有課程，使用全局智能篩選');
-                return smartViewSelection();
+                return advancedSmartViewSelection(allEvents, '全部講師').view;
             }
             
             const now = new Date();
@@ -5822,14 +5822,11 @@
                         bindRefreshButton();
                         bindAttendanceMenu();
                         
-                        // 進階智能篩選：自動選擇有行事曆的模式
-                        const smartResult = advancedSmartViewSelection(allEvents, '全部講師');
-                        currentView = smartResult.view;
-                        window.currentView = smartResult.view;
-                        console.log('🧠 進階智能篩選結果:', smartResult.view, `(${smartResult.reason})`);
-                        
-                        // 顯示智能篩選統計
-                        console.log('📊 課程分布統計:', smartResult.stats);
+                        // 注意：智慧篩選將在講師比對完成後自動執行
+                        // 這裡先設置預設視圖，實際的智慧篩選會在 selectMatchedTeacher 中觸發
+                        currentView = '今日';
+                        window.currentView = '今日';
+                        console.log('🔄 等待講師比對完成後執行智慧篩選...');
                         
                         // 設置預設狀態
                         updateViewButtonStates();
@@ -7357,9 +7354,9 @@ async function loadTodayEvents() {
                     instructorSelect.value = matchedOption.value;
                     console.log('自動選擇講師:', matchedOption.value);
                     
-                    // 立即更新統計和渲染課程
-                    updateStats();
-                    renderEvents();
+                    // 觸發講師選擇變更事件，這會自動執行智慧篩選
+                    const changeEvent = new Event('change', { bubbles: true });
+                    instructorSelect.dispatchEvent(changeEvent);
                     
                     // 跳轉到第二步驟
                     showStep(2);
