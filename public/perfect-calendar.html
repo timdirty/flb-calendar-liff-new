@@ -4,8 +4,146 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>講師行事曆檢視</title>
+    <!-- 預載入關鍵資源 -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://static.line-scdn.net/liff/edge/2/sdk.js" as="script">
+    
+    <!-- 關鍵CSS優先載入 -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    
+    <!-- 非關鍵資源延遲載入 -->
+    <script>
+        // 性能優化工具
+        const PerformanceOptimizer = {
+            // 延遲載入LIFF SDK
+            loadLIFFSDK() {
+                return new Promise((resolve, reject) => {
+                    if (typeof liff !== 'undefined') {
+                        resolve();
+                        return;
+                    }
+                    
+                    const script = document.createElement('script');
+                    script.charset = 'utf-8';
+                    script.src = 'https://static.line-scdn.net/liff/edge/2/sdk.js';
+                    script.onload = resolve;
+                    script.onerror = reject;
+                    document.head.appendChild(script);
+                });
+            },
+            
+            // 預載入關鍵資源
+            preloadCriticalResources() {
+                const criticalResources = [
+                    { href: '/api/events', as: 'fetch', type: 'application/json' },
+                    { href: '/api/teachers', as: 'fetch', type: 'application/json' }
+                ];
+                
+                criticalResources.forEach(resource => {
+                    const link = document.createElement('link');
+                    link.rel = 'prefetch';
+                    link.href = resource.href;
+                    link.as = resource.as;
+                    if (resource.type) link.type = resource.type;
+                    document.head.appendChild(link);
+                });
+            },
+            
+            // 懶載入非關鍵功能
+            lazyLoadNonCriticalFeatures() {
+                // 使用 Intersection Observer 懶載入
+                if ('IntersectionObserver' in window) {
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                const element = entry.target;
+                                if (element.dataset.lazyLoad) {
+                                    this.loadLazyContent(element);
+                                    observer.unobserve(element);
+                                }
+                            }
+                        });
+                    });
+                    
+                    // 觀察所有需要懶載入的元素
+                    document.querySelectorAll('[data-lazy-load]').forEach(el => {
+                        observer.observe(el);
+                    });
+                }
+            },
+            
+            // 載入懶載入內容
+            loadLazyContent(element) {
+                const loadType = element.dataset.lazyLoad;
+                switch (loadType) {
+                    case 'attendance-modal':
+                        this.loadAttendanceModal();
+                        break;
+                    case 'teacher-options':
+                        this.loadTeacherOptions();
+                        break;
+                    case 'time-filters':
+                        this.loadTimeFilters();
+                        break;
+                }
+            },
+            
+            // 載入簽到模態框
+            loadAttendanceModal() {
+                console.log('懶載入簽到模態框...');
+                // 這裡可以載入簽到相關的額外功能
+            },
+            
+            // 載入講師選項
+            loadTeacherOptions() {
+                console.log('懶載入講師選項...');
+                // 這裡可以載入講師相關的額外功能
+            },
+            
+            // 載入時間篩選
+            loadTimeFilters() {
+                console.log('懶載入時間篩選...');
+                // 這裡可以載入時間篩選的額外功能
+            },
+            
+            // 優化DOM操作
+            batchDOMUpdates(updates) {
+                requestAnimationFrame(() => {
+                    updates.forEach(update => update());
+                });
+            },
+            
+            // 防抖函數
+            debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            },
+            
+            // 節流函數
+            throttle(func, limit) {
+                let inThrottle;
+                return function() {
+                    const args = arguments;
+                    const context = this;
+                    if (!inThrottle) {
+                        func.apply(context, args);
+                        inThrottle = true;
+                        setTimeout(() => inThrottle = false, limit);
+                    }
+                };
+            }
+        };
+        
+        // 暴露到全局
+        window.PerformanceOptimizer = PerformanceOptimizer;
+    </script>
     <style>
         * {
             margin: 0;
@@ -5199,22 +5337,166 @@
         };
         let instructorColors = {};
 
-        // 初始化
+        // 優化的分階段初始化
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('頁面載入完成，開始初始化...');
+            console.log('頁面載入完成，開始分階段初始化...');
             
-            // 顯示載入動畫
+            // 第一階段：立即執行的關鍵任務
             showLoadingAnimation();
-            
-            // 設置課程監聽器
             setupEventListeners();
             
-            // 初始化系統
-            initializeSystem();
+            // 第二階段：延遲執行的非關鍵任務
+            if ('requestIdleCallback' in window) {
+                requestIdleCallback(() => {
+                    initializeFloatingMenu();
+                    PerformanceOptimizer.preloadCriticalResources();
+                    PerformanceOptimizer.lazyLoadNonCriticalFeatures();
+                });
+            } else {
+                // 降級處理
+                setTimeout(() => {
+                    initializeFloatingMenu();
+                    PerformanceOptimizer.preloadCriticalResources();
+                    PerformanceOptimizer.lazyLoadNonCriticalFeatures();
+                }, 100);
+            }
             
-            // 初始化懸浮選單滾動監聽
-            initializeFloatingMenu();
+            // 第三階段：異步初始化系統
+            initializeSystemOptimized();
         });
+        
+        // 優化的系統初始化（分階段載入）
+        async function initializeSystemOptimized() {
+            try {
+                console.log('開始優化分階段初始化系統...');
+                addLoadingLog('🚀 開始優化分階段初始化系統...', 'info');
+                updateLoadingProgress(10);
+                
+                // 第一階段：基礎初始化（同步）
+                const phase1Start = performance.now();
+                window.currentView = '今日';
+                loadSettings();
+                updateDateTime();
+                updateLoadingProgress(20);
+                
+                const phase1Time = performance.now() - phase1Start;
+                console.log(`第一階段完成: ${phase1Time.toFixed(2)}ms`);
+                
+                // 第二階段：並行載入關鍵資源（異步）
+                const phase2Start = performance.now();
+                addLoadingLog('🔄 並行載入關鍵資源...', 'info');
+                updateLoadingProgress(25);
+                
+                const [calendarResult, lineResult] = await Promise.allSettled([
+                    loadEventsOptimized().catch(error => {
+                        console.error('載入行事曆資料失敗:', error);
+                        addLoadingLog('❌ 載入行事曆資料失敗: ' + error.message, 'error');
+                        return null;
+                    }),
+                    initLineUserOptimized().catch(error => {
+                        console.error('LIFF 初始化失敗:', error);
+                        addLoadingLog('❌ LINE 登入初始化失敗: ' + error.message, 'error');
+                        return null;
+                    })
+                ]);
+                
+                const phase2Time = performance.now() - phase2Start;
+                console.log(`第二階段完成: ${phase2Time.toFixed(2)}ms`);
+                
+                // 處理結果
+                if (calendarResult.status === 'fulfilled' && calendarResult.value !== null) {
+                    addLoadingLog('✅ 行事曆資料載入完成', 'success');
+                    updateLoadingProgress(60);
+                } else {
+                    addLoadingLog('⚠️ 行事曆資料載入有問題', 'warning');
+                }
+                
+                if (lineResult.status === 'fulfilled' && lineResult.value !== null) {
+                    addLoadingLog('✅ LINE 登入初始化完成', 'success');
+                    updateLoadingProgress(80);
+                } else {
+                    addLoadingLog('⚠️ LINE 登入初始化有問題', 'warning');
+                }
+                
+                // 第三階段：講師比對（延遲執行）
+                const phase3Start = performance.now();
+                console.log('所有初始化任務完成，開始講師比對...');
+                addLoadingLog('👨‍🏫 開始講師身份比對...', 'info');
+                updateLoadingProgress(90);
+                
+                // 檢查是否在本地環境
+                const isLocal = window.location.hostname === 'localhost' || 
+                               window.location.hostname === '127.0.0.1' || 
+                               window.location.hostname === '0.0.0.0' ||
+                               window.location.protocol === 'file:';
+                
+                if (isLocal) {
+                    console.log('🌐 本地環境模式，跳過講師自動比對');
+                    addLoadingLog('🌐 本地環境模式，跳過講師自動比對', 'info');
+                    console.log('講師比對完成');
+                    addLoadingLog('✅ 本地模式初始化完成', 'success');
+                } else if (currentUser && currentUser.userId && currentUser.displayName) {
+                    console.log('=== 開始自動比對講師 ===');
+                    console.log('用戶資料:', currentUser);
+                    addLoadingLog('🔍 正在比對講師身份...', 'info');
+                    
+                    try {
+                        await autoMatchTeacher(currentUser.userId, currentUser.displayName);
+                        console.log('講師比對完成');
+                        addLoadingLog('✅ 講師身份比對完成', 'success');
+                    } catch (error) {
+                        console.error('自動比對講師失敗:', error);
+                        addLoadingLog('⚠️ 講師身份比對失敗: ' + error.message, 'warning');
+                    }
+                } else {
+                    console.log('沒有用戶資料，跳過自動比對');
+                    addLoadingLog('⚠️ 沒有用戶資料，跳過講師比對', 'warning');
+                }
+                
+                const phase3Time = performance.now() - phase3Start;
+                console.log(`第三階段完成: ${phase3Time.toFixed(2)}ms`);
+                
+                addLoadingLog('🎉 系統初始化完成！', 'success');
+                updateLoadingProgress(100);
+                
+                // 第四階段：UI更新（延遲執行）
+                const phase4Start = performance.now();
+                animationManager.setTimeout(() => {
+                    try {
+                        hideLoadingAnimation();
+                        console.log('系統初始化完成');
+                        
+                        // 綁定視圖按鈕
+                        bindViewButtons();
+                        bindRefreshButton();
+                        bindAttendanceMenu();
+                        
+                        // 設置預設狀態
+                        updateViewButtonStates();
+                        updateTimeFilterOptions();
+                        autoScrollToCalendar();
+                        
+                        const totalTime = performance.now() - phase1Start;
+                        console.log(`🎯 總初始化時間: ${totalTime.toFixed(2)}ms`);
+                        console.log(`📊 各階段時間: 基礎${phase1Time.toFixed(2)}ms, 資源${phase2Time.toFixed(2)}ms, 比對${phase3Time.toFixed(2)}ms, UI${(performance.now() - phase4Start).toFixed(2)}ms`);
+                        
+                    } catch (error) {
+                        console.error('隱藏載入動畫失敗:', error);
+                    }
+                }, 300); // 減少延遲時間
+                
+            } catch (error) {
+                console.error('系統初始化失敗:', error);
+                animationManager.setTimeout(() => {
+                    try {
+                        hideLoadingAnimation();
+                        console.log('系統初始化失敗，但已隱藏載入動畫');
+                    } catch (hideError) {
+                        console.error('隱藏載入動畫失敗:', hideError);
+                    }
+                }, 500);
+            }
+        }
 
         // 顯示載入動畫
         function showLoadingAnimation() {
@@ -6364,10 +6646,10 @@
         function setupEventListeners() {
             // 滑動功能已移除
             
-            // 講師篩選課程監聽器
+            // 講師篩選課程監聽器（優化版本）
             const instructorSelect = document.getElementById('instructorSelect');
             if (instructorSelect) {
-                instructorSelect.addEventListener('change', function() {
+                instructorSelect.addEventListener('change', PerformanceOptimizer.debounce(function() {
                     const selectedInstructor = this.value;
                     console.log('📱 講師選擇變更:', selectedInstructor);
                     
@@ -6447,17 +6729,17 @@
                     renderEvents();
                     autoScrollToViewButtons(); // 自動滾動到視圖按鈕
                     console.log('📱 講師選擇後智慧切換視圖:', currentView);
-                });
+                }, 200)); // 防抖延遲
             }
             
-            // 時段篩選課程監聽器
+            // 時段篩選課程監聽器（優化版本）
             const timeFilter = document.getElementById('timeFilter');
             if (timeFilter) {
-                timeFilter.addEventListener('change', function() {
+                timeFilter.addEventListener('change', PerformanceOptimizer.debounce(function() {
                     updateStats();
                     renderEvents();
                     autoScrollToViewButtons(); // 自動滾動到視圖按鈕
-                });
+                }, 200)); // 防抖延遲
             }
             
             // 日期篩選課程監聽器
@@ -6770,6 +7052,150 @@ async function loadTodayEvents() {
                     addLoadingLog('⚠️ 未找到匹配的講師選項', 'warning');
                 }
             }
+        }
+
+        // 優化的事件載入（含預載入和快取）
+        async function loadEventsOptimized() {
+            try {
+                console.log('🚀 開始優化載入事件資料...');
+                
+                // 檢查快取
+                const cacheKey = 'calendar_events_cache';
+                const cacheTime = 'calendar_events_cache_time';
+                const cacheExpiry = 3 * 60 * 1000; // 3分鐘快取
+                
+                const cachedData = localStorage.getItem(cacheKey);
+                const cacheTimestamp = localStorage.getItem(cacheTime);
+                const now = Date.now();
+                
+                if (cachedData && cacheTimestamp && (now - parseInt(cacheTimestamp)) < cacheExpiry) {
+                    console.log('📦 使用快取的事件數據');
+                    addLoadingLog('📦 使用快取的事件數據', 'info');
+                    
+                    const data = JSON.parse(cachedData);
+                    if (data.success) {
+                        processEventsData(data);
+                        return { success: true, fromCache: true };
+                    }
+                }
+                
+                addLoadingLog('🌐 正在連接 CalDAV 伺服器...', 'info');
+                
+                // 使用優化的API請求
+                const response = await apiOptimizer.fetchWithRetry('/api/events', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+                
+                addLoadingLog('📡 正在獲取行事曆資料...', 'info');
+                
+                const data = response.data || response;
+                
+                if (data.success) {
+                    // 快取數據
+                    localStorage.setItem(cacheKey, JSON.stringify(data));
+                    localStorage.setItem(cacheTime, now.toString());
+                    
+                    processEventsData(data);
+                    return { success: true, fromCache: false };
+                } else {
+                    throw new Error(data.message || '載入事件失敗');
+                }
+            } catch (error) {
+                console.error('載入事件錯誤:', error);
+                addLoadingLog('❌ 載入事件失敗: ' + error.message, 'error');
+                throw error;
+            }
+        }
+
+        // 優化的LINE用戶初始化
+        async function initLineUserOptimized() {
+            console.log('開始優化初始化LINE用戶...');
+            
+            // 檢查是否在本地環境
+            const isLocal = window.location.hostname === 'localhost' || 
+                           window.location.hostname === '127.0.0.1' || 
+                           window.location.hostname === '0.0.0.0' ||
+                           window.location.protocol === 'file:';
+            
+            if (isLocal) {
+                console.log('🌐 檢測到本地環境，跳過 LINE 認證');
+                addLoadingLog('🌐 本地環境模式，跳過 LINE 認證', 'info');
+                
+                // 設置模擬用戶資料
+                currentUser = {
+                    userId: 'local-test-user',
+                    displayName: '本地測試用戶',
+                    pictureUrl: ''
+                };
+                
+                updateUserDisplay();
+                console.log('本地模式用戶顯示完成');
+                return { success: true, local: true };
+            }
+            
+            // 延遲載入LIFF SDK
+            try {
+                await loadLIFFSDK();
+                console.log('LIFF SDK 載入完成');
+            } catch (error) {
+                console.error('LIFF SDK 載入失敗:', error);
+                addLoadingLog('❌ LIFF SDK 載入失敗', 'error');
+                return { success: false, error: error.message };
+            }
+            
+            return new Promise((resolve) => {
+                // 設置超時保護（5秒）
+                const timeout = setTimeout(() => {
+                    console.warn('LIFF 初始化超時');
+                    addLoadingLog('⏰ LINE 登入超時，請手動綁定', 'warning');
+                    showBindButton();
+                    resolve({ success: false, timeout: true });
+                }, 5000);
+                
+                // 初始化LIFF
+                liff.init({
+                    liffId: '1657746214-qp0y8NwZ',
+                    withLoginOnExternalBrowser: true
+                }).then(() => {
+                    console.log('LIFF 初始化成功');
+                    
+                    if (liff.isLoggedIn()) {
+                        liff.getProfile().then(async (profile) => {
+                            clearTimeout(timeout);
+                            console.log('獲取到用戶資料:', profile);
+                            
+                            currentUser = {
+                                userId: profile.userId,
+                                displayName: profile.displayName,
+                                pictureUrl: profile.pictureUrl
+                            };
+                            
+                            updateUserDisplay();
+                            console.log('用戶顯示更新完成');
+                            resolve({ success: true, user: currentUser });
+                        }).catch(error => {
+                            clearTimeout(timeout);
+                            console.error('獲取用戶資料失敗:', error);
+                            addLoadingLog('❌ 獲取用戶資料失敗', 'error');
+                            resolve({ success: false, error: error.message });
+                        });
+                    } else {
+                        clearTimeout(timeout);
+                        console.log('用戶未登入，顯示綁定按鈕');
+                        showBindButton();
+                        resolve({ success: false, notLoggedIn: true });
+                    }
+                }).catch(error => {
+                    clearTimeout(timeout);
+                    console.error('LIFF 初始化失敗:', error);
+                    addLoadingLog('❌ LIFF 初始化失敗', 'error');
+                    resolve({ success: false, error: error.message });
+                });
+            });
         }
 
         // 載入課程資料（向後相容）
