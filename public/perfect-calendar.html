@@ -8936,12 +8936,12 @@ async function loadTodayEvents() {
             console.log('✅ 載入畫面已顯示');
         }
 
-        // 顯示學生載入狀態
+        // 顯示學生載入狀態（液態玻璃質感）
         function showStudentLoadingState() {
             const modalContent = document.querySelector('.attendance-modal-content');
             if (!modalContent) return;
             
-            // 創建載入遮罩
+            // 創建液態玻璃載入遮罩
             let loadingOverlay = modalContent.querySelector('.student-loading-overlay');
             if (!loadingOverlay) {
                 loadingOverlay = document.createElement('div');
@@ -8952,37 +8952,168 @@ async function loadTodayEvents() {
                     left: 0;
                     right: 0;
                     bottom: 0;
-                    background: rgba(255, 255, 255, 0.95);
+                    background: linear-gradient(135deg, 
+                        rgba(255, 255, 255, 0.1) 0%, 
+                        rgba(255, 255, 255, 0.05) 50%,
+                        rgba(255, 255, 255, 0.1) 100%);
+                    backdrop-filter: blur(25px);
+                    -webkit-backdrop-filter: blur(25px);
+                    border: 1px solid rgba(255, 255, 255, 0.2);
                     display: flex;
                     flex-direction: column;
                     align-items: center;
                     justify-content: center;
                     z-index: 1000;
-                    backdrop-filter: blur(5px);
+                    opacity: 0;
+                    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+                    box-shadow: 
+                        0 8px 32px rgba(0, 0, 0, 0.1),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.3);
                 `;
-                loadingOverlay.innerHTML = `
+                
+                // 創建液態玻璃載入容器
+                const loadingContainer = document.createElement('div');
+                loadingContainer.style.cssText = `
+                    background: linear-gradient(135deg, 
+                        rgba(255, 255, 255, 0.25) 0%, 
+                        rgba(255, 255, 255, 0.1) 50%,
+                        rgba(255, 255, 255, 0.2) 100%);
+                    backdrop-filter: blur(20px);
+                    -webkit-backdrop-filter: blur(20px);
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    border-radius: 24px;
+                    padding: 40px 32px;
+                    box-shadow: 
+                        0 12px 40px rgba(0, 0, 0, 0.15),
+                        0 4px 12px rgba(0, 0, 0, 0.1),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.4),
+                        inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+                    text-align: center;
+                    position: relative;
+                    overflow: hidden;
+                    min-width: 280px;
+                    transform: scale(0.9);
+                    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+                `;
+                
+                // 創建背景流動效果
+                const liquidBackground = document.createElement('div');
+                liquidBackground.style.cssText = `
+                    position: absolute;
+                    top: -50%;
+                    left: -50%;
+                    width: 200%;
+                    height: 200%;
+                    background: linear-gradient(45deg, 
+                        rgba(74, 144, 226, 0.1) 0%,
+                        rgba(80, 200, 120, 0.1) 25%,
+                        rgba(255, 193, 7, 0.1) 50%,
+                        rgba(255, 107, 107, 0.1) 75%,
+                        rgba(138, 43, 226, 0.1) 100%);
+                    animation: liquidFlow 8s ease-in-out infinite;
+                    opacity: 0.6;
+                `;
+                
+                // 創建液態載入器
+                const liquidLoader = document.createElement('div');
+                liquidLoader.style.cssText = `
+                    width: 60px;
+                    height: 60px;
+                    margin: 0 auto 20px;
+                    position: relative;
+                    transform: translateZ(0);
+                `;
+                
+                // 創建外層液態環
+                const outerRing = document.createElement('div');
+                outerRing.style.cssText = `
+                    width: 100%;
+                    height: 100%;
+                    border: 3px solid transparent;
+                    border-top: 3px solid rgba(74, 144, 226, 0.4);
+                    border-right: 3px solid rgba(80, 200, 120, 0.4);
+                    border-radius: 50%;
+                    animation: liquidSpin 2s linear infinite;
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                `;
+                
+                // 創建內層液態環
+                const innerRing = document.createElement('div');
+                innerRing.style.cssText = `
+                    width: 60%;
+                    height: 60%;
+                    border: 2px solid transparent;
+                    border-bottom: 2px solid rgba(255, 193, 7, 0.5);
+                    border-left: 2px solid rgba(255, 107, 107, 0.5);
+                    border-radius: 50%;
+                    animation: liquidSpin 1.5s linear infinite reverse;
+                    position: absolute;
+                    top: 20%;
+                    left: 20%;
+                `;
+                
+                // 創建中心液態球
+                const centerBall = document.createElement('div');
+                centerBall.style.cssText = `
+                    width: 12px;
+                    height: 12px;
+                    background: linear-gradient(135deg, 
+                        rgba(74, 144, 226, 0.8) 0%,
+                        rgba(80, 200, 120, 0.8) 50%,
+                        rgba(255, 193, 7, 0.8) 100%);
+                    border-radius: 50%;
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    animation: liquidPulse 1.5s ease-in-out infinite;
+                    box-shadow: 
+                        0 0 15px rgba(74, 144, 226, 0.4),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+                `;
+                
+                // 創建載入文字
+                const loadingText = document.createElement('div');
+                loadingText.innerHTML = `
                     <div style="
-                        text-align: center;
-                        padding: 40px;
-                        color: #666;
-                        font-size: 1.1rem;
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        gap: 15px;
-                    ">
-                        <i class="fas fa-spinner" style="
-                            color: #FFD700;
-                            font-size: 2rem;
-                            animation: spin 1s linear infinite;
-                        "></i>
-                        <div class="loading-text" style="font-weight: 500;">載入學生名單中...</div>
-                        <div style="font-size: 0.9rem; color: #999;">請稍候，載入完成後會自動顯示</div>
-                    </div>
+                        font-size: 16px;
+                        font-weight: 600;
+                        color: rgba(255, 255, 255, 0.9);
+                        margin-bottom: 8px;
+                        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                        letter-spacing: 0.5px;
+                    ">載入學生名單中</div>
+                    <div style="
+                        font-size: 13px;
+                        color: rgba(255, 255, 255, 0.7);
+                        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+                    ">請稍候，載入完成後會自動顯示</div>
                 `;
+                
+                // 組裝載入動畫
+                liquidLoader.appendChild(outerRing);
+                liquidLoader.appendChild(innerRing);
+                liquidLoader.appendChild(centerBall);
+                
+                loadingContainer.appendChild(liquidBackground);
+                loadingContainer.appendChild(liquidLoader);
+                loadingContainer.appendChild(loadingText);
+                
+                loadingOverlay.appendChild(loadingContainer);
                 modalContent.appendChild(loadingOverlay);
             }
+            
+            // 顯示動畫
             loadingOverlay.style.display = 'flex';
+            requestAnimationFrame(() => {
+                loadingOverlay.style.opacity = '1';
+                const container = loadingOverlay.querySelector('div');
+                if (container) {
+                    container.style.transform = 'scale(1)';
+                }
+            });
         }
 
         // 隱藏學生載入狀態
@@ -15011,13 +15142,17 @@ async function loadTodayEvents() {
         window.optimizedAnimate = optimizedAnimate;
         window.smoothScrollTo = smoothScrollTo;
         window.throttledAnimate = throttledAnimate;
+        window.showOptimizedLoadingAnimation = showOptimizedLoadingAnimation;
+        window.hideOptimizedLoadingAnimation = hideOptimizedLoadingAnimation;
+        window.showStudentLoadingState = showStudentLoadingState;
+        window.hideStudentLoadingState = hideStudentLoadingState;
         
-        // 優化的載入動畫
+        // 液態玻璃質感載入動畫
         function showOptimizedLoadingAnimation() {
             const modalContent = document.querySelector('.attendance-modal-content');
             if (!modalContent) return;
             
-            // 創建優化的載入動畫
+            // 創建液態玻璃載入遮罩
             const loadingOverlay = document.createElement('div');
             loadingOverlay.id = 'optimized-loading-overlay';
             loadingOverlay.style.cssText = `
@@ -15026,112 +15161,281 @@ async function loadTodayEvents() {
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: rgba(255, 255, 255, 0.95);
-                backdrop-filter: blur(10px);
-                -webkit-backdrop-filter: blur(10px);
+                background: linear-gradient(135deg, 
+                    rgba(255, 255, 255, 0.1) 0%, 
+                    rgba(255, 255, 255, 0.05) 50%,
+                    rgba(255, 255, 255, 0.1) 100%);
+                backdrop-filter: blur(25px);
+                -webkit-backdrop-filter: blur(25px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
                 z-index: 1000;
                 opacity: 0;
-                transition: opacity 0.3s ease;
+                transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 
+                    0 8px 32px rgba(0, 0, 0, 0.1),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3);
             `;
             
-            // 創建載入動畫內容
-            const loadingContent = document.createElement('div');
-            loadingContent.style.cssText = `
+            // 創建液態玻璃載入容器
+            const loadingContainer = document.createElement('div');
+            loadingContainer.style.cssText = `
+                background: linear-gradient(135deg, 
+                    rgba(255, 255, 255, 0.25) 0%, 
+                    rgba(255, 255, 255, 0.1) 50%,
+                    rgba(255, 255, 255, 0.2) 100%);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                border-radius: 24px;
+                padding: 40px 32px;
+                box-shadow: 
+                    0 12px 40px rgba(0, 0, 0, 0.15),
+                    0 4px 12px rgba(0, 0, 0, 0.1),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+                    inset 0 -1px 0 rgba(0, 0, 0, 0.05);
                 text-align: center;
-                color: #333;
+                position: relative;
+                overflow: hidden;
+                min-width: 280px;
+                transform: scale(0.9);
+                transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             `;
             
-            // 創建脈衝載入動畫
-            const pulseLoader = document.createElement('div');
-            pulseLoader.style.cssText = `
-                width: 60px;
-                height: 60px;
-                border: 3px solid #f3f3f3;
-                border-top: 3px solid #007bff;
+            // 創建背景流動效果
+            const liquidBackground = document.createElement('div');
+            liquidBackground.style.cssText = `
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: linear-gradient(45deg, 
+                    rgba(74, 144, 226, 0.1) 0%,
+                    rgba(80, 200, 120, 0.1) 25%,
+                    rgba(255, 193, 7, 0.1) 50%,
+                    rgba(255, 107, 107, 0.1) 75%,
+                    rgba(138, 43, 226, 0.1) 100%);
+                animation: liquidFlow 8s ease-in-out infinite;
+                opacity: 0.6;
+            `;
+            
+            // 創建液態玻璃載入器
+            const liquidLoader = document.createElement('div');
+            liquidLoader.style.cssText = `
+                width: 80px;
+                height: 80px;
+                margin: 0 auto 24px;
+                position: relative;
+                transform: translateZ(0);
+            `;
+            
+            // 創建外層液態環
+            const outerRing = document.createElement('div');
+            outerRing.style.cssText = `
+                width: 100%;
+                height: 100%;
+                border: 3px solid transparent;
+                border-top: 3px solid rgba(74, 144, 226, 0.3);
+                border-right: 3px solid rgba(80, 200, 120, 0.3);
                 border-radius: 50%;
-                animation: spin 1s linear infinite;
-                margin: 0 auto 20px;
+                animation: liquidSpin 2s linear infinite;
+                position: absolute;
+                top: 0;
+                left: 0;
+            `;
+            
+            // 創建中層液態環
+            const middleRing = document.createElement('div');
+            middleRing.style.cssText = `
+                width: 70%;
+                height: 70%;
+                border: 2px solid transparent;
+                border-bottom: 2px solid rgba(255, 193, 7, 0.4);
+                border-left: 2px solid rgba(255, 107, 107, 0.4);
+                border-radius: 50%;
+                animation: liquidSpin 1.5s linear infinite reverse;
+                position: absolute;
+                top: 15%;
+                left: 15%;
+            `;
+            
+            // 創建內層液態環
+            const innerRing = document.createElement('div');
+            innerRing.style.cssText = `
+                width: 40%;
+                height: 40%;
+                border: 2px solid transparent;
+                border-top: 2px solid rgba(138, 43, 226, 0.5);
+                border-right: 2px solid rgba(74, 144, 226, 0.5);
+                border-radius: 50%;
+                animation: liquidSpin 1s linear infinite;
+                position: absolute;
+                top: 30%;
+                left: 30%;
+            `;
+            
+            // 創建中心液態球
+            const centerBall = document.createElement('div');
+            centerBall.style.cssText = `
+                width: 16px;
+                height: 16px;
+                background: linear-gradient(135deg, 
+                    rgba(74, 144, 226, 0.8) 0%,
+                    rgba(80, 200, 120, 0.8) 50%,
+                    rgba(255, 193, 7, 0.8) 100%);
+                border-radius: 50%;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                animation: liquidPulse 1.5s ease-in-out infinite;
+                box-shadow: 
+                    0 0 20px rgba(74, 144, 226, 0.4),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3);
             `;
             
             // 創建載入文字
             const loadingText = document.createElement('div');
-            loadingText.textContent = '載入學生資料中...';
-            loadingText.style.cssText = `
-                font-size: 16px;
-                font-weight: 500;
-                color: #666;
-                margin-bottom: 10px;
+            loadingText.innerHTML = `
+                <div style="
+                    font-size: 18px;
+                    font-weight: 600;
+                    color: rgba(255, 255, 255, 0.9);
+                    margin-bottom: 8px;
+                    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                    letter-spacing: 0.5px;
+                ">載入學生資料中</div>
+                <div style="
+                    font-size: 14px;
+                    color: rgba(255, 255, 255, 0.7);
+                    margin-bottom: 20px;
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+                ">正在從資料庫載入學生名單...</div>
             `;
             
-            // 創建進度條
-            const progressBar = document.createElement('div');
-            progressBar.style.cssText = `
+            // 創建液態進度條
+            const progressContainer = document.createElement('div');
+            progressContainer.style.cssText = `
                 width: 200px;
-                height: 4px;
-                background: #f0f0f0;
-                border-radius: 2px;
+                height: 6px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 3px;
                 overflow: hidden;
                 margin: 0 auto;
+                position: relative;
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
             `;
             
             const progressFill = document.createElement('div');
             progressFill.style.cssText = `
                 height: 100%;
-                background: linear-gradient(90deg, #007bff, #0056b3);
-                border-radius: 2px;
+                background: linear-gradient(90deg, 
+                    rgba(74, 144, 226, 0.8) 0%,
+                    rgba(80, 200, 120, 0.8) 50%,
+                    rgba(255, 193, 7, 0.8) 100%);
+                border-radius: 3px;
                 width: 0%;
-                transition: width 0.3s ease;
-                animation: progressPulse 2s ease-in-out infinite;
+                transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                position: relative;
+                overflow: hidden;
+                box-shadow: 0 0 10px rgba(74, 144, 226, 0.3);
             `;
             
-            progressBar.appendChild(progressFill);
+            // 創建進度條光效
+            const progressShimmer = document.createElement('div');
+            progressShimmer.style.cssText = `
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, 
+                    transparent 0%,
+                    rgba(255, 255, 255, 0.4) 50%,
+                    transparent 100%);
+                animation: shimmer 2s ease-in-out infinite;
+            `;
             
             // 添加CSS動畫
             const style = document.createElement('style');
             style.textContent = `
-                @keyframes progressPulse {
-                    0%, 100% { opacity: 0.6; }
-                    50% { opacity: 1; }
+                @keyframes liquidSpin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+                
+                @keyframes liquidPulse {
+                    0%, 100% { 
+                        transform: translate(-50%, -50%) scale(1);
+                        opacity: 0.8;
+                    }
+                    50% { 
+                        transform: translate(-50%, -50%) scale(1.2);
+                        opacity: 1;
+                    }
+                }
+                
+                @keyframes shimmer {
+                    0% { transform: translateX(-100%); }
+                    100% { transform: translateX(200%); }
+                }
+                
+                @keyframes liquidFlow {
+                    0%, 100% { transform: rotate(0deg) scale(1); }
+                    25% { transform: rotate(90deg) scale(1.1); }
+                    50% { transform: rotate(180deg) scale(1); }
+                    75% { transform: rotate(270deg) scale(1.1); }
                 }
             `;
             document.head.appendChild(style);
             
             // 組裝載入動畫
-            loadingContent.appendChild(pulseLoader);
-            loadingContent.appendChild(loadingText);
-            loadingContent.appendChild(progressBar);
-            loadingOverlay.appendChild(loadingContent);
+            liquidLoader.appendChild(outerRing);
+            liquidLoader.appendChild(middleRing);
+            liquidLoader.appendChild(innerRing);
+            liquidLoader.appendChild(centerBall);
             
-            // 添加到模態框
+            progressFill.appendChild(progressShimmer);
+            progressContainer.appendChild(progressFill);
+            
+            loadingContainer.appendChild(liquidBackground);
+            loadingContainer.appendChild(liquidLoader);
+            loadingContainer.appendChild(loadingText);
+            loadingContainer.appendChild(progressContainer);
+            
+            loadingOverlay.appendChild(loadingContainer);
             modalContent.appendChild(loadingOverlay);
             
             // 顯示動畫
             requestAnimationFrame(() => {
                 loadingOverlay.style.opacity = '1';
+                loadingContainer.style.transform = 'scale(1)';
             });
             
             // 模擬進度
             let progress = 0;
             const progressInterval = setInterval(() => {
-                progress += Math.random() * 15;
-                if (progress > 90) progress = 90;
+                progress += Math.random() * 12 + 3;
+                if (progress > 95) progress = 95;
                 progressFill.style.width = progress + '%';
-            }, 200);
+            }, 300);
             
             // 存儲清理函數
             window.clearOptimizedLoading = () => {
                 clearInterval(progressInterval);
                 if (loadingOverlay && loadingOverlay.parentNode) {
                     loadingOverlay.style.opacity = '0';
+                    loadingContainer.style.transform = 'scale(0.9)';
                     setTimeout(() => {
                         if (loadingOverlay.parentNode) {
                             loadingOverlay.parentNode.removeChild(loadingOverlay);
                         }
-                    }, 300);
+                    }, 500);
                 }
             };
         }
