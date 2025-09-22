@@ -6178,7 +6178,7 @@
             console.log('🔍 講師選擇器狀態:', {
                 value: instructorSelect.value,
                 selectedIndex: instructorSelect.selectedIndex,
-                options: Array.from(instructorSelect.options).map(opt => ({ value: opt.value, text: opt.text }))
+                options: instructorSelect.options ? Array.from(instructorSelect.options).map(opt => ({ value: opt.value, text: opt.text })) : 'options 不可用'
             });
             
             if (instructorSelect.value && instructorSelect.value !== '') {
@@ -7139,9 +7139,19 @@
                         if (instructorSelect) {
                             instructorSelect.value = ''; // 選擇全部講師
                             
-                            // 觸發講師選擇變更事件，執行智慧篩選
-                            const changeEvent = new Event('change', { bubbles: true });
-                            instructorSelect.dispatchEvent(changeEvent);
+                            // 直接執行全局智慧篩選，不觸發事件
+                            console.log('🔄 講師比對失敗，執行全局智慧篩選');
+                            const smartResult = advancedSmartViewSelection(allEvents, '全部講師');
+                            currentView = smartResult.view;
+                            window.currentView = smartResult.view;
+                            
+                            updateViewButtonStates();
+                            updateTimeFilterOptions();
+                            updateStats();
+                            renderEvents();
+                            autoScrollToViewButtons();
+                            
+                            showAdvancedSmartFilterNotification(smartResult);
                         }
                     }
                 } else {
@@ -7167,8 +7177,18 @@
                 const instructorSelect = document.getElementById('instructorSelect');
                 if (instructorSelect && instructorSelect.value === '') {
                     console.log('🔄 講師比對失敗，執行全局智慧篩選');
-                    const changeEvent = new Event('change', { bubbles: true });
-                    instructorSelect.dispatchEvent(changeEvent);
+                    // 直接執行全局智慧篩選，不觸發事件
+                    const smartResult = advancedSmartViewSelection(allEvents, '全部講師');
+                    currentView = smartResult.view;
+                    window.currentView = smartResult.view;
+                    
+                    updateViewButtonStates();
+                    updateTimeFilterOptions();
+                    updateStats();
+                    renderEvents();
+                    autoScrollToViewButtons();
+                    
+                    showAdvancedSmartFilterNotification(smartResult);
                 }
                 
                 resolve();
@@ -7643,7 +7663,7 @@
                     console.log('🔍 講師選擇器詳細狀態:', {
                         value: selectedInstructor,
                         selectedIndex: this.selectedIndex,
-                        options: Array.from(this.options).map(opt => ({ value: opt.value, text: opt.text }))
+                        options: this.options ? Array.from(this.options).map(opt => ({ value: opt.value, text: opt.text })) : 'options 不可用'
                     });
                     
                     if (selectedInstructor && selectedInstructor !== '') {
